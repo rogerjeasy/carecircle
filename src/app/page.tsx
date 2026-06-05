@@ -1,177 +1,120 @@
-import { getDemoOverview } from "@/db/queries";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Heart, Users, Calendar, Shield, ArrowRight, Sparkles } from "lucide-react";
 
-// Always read fresh from Aurora (no static caching for this proof-of-life page).
-export const dynamic = "force-dynamic";
-
-const typeColor: Record<string, string> = {
-  med: "bg-[#0F766E]",
-  vital: "bg-[#1D4ED8]",
-  note: "bg-[#EC7C5A]",
-  task: "bg-[#B45309]",
-  appointment: "bg-[#7C3AED]",
-  incident: "bg-[#B91C1C]",
-  document: "bg-[#6B716C]",
-  system: "bg-[#6B716C]",
-};
-
-function initials(name: string | null | undefined) {
-  if (!name) return "?";
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
-}
-
-function ago(date: Date | string) {
-  const diff = Date.now() - new Date(date).getTime();
-  const h = Math.floor(diff / 3_600_000);
-  if (h < 1) return "just now";
-  if (h < 24) return `${h}h ago`;
-  return `${Math.floor(h / 24)}d ago`;
-}
-
-export default async function Home() {
-  const data = await getDemoOverview();
-
-  if (!data) {
-    return (
-      <main className="grid min-h-screen place-items-center bg-[#FBFAF8] p-8 text-[#1B231F]">
-        <p className="text-lg">
-          No circle found. Run{" "}
-          <code className="rounded bg-[#F1EFEA] px-1.5 py-0.5">npm run db:seed</code>.
-        </p>
-      </main>
-    );
-  }
-
-  const { circle, recipient, events, members } = data;
-
+export default function Home() {
   return (
-    <main className="min-h-screen bg-[#FBFAF8] text-[#1B231F]">
-      <div className="mx-auto max-w-3xl px-5 py-10 sm:px-8">
-        <header className="flex items-center justify-between gap-3">
+    <main className="min-h-screen bg-background text-foreground">
+      {/* Hero Section */}
+      <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8">
+        <header className="flex items-center justify-between gap-3 mb-16">
           <div className="flex min-w-0 items-center gap-2">
-            <span className="grid h-8 w-8 place-items-center rounded-full bg-[#0F766E] text-sm font-semibold text-white">
-              C
+            <span className="grid h-10 w-10 place-items-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
+              <Heart className="h-5 w-5" />
             </span>
-            <span className="truncate text-lg font-semibold">CareCircle</span>
+            <span className="truncate text-xl font-semibold font-serif">CareCircle</span>
           </div>
-          <span className="shrink-0 rounded-full border border-[#E6E3DC] bg-white px-3 py-1 text-xs text-[#6B716C]">
-            live on Amazon Aurora
-          </span>
+          <Link href="/style-guide">
+            <Button variant="outline" size="sm">
+              View Design System
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </Link>
         </header>
 
-        {/* Recipient card */}
-        <section className="mt-8 rounded-2xl border border-[#E6E3DC] bg-white p-6 shadow-sm">
-          <div className="flex items-center gap-4">
-            <div className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-[#0F766E]/10 text-lg font-semibold text-[#0F766E]">
-              {initials(recipient?.fullName ?? "A")}
-            </div>
-            <div className="min-w-0">
-              <h1 className="truncate text-xl font-semibold">
-                {recipient?.fullName ?? circle.name}
-              </h1>
-              <p className="truncate text-sm text-[#6B716C]">
-                {circle.name} · {circle.primaryTimezone}
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-4 rounded-xl bg-[#0F766E]/[0.06] px-4 py-3 text-sm text-[#0F766E]">
-            Antonio is having a good day — all morning meds given.
-          </div>
-
-          {recipient && (
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <Field label="Conditions" items={recipient.conditions ?? []} />
-              <Field label="Allergies" items={recipient.allergies ?? []} danger />
-            </div>
-          )}
-
-          <div className="mt-4 flex flex-wrap gap-2">
-            {members.map((m) => (
-              <span
-                key={m.id}
-                className="inline-flex min-w-0 items-center gap-1.5 rounded-full border border-[#E6E3DC] px-2.5 py-1 text-xs"
-              >
-                <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[#EC7C5A]/15 text-[10px] font-semibold text-[#9a4a2f]">
-                  {initials(m.name)}
-                </span>
-                <span className="truncate">{m.name}</span>
-                <span className="text-[#6B716C]">· {m.label ?? m.role}</span>
-              </span>
-            ))}
+        {/* Hero */}
+        <section className="text-center mb-20">
+          <Badge variant="accent" className="mb-4">
+            <Sparkles className="mr-1 h-3 w-3" />
+            Collaborative Care Platform
+          </Badge>
+          <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6 text-balance">
+            Care coordination,{" "}
+            <span className="text-primary">simplified</span>
+          </h1>
+          <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-8 text-pretty">
+            Bring your family and care team together in one secure place. 
+            Track medications, share updates, and coordinate care with ease.
+          </p>
+          <div className="flex flex-wrap justify-center gap-4">
+            <Button size="lg">
+              Get Started
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+            <Button variant="outline" size="lg">
+              Learn More
+            </Button>
           </div>
         </section>
 
-        {/* Timeline */}
-        <section className="mt-8">
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-[#6B716C]">
-            Care timeline
+        {/* Features Grid */}
+        <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 mb-20">
+          <Card className="hover:shadow-md transition-shadow">
+            <CardHeader>
+              <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
+                <Users className="h-6 w-6 text-primary" />
+              </div>
+              <CardTitle>Care Circles</CardTitle>
+              <CardDescription>
+                Create private groups for family members, caregivers, and healthcare providers.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+
+          <Card className="hover:shadow-md transition-shadow">
+            <CardHeader>
+              <div className="h-12 w-12 rounded-xl bg-accent/10 flex items-center justify-center mb-4">
+                <Calendar className="h-6 w-6 text-accent" />
+              </div>
+              <CardTitle>Medication Tracking</CardTitle>
+              <CardDescription>
+                Never miss a dose with smart reminders and medication history logs.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+
+          <Card className="hover:shadow-md transition-shadow">
+            <CardHeader>
+              <div className="h-12 w-12 rounded-xl bg-success/10 flex items-center justify-center mb-4">
+                <Shield className="h-6 w-6 text-success" />
+              </div>
+              <CardTitle>Secure & Private</CardTitle>
+              <CardDescription>
+                HIPAA-compliant platform with end-to-end encryption for your peace of mind.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        </section>
+
+        {/* CTA Section */}
+        <section className="rounded-2xl bg-primary/5 border border-primary/10 p-8 sm:p-12 text-center">
+          <h2 className="font-serif text-2xl sm:text-3xl font-bold mb-4">
+            Ready to simplify care coordination?
           </h2>
-          <ol className="space-y-2">
-            {events.map((e) => (
-              <li
-                key={e.id}
-                className="flex items-start gap-3 rounded-xl border border-[#E6E3DC] bg-white p-4 shadow-sm"
-              >
-                <span
-                  className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ${
-                    typeColor[e.eventType] ?? "bg-[#6B716C]"
-                  }`}
-                />
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm">{e.summary}</p>
-                  <p className="mt-1 text-xs text-[#6B716C]">
-                    {e.actorName ?? "System"} · {ago(e.occurredAt)}
-                  </p>
-                </div>
-              </li>
-            ))}
-          </ol>
+          <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
+            Join thousands of families who trust CareCircle to keep their loved ones safe and connected.
+          </p>
+          <div className="flex flex-wrap justify-center gap-3">
+            <Button variant="accent">Start Free Trial</Button>
+            <Link href="/style-guide">
+              <Button variant="outline">
+                Explore Design System
+              </Button>
+            </Link>
+          </div>
         </section>
 
-        <footer className="mt-10 text-center text-xs text-[#6B716C]">
-          Reading {events.length} live events from Amazon Aurora PostgreSQL · Row-Level
-          Security ready
+        <footer className="mt-16 text-center text-sm text-muted-foreground">
+          <p>CareCircle Design System v1.0</p>
+          <p className="mt-1">
+            <Link href="/style-guide" className="text-primary hover:underline">
+              View complete style guide
+            </Link>
+          </p>
         </footer>
       </div>
     </main>
-  );
-}
-
-function Field({
-  label,
-  items,
-  danger,
-}: {
-  label: string;
-  items: string[];
-  danger?: boolean;
-}) {
-  return (
-    <div className="min-w-0">
-      <p className="text-xs font-medium text-[#6B716C]">{label}</p>
-      <div className="mt-1 flex flex-wrap gap-1.5">
-        {items.length === 0 ? (
-          <span className="text-sm text-[#6B716C]">—</span>
-        ) : (
-          items.map((it) => (
-            <span
-              key={it}
-              className={`rounded-md px-2 py-0.5 text-xs ${
-                danger
-                  ? "bg-[#B91C1C]/10 text-[#B91C1C]"
-                  : "bg-[#F1EFEA] text-[#1B231F]"
-              }`}
-            >
-              {it}
-            </span>
-          ))
-        )}
-      </div>
-    </div>
   );
 }
