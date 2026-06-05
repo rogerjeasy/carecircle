@@ -21,6 +21,8 @@ import {
   Bell,
   Eye,
   ChevronDown,
+  Check,
+  CalendarClock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -40,7 +42,12 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+  DropdownMenuPortal,
 } from "@/components/ui/dropdown-menu";
+import { useAppShell, roleLabels, UserRole } from "./app-shell-context";
 
 // Navigation items (same as sidebar)
 const navItems = [
@@ -53,6 +60,7 @@ const navItems = [
   { href: "/documents", label: "Documents", icon: FileText },
   { href: "/people", label: "People", icon: Users },
   { href: "/digest", label: "Digest", icon: Mail },
+  { href: "/rota", label: "Rota", icon: CalendarClock },
   { href: "/ask", label: "Ask CareCircle", icon: Sparkles },
 ];
 
@@ -77,6 +85,10 @@ interface MobileNavSheetProps {
 export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
   const pathname = usePathname();
   const [activeCircle, setActiveCircle] = React.useState(circles[0]);
+  const { role, setRole, canAccessRoute } = useAppShell();
+
+  // Filter nav items based on current role
+  const visibleNavItems = navItems.filter(item => canAccessRoute(item.href));
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -140,7 +152,7 @@ export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
         {/* Navigation */}
         <ScrollArea className="flex-1 h-[calc(100vh-180px)]">
           <nav className="space-y-1 p-3">
-            {navItems.map((item) => {
+            {visibleNavItems.map((item) => {
               const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
               const Icon = item.icon;
 
@@ -208,14 +220,30 @@ export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
                 <User className="mr-2 h-4 w-4" />
                 Profile
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Bell className="mr-2 h-4 w-4" />
-                Notification settings
-              </DropdownMenuItem>
-              <DropdownMenuItem>
+<DropdownMenuItem>
+              <Bell className="mr-2 h-4 w-4" />
+              Notification settings
+            </DropdownMenuItem>
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
                 <Eye className="mr-2 h-4 w-4" />
                 Switch role view
-              </DropdownMenuItem>
+              </DropdownMenuSubTrigger>
+              <DropdownMenuPortal>
+                <DropdownMenuSubContent className="w-48">
+                  {(Object.keys(roleLabels) as UserRole[]).map((roleKey) => (
+                    <DropdownMenuItem
+                      key={roleKey}
+                      onClick={() => setRole(roleKey)}
+                      className="justify-between"
+                    >
+                      {roleLabels[roleKey]}
+                      {role === roleKey && <Check className="h-4 w-4 text-primary" />}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuSubContent>
+              </DropdownMenuPortal>
+            </DropdownMenuSub>
               <DropdownMenuSeparator />
               <DropdownMenuItem className="text-destructive focus:text-destructive">
                 <LogOut className="mr-2 h-4 w-4" />

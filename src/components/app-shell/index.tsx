@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Sidebar, MobileBottomNav } from "./sidebar";
 import { TopBar } from "./top-bar";
 import { MobileNavSheet } from "./mobile-nav-sheet";
+import { AppShellProvider } from "./app-shell-context";
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -49,45 +50,47 @@ export function AppShell({ children }: AppShellProps) {
   };
 
   return (
-    <TooltipProvider>
-      <div className="min-h-screen bg-background">
-        {/* Desktop/Tablet Sidebar - hidden on mobile */}
-        <div className="hidden md:block">
-          <Sidebar collapsed={sidebarCollapsed} onToggle={handleToggleSidebar} />
-        </div>
+    <AppShellProvider>
+      <TooltipProvider>
+        <div className="min-h-screen bg-background">
+          {/* Desktop/Tablet Sidebar - hidden on mobile */}
+          <div className="hidden md:block">
+            <Sidebar collapsed={sidebarCollapsed} onToggle={handleToggleSidebar} />
+          </div>
 
-        {/* Mobile Nav Sheet */}
-        <MobileNavSheet open={mobileNavOpen} onOpenChange={setMobileNavOpen} />
+          {/* Mobile Nav Sheet */}
+          <MobileNavSheet open={mobileNavOpen} onOpenChange={setMobileNavOpen} />
 
-        {/* Main content area */}
-        <div
-          className={cn(
-            "flex min-h-screen flex-col transition-all duration-300",
-            // Adjust left margin based on sidebar state (desktop only)
-            "md:ml-[72px] lg:ml-[264px]",
-            sidebarCollapsed && "md:ml-[72px] lg:ml-[72px]",
-            !sidebarCollapsed && "md:ml-[72px] lg:ml-[264px]"
-          )}
-        >
-          {/* Top bar */}
-          <TopBar
-            sidebarCollapsed={sidebarCollapsed}
-            onMenuClick={() => setMobileNavOpen(true)}
-          />
+          {/* Main content area */}
+          <div
+            className={cn(
+              "flex min-h-screen flex-col transition-all duration-300",
+              // Adjust left margin based on sidebar state (desktop only)
+              "md:ml-[72px] lg:ml-[264px]",
+              sidebarCollapsed && "md:ml-[72px] lg:ml-[72px]",
+              !sidebarCollapsed && "md:ml-[72px] lg:ml-[264px]"
+            )}
+          >
+            {/* Top bar */}
+            <TopBar
+              sidebarCollapsed={sidebarCollapsed}
+              onMenuClick={() => setMobileNavOpen(true)}
+            />
 
-          {/* Page content */}
-          <main className="flex-1 pb-20 md:pb-0">
-            <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-              <div className="motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300">
-                {children}
+            {/* Page content */}
+            <main className="flex-1 pb-20 md:pb-0">
+              <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+                <div className="motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300">
+                  {children}
+                </div>
               </div>
-            </div>
-          </main>
-        </div>
+            </main>
+          </div>
 
-        {/* Mobile bottom nav - only on mobile */}
-        <MobileBottomNav onMoreClick={() => setMobileNavOpen(true)} />
-      </div>
-    </TooltipProvider>
+          {/* Mobile bottom nav - only on mobile */}
+          <MobileBottomNav onMoreClick={() => setMobileNavOpen(true)} />
+        </div>
+      </TooltipProvider>
+    </AppShellProvider>
   );
 }

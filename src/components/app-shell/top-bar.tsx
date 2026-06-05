@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Menu,
@@ -8,6 +9,7 @@ import {
   Bell,
   Sparkles,
   X,
+  Phone,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -40,6 +42,9 @@ export function TopBar({ sidebarCollapsed, onMenuClick }: TopBarProps) {
   const [searchOpen, setSearchOpen] = React.useState(false);
   const [unreadCount] = React.useState(3);
 
+  // Current on-call person (would come from API in real app)
+  const onCallPerson = { name: "Grace", href: "/rota" };
+
   const pageTitle = pageTitles[pathname] || "Dashboard";
 
   return (
@@ -62,8 +67,17 @@ export function TopBar({ sidebarCollapsed, onMenuClick }: TopBarProps) {
       </Button>
 
       {/* Page title / breadcrumb */}
-      <div className="flex min-w-0 flex-1 items-center gap-2">
+      <div className="flex min-w-0 flex-1 items-center gap-3">
         <h1 className="truncate text-lg font-semibold sm:text-xl">{pageTitle}</h1>
+        
+        {/* On call status chip */}
+        <Link
+          href={onCallPerson.href}
+          className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-success/10 px-2.5 py-1 text-xs font-medium text-success hover:bg-success/20 transition-colors"
+        >
+          <Phone className="h-3 w-3" />
+          <span>On call: {onCallPerson.name}</span>
+        </Link>
       </div>
 
       {/* Right side actions */}

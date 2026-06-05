@@ -24,7 +24,10 @@ import {
   Bell,
   Eye,
   MoreHorizontal,
+  Check,
+  CalendarClock,
 } from "lucide-react";
+import { useAppShell, roleLabels, UserRole } from "./app-shell-context";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -42,6 +45,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+  DropdownMenuPortal,
 } from "@/components/ui/dropdown-menu";
 
 // Navigation items
@@ -55,6 +62,7 @@ const navItems = [
   { href: "/documents", label: "Documents", icon: FileText },
   { href: "/people", label: "People", icon: Users },
   { href: "/digest", label: "Digest", icon: Mail },
+  { href: "/rota", label: "Rota", icon: CalendarClock },
   { href: "/ask", label: "Ask CareCircle", icon: Sparkles },
 ];
 
@@ -80,6 +88,10 @@ interface SidebarProps {
 export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const pathname = usePathname();
   const [activeCircle, setActiveCircle] = React.useState(circles[0]);
+  const { role, setRole, canAccessRoute } = useAppShell();
+
+  // Filter nav items based on current role
+  const visibleNavItems = navItems.filter(item => canAccessRoute(item.href));
 
   return (
     <aside
@@ -153,7 +165,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       {/* Navigation */}
       <ScrollArea className="flex-1 px-2">
         <nav className="space-y-1 py-2">
-          {navItems.map((item) => {
+          {visibleNavItems.map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
             const Icon = item.icon;
 
@@ -286,10 +298,26 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
               <Bell className="mr-2 h-4 w-4" />
               Notification settings
             </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Eye className="mr-2 h-4 w-4" />
-              Switch role view
-            </DropdownMenuItem>
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
+                <Eye className="mr-2 h-4 w-4" />
+                Switch role view
+              </DropdownMenuSubTrigger>
+              <DropdownMenuPortal>
+                <DropdownMenuSubContent className="w-48">
+                  {(Object.keys(roleLabels) as UserRole[]).map((roleKey) => (
+                    <DropdownMenuItem
+                      key={roleKey}
+                      onClick={() => setRole(roleKey)}
+                      className="justify-between"
+                    >
+                      {roleLabels[roleKey]}
+                      {role === roleKey && <Check className="h-4 w-4 text-primary" />}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuSubContent>
+              </DropdownMenuPortal>
+            </DropdownMenuSub>
             <DropdownMenuSeparator />
             <DropdownMenuItem className="text-destructive focus:text-destructive">
               <LogOut className="mr-2 h-4 w-4" />
@@ -337,11 +365,55 @@ interface MobileBottomNavProps {
 
 export function MobileBottomNav({ onMoreClick }: MobileBottomNavProps) {
   const pathname = usePathname();
+  const { canAccessRoute } = useAppShell();
+  const [isVisible, setIsVisible] = React.useState(true);
+  const [lastScrollY, setLastScrollY] = React.useState(0);
+
+  // Filter mobile nav items based on role (except "More")
+  const visibleMobileNavItems = mobileNavItems.filter(
+    item => item.href === "#more" || canAccessRoute(item.href)
+  );
+
+  // Handle scroll direction detection
+  React.useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      const scrollDelta = currentScrollY - lastScrollY;
+      
+      // Only trigger if scrolled more than 10px (avoid jitter)
+      if (Math.abs(scrollDelta) < 10) return;
+
+      // Hide on scroll down, show on scroll up
+      if (scrollDelta > 0 && currentScrollY > 80) {
+        // Scrolling down and past threshold
+        setIsVisible(false);
+      } else if (scrollDelta < 0) {
+        // Scrolling up
+        setIsVisible(true);
+      }
+
+      setLastScrollY(currentScrollY);
+    };
+
+    // Check if user prefers reduced motion
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    
+    if (!prefersReducedMotion) {
+      window.addEventListener("scroll", handleScroll, { passive: true });
+      return () => window.removeEventListener("scroll", handleScroll);
+    }
+  }, [lastScrollY]);
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t bg-card safe-area-inset-bottom md:hidden">
+    <nav
+      className={cn(
+        "fixed inset-x-0 bottom-0 z-40 border-t bg-card safe-area-inset-bottom md:hidden",
+        "transition-transform duration-300 ease-in-out motion-reduce:transition-none",
+        isVisible ? "translate-y-0" : "translate-y-full"
+      )}
+    >
       <div className="flex h-16 items-center justify-around px-2">
-        {mobileNavItems.map((item) => {
+        {visibleMobileNavItems.map((item) => {
           const isMore = item.href === "#more";
           const isActive = !isMore && (pathname === item.href || pathname.startsWith(item.href + "/"));
           const Icon = item.icon;
