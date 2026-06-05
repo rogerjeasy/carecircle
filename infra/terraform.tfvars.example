@@ -1,0 +1,16 @@
+# Copy to terraform.tfvars and fill in. terraform.tfvars is gitignored (never commit it).
+
+# REQUIRED: where budget alerts are emailed (put YOUR email in the real terraform.tfvars).
+alert_email = "rogerjeasy@gmail.com"
+
+# Optional overrides (defaults are already the cheapest viable):
+region                = "us-east-1"
+min_acu               = 0    # auto-pause to ~$0 when idle
+max_acu               = 1    # cost ceiling
+backup_retention_days = 1
+budget_limit_usd      = "80"
+
+# Lock DB access to your IP for local-only dev (find it at https://checkip.amazonaws.com):
+#   db_access_cidr = "203.0.113.4/32"
+# Default "0.0.0.0/0" lets Vercel connect (still protected by SSL + password).
+db_access_cidr = "0.0.0.0/0"

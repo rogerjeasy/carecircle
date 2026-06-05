@@ -1,0 +1,20 @@
+# Terraform state contains secrets (DB password, access keys) — NEVER commit it.
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+
+# Local provider cache + lock
+.terraform/
+.terraform.lock.hcl
+
+# Variable files hold secrets — commit only the example
+*.tfvars
+!*.tfvars.example
+
+# Crash logs / overrides
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
