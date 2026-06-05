@@ -279,13 +279,13 @@ export function CtaSection() {
             Join thousands of families who&apos;ve found a better way to coordinate care. Free to start, no credit card required.
           </p>
           <div className="mt-8 flex flex-wrap gap-4 justify-center">
-            <Link href="/dashboard">
+            <Link href="/sign-up">
               <Button size="lg" className="gap-2">
                 Get started free
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
-            <Link href="#how-it-works">
+            <Link href="/how-it-works">
               <Button size="lg" variant="outline">
                 Learn more
               </Button>

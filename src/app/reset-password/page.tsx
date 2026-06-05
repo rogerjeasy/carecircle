@@ -154,12 +154,12 @@ export default function ResetPasswordPage() {
         }
       }
       
-      const fieldSchema = resetPasswordSchema.innerType().shape[field];
+      const fieldSchema = resetPasswordSchema.shape[field];
       fieldSchema.parse(value);
       setErrors((prev) => ({ ...prev, [field]: undefined }));
     } catch (err) {
       if (err instanceof z.ZodError) {
-        setErrors((prev) => ({ ...prev, [field]: err.errors[0]?.message }));
+        setErrors((prev) => ({ ...prev, [field]: err.issues[0]?.message }));
       }
     }
   };
@@ -204,7 +204,7 @@ export default function ResetPasswordPage() {
 
     if (!result.success) {
       const fieldErrors: Partial<Record<keyof ResetPasswordFormData, string>> = {};
-      result.error.errors.forEach((err) => {
+      result.error.issues.forEach((err) => {
         const field = err.path[0] as keyof ResetPasswordFormData;
         if (!fieldErrors[field]) {
           fieldErrors[field] = err.message;

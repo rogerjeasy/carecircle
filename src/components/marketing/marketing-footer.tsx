@@ -6,9 +6,9 @@ import { Users, Globe } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 const productLinks = [
-  { href: "#features", label: "Features" },
-  { href: "#how-it-works", label: "How it works" },
-  { href: "#pricing", label: "Pricing" },
+  { href: "/how-it-works", label: "Features" },
+  { href: "/how-it-works", label: "How it works" },
+  { href: "/pricing", label: "Pricing" },
   { href: "/dashboard", label: "Dashboard" },
   { href: "/style-guide", label: "Design System" },
 ];
@@ -57,7 +57,7 @@ export function MarketingFooter() {
             <h3 className="font-semibold mb-4">Product</h3>
             <ul className="space-y-3">
               {productLinks.map((link) => (
-                <li key={link.href}>
+                <li key={link.label}>
                   <Link
                     href={link.href}
                     className="text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -74,7 +74,7 @@ export function MarketingFooter() {
             <h3 className="font-semibold mb-4">Company</h3>
             <ul className="space-y-3">
               {companyLinks.map((link) => (
-                <li key={link.href}>
+                <li key={link.label}>
                   <Link
                     href={link.href}
                     className="text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -91,7 +91,7 @@ export function MarketingFooter() {
             <h3 className="font-semibold mb-4">Legal</h3>
             <ul className="space-y-3">
               {legalLinks.map((link) => (
-                <li key={link.href}>
+                <li key={link.label}>
                   <Link
                     href={link.href}
                     className="text-sm text-muted-foreground hover:text-foreground transition-colors"

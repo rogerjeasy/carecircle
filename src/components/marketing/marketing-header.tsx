@@ -15,9 +15,9 @@ import {
 } from "@/components/ui/sheet";
 
 const navLinks = [
-  { href: "#how-it-works", label: "How it works" },
-  { href: "#pricing", label: "Pricing" },
-  { href: "#about", label: "About" },
+  { href: "/how-it-works", label: "How it works" },
+  { href: "/pricing", label: "Pricing" },
+  { href: "/how-it-works", label: "About" },
 ];
 
 export function MarketingHeader() {
@@ -54,7 +54,7 @@ export function MarketingHeader() {
         <nav className="hidden md:flex items-center gap-8">
           {navLinks.map((link) => (
             <Link
-              key={link.href}
+              key={link.label}
               href={link.href}
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
@@ -66,12 +66,12 @@ export function MarketingHeader() {
         {/* Desktop Actions */}
         <div className="hidden md:flex items-center gap-3">
           <ThemeToggle />
-          <Link href="/dashboard">
+          <Link href="/sign-in">
             <Button variant="ghost" size="sm">
               Sign in
             </Button>
           </Link>
-          <Link href="/dashboard">
+          <Link href="/sign-up">
             <Button size="sm">Get started free</Button>
           </Link>
         </div>
@@ -98,7 +98,7 @@ export function MarketingHeader() {
               <nav className="mt-8 flex flex-col gap-4">
                 {navLinks.map((link) => (
                   <Link
-                    key={link.href}
+                    key={link.label}
                     href={link.href}
                     onClick={() => setMobileOpen(false)}
                     className="text-lg font-medium text-muted-foreground hover:text-foreground transition-colors"
@@ -107,12 +107,12 @@ export function MarketingHeader() {
                   </Link>
                 ))}
                 <div className="mt-6 flex flex-col gap-3">
-                  <Link href="/dashboard" onClick={() => setMobileOpen(false)}>
+                  <Link href="/sign-in" onClick={() => setMobileOpen(false)}>
                     <Button variant="outline" className="w-full">
                       Sign in
                     </Button>
                   </Link>
-                  <Link href="/dashboard" onClick={() => setMobileOpen(false)}>
+                  <Link href="/sign-up" onClick={() => setMobileOpen(false)}>
                     <Button className="w-full">Get started free</Button>
                   </Link>
                 </div>

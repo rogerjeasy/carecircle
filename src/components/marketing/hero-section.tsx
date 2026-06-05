@@ -69,7 +69,7 @@ export function HeroSection() {
               Coordinate medications, appointments, and daily updates across siblings, cities, and countries. Everyone stays informed, no one falls through the cracks.
             </p>
             <div className="mt-8 flex flex-wrap gap-4 justify-center lg:justify-start">
-              <Link href="/dashboard">
+              <Link href="/sign-up">
                 <Button size="lg" className="gap-2">
                   Get started free
                   <ArrowRight className="h-4 w-4" />

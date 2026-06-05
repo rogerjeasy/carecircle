@@ -65,6 +65,7 @@ const tiers = [
     ],
     cta: "Get started",
     ctaVariant: "outline" as const,
+    ctaHref: "/sign-up",
     popular: false,
   },
   {
@@ -85,6 +86,7 @@ const tiers = [
     ],
     cta: "Start free trial",
     ctaVariant: "default" as const,
+    ctaHref: "/sign-up",
     popular: true,
   },
   {
@@ -105,6 +107,7 @@ const tiers = [
     ],
     cta: "Contact sales",
     ctaVariant: "secondary" as const,
+    ctaHref: "mailto:sales@carecircle.app",
     popular: false,
   },
 ];
@@ -329,8 +332,13 @@ export default function PricingPage() {
                         variant={tier.ctaVariant}
                         className="w-full"
                         size="lg"
+                        asChild
                       >
-                        {tier.cta}
+                        {tier.ctaHref.startsWith("mailto:") ? (
+                          <a href={tier.ctaHref}>{tier.cta}</a>
+                        ) : (
+                          <Link href={tier.ctaHref}>{tier.cta}</Link>
+                        )}
                       </Button>
                     </CardFooter>
                   </Card>
@@ -464,16 +472,14 @@ export default function PricingPage() {
                 Join thousands of families who trust CareCircle. Start free, no credit card required.
               </p>
               <div className="flex flex-wrap justify-center gap-4">
-                <Link href="/dashboard">
+                <Link href="/sign-up">
                   <Button size="lg">
                     Get started free
                   </Button>
                 </Link>
-                <Link href="#contact">
-                  <Button variant="outline" size="lg">
-                    Talk to sales
-                  </Button>
-                </Link>
+                <Button variant="outline" size="lg" asChild>
+                  <a href="mailto:sales@carecircle.app">Talk to sales</a>
+                </Button>
               </div>
             </CardContent>
           </Card>

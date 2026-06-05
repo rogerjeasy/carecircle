@@ -107,7 +107,7 @@ export default function ForgotPasswordPage() {
       setError(null);
     } catch (err) {
       if (err instanceof z.ZodError) {
-        setError(err.errors[0]?.message || "Invalid email");
+        setError(err.issues[0]?.message || "Invalid email");
       }
     }
   };
@@ -134,7 +134,7 @@ export default function ForgotPasswordPage() {
     const result = forgotPasswordSchema.safeParse({ email });
 
     if (!result.success) {
-      setError(result.error.errors[0]?.message || "Invalid email");
+      setError(result.error.issues[0]?.message || "Invalid email");
       return;
     }
 

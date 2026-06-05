@@ -34,7 +34,6 @@ import {
 import {
   LineChart,
   Line,
-  ResponsiveContainer,
 } from "recharts";
 
 // ============================================================================
@@ -129,7 +128,6 @@ function useAnimatedCount(target: number, duration = 1000) {
       return;
     }
     
-    let start = 0;
     const startTime = performance.now();
     
     const animate = (currentTime: number) => {
@@ -604,17 +602,15 @@ function DashboardContent() {
           delay={150}
         >
           <div className="h-10 w-16">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={sparklineData}>
-                <Line 
-                  type="monotone" 
-                  dataKey="v" 
-                  stroke="hsl(var(--success))" 
-                  strokeWidth={2}
-                  dot={false}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+            <LineChart width={64} height={40} data={sparklineData}>
+              <Line
+                type="monotone"
+                dataKey="v"
+                stroke="hsl(var(--success))"
+                strokeWidth={2}
+                dot={false}
+              />
+            </LineChart>
           </div>
         </StatCard>
       </div>

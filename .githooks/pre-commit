@@ -1,0 +1,91 @@
+#!/usr/bin/env bash
+# .githooks/pre-commit  —  CareCircle (single Next.js app)
+#
+# Runs before every commit. Blocks if any check fails.
+#   1. Secret & credential scanning (always)
+#   2. ESLint on staged TS/JS files
+#   3. TypeScript type-check (whole project)
+#
+# One-time install:  git config core.hooksPath .githooks
+# Emergency bypass:  git commit --no-verify   (document the reason in the PR)
+
+FAIL=0
+ROOT="$(git rev-parse --show-toplevel)"
+
+# ── Always-skip files — silently unstaged before any check runs ───────────────
+# Local tooling state that must never be committed.
+ALWAYS_SKIP=(
+    ".claude/settings.local.json"
+)
+for _f in "${ALWAYS_SKIP[@]}"; do
+    if git diff --cached --name-only | grep -qF "$_f"; then
+        git restore --staged "$_f" 2>/dev/null || true
+    fi
+done
+
+RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; BOLD='\033[1m'; NC='\033[0m'
+header() { printf "\n${BOLD}${YELLOW}▶ %s${NC}\n" "$1"; }
+ok()     { printf "  ${GREEN}✓${NC} %s\n" "$1"; }
+err()    { printf "  ${RED}✗${NC} %s\n" "$1"; FAIL=$((FAIL+1)); }
+
+# ── Detect Node (required for every check) ────────────────────────────────────
+if ! command -v node >/dev/null 2>&1; then
+    printf "${BOLD}${RED}✗ node not found on PATH — cannot run pre-commit checks.${NC}\n"
+    printf "  Install Node.js (the project already needs it) and try again.\n"
+    exit 1
+fi
+
+# ── Staged file categories ────────────────────────────────────────────────────
+staged_all=$(git diff --cached --name-only --diff-filter=ACMR)
+staged_web=$(printf '%s\n' "$staged_all" \
+             | grep -E '\.(ts|tsx|js|jsx|mjs|cjs)$' \
+             | grep -v node_modules || true)
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 1. Secret & credential scanning  (always runs, on all staged files)
+# ══════════════════════════════════════════════════════════════════════════════
+header "Secret scanning"
+if node "$ROOT/.githooks/secret-scan.mjs"; then
+    :
+else
+    err "Secrets detected — remove them, re-stage, and commit again"
+fi
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 2. ESLint  (only the staged TS/JS files; warnings allowed, errors block)
+# ══════════════════════════════════════════════════════════════════════════════
+if [ -n "$staged_web" ]; then
+    if [ ! -d "$ROOT/node_modules" ]; then
+        printf "\n⚠ node_modules missing — run 'npm ci' to enable lint/type checks\n"
+        err "ESLint skipped (no node_modules)"
+    else
+        header "ESLint (staged files)"
+        # shellcheck disable=SC2086
+        if (cd "$ROOT" && printf '%s\n' "$staged_web" | xargs npx --no-install eslint); then
+            ok "ESLint"
+        else
+            err "ESLint  →  cd carecircle && npx eslint <file>  (or: npm run lint)"
+        fi
+
+        # ── 3. TypeScript types (whole project) ──────────────────────────────
+        header "TypeScript (tsc --noEmit)"
+        if (cd "$ROOT" && npm run type-check --silent); then
+            ok "TypeScript"
+        else
+            err "TypeScript  →  cd carecircle && npm run type-check"
+        fi
+    fi
+fi
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Summary
+# ══════════════════════════════════════════════════════════════════════════════
+printf "\n"
+if [ "$FAIL" -gt 0 ]; then
+    printf "${BOLD}${RED}✗ %d pre-commit check(s) failed — commit blocked.${NC}\n" "$FAIL"
+    printf "  Fix the issues above, re-stage your files, and commit again.\n"
+    printf "  ${YELLOW}Emergency bypass:${NC} git commit --no-verify\n\n"
+    exit 1
+fi
+printf "${BOLD}${GREEN}✓ All pre-commit checks passed.${NC}\n\n"
+exit 0

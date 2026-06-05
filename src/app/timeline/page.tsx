@@ -363,7 +363,7 @@ function FilterBar({
               mode="single"
               selected={selectedDate}
               onSelect={onDateSelect}
-              initialFocus
+              autoFocus
             />
             {selectedDate && (
               <div className="p-2 border-t">
@@ -1003,7 +1003,7 @@ function TimelineContent() {
     setIsLoading(false);
   };
 
-  const hasActiveFilters = activeFilter !== "all" || searchQuery || selectedDate;
+  const hasActiveFilters = activeFilter !== "all" || !!searchQuery || !!selectedDate;
 
   return (
     <div className="max-w-2xl mx-auto">

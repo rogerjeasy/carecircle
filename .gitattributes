@@ -1,0 +1,4 @@
+# Keep the git hooks LF-only so the bash pre-commit script never breaks on
+# Windows checkouts (CRLF in a shell script causes "\r: command not found").
+.githooks/pre-commit text eol=lf
+.githooks/*.mjs      text eol=lf

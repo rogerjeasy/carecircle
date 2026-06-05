@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { toast } from "sonner";
 import { Eye, EyeOff, Heart, Loader2, AlertCircle } from "lucide-react";
@@ -138,6 +139,7 @@ function BrandBanner() {
 }
 
 export default function SignInPage() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [rememberMe, setRememberMe] = React.useState(false);
@@ -157,7 +159,7 @@ export default function SignInPage() {
       setErrors((prev) => ({ ...prev, [field]: undefined }));
     } catch (err) {
       if (err instanceof z.ZodError) {
-        setErrors((prev) => ({ ...prev, [field]: err.errors[0]?.message }));
+        setErrors((prev) => ({ ...prev, [field]: err.issues[0]?.message }));
       }
     }
   };
@@ -193,7 +195,7 @@ export default function SignInPage() {
 
     if (!result.success) {
       const fieldErrors: Partial<Record<keyof SignInForm, string>> = {};
-      result.error.errors.forEach((err) => {
+      result.error.issues.forEach((err) => {
         const field = err.path[0] as keyof SignInForm;
         if (!fieldErrors[field]) {
           fieldErrors[field] = err.message;
@@ -219,6 +221,7 @@ export default function SignInPage() {
     toast.success("Welcome back!", {
       description: "You have been signed in successfully.",
     });
+    router.push("/dashboard");
   };
 
   // Handle social login

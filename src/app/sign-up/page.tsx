@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { toast } from "sonner";
 import { Eye, EyeOff, Heart, Loader2, Check, X } from "lucide-react";
@@ -29,7 +30,7 @@ const signUpSchema = z.object({
     .regex(/[a-z]/, "Include at least one lowercase letter")
     .regex(/[0-9]/, "Include at least one number"),
   terms: z.literal(true, {
-    errorMap: () => ({ message: "You must accept the terms to continue" }),
+    message: "You must accept the terms to continue",
   }),
 });
 
@@ -179,6 +180,7 @@ function BrandBanner() {
 }
 
 export default function SignUpPage() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [formData, setFormData] = React.useState({
@@ -201,7 +203,7 @@ export default function SignUpPage() {
       setErrors((prev) => ({ ...prev, [field]: undefined }));
     } catch (err) {
       if (err instanceof z.ZodError) {
-        setErrors((prev) => ({ ...prev, [field]: err.errors[0]?.message }));
+        setErrors((prev) => ({ ...prev, [field]: err.issues[0]?.message }));
       }
     }
   };
@@ -237,7 +239,7 @@ export default function SignUpPage() {
     
     if (!result.success) {
       const fieldErrors: Partial<Record<keyof SignUpForm, string>> = {};
-      result.error.errors.forEach((err) => {
+      result.error.issues.forEach((err) => {
         const field = err.path[0] as keyof SignUpForm;
         if (!fieldErrors[field]) {
           fieldErrors[field] = err.message;
@@ -256,6 +258,7 @@ export default function SignUpPage() {
     toast.success("Welcome to CareCircle!", {
       description: "Your account has been created successfully.",
     });
+    router.push("/onboarding");
   };
 
   // Handle social login
