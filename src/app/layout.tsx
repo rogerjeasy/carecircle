@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Fraunces } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 const inter = Inter({
@@ -49,6 +50,16 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {children}
+          <Toaster 
+            position="top-center" 
+            toastOptions={{
+              classNames: {
+                toast: "bg-card border-border text-foreground",
+                title: "text-foreground",
+                description: "text-muted-foreground",
+              },
+            }}
+          />
         </ThemeProvider>
       </body>
     </html>
