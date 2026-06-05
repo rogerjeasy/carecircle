@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Users, Calendar, Shield, ArrowRight, Sparkles } from "lucide-react";
+import { Heart, Users, Calendar, Shield, ArrowRight, Sparkles, LayoutDashboard } from "lucide-react";
 
 export default function Home() {
   return (
@@ -16,9 +16,15 @@ export default function Home() {
             </span>
             <span className="truncate text-xl font-semibold font-serif">CareCircle</span>
           </div>
-          <Link href="/style-guide">
+          <Link href="/dashboard">
             <Button variant="outline" size="sm">
-              View Design System
+              Open App
+              <LayoutDashboard className="ml-2 h-4 w-4" />
+            </Button>
+          </Link>
+          <Link href="/style-guide">
+            <Button variant="ghost" size="sm">
+              Design System
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </Link>
@@ -39,10 +45,12 @@ export default function Home() {
             Track medications, share updates, and coordinate care with ease.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Button size="lg">
-              Get Started
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
+            <Link href="/dashboard">
+              <Button size="lg">
+                Open Dashboard
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
             <Button variant="outline" size="lg">
               Learn More
             </Button>
