@@ -450,13 +450,12 @@ function SignInForm({
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <Label htmlFor="password">Password</Label>
-            <button
-              type="button"
-              onClick={handleForgotPassword}
+            <Link
+              href="/forgot-password"
               className="text-sm font-medium text-primary hover:text-primary/90 focus:outline-none focus-visible:underline"
             >
               Forgot password?
-            </button>
+            </Link>
           </div>
           <div className="relative">
             <Input
