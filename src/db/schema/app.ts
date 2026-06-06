@@ -31,6 +31,12 @@ export const roleEnum = pgEnum('role', [
   'clinician',
 ]);
 export const membershipStatusEnum = pgEnum('membership_status', ['active', 'invited', 'suspended']);
+export const invitationStatusEnum = pgEnum('invitation_status', [
+  'pending',
+  'accepted',
+  'expired',
+  'revoked',
+]);
 export const timelineEventTypeEnum = pgEnum('timeline_event_type', [
   'med',
   'vital',
@@ -49,6 +55,7 @@ export const auditActionEnum = pgEnum('audit_action', [
   'delete',
   'export',
   'login',
+  'logout',
   'invite',
 ]);
 
@@ -78,6 +85,9 @@ export const careRecipientProfile = pgTable('care_recipient_profile', {
     .references(() => careCircle.id, { onDelete: 'cascade' }),
   fullName: text('full_name').notNull(),
   dateOfBirth: date('date_of_birth'),
+  // Recipient photo. Stored as a data URL today (set during onboarding); the architecture's
+  // production path uploads to S3 and stores the object key/URL here instead — callers don't change.
+  avatarUrl: text('avatar_url'),
   bloodType: text('blood_type'),
   conditions: jsonb('conditions').$type<string[]>().default([]),
   allergies: jsonb('allergies').$type<string[]>().default([]),
@@ -154,4 +164,34 @@ export const auditLog = pgTable(
     occurredAt: timestamp('occurred_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (t) => [index('audit_circle_time_idx').on(t.circleId, t.occurredAt)],
+);
+
+// ---- Onboarding into a circle: a pending invite a coordinator issues to a new member ----
+export const invitation = pgTable(
+  'invitation',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    circleId: uuid('circle_id')
+      .notNull()
+      .references(() => careCircle.id, { onDelete: 'cascade' }),
+    email: text('email').notNull(),
+    role: roleEnum('role').notNull(),
+    // What the invitee will be called inside the circle (e.g. "Son", "Home aide"). Optional.
+    relationshipLabel: text('relationship_label'),
+    // High-entropy, URL-safe capability token embedded in the /invite/<token> link. Unique so
+    // each link resolves to exactly one invitation; unguessable so the link itself is the secret.
+    token: text('token').notNull().unique(),
+    invitedByMembershipId: uuid('invited_by_membership_id').references(() => membership.id, {
+      onDelete: 'set null',
+    }),
+    status: invitationStatusEnum('status').notNull().default('pending'),
+    personalNote: text('personal_note'),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    acceptedAt: timestamp('accepted_at', { withTimezone: true }),
+    ...audit,
+  },
+  (t) => [
+    index('invitation_circle_idx').on(t.circleId),
+    index('invitation_email_idx').on(t.email),
+  ],
 );

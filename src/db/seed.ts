@@ -7,7 +7,20 @@ import 'dotenv/config';
 import postgres from 'postgres';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { eq } from 'drizzle-orm';
+import { scrypt as scryptCb, randomBytes } from 'node:crypto';
 import * as schema from './schema';
+
+// Same hash format as src/lib/password.ts (inlined here so the seed stays a plain node script
+// and doesn't pull in the app's `server-only` guard). Gives the demo accounts a real login.
+const DEMO_PASSWORD = 'CareCircle123';
+function hashPassword(plain: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const salt = randomBytes(16);
+    scryptCb(plain, salt, 64, { N: 16384 }, (err, dk) =>
+      err ? reject(err) : resolve(`scrypt$16384$${salt.toString('hex')}$${dk.toString('hex')}`),
+    );
+  });
+}
 
 const url = process.env.MIGRATION_DATABASE_URL ?? process.env.DATABASE_URL;
 if (!url) {
@@ -20,18 +33,27 @@ const db = drizzle(client, { schema });
 async function main() {
   console.log('Seeding CareCircle demo data…');
 
-  // Demo identities (in production these are created by Auth.js on sign-in).
+  // Demo identities. Each gets the shared DEMO_PASSWORD so judges can sign in via
+  // email/password (in production users are created by Auth.js on first sign-in).
+  const passwordHash = await hashPassword(DEMO_PASSWORD);
   const [maria] = await db
     .insert(schema.users)
-    .values({ name: 'Maria Santos', email: 'maria@carecircle.demo' })
+    .values({ name: 'Maria Santos', email: 'maria@carecircle.demo', passwordHash })
     .returning();
   const [paolo] = await db
     .insert(schema.users)
-    .values({ name: 'Paolo Santos', email: 'paolo@carecircle.demo' })
+    .values({ name: 'Paolo Santos', email: 'paolo@carecircle.demo', passwordHash })
     .returning();
   const [grace] = await db
     .insert(schema.users)
-    .values({ name: 'Grace Reyes', email: 'grace@carecircle.demo' })
+    .values({ name: 'Grace Reyes', email: 'grace@carecircle.demo', passwordHash })
+    .returning();
+
+  // Platform super-admin (CareCircle staff). Belongs to NO circle — they operate the platform
+  // console at /admin. Access is granted by listing this email in PLATFORM_ADMIN_EMAILS.
+  await db
+    .insert(schema.users)
+    .values({ name: 'CareCircle Admin', email: 'admin@carecircle.demo', passwordHash })
     .returning();
 
   // The care circle + the person being cared for.
@@ -122,6 +144,11 @@ async function main() {
   console.log("  Circle id:        ", circle.id, "(Antonio's Care)");
   console.log('  Owner user (Maria):', maria.id);
   console.log('  Tip: set app.current_user_id to that user id to test RLS.');
+  console.log('\nDemo sign-in credentials (email / password):');
+  console.log(`  Coordinator    maria@carecircle.demo  ${DEMO_PASSWORD}`);
+  console.log(`  Family         paolo@carecircle.demo  ${DEMO_PASSWORD}`);
+  console.log(`  Caregiver      grace@carecircle.demo  ${DEMO_PASSWORD}`);
+  console.log(`  Platform admin admin@carecircle.demo  ${DEMO_PASSWORD}  (→ /admin)`);
 
   await client.end();
 }
