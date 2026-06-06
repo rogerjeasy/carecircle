@@ -24,6 +24,7 @@ import {
   Check,
   CalendarClock,
 } from "lucide-react";
+import { signOutAction } from "@/lib/auth/actions";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -245,7 +246,12 @@ export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
               </DropdownMenuPortal>
             </DropdownMenuSub>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive focus:text-destructive">
+              <DropdownMenuItem
+                className="text-destructive focus:text-destructive"
+                onSelect={() => {
+                  void signOutAction();
+                }}
+              >
                 <LogOut className="mr-2 h-4 w-4" />
                 Sign out
               </DropdownMenuItem>

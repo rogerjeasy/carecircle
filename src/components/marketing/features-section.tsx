@@ -147,9 +147,9 @@ export function FeaturesSection() {
           </p>
         </div>
 
-        <div className="space-y-24">
-          {features.map((feature, index) => (
-            <FeatureRow key={feature.title} {...feature} reversed={index % 2 === 1} />
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {features.map((feature) => (
+            <FeatureRow key={feature.title} {...feature} />
           ))}
         </div>
       </div>
@@ -161,55 +161,28 @@ function FeatureRow({
   title,
   description,
   icon: Icon,
-  image,
-  reversed,
 }: {
   title: string;
   description: string;
   icon: React.ElementType;
   image: string;
-  reversed: boolean;
 }) {
   const { ref, isVisible } = useScrollAnimation();
 
   return (
-    <div
+    <Card
       ref={ref}
       className={cn(
-        "grid gap-8 lg:gap-16 lg:grid-cols-2 items-center",
-        reversed && "lg:grid-flow-dense"
+        "p-8 sm:p-10 flex flex-col",
+        "motion-safe:transition-all motion-safe:duration-700",
+        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
       )}
     >
-      {/* Text */}
-      <div
-        className={cn(
-          reversed && "lg:col-start-2",
-          "motion-safe:transition-all motion-safe:duration-700",
-          isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-        )}
-      >
-        <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
-          <Icon className="h-7 w-7 text-primary" />
-        </div>
-        <h3 className="font-serif text-2xl sm:text-3xl font-bold">{title}</h3>
-        <p className="mt-4 text-lg text-muted-foreground text-pretty">{description}</p>
+      <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
+        <Icon className="h-7 w-7 text-primary" />
       </div>
-
-      {/* Visual */}
-      <div
-        className={cn(
-          reversed && "lg:col-start-1 lg:row-start-1",
-          "motion-safe:transition-all motion-safe:duration-700 motion-safe:delay-200",
-          isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-        )}
-      >
-        <Card className="aspect-[4/3] flex items-center justify-center bg-gradient-to-br from-primary/5 to-accent/5">
-          <div className="text-center p-8">
-            <Icon className="h-16 w-16 text-primary/30 mx-auto mb-4" />
-            <p className="text-muted-foreground">{title}</p>
-          </div>
-        </Card>
-      </div>
-    </div>
+      <h3 className="font-serif text-2xl sm:text-3xl font-bold">{title}</h3>
+      <p className="mt-4 text-lg text-muted-foreground text-pretty">{description}</p>
+    </Card>
   );
 }

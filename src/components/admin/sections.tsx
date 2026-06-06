@@ -5,9 +5,9 @@
  *
  * Every `/admin/*` route composes these so the design system (evergreen/apricot tokens, rounded-2xl
  * cards, soft shadows, motion-safe entrances honoring prefers-reduced-motion) stays consistent and
- * there is a single source of truth. All data is the representative DEMO data in
- * `@/lib/admin/dashboard-data` — labelled in the UI; the live swap to the audited cross-tenant path
- * is mechanical (see that file's header).
+ * there is a single source of truth. These are presentational only — pages pass REAL data fetched
+ * through the audited cross-tenant path (src/db/admin-queries.ts). When the server returns nothing,
+ * components render a proper `EmptyState` — they never fabricate placeholder rows.
  */
 
 import * as React from "react";
@@ -27,6 +27,8 @@ import {
   Mail,
   Bell,
   Building2,
+  MapPin,
+  Clock,
   FileText,
   ArrowRight,
   CheckCircle2,
@@ -35,6 +37,7 @@ import {
   UserCog,
   Gauge,
   BadgeCheck,
+  Inbox,
 } from "lucide-react";
 import {
   Area,
@@ -51,18 +54,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  activitySeries,
-  authByProvider,
-  auditEvents,
-  services,
-  tenants,
-  safetyAlerts,
   type Kpi,
   type Trend,
   type AuditAction,
   type AuditEvent,
+  type Service,
   type ServiceStatus,
+  type Alert,
+  type Tenant,
 } from "@/lib/admin/dashboard-data";
+
+/** Activity-chart datapoint (mirrors the server's ActivityPoint; kept local to stay client-safe). */
+export type ActivityPoint = { day: string; events: number; logins: number };
 
 // ── motion ───────────────────────────────────────────────────────────────────
 export function useReducedMotion() {
@@ -207,6 +210,36 @@ function TrendPill({ trend }: { trend: Trend }) {
   );
 }
 
+/**
+ * Friendly empty state shown whenever the server returns no data — never demo rows.
+ * Centered icon medallion + title + optional description, in the muted palette.
+ */
+export function EmptyState({
+  icon: Icon = Inbox,
+  title,
+  description,
+  className,
+}: {
+  icon?: React.ElementType;
+  title: string;
+  description?: string;
+  className?: string;
+}) {
+  return (
+    <div className={cn("flex flex-col items-center justify-center gap-3 px-6 py-14 text-center", className)}>
+      <span className="grid h-14 w-14 place-items-center rounded-2xl bg-muted text-muted-foreground ring-1 ring-inset ring-border">
+        <Icon className="h-7 w-7" aria-hidden />
+      </span>
+      <div className="space-y-1">
+        <p className="text-sm font-semibold text-foreground">{title}</p>
+        {description ? (
+          <p className="mx-auto max-w-sm text-sm text-muted-foreground">{description}</p>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 const KPI_ICONS: Record<string, React.ElementType> = {
   circles: Building2,
   users: Users,
@@ -216,6 +249,8 @@ const KPI_ICONS: Record<string, React.ElementType> = {
   latency: Activity,
   uptime: Server,
   digests: Mail,
+  members: Users,
+  invites: Mail,
 };
 
 export function StatCard({ kpi, delay = 0 }: { kpi: Kpi; delay?: number }) {
@@ -225,7 +260,9 @@ export function StatCard({ kpi, delay = 0 }: { kpi: Kpi; delay?: number }) {
       className="min-w-0 transition-shadow duration-200 hover:shadow-md motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2"
       style={{ animationDelay: `${delay}ms`, animationFillMode: "both" }}
     >
-      <CardContent className="p-5">
+      {/* sm:p-5 is required: CardContent's base class sets sm:pt-0 (assumes a CardHeader);
+          without an sm-level override the top padding collapses to 0 on ≥sm screens. */}
+      <CardContent className="p-5 sm:p-5">
         <div className="flex items-center justify-between gap-2">
           <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
             <Icon className="h-4 w-4" aria-hidden />
@@ -258,21 +295,26 @@ export function MiniStat({
 }) {
   const Icon = ICONS[icon];
   const toneMap = {
-    primary: "bg-primary/10 text-primary",
-    success: "bg-success/15 text-success",
-    warning: "bg-warning/15 text-warning",
-    destructive: "bg-destructive/15 text-destructive",
+    primary: "bg-primary/10 text-primary ring-primary/20",
+    success: "bg-success/15 text-success ring-success/25",
+    warning: "bg-warning/15 text-warning ring-warning/25",
+    destructive: "bg-destructive/15 text-destructive ring-destructive/25",
   } as const;
   return (
-    <Card className="min-w-0">
-      <CardContent className="flex items-center gap-3 p-4">
-        <span className={cn("grid h-10 w-10 shrink-0 place-items-center rounded-xl", toneMap[tone])}>
+    <Card className="min-w-0 transition-shadow duration-200 hover:shadow-md">
+      <CardContent className="flex items-center gap-4 p-4 sm:p-5">
+        <span
+          className={cn(
+            "grid h-11 w-11 shrink-0 place-items-center rounded-xl ring-1 ring-inset",
+            toneMap[tone]
+          )}
+        >
           <Icon className="h-5 w-5" aria-hidden />
         </span>
         <div className="min-w-0">
-          <p className="truncate text-xl font-semibold tabular-nums">{value}</p>
-          <p className="truncate text-xs font-medium text-foreground">{label}</p>
-          {sub ? <p className="truncate text-xs text-muted-foreground">{sub}</p> : null}
+          <p className="truncate text-2xl font-semibold leading-none tabular-nums">{value}</p>
+          <p className="mt-1.5 truncate text-sm font-medium text-foreground">{label}</p>
+          {sub ? <p className="mt-0.5 truncate text-xs text-muted-foreground">{sub}</p> : null}
         </div>
       </CardContent>
     </Card>
@@ -335,7 +377,8 @@ function ChartFrame({ children }: { children: React.ReactElement<{ width?: numbe
   );
 }
 
-export function ActivityChart() {
+export function ActivityChart({ data }: { data: ActivityPoint[] }) {
+  const hasData = data.some((p) => p.events > 0 || p.logins > 0);
   return (
     <Card className="min-w-0">
       <CardHeader>
@@ -343,8 +386,15 @@ export function ActivityChart() {
         <p className="text-sm text-muted-foreground">Events recorded per day · last 14 days</p>
       </CardHeader>
       <CardContent>
+        {!hasData ? (
+          <EmptyState
+            icon={Activity}
+            title="No activity yet"
+            description="Audit events across all circles will chart here as the platform is used."
+          />
+        ) : (
         <ChartFrame>
-          <AreaChart data={activitySeries} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
+          <AreaChart data={data} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
             <defs>
               <linearGradient id="evGrad" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="var(--color-primary)" stopOpacity={0.35} />
@@ -358,35 +408,39 @@ export function ActivityChart() {
             <Area type="monotone" dataKey="events" name="events" stroke="var(--color-primary)" strokeWidth={2} fill="url(#evGrad)" />
           </AreaChart>
         </ChartFrame>
+        )}
       </CardContent>
     </Card>
   );
 }
 
-export function AuthChart() {
+/** Real sign-ins per day, derived from the same audit activity series (login events). */
+export function SignInsChart({ data }: { data: ActivityPoint[] }) {
+  const hasData = data.some((p) => p.logins > 0);
   return (
     <Card className="min-w-0">
       <CardHeader>
-        <CardTitle className="text-base">Sign-ins by provider</CardTitle>
-        <p className="text-sm text-muted-foreground">Authentication events · last 7 days</p>
+        <CardTitle className="text-base">Sign-ins</CardTitle>
+        <p className="text-sm text-muted-foreground">Authenticated logins · last 14 days</p>
       </CardHeader>
       <CardContent>
-        <ChartFrame>
-          <BarChart data={authByProvider} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
-            <XAxis dataKey="day" tick={{ fontSize: 11, fill: "var(--color-muted-foreground)" }} tickLine={false} axisLine={false} />
-            <YAxis tick={{ fontSize: 11, fill: "var(--color-muted-foreground)" }} tickLine={false} axisLine={false} width={44} tickFormatter={(v) => `${Math.round(v / 1000)}k`} />
-            <Tooltip content={<ChartTooltip />} cursor={{ fill: "var(--color-muted)", opacity: 0.4 }} />
-            <Bar dataKey="password" name="password" stackId="a" fill="var(--color-primary)" radius={[0, 0, 0, 0]} />
-            <Bar dataKey="google" name="google" stackId="a" fill="var(--color-info)" />
-            <Bar dataKey="apple" name="apple" stackId="a" fill="var(--color-accent)" radius={[4, 4, 0, 0]} />
-          </BarChart>
-        </ChartFrame>
-        <div className="mt-3 flex flex-wrap gap-4 text-xs text-muted-foreground">
-          <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-primary" />Email &amp; password</span>
-          <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-info" />Google</span>
-          <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-accent" />Apple</span>
-        </div>
+        {!hasData ? (
+          <EmptyState
+            icon={LogIn}
+            title="No sign-ins yet"
+            description="Successful logins across all circles will chart here."
+          />
+        ) : (
+          <ChartFrame>
+            <BarChart data={data} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
+              <XAxis dataKey="day" tick={{ fontSize: 11, fill: "var(--color-muted-foreground)" }} tickLine={false} axisLine={false} interval="preserveStartEnd" minTickGap={24} />
+              <YAxis tick={{ fontSize: 11, fill: "var(--color-muted-foreground)" }} tickLine={false} axisLine={false} width={44} allowDecimals={false} />
+              <Tooltip content={<ChartTooltip />} cursor={{ fill: "var(--color-muted)", opacity: 0.4 }} />
+              <Bar dataKey="logins" name="sign-ins" fill="var(--color-primary)" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ChartFrame>
+        )}
       </CardContent>
     </Card>
   );
@@ -417,11 +471,22 @@ function ActionBadge({ action }: { action: AuditAction }) {
   return <Badge variant={meta.variant}>{meta.label}</Badge>;
 }
 
-export function AuditLog({ limit, footerHref }: { limit?: number; footerHref?: string }) {
+export function AuditLog({
+  limit,
+  footerHref,
+  events,
+}: {
+  limit?: number;
+  footerHref?: string;
+  events?: AuditEvent[];
+}) {
   const [active, setActive] = React.useState("all");
   const filter = AUDIT_FILTERS.find((f) => f.key === active) ?? AUDIT_FILTERS[0];
-  const matched = auditEvents.filter(filter.match);
+  // Real audit rows only — no demo fallback. Empty ⇒ a proper empty state below.
+  const source = events ?? [];
+  const matched = source.filter(filter.match);
   const rows = limit ? matched.slice(0, limit) : matched;
+  const isEmpty = source.length === 0;
 
   return (
     <Card>
@@ -463,6 +528,14 @@ export function AuditLog({ limit, footerHref }: { limit?: number; footerHref?: s
         ) : null}
       </CardHeader>
       <CardContent className="p-0">
+        {isEmpty ? (
+          <EmptyState
+            icon={ShieldCheck}
+            title="No audit events yet"
+            description="Every sensitive action — sign-ins, medications, invites, role changes, document access — appears here the moment it happens across any circle."
+          />
+        ) : (
+        <>
         {/* Desktop / tablet: real table */}
         <div className="hidden md:block">
           <table className="w-full text-sm">
@@ -510,6 +583,8 @@ export function AuditLog({ limit, footerHref }: { limit?: number; footerHref?: s
             </li>
           ))}
         </ul>
+        </>
+        )}
 
         {footerHref ? (
           <div className="border-t border-border p-3 text-center">
@@ -543,8 +618,8 @@ const STATUS_META: Record<ServiceStatus, { label: string; variant: React.Compone
 };
 
 /** A single banner summarizing whether everything is healthy or some services are degraded/down. */
-export function SystemStatusBanner() {
-  const degraded = services.filter((s) => s.status !== "operational");
+export function SystemStatusBanner({ services: list }: { services: Service[] }) {
+  const degraded = list.filter((s) => s.status !== "operational");
   const allOk = degraded.length === 0;
   return (
     <Card
@@ -553,7 +628,7 @@ export function SystemStatusBanner() {
         allOk ? "border-success/40 bg-success/5" : "border-warning/40 bg-warning/5",
       )}
     >
-      <CardContent className="flex flex-wrap items-center justify-between gap-3 p-4">
+      <CardContent className="flex flex-wrap items-center justify-between gap-3 p-4 sm:p-4">
         <div className="flex min-w-0 items-center gap-3">
           <span
             className={cn(
@@ -583,7 +658,7 @@ export function SystemStatusBanner() {
   );
 }
 
-export function SystemHealth() {
+export function SystemHealth({ services: list }: { services: Service[] }) {
   return (
     <Card>
       <CardHeader>
@@ -594,7 +669,7 @@ export function SystemHealth() {
         <p className="text-sm text-muted-foreground">AWS + Vercel services powering the platform.</p>
       </CardHeader>
       <CardContent className="space-y-2">
-        {services.map((s) => {
+        {list.map((s) => {
           const Icon = SERVICE_ICONS[s.name] ?? Server;
           const meta = STATUS_META[s.status];
           return (
@@ -621,7 +696,7 @@ export function SystemHealth() {
   );
 }
 
-export function SafetyAlerts() {
+export function SafetyAlerts({ alerts }: { alerts: Alert[] }) {
   return (
     <Card>
       <CardHeader>
@@ -632,7 +707,14 @@ export function SafetyAlerts() {
         <p className="text-sm text-muted-foreground">Decline &amp; risk signals surfaced across circles.</p>
       </CardHeader>
       <CardContent className="space-y-2">
-        {safetyAlerts.map((a) => (
+        {alerts.length === 0 ? (
+          <EmptyState
+            icon={CheckCircle2}
+            title="All clear"
+            description="No urgent or incident signals across any circle right now."
+          />
+        ) : null}
+        {alerts.map((a) => (
           <div
             key={a.id}
             className={cn(
@@ -666,7 +748,7 @@ export function SafetyAlerts() {
 
 // ── tenants ─────────────────────────────────────────────────────────────────────
 /** Full tenants table — lives inside a contained x-scroll on small screens. */
-export function TenantsTable() {
+export function TenantsTable({ tenants: list }: { tenants: Tenant[] }) {
   return (
     <Card>
       <CardHeader>
@@ -685,6 +767,13 @@ export function TenantsTable() {
         </div>
       </CardHeader>
       <CardContent className="p-0">
+        {list.length === 0 ? (
+          <EmptyState
+            icon={Building2}
+            title="No care circles yet"
+            description="Care circles created by families will appear here, each isolated by row-level security."
+          />
+        ) : (
         <div className="overflow-x-auto">
           <table className="w-full min-w-[640px] text-sm">
             <thead>
@@ -698,7 +787,7 @@ export function TenantsTable() {
               </tr>
             </thead>
             <tbody>
-              {tenants.map((t) => (
+              {list.map((t) => (
                 <tr key={t.id} className="border-b border-border/60 last:border-0 hover:bg-muted/30">
                   <td className="px-5 py-3">
                     <span className="font-medium">{t.name}</span>
@@ -720,55 +809,101 @@ export function TenantsTable() {
             </tbody>
           </table>
         </div>
+        )}
       </CardContent>
     </Card>
   );
 }
 
 /** Tenant card grid — a real tablet layout (3 → 2 → 1) instead of a stretched table. */
-export function TenantCards() {
+export function TenantCards({ tenants: list }: { tenants: Tenant[] }) {
+  if (list.length === 0) {
+    return (
+      <Card>
+        <CardContent className="p-0">
+          <EmptyState
+            icon={Building2}
+            title="No care circles yet"
+            description="Care circles created by families will appear here, each isolated by row-level security."
+          />
+        </CardContent>
+      </Card>
+    );
+  }
   return (
     <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-      {tenants.map((t) => (
-        <Card key={t.id} className="min-w-0 transition-shadow duration-200 hover:shadow-md">
-          <CardContent className="p-5">
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex min-w-0 items-center gap-3">
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
-                  <Building2 className="h-5 w-5" aria-hidden />
-                </span>
-                <div className="min-w-0">
-                  <p className="truncate font-medium">{t.name}</p>
-                  <p className="truncate text-xs text-muted-foreground">{t.recipient}</p>
+      {list.map((t) => {
+        const attention = t.status === "attention";
+        return (
+          <Card
+            key={t.id}
+            className={cn(
+              "min-w-0 overflow-hidden transition-shadow duration-200 hover:shadow-md",
+              attention && "ring-1 ring-warning/30"
+            )}
+          >
+            {/* slim status accent along the top edge */}
+            <div className={cn("h-1 w-full", attention ? "bg-warning/70" : "bg-success/60")} aria-hidden />
+            <CardContent className="p-5 sm:p-5">
+              {/* Header: avatar · name/recipient · status */}
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex min-w-0 items-center gap-3">
+                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary ring-1 ring-inset ring-primary/15">
+                    <Building2 className="h-5 w-5" aria-hidden />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="truncate font-semibold leading-tight">{t.name}</p>
+                    <p className="truncate text-xs text-muted-foreground">{t.recipient}</p>
+                  </div>
                 </div>
+                <Badge variant={attention ? "warning" : "success"} className="shrink-0 gap-1.5 capitalize">
+                  <span
+                    className={cn("h-1.5 w-1.5 rounded-full", attention ? "bg-warning" : "bg-success")}
+                    aria-hidden
+                  />
+                  {t.status}
+                </Badge>
               </div>
-              <Badge variant={t.status === "healthy" ? "success" : "warning"} className="shrink-0 capitalize">
-                {t.status}
-              </Badge>
-            </div>
-            <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
-              <div className="min-w-0">
-                <dt className="text-xs text-muted-foreground">Region</dt>
-                <dd className="truncate">{t.region}</dd>
-              </div>
-              <div className="min-w-0">
-                <dt className="text-xs text-muted-foreground">Members</dt>
-                <dd className="tabular-nums">{t.members}</dd>
-              </div>
-              <div className="min-w-0">
-                <dt className="text-xs text-muted-foreground">Plan</dt>
-                <dd>
-                  <Badge variant={t.plan === "Plus" ? "default" : "outline"}>{t.plan}</Badge>
-                </dd>
-              </div>
-              <div className="min-w-0">
-                <dt className="text-xs text-muted-foreground">Last active</dt>
-                <dd className="truncate">{t.lastActive}</dd>
-              </div>
-            </dl>
-          </CardContent>
-        </Card>
-      ))}
+
+              <div className="my-4 h-px bg-border" />
+
+              {/* Details: icon-labelled, generous rhythm */}
+              <dl className="grid grid-cols-2 gap-x-4 gap-y-4 text-sm">
+                <div className="min-w-0">
+                  <dt className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <MapPin className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                    Region
+                  </dt>
+                  <dd className="mt-1 truncate font-medium">{t.region}</dd>
+                </div>
+                <div className="min-w-0">
+                  <dt className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <Users className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                    Members
+                  </dt>
+                  <dd className="mt-1 font-medium tabular-nums">{t.members}</dd>
+                </div>
+                <div className="min-w-0">
+                  <dt className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <BadgeCheck className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                    Plan
+                  </dt>
+                  <dd className="mt-1.5">
+                    <Badge variant={t.plan === "Plus" ? "default" : "outline"}>{t.plan}</Badge>
+                  </dd>
+                </div>
+                <div className="min-w-0">
+                  <dt className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <Clock className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                    Last active
+                  </dt>
+                  <dd className="mt-1 truncate font-medium">{t.lastActive}</dd>
+                </div>
+              </dl>
+            </CardContent>
+          </Card>
+        );
+      })}
     </section>
   );
 }
