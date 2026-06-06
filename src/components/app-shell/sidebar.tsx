@@ -28,7 +28,6 @@ import {
   CalendarClock,
 } from "lucide-react";
 import { useAppShell, roleLabels, UserRole } from "./app-shell-context";
-import { signOutAction } from "@/lib/auth/actions";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -67,19 +66,8 @@ const navItems = [
   { href: "/ask", label: "Ask CareCircle", icon: Sparkles },
 ];
 
-// Sample circles
-const circles = [
-  { id: "1", name: "Antonio's Care", initials: "AC", color: "bg-primary" },
-  { id: "2", name: "Mom – Rosa", initials: "MR", color: "bg-accent" },
-];
-
-// Current user
-const currentUser = {
-  name: "Maria Santos",
-  initials: "MS",
-  role: "Coordinator",
-  avatar: null,
-};
+// Placeholder shown in the circle switcher until the real circles load.
+const PLACEHOLDER_CIRCLE = { id: "", name: "Care Circle", initials: "··", color: "bg-muted" };
 
 interface SidebarProps {
   collapsed: boolean;
@@ -88,8 +76,16 @@ interface SidebarProps {
 
 export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const pathname = usePathname();
-  const [activeCircle, setActiveCircle] = React.useState(circles[0]);
-  const { role, setRole, canAccessRoute } = useAppShell();
+  const { role, setRole, canAccessRoute, user, signOut, circles, activeCircleId, setActiveCircleId } = useAppShell();
+  const activeCircle = circles.find((c) => c.id === activeCircleId) ?? circles[0] ?? PLACEHOLDER_CIRCLE;
+
+  // Real signed-in user (with graceful fallbacks while the profile loads).
+  const currentUser = {
+    name: user?.name || "Your account",
+    initials: user?.initials || "··",
+    role: user?.roleLabel || "",
+    avatar: user?.image ?? null,
+  };
 
   // Filter nav items based on current role
   const visibleNavItems = navItems.filter(item => canAccessRoute(item.href));
@@ -138,7 +134,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
             {circles.map((circle) => (
               <DropdownMenuItem
                 key={circle.id}
-                onClick={() => setActiveCircle(circle)}
+                onClick={() => setActiveCircleId(circle.id)}
                 className="gap-3"
               >
                 <Avatar className="h-7 w-7">
@@ -323,7 +319,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
             <DropdownMenuItem
               className="text-destructive focus:text-destructive"
               onSelect={() => {
-                void signOutAction();
+                void signOut();
               }}
             >
               <LogOut className="mr-2 h-4 w-4" />

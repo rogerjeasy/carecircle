@@ -24,7 +24,6 @@ import {
   Check,
   CalendarClock,
 } from "lucide-react";
-import { signOutAction } from "@/lib/auth/actions";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -65,18 +64,8 @@ const navItems = [
   { href: "/ask", label: "Ask CareCircle", icon: Sparkles },
 ];
 
-// Sample circles
-const circles = [
-  { id: "1", name: "Antonio's Care", initials: "AC", color: "bg-primary" },
-  { id: "2", name: "Mom – Rosa", initials: "MR", color: "bg-accent" },
-];
-
-// Current user
-const currentUser = {
-  name: "Maria Santos",
-  initials: "MS",
-  role: "Coordinator",
-};
+// Placeholder shown in the circle switcher until the real circles load.
+const PLACEHOLDER_CIRCLE = { id: "", name: "Care Circle", initials: "··", color: "bg-muted" };
 
 interface MobileNavSheetProps {
   open: boolean;
@@ -85,8 +74,15 @@ interface MobileNavSheetProps {
 
 export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
   const pathname = usePathname();
-  const [activeCircle, setActiveCircle] = React.useState(circles[0]);
-  const { role, setRole, canAccessRoute } = useAppShell();
+  const { role, setRole, canAccessRoute, user, signOut, circles, activeCircleId, setActiveCircleId } = useAppShell();
+  const activeCircle = circles.find((c) => c.id === activeCircleId) ?? circles[0] ?? PLACEHOLDER_CIRCLE;
+
+  // Real signed-in user (with graceful fallbacks while the profile loads).
+  const currentUser = {
+    name: user?.name || "Your account",
+    initials: user?.initials || "··",
+    role: user?.roleLabel || "",
+  };
 
   // Filter nav items based on current role
   const visibleNavItems = navItems.filter(item => canAccessRoute(item.href));
@@ -125,7 +121,7 @@ export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
               {circles.map((circle) => (
                 <DropdownMenuItem
                   key={circle.id}
-                  onClick={() => setActiveCircle(circle)}
+                  onClick={() => setActiveCircleId(circle.id)}
                   className="gap-3"
                 >
                   <Avatar className="h-7 w-7">
@@ -249,7 +245,7 @@ export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
               <DropdownMenuItem
                 className="text-destructive focus:text-destructive"
                 onSelect={() => {
-                  void signOutAction();
+                  void signOut();
                 }}
               >
                 <LogOut className="mr-2 h-4 w-4" />
