@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { requestPasswordReset } from "@/lib/auth/actions";
 
 // Validation schema
 const forgotPasswordSchema = z.object({
@@ -140,17 +141,26 @@ export default function ForgotPasswordPage() {
 
     setIsSubmitting(true);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
+    const fd = new FormData();
+    fd.set("email", email);
+    const res = await requestPasswordReset(fd);
     setIsSubmitting(false);
+
+    if (!res.ok) {
+      setError(res.error);
+      return;
+    }
+    // Always reach the confirmation state — the response is identical whether or not an
+    // account exists, so we never reveal which emails are registered.
     setIsEmailSent(true);
   };
 
   // Handle resend
   const handleResend = async () => {
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const fd = new FormData();
+    fd.set("email", email);
+    await requestPasswordReset(fd);
     setIsSubmitting(false);
   };
 

@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -37,6 +36,46 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { completeOnboarding } from "@/lib/onboarding/actions";
+
+// ============================================================================
+// Helpers
+// ============================================================================
+
+/**
+ * Downscale a chosen photo to a small square JPEG data URL (≈256px) before it ever leaves the
+ * browser. Keeps the payload tiny (tens of KB) so it fits comfortably in the server action body
+ * and the recipient profile row. Falls back to the raw data URL if anything goes wrong.
+ */
+function downscaleImage(file: File, max = 256): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(reader.error ?? new Error("read failed"));
+    reader.onload = () => {
+      const src = reader.result as string;
+      const img = new window.Image();
+      img.onerror = () => resolve(src); // can't decode → just use what we read
+      img.onload = () => {
+        const scale = Math.min(1, max / Math.max(img.width, img.height));
+        const w = Math.max(1, Math.round(img.width * scale));
+        const h = Math.max(1, Math.round(img.height * scale));
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return resolve(src);
+        ctx.drawImage(img, 0, 0, w, h);
+        try {
+          resolve(canvas.toDataURL("image/jpeg", 0.85));
+        } catch {
+          resolve(src);
+        }
+      };
+      img.src = src;
+    };
+    reader.readAsDataURL(file);
+  });
+}
 
 // ============================================================================
 // Types
@@ -154,10 +193,15 @@ const timezones = [
   { value: "Australia/Sydney", label: "Sydney (AEST)" },
 ];
 
+// Values match the schema's `role` enum (minus `owner`, which is the inviter).
+// The `description` is shown under each option to clarify what the role can do.
 const inviteRoles = [
-  { value: "family", label: "Family member" },
-  { value: "caregiver", label: "Caregiver" },
-  { value: "readonly", label: "Read-only" },
+  { value: "family", label: "Family member", description: "View updates and help coordinate care" },
+  { value: "family_admin", label: "Family admin", description: "Manage people, roles, and circle settings" },
+  { value: "caregiver", label: "Caregiver", description: "Log meds, vitals, tasks, and daily care" },
+  { value: "clinician", label: "Clinician", description: "Doctor, nurse, or therapist — clinical access" },
+  { value: "care_recipient", label: "Care recipient", description: "The person receiving care" },
+  { value: "read_only", label: "Read-only", description: "Can view, but not make changes" },
 ];
 
 // ============================================================================
@@ -194,13 +238,34 @@ interface ChipInputProps {
 function ChipInput({ label, value, onChange, suggestions, placeholder }: ChipInputProps) {
   const [inputValue, setInputValue] = React.useState("");
   const [showSuggestions, setShowSuggestions] = React.useState(false);
+  const [highlightedIndex, setHighlightedIndex] = React.useState(-1);
   const inputRef = React.useRef<HTMLInputElement>(null);
 
-  const filteredSuggestions = suggestions.filter(
-    (s) =>
-      s.toLowerCase().includes(inputValue.toLowerCase()) &&
-      !value.includes(s)
-  );
+  const trimmed = inputValue.trim();
+
+  const visibleSuggestions = suggestions
+    .filter(
+      (s) =>
+        s.toLowerCase().includes(inputValue.toLowerCase()) &&
+        !value.includes(s)
+    )
+    .slice(0, 8);
+
+  // Offer a custom entry when the typed text matches neither an already-added
+  // chip nor an existing suggestion — so users can add their own value.
+  const canAddCustom =
+    trimmed.length > 0 &&
+    !value.some((v) => v.toLowerCase() === trimmed.toLowerCase()) &&
+    !visibleSuggestions.some((s) => s.toLowerCase() === trimmed.toLowerCase());
+
+  // Flat list of everything the user can select/add, in render order. The
+  // custom "Add …" row (if present) is always last. Used for keyboard nav.
+  const options = canAddCustom ? [...visibleSuggestions, trimmed] : visibleSuggestions;
+
+  // Keep the keyboard highlight in range as the options list changes.
+  React.useEffect(() => {
+    setHighlightedIndex((i) => (i >= options.length ? options.length - 1 : i));
+  }, [options.length]);
 
   const addChip = (chip: string) => {
     if (chip.trim() && !value.includes(chip.trim())) {
@@ -208,6 +273,7 @@ function ChipInput({ label, value, onChange, suggestions, placeholder }: ChipInp
     }
     setInputValue("");
     setShowSuggestions(false);
+    setHighlightedIndex(-1);
     inputRef.current?.focus();
   };
 
@@ -216,9 +282,29 @@ function ChipInput({ label, value, onChange, suggestions, placeholder }: ChipInp
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && inputValue.trim()) {
+    if (e.key === "ArrowDown") {
       e.preventDefault();
-      addChip(inputValue);
+      setShowSuggestions(true);
+      setHighlightedIndex((i) =>
+        options.length === 0 ? -1 : (i + 1) % options.length
+      );
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setShowSuggestions(true);
+      setHighlightedIndex((i) =>
+        options.length === 0 ? -1 : (i - 1 + options.length) % options.length
+      );
+    } else if (e.key === "Enter") {
+      if (showSuggestions && highlightedIndex >= 0 && options[highlightedIndex]) {
+        e.preventDefault();
+        addChip(options[highlightedIndex]);
+      } else if (trimmed) {
+        e.preventDefault();
+        addChip(trimmed);
+      }
+    } else if (e.key === "Escape") {
+      setShowSuggestions(false);
+      setHighlightedIndex(-1);
     } else if (e.key === "Backspace" && !inputValue && value.length > 0) {
       removeChip(value[value.length - 1]);
     }
@@ -262,9 +348,10 @@ function ChipInput({ label, value, onChange, suggestions, placeholder }: ChipInp
             onChange={(e) => {
               setInputValue(e.target.value);
               setShowSuggestions(true);
+              setHighlightedIndex(-1);
             }}
             onFocus={() => setShowSuggestions(true)}
-            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+            onBlur={() => setShowSuggestions(false)}
             onKeyDown={handleKeyDown}
             placeholder={value.length === 0 ? placeholder : ""}
             className="flex-1 min-w-[120px] bg-transparent text-sm outline-none placeholder:text-muted-foreground"
@@ -272,18 +359,48 @@ function ChipInput({ label, value, onChange, suggestions, placeholder }: ChipInp
         </div>
 
         {/* Suggestions dropdown */}
-        {showSuggestions && filteredSuggestions.length > 0 && (
+        {showSuggestions && options.length > 0 && (
           <div className="absolute z-10 mt-1 w-full rounded-xl border bg-popover p-1 shadow-md max-h-48 overflow-auto">
-            {filteredSuggestions.slice(0, 8).map((suggestion) => (
+            {visibleSuggestions.map((suggestion, i) => (
               <button
                 key={suggestion}
                 type="button"
-                onClick={() => addChip(suggestion)}
-                className="w-full text-left px-3 py-1.5 text-sm rounded-lg hover:bg-accent/10 focus:bg-accent/10 outline-none"
+                // Select on mousedown + preventDefault so the input never blurs
+                // before the click registers — keeps selection reliable.
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  addChip(suggestion);
+                }}
+                onMouseEnter={() => setHighlightedIndex(i)}
+                className={cn(
+                  "w-full text-left px-3 py-1.5 text-sm rounded-lg outline-none",
+                  i === highlightedIndex ? "bg-accent/10" : "hover:bg-accent/10"
+                )}
               >
                 {suggestion}
               </button>
             ))}
+            {canAddCustom && (
+              <button
+                type="button"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  addChip(trimmed);
+                }}
+                onMouseEnter={() => setHighlightedIndex(visibleSuggestions.length)}
+                className={cn(
+                  "flex w-full items-center gap-1.5 text-left px-3 py-1.5 text-sm rounded-lg outline-none",
+                  highlightedIndex === visibleSuggestions.length
+                    ? "bg-accent/10"
+                    : "hover:bg-accent/10"
+                )}
+              >
+                <Plus className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                <span>
+                  Add <span className="font-medium">&ldquo;{trimmed}&rdquo;</span>
+                </span>
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -328,14 +445,15 @@ interface Step2Props {
 }
 
 function Step2CareRecipient({ data, updateData }: Step2Props) {
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        updateData({ recipientPhoto: e.target?.result as string });
-      };
-      reader.readAsDataURL(file);
+      try {
+        const dataUrl = await downscaleImage(file);
+        updateData({ recipientPhoto: dataUrl });
+      } catch {
+        toast.error("Couldn't read that image", { description: "Please try a different photo." });
+      }
     }
   };
 
@@ -589,9 +707,9 @@ function Step4InviteCircle({ data, updateData }: Step4Props) {
                     <SelectTrigger className="w-full sm:w-[160px]" aria-label={`Role for invite ${index + 1}`}>
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="max-w-[min(20rem,calc(100vw-2rem))] sm:min-w-[16rem]">
                       {inviteRoles.map((role) => (
-                        <SelectItem key={role.value} value={role.value}>
+                        <SelectItem key={role.value} value={role.value} description={role.description}>
                           {role.label}
                         </SelectItem>
                       ))}
@@ -659,7 +777,8 @@ function Step5Done({ data }: Step5Props) {
 
       {/* Summary card */}
       <Card className="text-left max-w-sm mx-auto">
-        <CardContent className="p-4 space-y-3">
+        {/* sm:p-4 needed: CardContent's base class sets sm:pt-0 (assumes a CardHeader). */}
+        <CardContent className="p-4 sm:p-4 space-y-3">
           <div className="flex items-center gap-3">
             {data.recipientPhoto ? (
               <img
@@ -727,7 +846,6 @@ function Step5Done({ data }: Step5Props) {
 // ============================================================================
 
 export default function OnboardingPage() {
-  const router = useRouter();
   const [step, setStep] = React.useState(1);
   const [direction, setDirection] = React.useState(0);
   const [data, setData] = React.useState<OnboardingData>(defaultData);
@@ -780,15 +898,58 @@ export default function OnboardingPage() {
     if (step < totalSteps) {
       setDirection(1);
       setStep(step + 1);
-    } else {
-      // Complete onboarding
-      setIsLoading(true);
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      return;
+    }
+
+    // Final step: persist the circle through the real server action.
+    setIsLoading(true);
+    try {
+      const result = await completeOnboarding({
+        recipientName: data.recipientName.trim(),
+        recipientDateOfBirth: data.recipientDateOfBirth,
+        recipientPhoto: data.recipientPhoto,
+        relationship: data.relationship,
+        conditions: data.conditions,
+        allergies: data.allergies,
+        primaryLanguage: data.primaryLanguage,
+        timezone: data.timezone,
+        invites: data.invites
+          .filter((i) => i.email.trim())
+          .map((i) => ({
+            email: i.email.trim(),
+            role: i.role as
+              | "family_admin"
+              | "family"
+              | "caregiver"
+              | "clinician"
+              | "care_recipient"
+              | "read_only",
+          })),
+      });
+
+      if (!result.ok) {
+        setIsLoading(false);
+        toast.error("Couldn't create your care circle", { description: result.error });
+        return;
+      }
+
       localStorage.removeItem(STORAGE_KEY);
       toast.success("Welcome to CareCircle!", {
-        description: "Your care circle has been created.",
+        description:
+          result.invitesSent > 0
+            ? `Your care circle is ready · ${result.invitesSent} invite${result.invitesSent !== 1 ? "s" : ""} sent.`
+            : "Your care circle has been created.",
       });
-      router.push("/dashboard");
+      // Hard navigation (not router.push) on purpose: the brand-new circle/membership
+      // must be reflected on the dashboard, and a full load guarantees fresh server
+      // state. A soft push followed by router.refresh() races — refresh re-renders the
+      // current route and cancels the in-flight navigation, leaving the wizard stuck on
+      // "Setting up…". We intentionally leave isLoading=true so the spinner persists
+      // until the page unloads.
+      window.location.assign("/dashboard");
+    } catch {
+      setIsLoading(false);
+      toast.error("Something went wrong", { description: "Please try again in a moment." });
     }
   };
 

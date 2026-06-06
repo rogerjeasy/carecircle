@@ -464,7 +464,7 @@ export default function PricingPage() {
         {/* CTA Section */}
         <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-24">
           <Card className="bg-primary/5 border-primary/10">
-            <CardContent className="py-12 text-center">
+            <CardContent className="py-12 sm:py-12 text-center">
               <h2 className="font-serif text-2xl sm:text-3xl font-bold mb-4">
                 Ready to simplify care coordination?
               </h2>

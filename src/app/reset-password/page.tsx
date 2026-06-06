@@ -3,12 +3,14 @@
 import * as React from "react";
 import Link from "next/link";
 import { z } from "zod";
-import { Heart, Loader2, ArrowLeft, Eye, EyeOff, CheckCircle2, XCircle, Check, X } from "lucide-react";
+import { toast } from "sonner";
+import { Heart, Loader2, ArrowLeft, Eye, EyeOff, CheckCircle2, XCircle, Check, X, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { resetPassword } from "@/lib/auth/actions";
 
 // Password requirements
 const passwordRequirements = [
@@ -140,6 +142,17 @@ export default function ResetPasswordPage() {
   });
   const [errors, setErrors] = React.useState<Partial<Record<keyof ResetPasswordFormData, string>>>({});
   const [touched, setTouched] = React.useState<Partial<Record<keyof ResetPasswordFormData, boolean>>>({});
+  // The one-time token + user id arrive as ?token=&uid= on the reset link.
+  const [link, setLink] = React.useState<{ token: string; uid: string } | null>(null);
+  const [linkChecked, setLinkChecked] = React.useState(false);
+
+  React.useEffect(() => {
+    const sp = new URLSearchParams(window.location.search);
+    const token = sp.get("token");
+    const uid = sp.get("uid");
+    if (token && uid) setLink({ token, uid });
+    setLinkChecked(true);
+  }, []);
 
   // Validate a single field
   const validateField = (field: keyof ResetPasswordFormData, value: string, allData?: typeof formData) => {
@@ -214,17 +227,53 @@ export default function ResetPasswordPage() {
       return;
     }
 
+    if (!link) {
+      toast.error("This reset link is invalid or has expired. Please request a new one.");
+      return;
+    }
+
     setIsSubmitting(true);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    const fd = new FormData();
+    fd.set("token", link.token);
+    fd.set("uid", link.uid);
+    fd.set("password", formData.password);
+    const res = await resetPassword(fd);
 
     setIsSubmitting(false);
+
+    if (!res.ok) {
+      toast.error("Couldn't reset your password", { description: res.error });
+      return;
+    }
     setIsSuccess(true);
   };
 
   const passwordStrength = getPasswordStrength(formData.password);
   const passwordsMatch = formData.password && formData.confirmPassword && formData.password === formData.confirmPassword;
+
+  // One element shared by all three responsive layouts: success → invalid link → the form.
+  const content = isSuccess ? (
+    <SuccessState />
+  ) : linkChecked && !link ? (
+    <InvalidLinkState />
+  ) : (
+    <ResetPasswordForm
+      formData={formData}
+      errors={errors}
+      touched={touched}
+      showPassword={showPassword}
+      setShowPassword={setShowPassword}
+      showConfirmPassword={showConfirmPassword}
+      setShowConfirmPassword={setShowConfirmPassword}
+      isSubmitting={isSubmitting}
+      passwordStrength={passwordStrength}
+      passwordsMatch={passwordsMatch}
+      handleChange={handleChange}
+      handleBlur={handleBlur}
+      handleSubmit={handleSubmit}
+    />
+  );
 
   return (
     <div className="min-h-screen bg-background">
@@ -242,25 +291,7 @@ export default function ResetPasswordPage() {
 
           {/* Centered form */}
           <div className="flex flex-1 items-center justify-center px-8 pb-8">
-            {isSuccess ? (
-              <SuccessState />
-            ) : (
-              <ResetPasswordForm
-                formData={formData}
-                errors={errors}
-                touched={touched}
-                showPassword={showPassword}
-                setShowPassword={setShowPassword}
-                showConfirmPassword={showConfirmPassword}
-                setShowConfirmPassword={setShowConfirmPassword}
-                isSubmitting={isSubmitting}
-                passwordStrength={passwordStrength}
-                passwordsMatch={passwordsMatch}
-                handleChange={handleChange}
-                handleBlur={handleBlur}
-                handleSubmit={handleSubmit}
-              />
-            )}
+            {content}
           </div>
         </div>
       </div>
@@ -272,25 +303,7 @@ export default function ResetPasswordPage() {
 
         {/* Form */}
         <div className="flex flex-1 items-center justify-center px-8 py-8">
-          {isSuccess ? (
-            <SuccessState />
-          ) : (
-            <ResetPasswordForm
-              formData={formData}
-              errors={errors}
-              touched={touched}
-              showPassword={showPassword}
-              setShowPassword={setShowPassword}
-              showConfirmPassword={showConfirmPassword}
-              setShowConfirmPassword={setShowConfirmPassword}
-              isSubmitting={isSubmitting}
-              passwordStrength={passwordStrength}
-              passwordsMatch={passwordsMatch}
-              handleChange={handleChange}
-              handleBlur={handleBlur}
-              handleSubmit={handleSubmit}
-            />
-          )}
+          {content}
         </div>
       </div>
 
@@ -309,25 +322,7 @@ export default function ResetPasswordPage() {
 
         {/* Centered form with padding (not edge-to-edge) */}
         <div className="flex flex-1 items-center justify-center px-5 pb-8">
-          {isSuccess ? (
-            <SuccessState />
-          ) : (
-            <ResetPasswordForm
-              formData={formData}
-              errors={errors}
-              touched={touched}
-              showPassword={showPassword}
-              setShowPassword={setShowPassword}
-              showConfirmPassword={showConfirmPassword}
-              setShowConfirmPassword={setShowConfirmPassword}
-              isSubmitting={isSubmitting}
-              passwordStrength={passwordStrength}
-              passwordsMatch={passwordsMatch}
-              handleChange={handleChange}
-              handleBlur={handleBlur}
-              handleSubmit={handleSubmit}
-            />
-          )}
+          {content}
         </div>
       </div>
     </div>
@@ -551,6 +546,39 @@ function ResetPasswordForm({
           )}
         </Button>
       </form>
+    </div>
+  );
+}
+
+// Invalid / missing reset link
+function InvalidLinkState() {
+  return (
+    <div className="w-full max-w-md text-center motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-4 motion-safe:duration-500">
+      {/* Icon */}
+      <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
+        <AlertCircle className="h-8 w-8 text-destructive" />
+      </div>
+
+      {/* Header */}
+      <h2 className="font-serif text-2xl font-bold sm:text-3xl">This reset link is invalid</h2>
+      <p className="mt-3 text-muted-foreground">
+        The link may have expired or already been used. Request a fresh one and we will email it
+        right over.
+      </p>
+
+      {/* Actions */}
+      <div className="mt-8 space-y-3">
+        <Button asChild className="w-full">
+          <Link href="/forgot-password">Request a new link</Link>
+        </Button>
+        <Link
+          href="/sign-in"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus-visible:underline"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to sign in
+        </Link>
+      </div>
     </div>
   );
 }

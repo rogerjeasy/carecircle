@@ -452,7 +452,8 @@ function Composer({
 
   return (
     <Card className="mb-6">
-      <CardContent className="p-4">
+      {/* sm:p-4 needed: CardContent's base class sets sm:pt-0 (assumes a CardHeader). */}
+      <CardContent className="p-4 sm:p-4">
         <div className="flex gap-3">
           <Avatar className="h-10 w-10 shrink-0">
             <AvatarFallback className="bg-accent/10 text-accent text-sm font-semibold">
