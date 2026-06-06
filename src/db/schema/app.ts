@@ -85,8 +85,9 @@ export const careRecipientProfile = pgTable('care_recipient_profile', {
     .references(() => careCircle.id, { onDelete: 'cascade' }),
   fullName: text('full_name').notNull(),
   dateOfBirth: date('date_of_birth'),
-  // Recipient photo. Stored as a data URL today (set during onboarding); the architecture's
-  // production path uploads to S3 and stores the object key/URL here instead — callers don't change.
+  // Recipient photo. Holds an S3 object key (e.g. `care-circles/<id>/recipient-photos/<uuid>.jpg`)
+  // uploaded during onboarding via src/lib/storage/s3.ts; may also hold an external https URL.
+  // Resolve to a viewable, short-lived URL with `resolveStoredUrl()` (the bucket is private).
   avatarUrl: text('avatar_url'),
   bloodType: text('blood_type'),
   conditions: jsonb('conditions').$type<string[]>().default([]),

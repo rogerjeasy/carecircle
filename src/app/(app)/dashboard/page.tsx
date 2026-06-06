@@ -7,7 +7,8 @@ import { useAppShell } from "@/components/app-shell/app-shell-context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getCareRecipient, type CareRecipient } from "@/lib/circle/care-recipient";
 import { Separator } from "@/components/ui/separator";
 import {
   Pill,
@@ -307,17 +308,23 @@ function InsightBanner({
   );
 }
 
-function StatusBanner({ role }: { role: string }) {
+function StatusBanner({ role, recipient }: { role: string; recipient: CareRecipient | null }) {
   const isCaregiver = role === "caregiver";
   const isReadonly = role === "readonly";
-  
+  const fallbackInitials = recipient?.initials || "AS";
+  // Recipient's first name for the banner copy (neutral fallback until the profile loads).
+  const recipientName = recipient?.fullName?.trim().split(/\s+/)[0] || "Your loved one";
+
   if (isCaregiver) {
     return (
       <Card className="border-primary/30 bg-primary/5">
         <CardContent className="flex items-center gap-4 p-4 sm:p-4">
           <Avatar className="h-12 w-12 border-2 border-primary/20">
+            {recipient?.avatarUrl && (
+              <AvatarImage src={recipient.avatarUrl} alt={recipient.fullName} />
+            )}
             <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-              AS
+              {fallbackInitials}
             </AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1">
@@ -342,13 +349,16 @@ function StatusBanner({ role }: { role: string }) {
       <Card className="border-success/30 bg-success/5">
         <CardContent className="flex items-center gap-4 p-4 sm:p-4">
           <Avatar className="h-12 w-12 border-2 border-success/20">
+            {recipient?.avatarUrl && (
+              <AvatarImage src={recipient.avatarUrl} alt={recipient.fullName} />
+            )}
             <AvatarFallback className="bg-success/10 text-success font-semibold">
-              AS
+              {fallbackInitials}
             </AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="font-semibold">Antonio is doing well</h3>
+              <h3 className="font-semibold">{recipientName} is doing well</h3>
               <Smile className="h-4 w-4 text-success" />
             </div>
             <p className="text-sm text-muted-foreground mt-0.5">
@@ -365,13 +375,16 @@ function StatusBanner({ role }: { role: string }) {
     <Card className="border-success/30 bg-success/5">
       <CardContent className="flex items-center gap-4 p-4 sm:p-4">
         <Avatar className="h-12 w-12 border-2 border-success/20">
+          {recipient?.avatarUrl && (
+            <AvatarImage src={recipient.avatarUrl} alt={recipient.fullName} />
+          )}
           <AvatarFallback className="bg-success/10 text-success font-semibold">
-            AS
+            {fallbackInitials}
           </AvatarFallback>
         </Avatar>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="font-semibold">Antonio is having a good day</h3>
+            <h3 className="font-semibold">{recipientName} is having a good day</h3>
             <Smile className="h-4 w-4 text-success" />
           </div>
           <p className="text-sm text-muted-foreground mt-0.5">
@@ -524,9 +537,31 @@ function QuickActions() {
 // ============================================================================
 
 function DashboardContent() {
-  const { role } = useAppShell();
+  const { role, user, activeCircleId } = useAppShell();
   const timeOfDay = useTimeOfDay();
   const [insightVisible, setInsightVisible] = React.useState(true);
+  const [recipient, setRecipient] = React.useState<CareRecipient | null>(null);
+
+  // First name of the real signed-in user, for the greeting.
+  const firstName = user?.name?.trim().split(/\s+/)[0] ?? "";
+
+  // Real care recipient (name + photo) for the ACTIVE circle, shown in the status banner.
+  // Re-runs when the user switches circles so the banner follows the selected circle. We wait
+  // for the active circle to resolve before fetching (avoids a redundant initial query).
+  React.useEffect(() => {
+    if (!activeCircleId) return;
+    let active = true;
+    getCareRecipient()
+      .then((r) => {
+        if (active) setRecipient(r);
+      })
+      .catch(() => {
+        /* keep the placeholder avatar — the page still renders */
+      });
+    return () => {
+      active = false;
+    };
+  }, [activeCircleId]);
   
   const medsGiven = useAnimatedCount(3, 800);
   const openTasks = useAnimatedCount(2, 800);
@@ -549,7 +584,7 @@ function DashboardContent() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <h2 className="font-serif text-2xl font-bold sm:text-3xl truncate">
-            {greeting}, Maria
+            {greeting}{firstName ? `, ${firstName}` : ""}
           </h2>
           <p className="mt-1 text-muted-foreground">{today}</p>
         </div>
@@ -557,7 +592,7 @@ function DashboardContent() {
       </div>
 
       {/* Status Banner - Role Aware */}
-      <StatusBanner role={role} />
+      <StatusBanner role={role} recipient={recipient} />
 
       {/* Insight Banner - Dismissible */}
       {role !== "readonly" && (

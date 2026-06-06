@@ -14,13 +14,14 @@
  *  - Every state-changing step is audited via `recordAuditEvent()` inside the same transaction.
  */
 import { z } from 'zod';
-import { sql } from 'drizzle-orm';
+import { sql, eq } from 'drizzle-orm';
 import { headers } from 'next/headers';
 import { requireSession, withAuthedDb } from '@/db/dal';
 import { careRecipientProfile, timelineEvent, invitation } from '@/db/schema';
 import { recordAuditEvent } from '@/db/audit';
 import { randomToken } from '@/lib/auth/tokens';
 import { sendInvitationEmail, sendWelcomeEmail } from '@/lib/email';
+import { uploadImageDataUrl } from '@/lib/storage/s3';
 import { serverLog } from '@/lib/log';
 
 export type OnboardingResult =
@@ -76,10 +77,20 @@ async function appOrigin(): Promise<string> {
   return `${proto}://${host}`;
 }
 
-function sanitizeAvatar(photo: string | null | undefined): string | null {
-  if (!photo) return null;
-  const ok = /^(data:image\/|https?:\/\/)/.test(photo) && photo.length <= MAX_AVATAR_CHARS;
-  return ok ? photo : null;
+/**
+ * Classify the photo the wizard submitted. An external `https://` URL is trusted and stored
+ * as-is; a `data:` URL (what the in-browser downscaler produces) is uploaded to S3 *after* the
+ * circle is created — so the object key can be partitioned under its `circleId` — and the key
+ * backfilled onto the profile. Anything else is dropped (treated as "no photo").
+ */
+function classifyPhoto(photo: string | null | undefined): {
+  externalUrl: string | null;
+  dataUrl: string | null;
+} {
+  if (!photo || photo.length > MAX_AVATAR_CHARS) return { externalUrl: null, dataUrl: null };
+  if (/^https?:\/\//i.test(photo)) return { externalUrl: photo, dataUrl: null };
+  if (/^data:image\//i.test(photo)) return { externalUrl: null, dataUrl: photo };
+  return { externalUrl: null, dataUrl: null };
 }
 
 /**
@@ -106,7 +117,8 @@ export async function completeOnboarding(input: OnboardingInput): Promise<Onboar
     .filter((i) => i.email && !seen.has(i.email) && seen.add(i.email));
 
   const circleName = `${data.recipientName}'s Care`;
-  const avatarUrl = sanitizeAvatar(data.recipientPhoto);
+  // External URLs are stored immediately; data: URLs are uploaded to S3 after commit (below).
+  const { externalUrl, dataUrl: photoDataUrl } = classifyPhoto(data.recipientPhoto);
   const dob = data.recipientDateOfBirth && data.recipientDateOfBirth !== '' ? data.recipientDateOfBirth : null;
 
   // Tokens are minted before the transaction so we can email them after it commits.
@@ -129,7 +141,7 @@ export async function completeOnboarding(input: OnboardingInput): Promise<Onboar
         circleId: cId,
         fullName: data.recipientName,
         dateOfBirth: dob,
-        avatarUrl,
+        avatarUrl: externalUrl,
         conditions: data.conditions,
         allergies: data.allergies,
         primaryLanguage: data.primaryLanguage || null,
@@ -187,6 +199,49 @@ export async function completeOnboarding(input: OnboardingInput): Promise<Onboar
     circleId,
     invites: issued.length,
   });
+
+  // Upload the recipient photo to S3 now that the circle exists, so the object key is partitioned
+  // under its `circleId`, then backfill the key onto the profile. Best-effort, like the emails
+  // below: a storage hiccup must never undo a successfully-created circle, and onboarding never
+  // fails over a photo. One photo per circle, so no date partition (no hot-prefix risk).
+  if (photoDataUrl) {
+    try {
+      const avatarKey = await uploadImageDataUrl({
+        circleId,
+        category: 'recipient-photos',
+        dataUrl: photoDataUrl,
+        datePartition: false,
+      });
+      if (avatarKey) {
+        await withAuthedDb(async (tx) => {
+          await tx
+            .update(careRecipientProfile)
+            .set({ avatarUrl: avatarKey })
+            .where(eq(careRecipientProfile.circleId, circleId));
+          // Audit the profile mutation atomically with the backfill (no PII in the summary).
+          await recordAuditEvent(
+            userId,
+            {
+              circleId,
+              action: 'update',
+              entityType: 'care_recipient_profile',
+              summary: 'Uploaded recipient photo',
+            },
+            tx,
+          );
+        });
+        serverLog('onboarding', 'uploadRecipientPhoto', 'success', { actor: userId, circleId });
+      } else {
+        serverLog('onboarding', 'uploadRecipientPhoto', 'failure', { actor: userId, circleId, reason: 'upload_skipped' });
+      }
+    } catch (err) {
+      serverLog('onboarding', 'uploadRecipientPhoto', 'failure', {
+        actor: userId,
+        circleId,
+        reason: (err as Error)?.name ?? 'error',
+      });
+    }
+  }
 
   // Emails are best-effort and happen AFTER the circle is committed — a delivery hiccup must
   // never roll back a successfully-created circle. (No provider configured → logged to console.)
