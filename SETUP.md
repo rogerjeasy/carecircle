@@ -11,8 +11,13 @@ Everything needed to take this repo from zero to a running full-stack app on **A
   - `0000_init.sql` — tables (Auth.js + core domain: care_circle, membership, care_recipient_profile, timeline_event, audit_log).
   - `0001_rls_policies.sql` — **Row-Level Security**: tenant isolation, private-note visibility, append-only audit log, via SECURITY DEFINER helpers.
 - **Auth.js v5** (`src/auth.ts`, route handler, `proxy.ts` for Next 16) with the Drizzle adapter.
+- **Full auth flows wired** (not mocks): email/password sign-up + sign-in (Credentials provider,
+  `scrypt` hashing in `src/lib/password.ts`), **Google** and **Apple** social sign-in (env-gated),
+  and **forgot/reset password** (one-time hashed tokens + Resend email). Server actions live in
+  `src/lib/auth/actions.ts`; migration `0002` adds `user.password_hash` + `password_reset_token`.
 - **RLS bridge**: `withUserContext()` / `withAuthedDb()` set `app.current_user_id` per request (`src/db/rls.ts`, `src/db/dal.ts`).
-- **Seed** script with the Antonio/Maria/Paolo/Grace demo data (`src/db/seed.ts`).
+- **Seed** script with the Antonio/Maria/Paolo/Grace demo data (`src/db/seed.ts`). Demo accounts
+  share the password **`CareCircle123`** (e.g. `maria@carecircle.demo`) so you can sign in immediately.
 
 ---
 
@@ -61,7 +66,12 @@ Set both URLs in `.env` (see `.env.example` for the shape):
 - `MIGRATION_DATABASE_URL` → the **admin/owner** connection (from step 2).
 - `DATABASE_URL` → the **carecircle_app** connection (admin host/db, but user `carecircle_app` + its password).
 
-Optionally add `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` to enable Google sign-in.
+Optional providers/services (the app runs without them — see `.env.example` for the full shape):
+- **Google sign-in:** set `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` (button shows automatically).
+- **Apple sign-in:** set `AUTH_APPLE_ID` / `AUTH_APPLE_SECRET` (needs a paid Apple Developer account)
+  and `NEXT_PUBLIC_AUTH_APPLE_ENABLED="true"` to reveal the button.
+- **Password-reset emails:** set `RESEND_API_KEY` (+ a verified `EMAIL_FROM`). If unset, reset links
+  are printed to the server console so the flow still works end-to-end in local dev.
 
 ## 5. Run migrations + seed
 
