@@ -13,10 +13,10 @@ interface AppShellProps {
 }
 
 export function AppShell({ children }: AppShellProps) {
-  // Track if running on tablet to force collapsed
+  // Track if running on tablet (used only as the *default* collapsed state)
   const [isTablet, setIsTablet] = React.useState(false);
-  // Persist sidebar collapsed state (for desktop only)
-  const [userCollapsed, setUserCollapsed] = React.useState(false);
+  // null = follow the responsive default; boolean = the user's explicit choice
+  const [userCollapsed, setUserCollapsed] = React.useState<boolean | null>(null);
   const [mobileNavOpen, setMobileNavOpen] = React.useState(false);
 
   // Check viewport width and detect tablet
@@ -26,13 +26,13 @@ export function AppShell({ children }: AppShellProps) {
       // Tablet: 768-1023px (md to lg breakpoint)
       setIsTablet(width >= 768 && width < 1024);
     };
-    
+
     checkWidth();
     window.addEventListener("resize", checkWidth);
     return () => window.removeEventListener("resize", checkWidth);
   }, []);
 
-  // Load user preference from localStorage (only affects desktop)
+  // Load user preference from localStorage
   React.useEffect(() => {
     const stored = localStorage.getItem("sidebar-collapsed");
     if (stored !== null) {
@@ -40,11 +40,13 @@ export function AppShell({ children }: AppShellProps) {
     }
   }, []);
 
-  // Sidebar is collapsed if on tablet OR user chose to collapse on desktop
-  const sidebarCollapsed = isTablet || userCollapsed;
+  // The user's explicit choice always wins; otherwise default to collapsed on
+  // tablet and expanded on desktop. This lets tablet/iPad users expand the
+  // sidebar via the toggle instead of being stuck on icons-only.
+  const sidebarCollapsed = userCollapsed ?? isTablet;
 
   const handleToggleSidebar = () => {
-    const newValue = !userCollapsed;
+    const newValue = !sidebarCollapsed;
     setUserCollapsed(newValue);
     localStorage.setItem("sidebar-collapsed", String(newValue));
   };
@@ -65,10 +67,9 @@ export function AppShell({ children }: AppShellProps) {
           <div
             className={cn(
               "flex min-h-screen flex-col transition-all duration-300",
-              // Adjust left margin based on sidebar state (desktop only)
-              "md:ml-[72px] lg:ml-[264px]",
-              sidebarCollapsed && "md:ml-[72px] lg:ml-[72px]",
-              !sidebarCollapsed && "md:ml-[72px] lg:ml-[264px]",
+              // Match the sidebar width at every breakpoint >= md so content
+              // never overlaps the sidebar (whether collapsed or expanded).
+              sidebarCollapsed ? "md:ml-[72px]" : "md:ml-[264px]",
               // Full-bleed when printing (chrome is hidden)
               "print:ml-0"
             )}

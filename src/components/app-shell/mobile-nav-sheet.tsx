@@ -89,13 +89,13 @@ export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="left" className="w-[280px] p-0">
+      <SheetContent side="left" className="flex w-[280px] flex-col p-0">
         <SheetHeader className="sr-only">
           <SheetTitle>Navigation Menu</SheetTitle>
         </SheetHeader>
 
         {/* Circle Switcher */}
-        <div className="border-b p-4">
+        <div className="shrink-0 border-b p-4">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="w-full justify-start gap-3 h-auto py-2.5">
@@ -153,7 +153,7 @@ export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
         </div>
 
         {/* Navigation */}
-        <ScrollArea className="flex-1 h-[calc(100vh-180px)]">
+        <ScrollArea className="min-h-0 flex-1">
           <nav className="space-y-1 p-3">
             {visibleNavItems.map((item) => {
               const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
@@ -187,7 +187,7 @@ export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
         </ScrollArea>
 
         {/* Bottom Section */}
-        <div className="border-t p-3">
+        <div className="shrink-0 border-t p-3">
           <Link
             href="/settings"
             onClick={() => onOpenChange(false)}
@@ -217,36 +217,52 @@ export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-56">
-              <DropdownMenuLabel>Account</DropdownMenuLabel>
+              <DropdownMenuLabel>
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-8 w-8">
+                    <AvatarFallback className="bg-secondary text-xs font-semibold">
+                      {currentUser.initials}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold">{currentUser.name}</p>
+                    <p className="truncate text-xs text-muted-foreground">{currentUser.role}</p>
+                  </div>
+                </div>
+              </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <User className="mr-2 h-4 w-4" />
-                Profile
+              <DropdownMenuItem asChild>
+                <Link href="/profile" onClick={() => onOpenChange(false)}>
+                  <User className="mr-2 h-4 w-4" />
+                  Profile
+                </Link>
               </DropdownMenuItem>
-<DropdownMenuItem>
-              <Bell className="mr-2 h-4 w-4" />
-              Notification settings
-            </DropdownMenuItem>
-            <DropdownMenuSub>
-              <DropdownMenuSubTrigger>
-                <Eye className="mr-2 h-4 w-4" />
-                Switch role view
-              </DropdownMenuSubTrigger>
-              <DropdownMenuPortal>
-                <DropdownMenuSubContent className="w-48">
-                  {(Object.keys(roleLabels) as UserRole[]).map((roleKey) => (
-                    <DropdownMenuItem
-                      key={roleKey}
-                      onClick={() => setRole(roleKey)}
-                      className="justify-between"
-                    >
-                      {roleLabels[roleKey]}
-                      {role === roleKey && <Check className="h-4 w-4 text-primary" />}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuSubContent>
-              </DropdownMenuPortal>
-            </DropdownMenuSub>
+              <DropdownMenuItem asChild>
+                <Link href="/settings" onClick={() => onOpenChange(false)}>
+                  <Bell className="mr-2 h-4 w-4" />
+                  Notification settings
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  <Eye className="mr-2 h-4 w-4" />
+                  Switch role view
+                </DropdownMenuSubTrigger>
+                <DropdownMenuPortal>
+                  <DropdownMenuSubContent className="w-48">
+                    {(Object.keys(roleLabels) as UserRole[]).map((roleKey) => (
+                      <DropdownMenuItem
+                        key={roleKey}
+                        onClick={() => setRole(roleKey)}
+                        className="justify-between"
+                      >
+                        {roleLabels[roleKey]}
+                        {role === roleKey && <Check className="h-4 w-4 text-primary" />}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuSubContent>
+                </DropdownMenuPortal>
+              </DropdownMenuSub>
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 className="text-destructive focus:text-destructive"
