@@ -20,7 +20,9 @@
 import 'server-only';
 import postgres from 'postgres';
 import { drizzle } from 'drizzle-orm/postgres-js';
+import { after } from 'next/server';
 import * as schema from './schema';
+import { maskEmail } from '@/lib/log';
 
 /** Identifies the staff member performing a privileged cross-tenant read, for the access log. */
 export type PlatformActor = { id: string; email?: string | null };
@@ -72,7 +74,15 @@ export function getPlatformClient() {
  * single `circle_id`, but these reads span every circle. A durable, queryable `platform_audit`
  * table is the production follow-up; this guarantees the access is never silent in the meantime.
  *
- * Logging hygiene (AGENTS.md): actor id + email only — never row contents, query text, or PII.
+ * Logging hygiene (AGENTS.md): the actor's opaque user id + a MASKED email domain only — never
+ * the raw email address, row contents, query text, or any other PII.
+ *
+ * The line is emitted via `after()` so it runs AFTER React's render lifecycle. Most admin reads
+ * happen during a Server Component render (e.g. the /admin/audit page), and in dev Next replays
+ * console output made *during* render into the BROWSER console (the "Server"-badged lines). Logging
+ * after the response keeps this server-only audit trail in the terminal without leaking it client-
+ * side. Outside a request scope (e.g. the live-hub streaming loop) `after()` throws, so we fall back
+ * to a direct write — that path is never an RSC render, so it was never replayed to the browser.
  */
 export function logPlatformAccess(
   actor: PlatformActor,
@@ -85,7 +95,11 @@ export function logPlatformAccess(
         .map(([k, v]) => `${k}=${v}`)
         .join(' ')
     : '';
-  console.info(
-    `[platform-admin] cross-tenant read actor=${actor.id} email=${actor.email ?? 'unknown'} resource=${resource}${detail}`,
-  );
+  const line = `[platform-admin] cross-tenant read actor=${actor.id} email=${maskEmail(actor.email)} resource=${resource}${detail}`;
+  try {
+    after(() => console.info(line));
+  } catch {
+    // Not in a request scope (e.g. a streaming subscription tick) — log immediately.
+    console.info(line);
+  }
 }

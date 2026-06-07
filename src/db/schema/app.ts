@@ -167,6 +167,31 @@ export const auditLog = pgTable(
   (t) => [index('audit_circle_time_idx').on(t.circleId, t.occurredAt)],
 );
 
+/**
+ * Platform-level auth audit: one row per sign-in / sign-out, independent of any circle.
+ *
+ * The circle-scoped `audit_log` above fans an auth event out per circle the user belongs to (so a
+ * circle's coordinators can see when a member accessed the record). That model structurally CANNOT
+ * record a sign-in for a user with no circle — every platform admin, and any brand-new user before
+ * they join one — and it counts a single sign-in once *per circle*. This table is the canonical,
+ * one-row-per-event source for "who signed in/out, when", used by the /admin metrics.
+ *
+ * Written and read ONLY via the privileged admin connection (see db/admin-db.ts), like the Auth.js
+ * identity tables it has NO RLS policy — it holds no tenant data and is never queried by the app
+ * (least-privilege) role in a request handler.
+ */
+export const platformAuthAudit = pgTable(
+  'platform_auth_audit',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    actorUserId: text('actor_user_id').notNull(),
+    action: auditActionEnum('action').notNull(), // only 'login' | 'logout' are written
+    provider: text('provider'),
+    occurredAt: timestamp('occurred_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [index('platform_auth_audit_time_idx').on(t.occurredAt)],
+);
+
 // ---- Onboarding into a circle: a pending invite a coordinator issues to a new member ----
 export const invitation = pgTable(
   'invitation',

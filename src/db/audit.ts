@@ -15,7 +15,8 @@
 import 'server-only';
 import { and, eq, isNull } from 'drizzle-orm';
 import { withUserContext, type Tx } from './rls';
-import { membership, auditLog, auditActionEnum } from './schema';
+import { getPlatformDb } from './admin-db';
+import { membership, auditLog, platformAuthAudit, auditActionEnum } from './schema';
 
 export type AuditAction = (typeof auditActionEnum.enumValues)[number];
 
@@ -108,13 +109,42 @@ async function fanOutAuthEvent(userId: string, action: AuditAction, summary: str
   }
 }
 
-/** Record a successful sign-in across all of the user's circles. */
-export function recordLoginEvent(userId: string, provider?: string): Promise<void> {
-  const label = provider ? PROVIDER_LABELS[provider] ?? provider : undefined;
-  return fanOutAuthEvent(userId, 'login', label ? `Signed in via ${label}` : 'Signed in');
+/**
+ * One canonical platform-level auth row per sign-in/out — independent of any circle, so it captures
+ * platform admins and brand-new users (who belong to no circle) and counts a sign-in exactly once.
+ * Written via the privileged admin connection; never throws (a logging failure must not block auth).
+ */
+async function recordPlatformAuthEvent(
+  userId: string,
+  action: 'login' | 'logout',
+  provider?: string,
+): Promise<void> {
+  try {
+    await getPlatformDb()
+      .insert(platformAuthAudit)
+      .values({ actorUserId: userId, action, provider: provider ?? null });
+  } catch (err) {
+    console.error('[audit] failed to record platform auth event:', (err as Error)?.name ?? 'error');
+  }
 }
 
-/** Record a sign-out across all of the user's circles. */
-export function recordLogoutEvent(userId: string): Promise<void> {
-  return fanOutAuthEvent(userId, 'logout', 'Signed out');
+/**
+ * Record a successful sign-in. Two complementary trails (both best-effort):
+ *  - per-circle fan-out into `audit_log` so each circle's coordinators see the access;
+ *  - one canonical row in `platform_auth_audit` for the platform-wide sign-in metric.
+ */
+export async function recordLoginEvent(userId: string, provider?: string): Promise<void> {
+  const label = provider ? PROVIDER_LABELS[provider] ?? provider : undefined;
+  await Promise.all([
+    fanOutAuthEvent(userId, 'login', label ? `Signed in via ${label}` : 'Signed in'),
+    recordPlatformAuthEvent(userId, 'login', provider),
+  ]);
+}
+
+/** Record a sign-out — per-circle fan-out plus the canonical platform-level row. */
+export async function recordLogoutEvent(userId: string): Promise<void> {
+  await Promise.all([
+    fanOutAuthEvent(userId, 'logout', 'Signed out'),
+    recordPlatformAuthEvent(userId, 'logout'),
+  ]);
 }

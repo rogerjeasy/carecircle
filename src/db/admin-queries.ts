@@ -13,6 +13,7 @@ import { and, desc, eq, gte, isNull, or, sql } from 'drizzle-orm';
 import { getPlatformDb, logPlatformAccess, type PlatformActor } from './admin-db';
 import {
   auditLog,
+  platformAuthAudit,
   careCircle,
   careRecipientProfile,
   invitation,
@@ -23,6 +24,22 @@ import {
 import type { Alert, AuditEvent, Tenant } from '@/lib/admin/dashboard-data';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * The `platform_auth_audit` table is the newest metric source; if it can't be read (e.g. the
+ * `0007` migration hasn't been applied yet), the sign-in figures must degrade to empty WITHOUT
+ * taking down the rest of the live platform console. Logs the real cause so it's diagnosable
+ * (instead of the page's outer catch masking it as a connection failure).
+ */
+async function safeAuthAudit<T>(fallback: T, run: () => Promise<T>): Promise<T> {
+  try {
+    return await run();
+  } catch (err) {
+    const code = (err as { code?: string })?.code ?? (err as Error)?.name ?? 'error';
+    console.error(`[admin] platform_auth_audit unavailable (run \`npm run db:migrate\`?): ${code}`);
+    return fallback;
+  }
+}
 
 /** Result of a database liveness probe — drives the Aurora row on the status page. */
 export type DbProbe = { ok: boolean; latencyMs: number };
@@ -180,20 +197,34 @@ export type AuditStats = {
  */
 export async function getAuditStats(actor: PlatformActor): Promise<AuditStats> {
   const since = new Date(Date.now() - DAY_MS);
-  const [row] = await getPlatformDb()
-    .select({
-      total: sql<number>`count(*)::int`,
-      logins: sql<number>`count(*) filter (where ${auditLog.action} = 'login')::int`,
-      exports: sql<number>`count(*) filter (where ${auditLog.action} = 'export')::int`,
-      roleAndInvite: sql<number>`count(*) filter (where ${auditLog.action} = 'invite' or ${auditLog.entityType} = 'membership')::int`,
-    })
-    .from(auditLog)
-    .where(gte(auditLog.occurredAt, since));
+  const db = getPlatformDb();
+
+  // Sign-ins come from the canonical per-user `platform_auth_audit` (one row per sign-in, includes
+  // circle-less users like platform admins) — NOT the per-circle `audit_log`, which omits them and
+  // double-counts members by their circle count. The other tiles are circle-scoped audit events.
+  const [row, loginRow] = await Promise.all([
+    db
+      .select({
+        total: sql<number>`count(*)::int`,
+        exports: sql<number>`count(*) filter (where ${auditLog.action} = 'export')::int`,
+        roleAndInvite: sql<number>`count(*) filter (where ${auditLog.action} = 'invite' or ${auditLog.entityType} = 'membership')::int`,
+      })
+      .from(auditLog)
+      .where(gte(auditLog.occurredAt, since))
+      .then((r) => r[0]),
+    safeAuthAudit({ logins: 0 }, () =>
+      db
+        .select({ logins: sql<number>`count(*)::int` })
+        .from(platformAuthAudit)
+        .where(and(eq(platformAuthAudit.action, 'login'), gte(platformAuthAudit.occurredAt, since)))
+        .then((r) => r[0] ?? { logins: 0 }),
+    ),
+  ]);
 
   logPlatformAccess(actor, 'audit_stats');
   return {
     total: row?.total ?? 0,
-    logins: row?.logins ?? 0,
+    logins: loginRow?.logins ?? 0,
     exports: row?.exports ?? 0,
     roleAndInvite: row?.roleAndInvite ?? 0,
   };
@@ -265,27 +296,42 @@ export type ActivityPoint = { day: string; events: number; logins: number };
  */
 export async function getActivitySeries(actor: PlatformActor, days = 14): Promise<ActivityPoint[]> {
   const since = new Date(Date.now() - (days - 1) * DAY_MS);
-  const dayExpr = sql`date_trunc('day', ${auditLog.occurredAt})`;
-  const rows = await getPlatformDb()
-    .select({
-      key: sql<string>`to_char(${dayExpr}, 'YYYY-MM-DD')`,
-      events: sql<number>`count(*)::int`,
-      logins: sql<number>`count(*) filter (where ${auditLog.action} = 'login')::int`,
-    })
-    .from(auditLog)
-    .where(gte(auditLog.occurredAt, since))
-    .groupBy(dayExpr)
-    .orderBy(dayExpr);
+  const db = getPlatformDb();
+  const eventDay = sql`date_trunc('day', ${auditLog.occurredAt})`;
+  const loginDay = sql`date_trunc('day', ${platformAuthAudit.occurredAt})`;
 
-  const byKey = new Map(rows.map((r) => [r.key, r]));
+  // `events` = all circle audit rows per day; `logins` = canonical per-user sign-ins from
+  // `platform_auth_audit` (same source as the headline tile, so chart and tile agree).
+  const [eventRows, loginRows] = await Promise.all([
+    db
+      .select({
+        key: sql<string>`to_char(${eventDay}, 'YYYY-MM-DD')`,
+        events: sql<number>`count(*)::int`,
+      })
+      .from(auditLog)
+      .where(gte(auditLog.occurredAt, since))
+      .groupBy(eventDay),
+    safeAuthAudit<{ key: string; logins: number }[]>([], () =>
+      db
+        .select({
+          key: sql<string>`to_char(${loginDay}, 'YYYY-MM-DD')`,
+          logins: sql<number>`count(*)::int`,
+        })
+        .from(platformAuthAudit)
+        .where(and(eq(platformAuthAudit.action, 'login'), gte(platformAuthAudit.occurredAt, since)))
+        .groupBy(loginDay),
+    ),
+  ]);
+
+  const eventsByKey = new Map(eventRows.map((r) => [r.key, r.events]));
+  const loginsByKey = new Map(loginRows.map((r) => [r.key, r.logins]));
   const fmt = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
   const now = new Date();
   const series: ActivityPoint[] = [];
   for (let i = days - 1; i >= 0; i--) {
     const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - i));
     const key = d.toISOString().slice(0, 10);
-    const hit = byKey.get(key);
-    series.push({ day: fmt.format(d), events: hit?.events ?? 0, logins: hit?.logins ?? 0 });
+    series.push({ day: fmt.format(d), events: eventsByKey.get(key) ?? 0, logins: loginsByKey.get(key) ?? 0 });
   }
   logPlatformAccess(actor, 'activity_series');
   return series;
