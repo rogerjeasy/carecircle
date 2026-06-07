@@ -22,10 +22,18 @@ import type { TimelineEvent } from "./types";
 
 export function EventCard({
   event,
+  currentUserId,
+  currentUserInitials,
+  currentUserColor,
+  canContribute,
   onReact,
   onComment,
 }: {
   event: TimelineEvent;
+  currentUserId: string;
+  currentUserInitials: string;
+  currentUserColor: string;
+  canContribute: boolean;
   onReact: (eventId: string) => void;
   onComment: (eventId: string, text: string) => void;
 }) {
@@ -37,7 +45,7 @@ export function EventCard({
 
   const config = eventTypeConfig[event.type];
   const Icon = config.icon;
-  const hasReacted = event.reactions.some((r) => r.userId === "maria");
+  const hasReacted = event.reactions.some((r) => r.userId === currentUserId);
   const reactionCount = event.reactions.length;
 
   // Check if text is clamped
@@ -179,24 +187,33 @@ export function EventCard({
           </div>
         </button>
 
-        {/* Reaction button - always visible */}
+        {/* Reaction — interactive for contributors; a static count for read-only members */}
         <div className="absolute bottom-3 right-14 flex items-center gap-1">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onReact(event.id);
-            }}
-            className={cn(
-              "inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs transition-colors",
-              hasReacted
-                ? "bg-destructive/10 text-destructive"
-                : "bg-muted hover:bg-muted/80 text-muted-foreground"
-            )}
-            aria-label={hasReacted ? "Remove reaction" : "React with heart"}
-          >
-            <Heart className={cn("h-3 w-3", hasReacted && "fill-current")} />
-            {reactionCount > 0 && <span>{reactionCount}</span>}
-          </button>
+          {canContribute ? (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onReact(event.id);
+              }}
+              className={cn(
+                "inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs transition-colors",
+                hasReacted
+                  ? "bg-destructive/10 text-destructive"
+                  : "bg-muted hover:bg-muted/80 text-muted-foreground"
+              )}
+              aria-label={hasReacted ? "Remove reaction" : "React with heart"}
+            >
+              <Heart className={cn("h-3 w-3", hasReacted && "fill-current")} />
+              {reactionCount > 0 && <span>{reactionCount}</span>}
+            </button>
+          ) : (
+            reactionCount > 0 && (
+              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-muted text-muted-foreground">
+                <Heart className="h-3 w-3" />
+                {reactionCount}
+              </span>
+            )
+          )}
         </div>
 
         {/* Expanded content */}
@@ -251,29 +268,33 @@ export function EventCard({
               </div>
             )}
 
-            {/* Reply box */}
-            <div className="mt-4 flex gap-2">
-              <Avatar className="h-7 w-7 shrink-0">
-                <AvatarFallback className="bg-accent/10 text-accent text-[10px] font-semibold">MR</AvatarFallback>
-              </Avatar>
-              <div className="flex-1 flex gap-2">
-                <Input
-                  placeholder="Add a comment..."
-                  value={commentText}
-                  onChange={(e) => setCommentText(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSubmitComment();
-                    }
-                  }}
-                  className="h-8 text-sm"
-                />
-                <Button size="sm" className="h-8 px-3" onClick={handleSubmitComment} disabled={!commentText.trim()}>
-                  <Send className="h-4 w-4" />
-                </Button>
+            {/* Reply box — contributors only */}
+            {canContribute && (
+              <div className="mt-4 flex gap-2">
+                <Avatar className="h-7 w-7 shrink-0">
+                  <AvatarFallback className={cn("text-[10px] font-semibold", currentUserColor)}>
+                    {currentUserInitials}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 flex gap-2">
+                  <Input
+                    placeholder="Add a comment..."
+                    value={commentText}
+                    onChange={(e) => setCommentText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSubmitComment();
+                      }
+                    }}
+                    className="h-8 text-sm"
+                  />
+                  <Button size="sm" className="h-8 px-3" onClick={handleSubmitComment} disabled={!commentText.trim()}>
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         )}
       </div>

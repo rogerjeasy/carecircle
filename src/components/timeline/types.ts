@@ -27,3 +27,12 @@ export interface TimelineEvent {
   comments: TimelineComment[];
   reactions: { userId: string; type: "heart" }[];
 }
+
+/** Everything the Timeline screen needs, assembled server-side and passed in as one prop. */
+export interface TimelineData {
+  /** The active circle this feed belongs to — used to remount the screen on circle switch. */
+  circleId: string;
+  events: TimelineEvent[];
+  /** Whether older events remain beyond the loaded page (drives "Load earlier updates"). */
+  hasMore: boolean;
+}

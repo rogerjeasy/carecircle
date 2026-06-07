@@ -19,9 +19,13 @@ import type { Visibility } from "./types";
 
 export function Composer({
   role,
+  authorInitials,
+  authorColor,
   onPost,
 }: {
   role: UserRole;
+  authorInitials: string;
+  authorColor: string;
   onPost: (text: string, visibility: Visibility) => void;
 }) {
   const [text, setText] = React.useState("");
@@ -54,7 +58,7 @@ export function Composer({
       <CardContent className="p-4 sm:p-4">
         <div className="flex gap-3">
           <Avatar className="h-10 w-10 shrink-0">
-            <AvatarFallback className="bg-accent/10 text-accent text-sm font-semibold">MR</AvatarFallback>
+            <AvatarFallback className={cn("text-sm font-semibold", authorColor)}>{authorInitials}</AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
             <textarea
