@@ -16,6 +16,7 @@ import { db } from '@/db';
 import { users, accounts, sessions, verificationTokens } from '@/db/schema';
 import { verifyPassword } from '@/lib/password';
 import { recordLoginEvent, recordLogoutEvent } from '@/db/audit';
+import { serverLog, maskEmail } from '@/lib/log';
 
 /** Which OAuth providers are configured — also read by the UI to show/hide the buttons. */
 export const authProviders = {
@@ -54,20 +55,40 @@ providers.push(
     authorize: async (creds) => {
       const email = String(creds?.email ?? '').trim().toLowerCase();
       const password = String(creds?.password ?? '');
-      if (!email || !password) return null;
+      if (!email || !password) {
+        serverLog('auth', 'authorize', 'failure', { email: maskEmail(email), reason: 'missing_fields' });
+        return null;
+      }
 
       try {
-        const [user] = await db
+        const rows = await db
           .select()
           .from(users)
-          .where(sql`lower(${users.email}) = ${email}`)
-          .limit(1);
+          .where(sql`lower(${users.email}) = ${email}`);
 
-        // No such user, or an OAuth-only account with no password set.
-        if (!user?.passwordHash) return null;
+        // Diagnostic only — no password/PII. Distinguishes the three silent null paths so a
+        // "wrong email/password" failure is debuggable from the server console.
+        if (rows.length === 0) {
+          serverLog('auth', 'authorize', 'failure', { email: maskEmail(email), reason: 'user_not_found' });
+          return null;
+        }
+        if (rows.length > 1) {
+          // Should be impossible (unique index on lower(email)); flag if the constraint is missing.
+          serverLog('auth', 'authorize', 'failure', { email: maskEmail(email), reason: 'duplicate_user_rows', count: rows.length });
+        }
+        const user = rows[0];
+
+        // OAuth-only account with no password set.
+        if (!user.passwordHash) {
+          serverLog('auth', 'authorize', 'failure', { email: maskEmail(email), reason: 'no_password_hash' });
+          return null;
+        }
 
         const ok = await verifyPassword(password, user.passwordHash);
-        if (!ok) return null;
+        if (!ok) {
+          serverLog('auth', 'authorize', 'failure', { email: maskEmail(email), reason: 'bad_password' });
+          return null;
+        }
 
         return { id: user.id, email: user.email, name: user.name, image: user.image };
       } catch (err) {
