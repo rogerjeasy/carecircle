@@ -25,6 +25,8 @@ export const roleLabels: Record<UserRole, string> = {
 };
 
 // Define which nav items are visible for each role
+// Each role sees a tailored, intentionally-smaller surface. The role-view switcher swaps these so
+// the whole experience (nav + which dashboard scope renders) changes from a single login.
 export const roleNavAccess: Record<UserRole, string[]> = {
   coordinator: [
     "/dashboard",
@@ -39,6 +41,9 @@ export const roleNavAccess: Record<UserRole, string[]> = {
     "/ask",
     "/settings",
     "/rota",
+    "/incidents",
+    "/notifications",
+    "/emergency-card",
   ],
   family: [
     "/dashboard",
@@ -49,39 +54,51 @@ export const roleNavAccess: Record<UserRole, string[]> = {
     "/documents",
     "/digest",
     "/ask",
+    "/incidents",
+    "/notifications",
+    "/emergency-card",
   ],
+  // Caregiver: a focused "my shift" surface — Today, Meds, Tasks, Timeline, Profile, Emergency Card.
   caregiver: [
     "/dashboard",
-    "/timeline",
     "/medications",
-    "/appointments",
     "/tasks",
-    "/health",
-    "/documents",
-    "/ask",
+    "/timeline",
+    "/profile",
+    "/emergency-card",
   ],
+  // Read-only relative: reassurance + following along, nothing to manage.
   readonly: [
     "/dashboard",
     "/timeline",
-    "/health",
+    "/digest",
     "/documents",
   ],
+  // Care recipient: a small, dignified surface focused on themselves.
   "care-recipient": [
     "/dashboard",
-    "/timeline",
     "/medications",
     "/appointments",
-    "/health",
-    "/ask",
+    "/emergency-card",
   ],
+  // Clinician: a read-only clinical lens.
   clinician: [
     "/dashboard",
-    "/timeline",
-    "/medications",
     "/health",
+    "/medications",
+    "/timeline",
     "/documents",
-    "/ask",
   ],
+};
+
+/** Per-role label override for the home (/dashboard) nav item. */
+export const dashboardLabelByRole: Record<UserRole, string> = {
+  coordinator: "Dashboard",
+  family: "Dashboard",
+  caregiver: "Today",
+  readonly: "Home",
+  "care-recipient": "Home",
+  clinician: "Summary",
 };
 
 /** A care circle as the sidebar's "Switch Circle" menu needs it (data + an avatar color). */

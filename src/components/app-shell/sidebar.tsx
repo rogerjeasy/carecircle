@@ -26,8 +26,9 @@ import {
   MoreHorizontal,
   Check,
   CalendarClock,
+  ShieldAlert,
 } from "lucide-react";
-import { useAppShell, roleLabels, UserRole } from "./app-shell-context";
+import { useAppShell, roleLabels, dashboardLabelByRole, UserRole } from "./app-shell-context";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -64,6 +65,8 @@ const navItems = [
   { href: "/digest", label: "Digest", icon: Mail },
   { href: "/rota", label: "Rota", icon: CalendarClock },
   { href: "/ask", label: "Ask CareCircle", icon: Sparkles },
+  { href: "/profile", label: "Profile", icon: User },
+  { href: "/emergency-card", label: "Emergency Card", icon: ShieldAlert },
 ];
 
 // Placeholder shown in the circle switcher until the real circles load.
@@ -165,6 +168,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
           {visibleNavItems.map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
             const Icon = item.icon;
+            const itemLabel = item.href === "/dashboard" ? dashboardLabelByRole[role] : item.label;
 
             const navLink = (
               <Link
@@ -185,7 +189,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
                 <Icon className={cn("h-5 w-5 shrink-0", isActive && "text-primary")} />
                 {!collapsed && (
                   <>
-                    <span className="truncate">{item.label}</span>
+                    <span className="truncate">{itemLabel}</span>
                     {item.urgent && (
                       <span className="ml-auto h-2 w-2 rounded-full bg-destructive" />
                     )}
@@ -202,7 +206,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
                 <Tooltip key={item.href} delayDuration={0}>
                   <TooltipTrigger asChild>{navLink}</TooltipTrigger>
                   <TooltipContent side="right" className="flex items-center gap-2">
-                    {item.label}
+                    {itemLabel}
                     {item.urgent && (
                       <span className="h-2 w-2 rounded-full bg-destructive" />
                     )}
@@ -287,13 +291,17 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <User className="mr-2 h-4 w-4" />
-              Profile
+            <DropdownMenuItem asChild>
+              <Link href="/profile">
+                <User className="mr-2 h-4 w-4" />
+                Profile
+              </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Bell className="mr-2 h-4 w-4" />
-              Notification settings
+            <DropdownMenuItem asChild>
+              <Link href="/settings">
+                <Bell className="mr-2 h-4 w-4" />
+                Notification settings
+              </Link>
             </DropdownMenuItem>
             <DropdownMenuSub>
               <DropdownMenuSubTrigger>
@@ -367,7 +375,7 @@ interface MobileBottomNavProps {
 
 export function MobileBottomNav({ onMoreClick }: MobileBottomNavProps) {
   const pathname = usePathname();
-  const { canAccessRoute } = useAppShell();
+  const { canAccessRoute, role } = useAppShell();
   const [isVisible, setIsVisible] = React.useState(true);
   const [lastScrollY, setLastScrollY] = React.useState(0);
 
@@ -409,7 +417,7 @@ export function MobileBottomNav({ onMoreClick }: MobileBottomNavProps) {
   return (
     <nav
       className={cn(
-        "fixed inset-x-0 bottom-0 z-40 border-t bg-card safe-area-inset-bottom md:hidden",
+        "fixed inset-x-0 bottom-0 z-40 border-t bg-card safe-area-inset-bottom md:hidden print:hidden",
         "transition-transform duration-300 ease-in-out motion-reduce:transition-none",
         isVisible ? "translate-y-0" : "translate-y-full"
       )}
@@ -433,6 +441,8 @@ export function MobileBottomNav({ onMoreClick }: MobileBottomNavProps) {
             );
           }
 
+          const itemLabel = item.href === "/dashboard" ? dashboardLabelByRole[role] : item.label;
+
           return (
             <Link
               key={item.href}
@@ -444,7 +454,7 @@ export function MobileBottomNav({ onMoreClick }: MobileBottomNavProps) {
               aria-current={isActive ? "page" : undefined}
             >
               <Icon className="h-5 w-5" />
-              <span className="text-[10px] font-medium">{item.label}</span>
+              <span className="text-[10px] font-medium">{itemLabel}</span>
               {item.urgent && (
                 <span className="absolute right-1/4 top-1 h-2 w-2 rounded-full bg-destructive" />
               )}

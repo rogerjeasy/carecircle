@@ -53,8 +53,8 @@ export function AppShell({ children }: AppShellProps) {
     <AppShellProvider>
       <TooltipProvider>
         <div className="min-h-screen bg-background">
-          {/* Desktop/Tablet Sidebar - hidden on mobile */}
-          <div className="hidden md:block">
+          {/* Desktop/Tablet Sidebar - hidden on mobile (and when printing) */}
+          <div className="hidden md:block print:hidden">
             <Sidebar collapsed={sidebarCollapsed} onToggle={handleToggleSidebar} />
           </div>
 
@@ -68,7 +68,9 @@ export function AppShell({ children }: AppShellProps) {
               // Adjust left margin based on sidebar state (desktop only)
               "md:ml-[72px] lg:ml-[264px]",
               sidebarCollapsed && "md:ml-[72px] lg:ml-[72px]",
-              !sidebarCollapsed && "md:ml-[72px] lg:ml-[264px]"
+              !sidebarCollapsed && "md:ml-[72px] lg:ml-[264px]",
+              // Full-bleed when printing (chrome is hidden)
+              "print:ml-0"
             )}
           >
             {/* Top bar */}
@@ -78,8 +80,8 @@ export function AppShell({ children }: AppShellProps) {
             />
 
             {/* Page content */}
-            <main className="flex-1 pb-20 md:pb-0">
-              <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+            <main className="flex-1 pb-20 md:pb-0 print:pb-0">
+              <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 print:max-w-none print:p-0">
                 <div className="motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300">
                   {children}
                 </div>

@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import {
   Menu,
   Search,
-  Bell,
   Sparkles,
   X,
   Phone,
@@ -14,8 +13,10 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { ReportIncidentButton } from "@/components/incidents/report-incident-button";
+import { NotificationsBell } from "@/components/notifications";
+import { useAppShell, dashboardLabelByRole } from "./app-shell-context";
 
 // Page titles mapping
 const pageTitles: Record<string, string> = {
@@ -30,6 +31,10 @@ const pageTitles: Record<string, string> = {
   "/digest": "Digest",
   "/ask": "Ask CareCircle",
   "/settings": "Settings",
+  "/notifications": "Notifications",
+  "/incidents": "Incidents",
+  "/profile": "Profile",
+  "/emergency-card": "Emergency Card",
 };
 
 interface TopBarProps {
@@ -39,18 +44,20 @@ interface TopBarProps {
 
 export function TopBar({ sidebarCollapsed, onMenuClick }: TopBarProps) {
   const pathname = usePathname();
+  const { role } = useAppShell();
   const [searchOpen, setSearchOpen] = React.useState(false);
-  const [unreadCount] = React.useState(3);
 
   // Current on-call person (would come from API in real app)
   const onCallPerson = { name: "Grace", href: "/rota" };
 
-  const pageTitle = pageTitles[pathname] || "Dashboard";
+  // The home route's title follows the role-view (Today / Home / Summary / Dashboard).
+  const pageTitle =
+    pathname === "/dashboard" ? dashboardLabelByRole[role] : pageTitles[pathname] || "Dashboard";
 
   return (
     <header
       className={cn(
-        "sticky top-0 z-20 flex h-16 items-center gap-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 sm:px-6 lg:px-8 transition-all duration-300",
+        "sticky top-0 z-20 flex h-16 items-center gap-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 sm:px-6 lg:px-8 transition-all duration-300 print:hidden",
         // Adjust left padding based on sidebar state on desktop
         "lg:pl-8"
       )}
@@ -108,23 +115,17 @@ export function TopBar({ sidebarCollapsed, onMenuClick }: TopBarProps) {
           {searchOpen ? <X className="h-5 w-5" /> : <Search className="h-5 w-5" />}
         </Button>
 
-        {/* Notifications */}
-        <Button
+        {/* Report an incident — global quick trigger */}
+        <ReportIncidentButton
           variant="ghost"
           size="icon"
-          className="relative"
-          aria-label={`Notifications, ${unreadCount} unread`}
-        >
-          <Bell className="h-5 w-5" />
-          {unreadCount > 0 && (
-            <Badge
-              variant="destructive"
-              className="absolute -right-0.5 -top-0.5 h-5 min-w-5 rounded-full px-1.5 text-[10px]"
-            >
-              {unreadCount}
-            </Badge>
-          )}
-        </Button>
+          iconOnly
+          label="Report an incident"
+          className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+        />
+
+        {/* Notifications */}
+        <NotificationsBell />
 
         {/* Theme toggle */}
         <ThemeToggle />
