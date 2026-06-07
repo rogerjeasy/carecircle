@@ -14,17 +14,17 @@ const productLinks = [
 ];
 
 const companyLinks = [
-  { href: "#about", label: "About" },
-  { href: "#careers", label: "Careers" },
-  { href: "#blog", label: "Blog" },
-  { href: "#contact", label: "Contact" },
+  { href: "/about", label: "About" },
+  { href: "/careers", label: "Careers" },
+  { href: "/blog", label: "Blog" },
+  { href: "/contact", label: "Contact" },
 ];
 
 const legalLinks = [
-  { href: "#privacy", label: "Privacy" },
-  { href: "#terms", label: "Terms" },
-  { href: "#security", label: "Security" },
-  { href: "#hipaa", label: "HIPAA" },
+  { href: "/privacy", label: "Privacy" },
+  { href: "/terms", label: "Terms" },
+  { href: "/security", label: "Security" },
+  { href: "/hipaa", label: "HIPAA" },
 ];
 
 export function MarketingFooter() {

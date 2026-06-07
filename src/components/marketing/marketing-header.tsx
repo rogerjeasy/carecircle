@@ -17,7 +17,7 @@ import {
 const navLinks = [
   { href: "/how-it-works", label: "How it works" },
   { href: "/pricing", label: "Pricing" },
-  { href: "/how-it-works", label: "About" },
+  { href: "/about", label: "About" },
 ];
 
 export function MarketingHeader() {
