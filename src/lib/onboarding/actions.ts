@@ -15,9 +15,9 @@
  */
 import { z } from 'zod';
 import { sql, eq } from 'drizzle-orm';
-import { headers } from 'next/headers';
 import { requireSession, withAuthedDb } from '@/db/dal';
 import { careRecipientProfile, timelineEvent, invitation } from '@/db/schema';
+import { getAppOrigin } from '@/lib/url';
 import { recordAuditEvent } from '@/db/audit';
 import { randomToken } from '@/lib/auth/tokens';
 import { sendInvitationEmail, sendWelcomeEmail } from '@/lib/email';
@@ -67,15 +67,6 @@ const onboardingSchema = z.object({
 });
 
 export type OnboardingInput = z.input<typeof onboardingSchema>;
-
-/** Best-effort request origin for building absolute invite links. */
-async function appOrigin(): Promise<string> {
-  if (process.env.AUTH_URL) return process.env.AUTH_URL.replace(/\/$/, '');
-  const h = await headers();
-  const host = h.get('x-forwarded-host') ?? h.get('host') ?? 'localhost:3000';
-  const proto = h.get('x-forwarded-proto') ?? (host.startsWith('localhost') ? 'http' : 'https');
-  return `${proto}://${host}`;
-}
 
 /**
  * Classify the photo the wizard submitted. An external `https://` URL is trusted and stored
@@ -245,7 +236,7 @@ export async function completeOnboarding(input: OnboardingInput): Promise<Onboar
 
   // Emails are best-effort and happen AFTER the circle is committed — a delivery hiccup must
   // never roll back a successfully-created circle. (No provider configured → logged to console.)
-  const origin = await appOrigin();
+  const origin = await getAppOrigin();
   const inviterName = user.name?.trim() || 'A family member';
 
   // Welcome the owner who just set everything up.

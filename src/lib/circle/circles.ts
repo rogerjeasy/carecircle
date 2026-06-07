@@ -13,9 +13,10 @@ import { cookies } from 'next/headers';
 import { and, asc, eq } from 'drizzle-orm';
 import { auth } from '@/auth';
 import { getSessionUserId, withAuthedDb } from '@/db/dal';
-import { membership, careCircle, users } from '@/db/schema';
+import { membership, careCircle, careRecipientProfile, users } from '@/db/schema';
 import { ACTIVE_CIRCLE_COOKIE, resolveActiveMembership } from '@/lib/circle/active-circle';
 import { dbRoleLabel } from '@/lib/circle/roles';
+import { resolveStoredUrl } from '@/lib/storage/s3';
 import { serverLog, maskEmail } from '@/lib/log';
 
 export interface CircleSummary {
@@ -23,6 +24,12 @@ export interface CircleSummary {
   name: string;
   /** Two-letter monogram for the circle avatar. */
   initials: string;
+  /**
+   * The care recipient's photo for this circle, as a ready-to-use URL (presigned for S3 keys),
+   * or null when the circle has no recipient photo. Lets the switcher show the same face the
+   * dashboard does, instead of only a monogram.
+   */
+  imageUrl: string | null;
 }
 
 export interface CircleMember {
@@ -55,18 +62,37 @@ export async function getUserCircles(): Promise<CircleSummary[]> {
   try {
     const rows = await withAuthedDb((tx) =>
       tx
-        .select({ id: careCircle.id, name: careCircle.name })
+        .select({
+          id: careCircle.id,
+          name: careCircle.name,
+          // The recipient photo is an S3 object key (private bucket) or external https URL.
+          avatarKey: careRecipientProfile.avatarUrl,
+        })
         .from(membership)
         .innerJoin(careCircle, eq(careCircle.id, membership.circleId))
+        // One recipient profile per circle (avatarUrl is nullable / the row may be absent),
+        // so left-join to keep circles without a photo.
+        .leftJoin(careRecipientProfile, eq(careRecipientProfile.circleId, careCircle.id))
         .where(and(eq(membership.userId, userId), eq(membership.status, 'active')))
         .orderBy(asc(membership.createdAt)),
     );
 
+    // Resolve each stored key to a viewable, short-lived URL (the bucket is private). Done in
+    // parallel; passthrough for data:/https: values, null when there's no photo.
+    const circles = await Promise.all(
+      rows.map(async (r) => ({
+        id: r.id,
+        name: r.name,
+        initials: initialsFrom(r.name),
+        imageUrl: await resolveStoredUrl(r.avatarKey),
+      })),
+    );
+
     serverLog('circle', 'getUserCircles', 'success', {
       email: maskEmail(session.user?.email),
-      count: rows.length,
+      count: circles.length,
     });
-    return rows.map((r) => ({ id: r.id, name: r.name, initials: initialsFrom(r.name) }));
+    return circles;
   } catch (err) {
     serverLog('circle', 'getUserCircles', 'failure', {
       email: maskEmail(session.user?.email),

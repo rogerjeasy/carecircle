@@ -13,12 +13,12 @@
  */
 import { z } from 'zod';
 import { eq, sql } from 'drizzle-orm';
-import { headers } from 'next/headers';
 import { requireSession, withAuthedDb } from '@/db/dal';
 import { timelineEvent, careCircle, careRecipientProfile } from '@/db/schema';
 import { recordAuditEvent } from '@/db/audit';
 import { sendJoinedCircleEmail } from '@/lib/email';
 import { serverLog } from '@/lib/log';
+import { getAppOrigin } from '@/lib/url';
 
 export type AcceptResult =
   | { ok: true; circleId: string; alreadyMember: boolean }
@@ -26,14 +26,6 @@ export type AcceptResult =
 
 const tokenSchema = z.string().trim().min(1).max(512);
 
-/** Best-effort request origin for building the absolute dashboard link in the welcome email. */
-async function appOrigin(): Promise<string> {
-  if (process.env.AUTH_URL) return process.env.AUTH_URL.replace(/\/$/, '');
-  const h = await headers();
-  const host = h.get('x-forwarded-host') ?? h.get('host') ?? 'localhost:3000';
-  const proto = h.get('x-forwarded-proto') ?? (host.startsWith('localhost') ? 'http' : 'https');
-  return `${proto}://${host}`;
-}
 
 type AcceptRow = {
   circle_id: string;
@@ -109,7 +101,7 @@ export async function acceptInvitation(token: string): Promise<AcceptResult> {
     // Welcome the new member — best-effort, after the join is committed. First-time joins only.
     if (!result.alreadyMember && user.email) {
       try {
-        const origin = await appOrigin();
+        const origin = await getAppOrigin();
         await sendJoinedCircleEmail({
           to: user.email,
           recipientName: result.recipientName,

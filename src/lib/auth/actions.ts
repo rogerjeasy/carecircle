@@ -8,7 +8,7 @@
 import { z } from 'zod';
 import { sql, eq } from 'drizzle-orm';
 import { AuthError } from 'next-auth';
-import { headers } from 'next/headers';
+import { redirect } from 'next/navigation';
 import { db } from '@/db';
 import { users, passwordResetTokens } from '@/db/schema';
 import { hashPassword } from '@/lib/password';
@@ -17,6 +17,7 @@ import { sendPasswordResetEmail } from '@/lib/email';
 import { signIn, signOut, authProviders, auth } from '@/auth';
 import { isPlatformAdminEmail } from '@/lib/admin/access';
 import { serverLog, maskEmail } from '@/lib/log';
+import { getAppOrigin } from '@/lib/url';
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
 
@@ -39,7 +40,13 @@ export async function resolveLandingPath(): Promise<string> {
 // Sign out — destroys the session server-side, then redirects to sign-in.
 // ---------------------------------------------------------------------------
 export async function signOutAction(): Promise<void> {
-  await signOut({ redirectTo: '/sign-in' });
+  // Clear the session but DON'T let Auth.js build the redirect: it resolves `redirectTo` against
+  // AUTH_URL, which is pinned to the production domain — so a local sign-out would bounce to the
+  // deployed site. Instead redirect via next/navigation, which is relative to the CURRENT request
+  // host (localhost in dev, the deployed origin in prod). Land on the public homepage, not /sign-in.
+  await signOut({ redirect: false });
+  serverLog('auth', 'signOut', 'success');
+  redirect('/');
 }
 
 const RESET_TTL_MS = 60 * 60 * 1000; // 1 hour
@@ -155,14 +162,6 @@ export async function socialSignIn(
 // ---------------------------------------------------------------------------
 // Forgot password — issue a one-time reset link.
 // ---------------------------------------------------------------------------
-async function appOrigin(): Promise<string> {
-  if (process.env.AUTH_URL) return process.env.AUTH_URL.replace(/\/$/, '');
-  const h = await headers();
-  const host = h.get('x-forwarded-host') ?? h.get('host') ?? 'localhost:3000';
-  const proto = h.get('x-forwarded-proto') ?? (host.startsWith('localhost') ? 'http' : 'https');
-  return `${proto}://${host}`;
-}
-
 export async function requestPasswordReset(formData: FormData): Promise<ActionResult> {
   const parsed = z.string().trim().email().safeParse((formData.get('email') ?? '').toString());
   if (!parsed.success) return { ok: false, error: 'Please enter a valid email address.' };
@@ -182,7 +181,7 @@ export async function requestPasswordReset(formData: FormData): Promise<ActionRe
       tokenHash: hashToken(token),
       expiresAt: new Date(Date.now() + RESET_TTL_MS),
     });
-    const origin = await appOrigin();
+    const origin = await getAppOrigin();
     const resetUrl = `${origin}/reset-password?token=${token}&uid=${user.id}`;
     try {
       await sendPasswordResetEmail(user.email, resetUrl);
