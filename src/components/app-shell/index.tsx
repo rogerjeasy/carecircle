@@ -6,7 +6,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Sidebar, MobileBottomNav } from "./sidebar";
 import { TopBar } from "./top-bar";
 import { MobileNavSheet } from "./mobile-nav-sheet";
-import { AppShellProvider } from "./app-shell-context";
+import { AppShellProvider, useAppShell } from "./app-shell-context";
+import { CreateCircleDialog } from "@/components/onboarding";
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -92,8 +93,33 @@ export function AppShell({ children }: AppShellProps) {
 
           {/* Mobile bottom nav - only on mobile */}
           <MobileBottomNav onMoreClick={() => setMobileNavOpen(true)} />
+
+          {/* "Create a new care circle" modal — reuses the onboarding wizard in-place so the
+              user never leaves the dashboard. Mounted once, opened from either nav switcher. */}
+          <CreateCircleHost />
         </div>
       </TooltipProvider>
     </AppShellProvider>
+  );
+}
+
+/**
+ * Bridges the shared "Create new circle" dialog to the app-shell context. On success it refreshes
+ * the circle list and pivots the active circle to the brand-new one, then lets the dialog close —
+ * all without a navigation, so the dashboard simply re-renders for the new circle.
+ */
+function CreateCircleHost() {
+  const { createCircleOpen, setCreateCircleOpen, refreshCircles, setActiveCircleId } = useAppShell();
+  return (
+    <CreateCircleDialog
+      open={createCircleOpen}
+      onOpenChange={setCreateCircleOpen}
+      onCreated={async ({ circleId }) => {
+        // Pull the new circle into the switcher, then make it active (sets the cookie, re-resolves
+        // the user's role for it, and refreshes server components for the dashboard).
+        await refreshCircles();
+        await setActiveCircleId(circleId);
+      }}
+    />
   );
 }

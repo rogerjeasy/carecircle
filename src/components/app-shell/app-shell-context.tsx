@@ -129,6 +129,11 @@ interface AppShellContextValue {
   /** Currently-selected circle id (defaults to the primary circle once loaded). */
   activeCircleId: string | null;
   setActiveCircleId: (id: string) => void;
+  /** Re-fetch the "Switch Circle" list (e.g. after creating a new circle). */
+  refreshCircles: () => Promise<void>;
+  /** Whether the "Create a new care circle" modal is open. */
+  createCircleOpen: boolean;
+  setCreateCircleOpen: (open: boolean) => void;
 }
 
 const AppShellContext = React.createContext<AppShellContextValue | undefined>(undefined);
@@ -140,6 +145,7 @@ export function AppShellProvider({ children }: { children: React.ReactNode }) {
   const [userLoading, setUserLoading] = React.useState(true);
   const [circles, setCircles] = React.useState<SidebarCircle[]>([]);
   const [activeCircleId, setActiveCircleIdState] = React.useState<string | null>(null);
+  const [createCircleOpen, setCreateCircleOpen] = React.useState(false);
 
   // Optimistic default from localStorage so the demo "Switch role view" feels instant; the
   // real membership role (fetched below) is authoritative and overrides this once it arrives.
@@ -186,24 +192,23 @@ export function AppShellProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  // Fetch the user's real care circles for the "Switch Circle" menu; default the selection to
-  // the primary (first) circle. Colors are assigned client-side, by order.
-  React.useEffect(() => {
-    let active = true;
-    getUserCircles()
-      .then((list) => {
-        if (!active) return;
-        const colored = list.map((c, i) => ({ ...c, color: CIRCLE_COLORS[i % CIRCLE_COLORS.length] }));
-        setCircles(colored);
-        setActiveCircleIdState((prev) => prev ?? colored[0]?.id ?? null);
-      })
-      .catch(() => {
-        /* keep an empty list — the menu just won't show circles */
-      });
-    return () => {
-      active = false;
-    };
+  // Fetch the user's real care circles for the "Switch Circle" menu, assigning avatar colors
+  // by order. Defaults the selection to the primary (first) circle, but never clobbers an
+  // already-chosen one (the `prev ??` keeps the current selection on a refresh).
+  const loadCircles = React.useCallback(async () => {
+    try {
+      const list = await getUserCircles();
+      const colored = list.map((c, i) => ({ ...c, color: CIRCLE_COLORS[i % CIRCLE_COLORS.length] }));
+      setCircles(colored);
+      setActiveCircleIdState((prev) => prev ?? colored[0]?.id ?? null);
+    } catch {
+      /* keep the existing list — the menu just won't update */
+    }
   }, []);
+
+  React.useEffect(() => {
+    void loadCircles();
+  }, [loadCircles]);
 
   const setRole = React.useCallback((newRole: UserRole) => {
     setRoleState(newRole);
@@ -247,7 +252,20 @@ export function AppShellProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AppShellContext.Provider
-      value={{ role, setRole, canAccessRoute, user, userLoading, signOut, circles, activeCircleId, setActiveCircleId }}
+      value={{
+        role,
+        setRole,
+        canAccessRoute,
+        user,
+        userLoading,
+        signOut,
+        circles,
+        activeCircleId,
+        setActiveCircleId,
+        refreshCircles: loadCircles,
+        createCircleOpen,
+        setCreateCircleOpen,
+      }}
     >
       {children}
     </AppShellContext.Provider>

@@ -74,7 +74,7 @@ interface MobileNavSheetProps {
 
 export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
   const pathname = usePathname();
-  const { role, setRole, canAccessRoute, user, signOut, circles, activeCircleId, setActiveCircleId } = useAppShell();
+  const { role, setRole, canAccessRoute, user, signOut, circles, activeCircleId, setActiveCircleId, setCreateCircleOpen } = useAppShell();
   const activeCircle = circles.find((c) => c.id === activeCircleId) ?? circles[0] ?? PLACEHOLDER_CIRCLE;
 
   // Real signed-in user (with graceful fallbacks while the profile loads).
@@ -142,7 +142,15 @@ export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
                 </DropdownMenuItem>
               ))}
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="gap-3">
+              <DropdownMenuItem
+                className="gap-3"
+                onSelect={() => {
+                  // Close the mobile nav sheet first so the create-circle modal isn't trapped
+                  // behind it, then open the wizard.
+                  onOpenChange(false);
+                  setCreateCircleOpen(true);
+                }}
+              >
                 <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-dashed border-muted-foreground/40">
                   <Plus className="h-3.5 w-3.5 text-muted-foreground" />
                 </div>
