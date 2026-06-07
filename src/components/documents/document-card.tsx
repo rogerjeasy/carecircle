@@ -25,7 +25,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { FileThumb } from "./file-thumb";
 import { categoryMeta, sensitivityMeta } from "./data";
-import { expiryInfo, memberById, uploadedLabel } from "./utils";
+import { expiryInfo, firstName, uploadedLabel } from "./utils";
 import type { DocumentItem } from "./types";
 
 export type DocAction = "preview" | "download" | "emergency" | "rename" | "delete";
@@ -42,7 +42,6 @@ export function DocumentCard({ doc, canManage, now, onAction }: DocumentCardProp
   const cat = categoryMeta[doc.category];
   const CatIcon = cat.icon;
   const sens = sensitivityMeta[doc.sensitivity];
-  const uploader = memberById(doc.uploadedById);
   const expiry = expiryInfo(doc, now);
 
   return (
@@ -148,12 +147,12 @@ export function DocumentCard({ doc, canManage, now, onAction }: DocumentCardProp
 
         <div className="mt-auto flex items-center gap-2 border-t pt-2 text-xs text-muted-foreground">
           <Avatar className="h-5 w-5 shrink-0">
-            <AvatarFallback className={cn("text-[9px] font-semibold", uploader?.color)}>
-              {uploader?.initials ?? "?"}
+            <AvatarFallback className={cn("text-[9px] font-semibold", doc.uploaderColor)}>
+              {doc.uploaderInitials}
             </AvatarFallback>
           </Avatar>
           <span className="min-w-0 truncate">
-            {uploader ? uploader.name.split(" ")[0] : "Someone"} · {uploadedLabel(doc.uploadedAt)}
+            {firstName(doc.uploaderName)} · {uploadedLabel(doc.uploadedAt)}
           </span>
           <span className="ml-auto shrink-0 tabular-nums">{doc.size}</span>
         </div>

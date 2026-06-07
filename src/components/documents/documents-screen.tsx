@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { FileText, Lock, Plus, Search, ShieldCheck } from "lucide-react";
 import { useAppShell } from "@/components/app-shell/app-shell-context";
@@ -27,34 +28,43 @@ import {
 import { DocumentCard, type DocAction } from "./document-card";
 import { LockedCard } from "./locked-card";
 import { DocumentViewer } from "./document-viewer";
-import { UploadModal } from "./upload-modal";
+import { UploadModal, type UploadMeta } from "./upload-modal";
 import { RenameDialog } from "./rename-dialog";
-import { DocumentsGridSkeleton } from "./document-skeletons";
 import { GatedControl } from "./gated-control";
-import { buildDocuments, categoryMeta, CATEGORY_FILTERS } from "./data";
-import { canUpload, isLockedFor } from "./utils";
-import type { DocCategory, DocumentItem } from "./types";
+import { categoryMeta, CATEGORY_FILTERS } from "./data";
+import { canUpload, canSeeRestricted, isLockedFor } from "./utils";
+import {
+  uploadDocument,
+  renameDocument,
+  deleteDocument,
+  toggleEmergencyCard,
+} from "@/lib/documents/actions";
+import type { DocCategory, DocumentItem, DocumentsData } from "./types";
 
-/** The Documents vault: searchable, filterable grid with RBAC-aware locked placeholders. */
-export function DocumentsScreen() {
+export interface DocumentsScreenProps {
+  /** Real vault data loaded server-side for the active circle, or null when there's no circle/data. */
+  initial: DocumentsData | null;
+}
+
+function stripExt(name: string): string {
+  return name.replace(/\.[^.]+$/, "");
+}
+
+/** The Documents vault: searchable, filterable grid backed by the server with sensitivity-aware RLS. */
+export function DocumentsScreen({ initial }: DocumentsScreenProps) {
+  const router = useRouter();
   const { role } = useAppShell();
   const allowUpload = canUpload(role);
 
   const [now] = React.useState(() => new Date());
-  const [docs, setDocs] = React.useState<DocumentItem[]>(() => buildDocuments(now));
+  const [docs, setDocs] = React.useState<DocumentItem[]>(initial?.documents ?? []);
   const [query, setQuery] = React.useState("");
   const [category, setCategory] = React.useState<DocCategory | "all">("all");
-  const [loading, setLoading] = React.useState(true);
 
   const [viewer, setViewer] = React.useState<DocumentItem | null>(null);
   const [renaming, setRenaming] = React.useState<DocumentItem | null>(null);
   const [deleting, setDeleting] = React.useState<DocumentItem | null>(null);
   const [uploadOpen, setUploadOpen] = React.useState(false);
-
-  React.useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 650);
-    return () => clearTimeout(t);
-  }, []);
 
   const q = query.trim().toLowerCase();
   const visible = React.useMemo(
@@ -63,12 +73,16 @@ export function DocumentsScreen() {
         if (category !== "all" && d.category !== category) return false;
         const locked = isLockedFor(d, role);
         if (!q) return true;
-        // Never match restricted placeholders against search (their title is not exposed).
         if (locked) return false;
         return d.title.toLowerCase().includes(q) || categoryMeta[d.category].label.toLowerCase().includes(q);
       }),
     [docs, category, q, role]
   );
+
+  const openFile = (doc: DocumentItem) => {
+    if (doc.downloadUrl) window.open(doc.downloadUrl, "_blank", "noopener,noreferrer");
+    else toast.error("This file isn't available right now");
+  };
 
   const handleAction = (doc: DocumentItem, action: DocAction) => {
     switch (action) {
@@ -76,12 +90,20 @@ export function DocumentsScreen() {
         setViewer(doc);
         break;
       case "download":
-        toast.success(`Downloading “${doc.title}”`);
+        openFile(doc);
         break;
-      case "emergency":
-        setDocs((prev) => prev.map((d) => (d.id === doc.id ? { ...d, onEmergencyCard: !d.onEmergencyCard } : d)));
+      case "emergency": {
+        const prev = docs;
+        setDocs((p) => p.map((d) => (d.id === doc.id ? { ...d, onEmergencyCard: !d.onEmergencyCard } : d)));
         toast(doc.onEmergencyCard ? "Removed from emergency card" : "Added to emergency card");
+        void toggleEmergencyCard(doc.id).then((res) => {
+          if (!res.ok) {
+            setDocs(prev);
+            toast.error(res.error ?? "Couldn't update the emergency card");
+          }
+        });
         break;
+      }
       case "rename":
         setRenaming(doc);
         break;
@@ -91,29 +113,65 @@ export function DocumentsScreen() {
     }
   };
 
-  const confirmRename = (title: string) => {
-    if (renaming) {
-      setDocs((prev) => prev.map((d) => (d.id === renaming.id ? { ...d, title } : d)));
-      toast.success("Renamed");
-    }
+  const confirmRename = async (title: string) => {
+    const target = renaming;
     setRenaming(null);
+    if (!target) return;
+    const prev = docs;
+    setDocs((p) => p.map((d) => (d.id === target.id ? { ...d, title } : d)));
+    const res = await renameDocument(target.id, title);
+    if (res.ok) toast.success("Renamed");
+    else {
+      setDocs(prev);
+      toast.error(res.error ?? "Couldn't rename");
+    }
   };
 
-  const confirmDelete = () => {
-    if (deleting) {
-      setDocs((prev) => prev.filter((d) => d.id !== deleting.id));
-      toast(`“${deleting.title}” deleted`);
-    }
+  const confirmDelete = async () => {
+    const target = deleting;
     setDeleting(null);
+    if (!target) return;
+    const prev = docs;
+    setDocs((p) => p.filter((d) => d.id !== target.id));
+    const res = await deleteDocument(target.id);
+    if (res.ok) {
+      toast(`“${target.title}” deleted`);
+      router.refresh();
+    } else {
+      setDocs(prev);
+      toast.error(res.error ?? "Couldn't delete");
+    }
+  };
+
+  /** Real upload: one document per file (the action stores it in S3 + DB and returns the DTO). */
+  const handleUpload = async (files: File[], meta: UploadMeta): Promise<DocumentItem[]> => {
+    const created: DocumentItem[] = [];
+    for (const file of files) {
+      const fd = new FormData();
+      fd.set("file", file);
+      fd.set("title", files.length === 1 ? meta.title : stripExt(file.name));
+      fd.set("category", meta.category);
+      fd.set("sensitivity", meta.sensitivity);
+      fd.set("expiry", meta.expiry ?? "");
+      fd.set("onEmergencyCard", String(meta.onEmergencyCard));
+      const res = await uploadDocument(fd);
+      if (res.ok) created.push(res.data);
+      else toast.error(res.error ?? `Couldn't upload ${file.name}`);
+    }
+    return created;
   };
 
   const handleUploaded = (newDocs: DocumentItem[]) => {
-    setDocs((prev) => [...newDocs, ...prev]);
+    if (newDocs.length > 0) {
+      setDocs((prev) => [...newDocs, ...prev]);
+      toast.success(newDocs.length === 1 ? "Document uploaded" : `${newDocs.length} documents uploaded`);
+    }
     setUploadOpen(false);
-    toast.success(newDocs.length === 1 ? "Document uploaded" : `${newDocs.length} documents uploaded`);
   };
 
-  const restrictedHidden = docs.some((d) => isLockedFor(d, role));
+  // Role-based explainer: tell roles that can't see restricted docs that some may be coordinator-only.
+  // (The rows themselves are hidden by RLS — never sent to the client.)
+  const restrictedHidden = !canSeeRestricted(role);
 
   return (
     <div className="space-y-5">
@@ -162,16 +220,14 @@ export function DocumentsScreen() {
         <div className="flex items-start gap-2 rounded-xl border bg-muted/40 px-3 py-2.5 text-sm text-muted-foreground">
           <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
           <span>
-            Some documents are <span className="font-medium text-foreground">restricted to coordinators</span>. They show
-            as locked here — access is enforced in the database, not just hidden.
+            Some documents may be <span className="font-medium text-foreground">restricted to coordinators</span>. Access
+            is enforced in the database — restricted files are never sent to your device.
           </span>
         </div>
       )}
 
       {/* Grid */}
-      {loading ? (
-        <DocumentsGridSkeleton />
-      ) : docs.length === 0 ? (
+      {docs.length === 0 ? (
         <EmptyState allowUpload={allowUpload} onUpload={() => setUploadOpen(true)} variant="empty" />
       ) : visible.length === 0 ? (
         <EmptyState allowUpload={allowUpload} onUpload={() => setUploadOpen(true)} variant="no-results" />
@@ -198,18 +254,12 @@ export function DocumentsScreen() {
         doc={viewer}
         open={viewer !== null}
         onOpenChange={(o) => !o && setViewer(null)}
-        onDownload={() => viewer && toast.success(`Downloading “${viewer.title}”`)}
+        onDownload={() => viewer && openFile(viewer)}
       />
 
       {/* Upload */}
       {uploadOpen && (
-        <UploadModal
-          open
-          onOpenChange={setUploadOpen}
-          now={now}
-          uploaderId="maria"
-          onUploaded={handleUploaded}
-        />
+        <UploadModal open onOpenChange={setUploadOpen} onUpload={handleUpload} onUploaded={handleUploaded} />
       )}
 
       {/* Rename */}

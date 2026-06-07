@@ -3,9 +3,9 @@
 import * as React from "react";
 import { Check, FileText, ImageIcon, Loader2, UploadCloud, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
 import {
   Select,
@@ -16,26 +16,27 @@ import {
 } from "@/components/ui/select";
 import { FormField } from "./form-field";
 import { categoryMeta, sensitivityMeta } from "./data";
+import type { UploadMeta } from "./upload-modal";
 import type { DocCategory, DocumentItem, FileKind, Sensitivity } from "./types";
 
 interface PendingFile {
   id: string;
+  file: File;
   name: string;
   size: number;
   kind: FileKind;
   previewUrl?: string;
-  progress: number;
 }
 
 export interface UploadFormProps {
-  now: Date;
-  uploaderId: string;
+  onUpload: (files: File[], meta: UploadMeta) => Promise<DocumentItem[]>;
   onUploaded: (docs: DocumentItem[]) => void;
   onCancel: () => void;
 }
 
 const CATEGORY_OPTIONS = Object.keys(categoryMeta) as DocCategory[];
 const SENSITIVITY_OPTIONS: Sensitivity[] = ["standard", "sensitive", "restricted"];
+const MAX_BYTES = 15 * 1024 * 1024; // 15 MB (matches the server ceiling)
 
 function kindOf(file: File): FileKind {
   if (file.type.startsWith("image/")) return "image";
@@ -55,8 +56,8 @@ function stripExt(name: string): string {
 
 let counter = 1;
 
-/** The upload form: drag-and-drop dropzone → metadata → per-file progress → success. */
-export function UploadForm({ now, uploaderId, onUploaded, onCancel }: UploadFormProps) {
+/** The upload form: dropzone → metadata → real upload (one document per file) → success. */
+export function UploadForm({ onUpload, onUploaded, onCancel }: UploadFormProps) {
   const [files, setFiles] = React.useState<PendingFile[]>([]);
   const [dragging, setDragging] = React.useState(false);
   const [title, setTitle] = React.useState("");
@@ -66,23 +67,31 @@ export function UploadForm({ now, uploaderId, onUploaded, onCancel }: UploadForm
   const [onEmergencyCard, setOnEmergencyCard] = React.useState(false);
   const [phase, setPhase] = React.useState<"select" | "uploading" | "done">("select");
   const inputRef = React.useRef<HTMLInputElement>(null);
-  const timers = React.useRef<ReturnType<typeof setInterval>[]>([]);
 
-  React.useEffect(() => () => timers.current.forEach(clearInterval), []);
+  // Revoke any object URLs created for image previews on unmount.
+  React.useEffect(
+    () => () => files.forEach((f) => f.previewUrl && URL.revokeObjectURL(f.previewUrl)),
+    [files]
+  );
 
   const addFiles = (fileList: FileList | null) => {
     if (!fileList || fileList.length === 0) return;
-    const next: PendingFile[] = Array.from(fileList).map((f) => {
+    const next: PendingFile[] = [];
+    for (const f of Array.from(fileList)) {
+      if (f.size > MAX_BYTES) {
+        toast.error(`${f.name} is too large (max 15 MB)`);
+        continue;
+      }
       const kind = kindOf(f);
-      return {
+      next.push({
         id: `pf-${counter++}`,
+        file: f,
         name: f.name,
         size: f.size,
         kind,
         previewUrl: kind === "image" ? URL.createObjectURL(f) : undefined,
-        progress: 0,
-      };
-    });
+      });
+    }
     setFiles((prev) => {
       const merged = [...prev, ...next];
       if (merged.length === 1) setTitle(stripExt(merged[0].name));
@@ -102,53 +111,31 @@ export function UploadForm({ now, uploaderId, onUploaded, onCancel }: UploadForm
   const single = files.length === 1;
   const canSubmit = files.length > 0 && (!single || title.trim().length > 0) && phase === "select";
 
-  const buildDocs = (): DocumentItem[] =>
-    files.map((f, i) => ({
-      id: `doc-up-${Date.now()}-${i}`,
-      title: single ? title.trim() : stripExt(f.name),
-      category,
-      sensitivity,
-      kind: f.kind,
-      size: sizeLabel(f.size),
-      uploadedById: uploaderId,
-      uploadedAt: now,
-      expiresAt: expiry ? new Date(`${expiry}T00:00:00`) : undefined,
-      onEmergencyCard,
-      previewUrl: f.previewUrl,
-    }));
-
-  const startUpload = () => {
+  const startUpload = async () => {
     if (!canSubmit) return;
     setPhase("uploading");
-    const reduced =
-      typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    if (reduced) {
-      setFiles((prev) => prev.map((f) => ({ ...f, progress: 100 })));
-      finish();
-      return;
-    }
-
-    // A tick counter drives every file's bar; later files lag slightly for texture.
-    let base = 0;
-    const lastLag = (files.length - 1) * 12;
-    const timer = setInterval(() => {
-      base += 8;
-      const value = base;
-      setFiles((prev) => prev.map((f, i) => ({ ...f, progress: Math.max(0, Math.min(100, value - i * 12)) })));
-      if (value >= 100 + lastLag) {
-        clearInterval(timer);
-        finish();
+    const meta: UploadMeta = {
+      title: title.trim(),
+      category,
+      sensitivity,
+      expiry: expiry || undefined,
+      onEmergencyCard,
+    };
+    try {
+      const created = await onUpload(
+        files.map((f) => f.file),
+        meta
+      );
+      if (created.length === 0) {
+        setPhase("select"); // every file failed — errors already surfaced by the caller
+        return;
       }
-    }, 80);
-    timers.current.push(timer);
-  };
-
-  const finish = () => {
-    timers.current.forEach(clearInterval);
-    timers.current = [];
-    setPhase("done");
-    setTimeout(() => onUploaded(buildDocs()), 600);
+      setPhase("done");
+      setTimeout(() => onUploaded(created), 600);
+    } catch {
+      setPhase("select");
+      toast.error("Upload failed — please try again");
+    }
   };
 
   // ---- Success state ----
@@ -192,7 +179,7 @@ export function UploadForm({ now, uploaderId, onUploaded, onCancel }: UploadForm
             ref={inputRef}
             type="file"
             multiple
-            accept="image/*,application/pdf,.doc,.docx"
+            accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.csv,.txt"
             className="sr-only"
             onChange={(e) => {
               addFiles(e.target.files);
@@ -213,7 +200,7 @@ export function UploadForm({ now, uploaderId, onUploaded, onCancel }: UploadForm
             >
               Browse files
             </Button>
-            <p className="text-xs text-muted-foreground">PDF, JPG or PNG · up to 10 MB each</p>
+            <p className="text-xs text-muted-foreground">PDF, Word, or images · up to 15 MB each</p>
           </div>
         </div>
 
@@ -234,11 +221,7 @@ export function UploadForm({ now, uploaderId, onUploaded, onCancel }: UploadForm
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium">{f.name}</p>
-                    {phase === "uploading" ? (
-                      <Progress value={f.progress} className="mt-1.5 h-1.5" aria-label={`Uploading ${f.name}`} />
-                    ) : (
-                      <p className="text-xs text-muted-foreground">{sizeLabel(f.size)}</p>
-                    )}
+                    <p className="text-xs text-muted-foreground">{sizeLabel(f.size)}</p>
                   </div>
                   {phase === "select" ? (
                     <Button
@@ -251,8 +234,6 @@ export function UploadForm({ now, uploaderId, onUploaded, onCancel }: UploadForm
                     >
                       <X className="h-4 w-4" />
                     </Button>
-                  ) : f.progress >= 100 ? (
-                    <Check className="h-4 w-4 shrink-0 text-success" aria-hidden="true" />
                   ) : (
                     <Loader2 className="h-4 w-4 shrink-0 animate-spin text-muted-foreground motion-reduce:animate-none" aria-hidden="true" />
                   )}

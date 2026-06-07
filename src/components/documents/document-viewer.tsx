@@ -36,6 +36,12 @@ export function DocumentViewer({ doc, open, onOpenChange, onDownload }: Document
             alt={doc.title}
             className="mx-auto h-auto max-w-full rounded-lg shadow-sm"
           />
+        ) : doc.kind === "pdf" && doc.downloadUrl ? (
+          <iframe
+            src={doc.downloadUrl}
+            title={doc.title}
+            className="h-[60vh] w-full rounded-lg border bg-card shadow-sm"
+          />
         ) : (
           <FauxPage doc={doc} />
         )}
