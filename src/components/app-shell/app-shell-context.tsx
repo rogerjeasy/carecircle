@@ -143,9 +143,20 @@ export function AppShellProvider({ children }: { children: React.ReactNode }) {
 
   // Optimistic default from localStorage so the demo "Switch role view" feels instant; the
   // real membership role (fetched below) is authoritative and overrides this once it arrives.
+  //
+  // This MUST be a post-mount effect, not a lazy useState initializer: the server can't read
+  // localStorage, so initializing from it on the client would diverge from the server-rendered
+  // default and trigger a hydration mismatch. Reading after mount is the SSR-safe pattern — so the
+  // `react-hooks/set-state-in-effect` warning is a false positive for this localStorage sync.
   React.useEffect(() => {
-    const stored = localStorage.getItem("role-view");
+    let stored: string | null = null;
+    try {
+      stored = localStorage.getItem("role-view");
+    } catch {
+      /* storage unavailable (private mode, etc.) — keep the default */
+    }
     if (stored && stored in roleLabels) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- SSR-safe localStorage hydration; see above
       setRoleState(stored as UserRole);
     }
   }, []);
