@@ -69,6 +69,37 @@ const onboardingSchema = z.object({
 export type OnboardingInput = z.input<typeof onboardingSchema>;
 
 /**
+ * Rebuild the onboarding payload from the `FormData` the wizard submits. We take FormData (not a
+ * plain object) so Next's dev server never logs the raw health PII the wizard carries (conditions,
+ * allergies, DOB, invitee emails) — see AGENTS.md. Array/nested fields ride along as JSON strings;
+ * the zod schema below is the real validation, so malformed JSON just degrades to an empty list.
+ */
+function readOnboardingFormData(formData: FormData): OnboardingInput {
+  const str = (key: string) => (formData.get(key) ?? '').toString();
+  const jsonArray = (key: string): unknown[] => {
+    const raw = formData.get(key);
+    if (!raw) return [];
+    try {
+      const parsed = JSON.parse(raw.toString());
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  };
+  return {
+    recipientName: str('recipientName'),
+    recipientDateOfBirth: str('recipientDateOfBirth'),
+    recipientPhoto: formData.get('recipientPhoto')?.toString() ?? null,
+    relationship: str('relationship'),
+    conditions: jsonArray('conditions') as string[],
+    allergies: jsonArray('allergies') as string[],
+    primaryLanguage: str('primaryLanguage'),
+    timezone: str('timezone'),
+    invites: jsonArray('invites') as OnboardingInput['invites'],
+  };
+}
+
+/**
  * Classify the photo the wizard submitted. An external `https://` URL is trusted and stored
  * as-is; a `data:` URL (what the in-browser downscaler produces) is uploaded to S3 *after* the
  * circle is created — so the object key can be partitioned under its `circleId` — and the key
@@ -88,13 +119,13 @@ function classifyPhoto(photo: string | null | undefined): {
  * Create the care circle from the onboarding wizard, then dispatch any invitations.
  * Returns the new circle id (the client redirects to the dashboard) or a friendly error.
  */
-export async function completeOnboarding(input: OnboardingInput): Promise<OnboardingResult> {
+export async function completeOnboarding(formData: FormData): Promise<OnboardingResult> {
   const user = await requireSession();
   const userId = user.id;
 
   serverLog('onboarding', 'completeOnboarding', 'start', { actor: userId });
 
-  const parsed = onboardingSchema.safeParse(input);
+  const parsed = onboardingSchema.safeParse(readOnboardingFormData(formData));
   if (!parsed.success) {
     serverLog('onboarding', 'completeOnboarding', 'failure', { actor: userId, reason: 'validation' });
     return { ok: false, error: parsed.error.issues[0]?.message ?? 'Please check the details you entered.' };
