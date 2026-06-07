@@ -43,5 +43,8 @@ export function valuesToMedication(values: MedFormValues, id: string, existing?:
     prnMaxPerDay: existing?.prnMaxPerDay,
     refillThreshold: values.refillThreshold,
     scheduleRows: values.isPrn ? [] : values.schedules.map((s) => ({ time: s.time, days: s.days })),
+    // Preserve already-resolved media so the card doesn't flicker before the server reconciles.
+    photoUrl: existing?.photoUrl,
+    attachments: existing?.attachments,
   };
 }

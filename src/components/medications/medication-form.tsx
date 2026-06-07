@@ -16,6 +16,7 @@ import {
 import { FormField, fieldAria } from "./form-field";
 import { NameAutocomplete } from "./name-autocomplete";
 import { PhotoUpload } from "./photo-upload";
+import { MedAttachments } from "./medication-attachments";
 import { ScheduleBuilder } from "./schedule-builder";
 import { SafetyCheckPanel } from "./safety-check-panel";
 import { checkMedicationSafety, RECIPIENT_ALLERGIES } from "./safety";
@@ -27,14 +28,19 @@ import {
   type MedFormErrors,
   type MedFormValues,
 } from "./schema";
-import type { Medication } from "./types";
+import type { MedAttachment, Medication } from "./types";
 
 export interface MedicationFormProps {
   mode: "add" | "edit";
   initial?: Medication;
   /** Active medications used for the interaction check (already excludes the med being edited). */
   currentMedNames: string[];
-  onSubmit: (values: MedFormValues) => void;
+  /** Saved attachments to show (edit mode). */
+  existingAttachments?: MedAttachment[];
+  /** Remove a saved attachment (edit mode). */
+  onRemoveAttachment?: (id: string) => void;
+  /** Receives the form values plus any newly-chosen files to upload after the medication saves. */
+  onSubmit: (values: MedFormValues, pendingFiles: File[]) => void;
   onCancel: () => void;
 }
 
@@ -72,7 +78,9 @@ function medicationToValues(med?: Medication): MedFormValues {
     purpose: med.purpose,
     prescriber: med.prescriber,
     instructions: med.instructions ?? "",
-    photoUrl: null,
+    // Show the current pill photo (a resolved https URL). It's only re-uploaded when the user
+    // picks a NEW file (a data: URL); an unchanged https value is left as-is by the action.
+    photoUrl: med.photoUrl ?? null,
     isPrn,
     schedules,
     supplyCount: med.supplyDays,
@@ -82,9 +90,20 @@ function medicationToValues(med?: Medication): MedFormValues {
 
 const delay = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
-export function MedicationForm({ mode, initial, currentMedNames, onSubmit, onCancel }: MedicationFormProps) {
+export function MedicationForm({
+  mode,
+  initial,
+  currentMedNames,
+  existingAttachments = [],
+  onRemoveAttachment,
+  onSubmit,
+  onCancel,
+}: MedicationFormProps) {
   const [values, setValues] = React.useState<MedFormValues>(() => medicationToValues(initial));
   const [errors, setErrors] = React.useState<MedFormErrors>({});
+  const [pendingFiles, setPendingFiles] = React.useState<File[]>([]);
+  // Local copy so removing a saved attachment updates the form immediately while it persists.
+  const [savedAttachments, setSavedAttachments] = React.useState<MedAttachment[]>(existingAttachments);
   // The warning signature the user has acknowledged (null = none). Deriving acknowledgement from
   // this means a change to the warnings automatically invalidates a stale acknowledgement.
   const [ackedSig, setAckedSig] = React.useState<string | null>(null);
@@ -133,8 +152,8 @@ export function MedicationForm({ mode, initial, currentMedNames, onSubmit, onCan
     }
 
     setSubmitting(true);
-    await delay(800); // simulate persistence
-    onSubmit(values);
+    await delay(300);
+    onSubmit(values, pendingFiles);
     setSubmitting(false);
     setSuccess(true);
     await delay(650);
@@ -264,6 +283,30 @@ export function MedicationForm({ mode, initial, currentMedNames, onSubmit, onCan
           <FormField htmlFor="photo" label="Pill photo" full hint="Helps caregivers recognise the medication">
             <div id="photo">
               <PhotoUpload value={values.photoUrl} onChange={(photoUrl) => update({ photoUrl })} />
+            </div>
+          </FormField>
+
+          {/* Attachments (extra images + documents) */}
+          <FormField
+            htmlFor="attachments"
+            label="Attachments"
+            full
+            hint="Optional — extra photos, leaflets, or documents (PDF, Word, images)"
+          >
+            <div id="attachments">
+              <MedAttachments
+                pending={pendingFiles}
+                onPendingChange={setPendingFiles}
+                existing={savedAttachments}
+                onRemoveExisting={
+                  onRemoveAttachment
+                    ? (id) => {
+                        setSavedAttachments((prev) => prev.filter((a) => a.id !== id));
+                        onRemoveAttachment(id);
+                      }
+                    : undefined
+                }
+              />
             </div>
           </FormField>
 

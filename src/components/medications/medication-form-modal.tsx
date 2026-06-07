@@ -5,7 +5,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "
 import { MedicationForm } from "./medication-form";
 import { useIsPhone } from "./use-is-phone";
 import type { MedFormValues } from "./schema";
-import type { Medication } from "./types";
+import type { MedAttachment, Medication } from "./types";
 
 export interface MedicationFormModalProps {
   open: boolean;
@@ -13,7 +13,9 @@ export interface MedicationFormModalProps {
   mode: "add" | "edit";
   initial?: Medication;
   currentMedNames: string[];
-  onSubmit: (values: MedFormValues) => void;
+  existingAttachments?: MedAttachment[];
+  onRemoveAttachment?: (id: string) => void;
+  onSubmit: (values: MedFormValues, pendingFiles: File[]) => void;
 }
 
 /**
@@ -27,6 +29,8 @@ export function MedicationFormModal({
   mode,
   initial,
   currentMedNames,
+  existingAttachments,
+  onRemoveAttachment,
   onSubmit,
 }: MedicationFormModalProps) {
   const isPhone = useIsPhone();
@@ -41,6 +45,8 @@ export function MedicationFormModal({
       mode={mode}
       initial={initial}
       currentMedNames={currentMedNames}
+      existingAttachments={existingAttachments}
+      onRemoveAttachment={onRemoveAttachment}
       onSubmit={onSubmit}
       onCancel={() => onOpenChange(false)}
     />

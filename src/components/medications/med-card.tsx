@@ -1,6 +1,6 @@
 "use client";
 
-import { Clock, MoreHorizontal, Pencil, Pill, ShoppingCart } from "lucide-react";
+import { Clock, FileText, MoreHorizontal, Pencil, Pill, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -30,9 +30,16 @@ export function MedCard({ med, canManage, onToggleActive, onEdit, onCreateRefill
     <Card className="flex h-full flex-col">
       <CardContent className="flex flex-1 flex-col gap-3 p-4 sm:p-4">
         <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-secondary text-primary">
-            <Pill className="h-5 w-5" aria-hidden="true" />
-          </div>
+          {med.photoUrl ? (
+            <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border bg-muted">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={med.photoUrl} alt={med.name} className="h-full w-full object-cover" />
+            </div>
+          ) : (
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-secondary text-primary">
+              <Pill className="h-5 w-5" aria-hidden="true" />
+            </div>
+          )}
           <div className="min-w-0 flex-1">
             <p className="truncate font-semibold leading-tight">
               {med.name} <span className="font-normal text-muted-foreground">{med.strength}</span>
@@ -73,6 +80,39 @@ export function MedCard({ med, canManage, onToggleActive, onEdit, onCreateRefill
             <span className="truncate">Prescribed by {med.prescriber}</span>
           </p>
         </div>
+
+        {/* Attachments: image thumbnails open in a new tab; documents are download links */}
+        {med.attachments && med.attachments.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {med.attachments.map((a) =>
+              a.kind === "image" && a.url ? (
+                <a
+                  key={a.id}
+                  href={a.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="h-12 w-12 overflow-hidden rounded-md border bg-muted transition-opacity hover:opacity-90"
+                  title={a.fileName}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={a.url} alt={a.fileName} className="h-full w-full object-cover" />
+                </a>
+              ) : (
+                <a
+                  key={a.id}
+                  href={a.url ?? "#"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 rounded-md border bg-muted px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted/70"
+                  title={a.fileName}
+                >
+                  <FileText className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  <span className="max-w-[8rem] truncate">{a.fileName}</span>
+                </a>
+              )
+            )}
+          </div>
+        )}
 
         <div className="mt-auto flex items-center justify-between gap-2 border-t pt-3">
           <div className="flex min-w-0 items-center gap-2">

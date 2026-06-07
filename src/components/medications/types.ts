@@ -79,4 +79,18 @@ export interface Medication {
   refillThreshold?: number;
   /** The exact dose times/days behind `schedule`, so editing preserves them. */
   scheduleRows?: { time: string; days: number[] }[];
+  /** Resolved (presigned) URL of the primary pill photo, ready for <img src>. */
+  photoUrl?: string | null;
+  /** Additional files (images + documents) attached to this medication, with resolved URLs. */
+  attachments?: MedAttachment[];
+}
+
+/** A file attached to a medication: a pill photo / scan (image) or a leaflet / PDF (document). */
+export interface MedAttachment {
+  id: string;
+  kind: "image" | "document";
+  fileName: string;
+  /** Short-lived presigned URL for <img src> / download link, or null if it couldn't be resolved. */
+  url: string | null;
+  contentType?: string;
 }

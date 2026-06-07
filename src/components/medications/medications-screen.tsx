@@ -10,11 +10,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TodayTab } from "./today-tab";
 import { AllMedsTab } from "./all-meds-tab";
 import { MedicationFormModal } from "./medication-form-modal";
+import { attachmentKind } from "./medication-attachments";
 import { valuesToMedication } from "./medication-mapping";
-import { createMedication, updateMedication } from "@/lib/medications/actions";
+import {
+  createMedication,
+  updateMedication,
+  uploadMedicationAttachment,
+  deleteMedicationAttachment,
+} from "@/lib/medications/actions";
 import { canManageMeds, canRecordDoses, firstName } from "./utils";
 import type { MedFormValues } from "./schema";
-import type { Medication, MedicationsData } from "./types";
+import type { MedAttachment, Medication, MedicationsData } from "./types";
 
 export interface MedicationsScreenProps {
   /** Real data loaded server-side for the active circle, or null when there's no circle/data. */
@@ -63,7 +69,22 @@ export function MedicationsScreen({ initial }: MedicationsScreenProps) {
   const currentMedNames = (excludeId?: string) =>
     meds.filter((m) => m.active && !m.discontinued && m.id !== excludeId).map((m) => m.name);
 
-  const handleSubmit = async (values: MedFormValues) => {
+  /** Upload any files chosen in the form (after the medication exists), returning their DTOs. */
+  const uploadPending = async (medId: string, files: File[]): Promise<MedAttachment[]> => {
+    const uploaded: MedAttachment[] = [];
+    for (const file of files) {
+      const afd = new FormData();
+      afd.set("medId", medId);
+      afd.set("kind", attachmentKind(file));
+      afd.set("file", file);
+      const res = await uploadMedicationAttachment(afd);
+      if (res.ok) uploaded.push(res.data);
+      else toast.error(res.error ?? `Couldn't upload ${file.name}`);
+    }
+    return uploaded;
+  };
+
+  const handleSubmit = async (values: MedFormValues, pendingFiles: File[]) => {
     const fd = new FormData();
     fd.set("payload", JSON.stringify(valuesToPayload(values)));
 
@@ -75,8 +96,13 @@ export function MedicationsScreen({ initial }: MedicationsScreenProps) {
       fd.set("id", original.id);
       const res = await updateMedication(fd);
       if (res.ok) {
-        setMeds((prev) => prev.map((m) => (m.id === original.id ? res.data : m)));
-        toast.success(`${res.data.name} updated`);
+        let updated = res.data;
+        if (pendingFiles.length) {
+          const uploaded = await uploadPending(updated.id, pendingFiles);
+          updated = { ...updated, attachments: [...(updated.attachments ?? []), ...uploaded] };
+        }
+        setMeds((prev) => prev.map((m) => (m.id === original.id ? updated : m)));
+        toast.success(`${updated.name} updated`);
         router.refresh(); // re-pull Today's doses (schedule may have changed)
       } else {
         setMeds((prev) => prev.map((m) => (m.id === original.id ? original : m)));
@@ -89,13 +115,32 @@ export function MedicationsScreen({ initial }: MedicationsScreenProps) {
       setModal(null);
       const res = await createMedication(fd);
       if (res.ok) {
-        setMeds((prev) => prev.map((m) => (m.id === tempId ? res.data : m)));
-        toast.success(`${res.data.name} added`);
+        let created = res.data;
+        if (pendingFiles.length) {
+          const uploaded = await uploadPending(created.id, pendingFiles);
+          created = { ...created, attachments: [...(created.attachments ?? []), ...uploaded] };
+        }
+        setMeds((prev) => prev.map((m) => (m.id === tempId ? created : m)));
+        toast.success(`${created.name} added`);
         router.refresh(); // so the new med's doses appear in the Today tab without a manual refresh
       } else {
         setMeds((prev) => prev.filter((m) => m.id !== tempId));
         toast.error(res.error ?? "Couldn't add the medication");
       }
+    }
+  };
+
+  /** Remove a saved attachment from a medication (optimistic; the form mirrors it locally too). */
+  const handleRemoveAttachment = async (medId: string, attachmentId: string) => {
+    setMeds((prev) =>
+      prev.map((m) =>
+        m.id === medId ? { ...m, attachments: (m.attachments ?? []).filter((a) => a.id !== attachmentId) } : m
+      )
+    );
+    const res = await deleteMedicationAttachment(attachmentId);
+    if (!res.ok) {
+      toast.error(res.error ?? "Couldn't remove the attachment");
+      router.refresh();
     }
   };
 
@@ -153,6 +198,12 @@ export function MedicationsScreen({ initial }: MedicationsScreenProps) {
           mode={modal.mode}
           initial={modal.mode === "edit" ? modal.med : undefined}
           currentMedNames={currentMedNames(modal.mode === "edit" ? modal.med.id : undefined)}
+          existingAttachments={modal.mode === "edit" ? modal.med.attachments : undefined}
+          onRemoveAttachment={
+            modal.mode === "edit"
+              ? (id) => handleRemoveAttachment(modal.med.id, id)
+              : undefined
+          }
           onSubmit={handleSubmit}
         />
       )}
