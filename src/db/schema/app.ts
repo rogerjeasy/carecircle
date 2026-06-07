@@ -15,9 +15,12 @@ import {
   boolean,
   jsonb,
   date,
+  integer,
   index,
   unique,
+  check,
 } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
 import { users } from './auth';
 
 // ---- Controlled vocabularies ----
@@ -57,6 +60,41 @@ export const auditActionEnum = pgEnum('audit_action', [
   'login',
   'logout',
   'invite',
+]);
+
+// Medication controlled vocabularies (mirror the Add/Edit form's option lists in
+// src/components/medications/schema.ts so the UI selects map 1:1 onto stored values).
+export const medFormEnum = pgEnum('med_form', [
+  'tablet',
+  'capsule',
+  'liquid',
+  'injection',
+  'patch',
+  'inhaler',
+  'drops',
+  'cream',
+  'other',
+]);
+export const medRouteEnum = pgEnum('med_route', [
+  'oral',
+  'sublingual',
+  'topical',
+  'inhaled',
+  'injection',
+  'ophthalmic',
+  'nasal',
+  'other',
+]);
+// Outcome of a single dose. `given` = administered by a caregiver, `taken` = self-administered by
+// the recipient — the UI collapses both to "given" but keeps the distinction in attribution.
+// `missed` is a derived state for past-due scheduled doses with no record; it is also persistable
+// (e.g. a future reconciliation job) without changing this enum.
+export const doseStatusEnum = pgEnum('dose_status', [
+  'given',
+  'taken',
+  'skipped',
+  'refused',
+  'missed',
 ]);
 
 // Shared audit columns.
@@ -219,5 +257,171 @@ export const invitation = pgTable(
   (t) => [
     index('invitation_circle_idx').on(t.circleId),
     index('invitation_email_idx').on(t.email),
+  ],
+);
+
+// ============================================================================
+// Medications (see ../../../CareCircle-Data-Model.md §medication)
+// A medication is a prescribed regimen; its schedules expand into per-day dose
+// occurrences; each occurrence (and every PRN use) is logged as one immutable
+// administration row. The "give a medication" flow writes the administration,
+// decrements supply, and emits a timeline event in ONE transaction.
+// ============================================================================
+
+// ---- A prescribed (or as-needed) regimen ----
+export const medication = pgTable(
+  'medication',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    circleId: uuid('circle_id')
+      .notNull()
+      .references(() => careCircle.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    strength: text('strength'),
+    form: medFormEnum('form').notNull().default('tablet'),
+    route: medRouteEnum('route').notNull().default('oral'),
+    purpose: text('purpose'),
+    prescriber: text('prescriber'),
+    instructions: text('instructions'),
+    // S3 object key for the pill photo (private bucket; resolve with resolveStoredUrl()).
+    photoS3Key: text('photo_s3_key'),
+    // Units (days or doses) currently on hand; the UI surfaces this as the supply pill.
+    supplyCount: integer('supply_count').notNull().default(0),
+    // Warn / offer a refill once supply drops to this level.
+    refillThreshold: integer('refill_threshold').notNull().default(7),
+    isPrn: boolean('is_prn').notNull().default(false),
+    // Per-day ceiling for an as-needed med (null = no explicit cap; UI falls back to a default).
+    prnMaxPerDay: integer('prn_max_per_day'),
+    // Active vs paused (a temporary hold the coordinator can toggle).
+    isActive: boolean('is_active').notNull().default(true),
+    // Permanently stopped. Non-null = discontinued (kept for history, shown collapsed in the UI).
+    discontinuedAt: timestamp('discontinued_at', { withTimezone: true }),
+    discontinuedNote: text('discontinued_note'),
+    ...audit,
+  },
+  (t) => [
+    index('medication_circle_idx').on(t.circleId),
+    // Partial index for the hot read: a circle's currently-relevant meds.
+    index('medication_active_idx')
+      .on(t.circleId)
+      .where(sql`${t.deletedAt} is null and ${t.discontinuedAt} is null`),
+    check('medication_supply_nonneg', sql`${t.supplyCount} >= 0`),
+    check('medication_refill_nonneg', sql`${t.refillThreshold} >= 0`),
+  ],
+);
+
+// ---- One regimen → many dose times (a weekly recurrence pattern) ----
+export const medicationSchedule = pgTable(
+  'medication_schedule',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    // Denormalized circle_id so RLS is a single indexed check (no join to medication needed).
+    circleId: uuid('circle_id')
+      .notNull()
+      .references(() => careCircle.id, { onDelete: 'cascade' }),
+    medicationId: uuid('medication_id')
+      .notNull()
+      .references(() => medication.id, { onDelete: 'cascade' }),
+    // "HH:mm" 24h, exactly as the <input type="time"> in the schedule builder emits.
+    timeOfDay: text('time_of_day').notNull(),
+    // JS getDay() indices (0=Sun … 6=Sat) the dose occurs on. Default: every day.
+    daysOfWeek: jsonb('days_of_week').$type<number[]>().notNull().default([0, 1, 2, 3, 4, 5, 6]),
+    // Optional human dose amount, e.g. "1 tablet", "5ml".
+    doseAmount: text('dose_amount'),
+    ...audit,
+  },
+  (t) => [
+    index('medication_schedule_med_idx').on(t.medicationId),
+    index('medication_schedule_circle_idx').on(t.circleId),
+  ],
+);
+
+// ---- The high-volume event log: "was this dose taken?" ----
+export const medicationAdministration = pgTable(
+  'medication_administration',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    circleId: uuid('circle_id')
+      .notNull()
+      .references(() => careCircle.id, { onDelete: 'cascade' }),
+    medicationId: uuid('medication_id')
+      .notNull()
+      .references(() => medication.id, { onDelete: 'cascade' }),
+    // The schedule occurrence this record resolves (null for an as-needed / PRN use).
+    scheduleId: uuid('schedule_id').references(() => medicationSchedule.id, {
+      onDelete: 'set null',
+    }),
+    // The wall-clock moment the dose was due (null for PRN, which has no fixed time).
+    scheduledFor: timestamp('scheduled_for', { withTimezone: true }),
+    status: doseStatusEnum('status').notNull(),
+    // When it was actually given/taken (set for given/taken; null for skipped/refused/missed).
+    administeredAt: timestamp('administered_at', { withTimezone: true }),
+    administeredByMembershipId: uuid('administered_by_membership_id').references(
+      () => membership.id,
+      { onDelete: 'set null' },
+    ),
+    notes: text('notes'),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [
+    // Hot read: a circle's doses for a given day.
+    index('medication_admin_circle_time_idx').on(t.circleId, t.scheduledFor),
+    index('medication_admin_med_idx').on(t.medicationId),
+    // One record per scheduled occurrence (idempotent record/undo). PRN rows have a null
+    // schedule_id, which a UNIQUE index treats as distinct, so multiple PRN uses are allowed.
+    unique('medication_admin_occurrence_uq').on(t.scheduleId, t.scheduledFor),
+  ],
+);
+
+// ============================================================================
+// Timeline interactions — comments + reactions on timeline_event rows.
+// timeline_event (above) is the activity-stream spine; these two tables let the
+// care circle converse and acknowledge on each update (CareCircle-Data-Model.md
+// §timeline / §comment). Both are tenant-scoped (circle_id) for a single RLS check.
+// ============================================================================
+
+// ---- A threaded comment on a timeline event ----
+export const timelineComment = pgTable(
+  'timeline_comment',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    circleId: uuid('circle_id')
+      .notNull()
+      .references(() => careCircle.id, { onDelete: 'cascade' }),
+    timelineEventId: uuid('timeline_event_id')
+      .notNull()
+      .references(() => timelineEvent.id, { onDelete: 'cascade' }),
+    authorMembershipId: uuid('author_membership_id').references(() => membership.id, {
+      onDelete: 'set null',
+    }),
+    body: text('body').notNull(),
+    ...audit,
+  },
+  (t) => [
+    index('timeline_comment_event_idx').on(t.timelineEventId),
+    index('timeline_comment_circle_idx').on(t.circleId),
+  ],
+);
+
+// ---- A reaction (a "heart") on a timeline event ----
+export const timelineReaction = pgTable(
+  'timeline_reaction',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    circleId: uuid('circle_id')
+      .notNull()
+      .references(() => careCircle.id, { onDelete: 'cascade' }),
+    timelineEventId: uuid('timeline_event_id')
+      .notNull()
+      .references(() => timelineEvent.id, { onDelete: 'cascade' }),
+    membershipId: uuid('membership_id')
+      .notNull()
+      .references(() => membership.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [
+    // One reaction per member per event (toggle on/off); the UI only has a heart.
+    unique('timeline_reaction_event_member_uq').on(t.timelineEventId, t.membershipId),
+    index('timeline_reaction_event_idx').on(t.timelineEventId),
   ],
 );
