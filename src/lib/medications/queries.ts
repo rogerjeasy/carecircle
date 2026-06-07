@@ -21,14 +21,17 @@ import {
   medication,
   medicationSchedule,
   medicationAdministration,
+  medicationAttachment,
   membership,
   users,
 } from '@/db/schema';
+import { resolveStoredUrl } from '@/lib/storage/s3';
 import type {
   AdherenceSummary,
   Dose,
   DoseStatus,
   GivenBy,
+  MedAttachment,
   Medication,
   MedicationsData,
   Period,
@@ -170,7 +173,29 @@ export async function getMedicationsData(): Promise<MedicationsData | null> {
           ),
         );
 
-      // 4) Last 7 days of recorded doses (for adherence + today's PRN usage).
+      // 4) Attachments (images + documents) for these meds.
+      const attachments = medIds.length
+        ? await tx
+            .select({
+              id: medicationAttachment.id,
+              medicationId: medicationAttachment.medicationId,
+              kind: medicationAttachment.kind,
+              s3Key: medicationAttachment.s3Key,
+              fileName: medicationAttachment.fileName,
+              contentType: medicationAttachment.contentType,
+            })
+            .from(medicationAttachment)
+            .where(
+              and(
+                eq(medicationAttachment.circleId, circleId),
+                inArray(medicationAttachment.medicationId, medIds),
+                isNull(medicationAttachment.deletedAt),
+              ),
+            )
+            .orderBy(medicationAttachment.createdAt)
+        : [];
+
+      // 5) Last 7 days of recorded doses (for adherence + today's PRN usage).
       const weekAdmins = await tx
         .select({
           medicationId: medicationAdministration.medicationId,
@@ -187,10 +212,33 @@ export async function getMedicationsData(): Promise<MedicationsData | null> {
           ),
         );
 
-      return { meds, schedules, todaysAdmins, weekAdmins };
+      return { meds, schedules, todaysAdmins, weekAdmins, attachments };
     });
 
-    const { meds, schedules, todaysAdmins, weekAdmins } = data;
+    const { meds, schedules, todaysAdmins, weekAdmins, attachments } = data;
+
+    // Resolve S3 keys → short-lived presigned URLs (private bucket) for the pill photo + attachments.
+    const photoByMed = new Map<string, string | null>();
+    await Promise.all(
+      meds.map(async (m) => {
+        photoByMed.set(m.id, m.photoS3Key ? await resolveStoredUrl(m.photoS3Key) : null);
+      }),
+    );
+    const attachmentsByMed = new Map<string, MedAttachment[]>();
+    await Promise.all(
+      attachments.map(async (a) => {
+        const url = await resolveStoredUrl(a.s3Key);
+        const list = attachmentsByMed.get(a.medicationId) ?? [];
+        list.push({
+          id: a.id,
+          kind: a.kind,
+          fileName: a.fileName ?? 'Attachment',
+          url,
+          contentType: a.contentType ?? undefined,
+        });
+        attachmentsByMed.set(a.medicationId, list);
+      }),
+    );
 
     const schedulesByMed = new Map<string, ScheduleRow[]>();
     for (const s of schedules) {
@@ -226,6 +274,8 @@ export async function getMedicationsData(): Promise<MedicationsData | null> {
           time: s.timeOfDay,
           days: Array.isArray(s.daysOfWeek) ? s.daysOfWeek : [0, 1, 2, 3, 4, 5, 6],
         })),
+        photoUrl: photoByMed.get(m.id) ?? null,
+        attachments: attachmentsByMed.get(m.id) ?? [],
       };
     });
 

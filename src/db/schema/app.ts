@@ -96,6 +96,8 @@ export const doseStatusEnum = pgEnum('dose_status', [
   'refused',
   'missed',
 ]);
+// Medication attachments are either images (pill photos, scans) or documents (leaflets, PDFs).
+export const medAttachmentKindEnum = pgEnum('med_attachment_kind', ['image', 'document']);
 
 // Shared audit columns.
 const audit = {
@@ -370,6 +372,37 @@ export const medicationAdministration = pgTable(
     // One record per scheduled occurrence (idempotent record/undo). PRN rows have a null
     // schedule_id, which a UNIQUE index treats as distinct, so multiple PRN uses are allowed.
     unique('medication_admin_occurrence_uq').on(t.scheduleId, t.scheduledFor),
+  ],
+);
+
+// ---- Files attached to a medication: pill photos / scans (images) + leaflets / PDFs (documents) ----
+// The bytes live in S3 (private bucket) under care-circles/{circleId}/medications/{images|documents}/…;
+// this row holds the object key + metadata. Resolve `s3Key` to a short-lived URL with resolveStoredUrl().
+export const medicationAttachment = pgTable(
+  'medication_attachment',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    circleId: uuid('circle_id')
+      .notNull()
+      .references(() => careCircle.id, { onDelete: 'cascade' }),
+    medicationId: uuid('medication_id')
+      .notNull()
+      .references(() => medication.id, { onDelete: 'cascade' }),
+    kind: medAttachmentKindEnum('kind').notNull(),
+    // S3 object key (private bucket). Resolve with resolveStoredUrl() before sending to the client.
+    s3Key: text('s3_key').notNull(),
+    fileName: text('file_name'),
+    contentType: text('content_type'),
+    sizeBytes: integer('size_bytes'),
+    uploadedByMembershipId: uuid('uploaded_by_membership_id').references(() => membership.id, {
+      onDelete: 'set null',
+    }),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+  },
+  (t) => [
+    index('medication_attachment_med_idx').on(t.medicationId),
+    index('medication_attachment_circle_idx').on(t.circleId),
   ],
 );
 

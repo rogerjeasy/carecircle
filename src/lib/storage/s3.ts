@@ -24,7 +24,15 @@ import 'server-only';
 import { randomUUID } from 'node:crypto';
 import { serverLog } from '@/lib/log';
 
-export type StorageCategory = 'recipient-photos' | 'documents' | 'timeline' | 'avatars';
+export type StorageCategory =
+  | 'recipient-photos'
+  | 'documents'
+  | 'timeline'
+  | 'avatars'
+  // Medications "collection": images (pill photos / extra photos) and documents (leaflets, scans).
+  // Nested so the bucket has care-circles/{id}/medications/images/… and …/medications/documents/….
+  | 'medications/images'
+  | 'medications/documents';
 
 /** Map of supported image mime types → file extension used in the object key. */
 const IMAGE_EXT: Record<string, string> = {
@@ -34,6 +42,18 @@ const IMAGE_EXT: Record<string, string> = {
   'image/webp': 'webp',
   'image/gif': 'gif',
   'image/heic': 'heic',
+};
+
+/** Common document/file mime types → extension, used when a filename has no usable extension. */
+const FILE_EXT: Record<string, string> = {
+  ...IMAGE_EXT,
+  'application/pdf': 'pdf',
+  'application/msword': 'doc',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+  'application/vnd.ms-excel': 'xls',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx',
+  'text/plain': 'txt',
+  'text/csv': 'csv',
 };
 
 const BUCKET = process.env.S3_BUCKET;
@@ -166,6 +186,53 @@ export async function uploadImageDataUrl(opts: {
     return key;
   } catch (err) {
     serverLog('storage', 'uploadImage', 'failure', {
+      category: opts.category,
+      reason: (err as { name?: string })?.name ?? 'error',
+    });
+    return null;
+  }
+}
+
+/** Best-effort extension for an uploaded file: prefer its filename, fall back to its mime type. */
+function extFromFile(file: File): string {
+  const fromName = file.name.includes('.') ? file.name.split('.').pop()! : '';
+  const safe = fromName.replace(/[^a-z0-9]/gi, '').toLowerCase();
+  if (safe && safe.length <= 5) return safe;
+  return FILE_EXT[file.type?.toLowerCase() ?? ''] ?? 'bin';
+}
+
+/**
+ * Upload a browser `File` (from a FormData submission) to a partitioned key. Used for medication
+ * attachments — images AND documents. Returns the stored key + metadata, or null (never throws)
+ * if S3 isn't configured or the file is empty / too large, so a failed attachment never blocks
+ * saving the medication itself.
+ */
+export async function uploadFile(opts: {
+  circleId: string;
+  category: StorageCategory;
+  file: File;
+  maxBytes?: number;
+}): Promise<{ key: string; contentType: string; fileName: string; size: number } | null> {
+  if (!isS3Configured()) {
+    serverLog('storage', 'uploadFile', 'failure', { category: opts.category, reason: 'not_configured' });
+    return null;
+  }
+  const maxBytes = opts.maxBytes ?? 15 * 1024 * 1024; // 15 MB ceiling for documents/images
+  if (opts.file.size === 0 || opts.file.size > maxBytes) {
+    serverLog('storage', 'uploadFile', 'failure', { category: opts.category, reason: 'bad_size', bytes: opts.file.size });
+    return null;
+  }
+  try {
+    const body = Buffer.from(await opts.file.arrayBuffer());
+    if (body.length === 0) return null;
+    const ext = extFromFile(opts.file);
+    const contentType = opts.file.type || 'application/octet-stream';
+    const key = buildObjectKey({ circleId: opts.circleId, category: opts.category, ext, datePartition: true });
+    await putObject({ key, body, contentType });
+    serverLog('storage', 'uploadFile', 'success', { category: opts.category, bytes: body.length });
+    return { key, contentType, fileName: opts.file.name.slice(0, 200), size: body.length };
+  } catch (err) {
+    serverLog('storage', 'uploadFile', 'failure', {
       category: opts.category,
       reason: (err as { name?: string })?.name ?? 'error',
     });

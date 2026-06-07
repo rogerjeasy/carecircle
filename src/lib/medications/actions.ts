@@ -26,13 +26,15 @@ import {
   medication,
   medicationSchedule,
   medicationAdministration,
+  medicationAttachment,
   membership,
   timelineEvent,
   medFormEnum,
   medRouteEnum,
 } from '@/db/schema';
+import { uploadImageDataUrl, uploadFile, resolveStoredUrl, deleteObject } from '@/lib/storage/s3';
 import { canManageMeds, canRecordDoses } from './access';
-import type { Medication } from '@/components/medications/types';
+import type { MedAttachment, Medication } from '@/components/medications/types';
 
 // ---------------------------------------------------------------------------
 // Shared types + context
@@ -175,6 +177,7 @@ function scheduleSummaryFromPayload(p: MedPayload): string {
 function buildMedicationDTO(
   row: typeof medication.$inferSelect,
   p: MedPayload,
+  extra: { photoUrl: string | null; attachments: MedAttachment[] },
 ): Medication {
   return {
     id: row.id,
@@ -195,7 +198,14 @@ function buildMedicationDTO(
     prnMaxPerDay: row.prnMaxPerDay,
     refillThreshold: row.refillThreshold,
     scheduleRows: p.isPrn ? [] : p.schedules.map((s) => ({ time: s.time, days: s.days })),
+    photoUrl: extra.photoUrl,
+    attachments: extra.attachments,
   };
+}
+
+/** A `data:` image URL the in-browser PhotoUpload produces (vs. an empty/absent value). */
+function isImageDataUrl(v: string | null | undefined): v is string {
+  return typeof v === 'string' && /^data:image\//i.test(v);
 }
 
 // ---------------------------------------------------------------------------
@@ -218,11 +228,16 @@ export async function createMedication(formData: FormData): Promise<ActionResult
     return { ok: false, error: 'Please check the medication details.' };
   }
   const p = parsed.data;
-  const photoKey = p.photoUrl && /^https?:\/\//i.test(p.photoUrl) ? p.photoUrl : null;
+  // Upload the pill photo (a data: URL from the in-browser uploader) to S3 first — the key is
+  // partitioned under this circle's medications/images prefix. Best-effort: a photo hiccup never
+  // blocks creating the medication.
+  const photoKey = isImageDataUrl(p.photoUrl)
+    ? await uploadImageDataUrl({ circleId: ctx.circleId, category: 'medications/images', dataUrl: p.photoUrl })
+    : null;
 
   try {
-    const dto = await withAuthedDb(async (tx) => {
-      const [row] = await tx
+    const row = await withAuthedDb(async (tx) => {
+      const [created] = await tx
         .insert(medication)
         .values({
           circleId: ctx.circleId,
@@ -245,7 +260,7 @@ export async function createMedication(formData: FormData): Promise<ActionResult
         await tx.insert(medicationSchedule).values(
           p.schedules.map((s) => ({
             circleId: ctx.circleId,
-            medicationId: row.id,
+            medicationId: created.id,
             timeOfDay: s.time,
             daysOfWeek: s.days,
           })),
@@ -258,7 +273,7 @@ export async function createMedication(formData: FormData): Promise<ActionResult
         eventType: 'med',
         summary: `${firstName(ctx.name)} added ${p.name} to the medication list.`,
         refType: 'medication',
-        refId: row.id,
+        refId: created.id,
       });
 
       await recordAuditEvent(
@@ -267,15 +282,17 @@ export async function createMedication(formData: FormData): Promise<ActionResult
           circleId: ctx.circleId,
           action: 'create',
           entityType: 'medication',
-          entityId: row.id,
-          summary: `Added a medication (${row.form}${p.isPrn ? ', PRN' : ''})`,
+          entityId: created.id,
+          summary: `Added a medication (${created.form}${p.isPrn ? ', PRN' : ''})`,
         },
         tx,
       );
 
-      return buildMedicationDTO(row, p);
+      return created;
     });
 
+    const photoUrl = await resolveStoredUrl(row.photoS3Key);
+    const dto = buildMedicationDTO(row, p, { photoUrl, attachments: [] });
     serverLog('medications', 'createMedication', 'success', { actor: ctx.userId, id: dto.id });
     return { ok: true, data: dto };
   } catch (err) {
@@ -305,10 +322,14 @@ export async function updateMedication(formData: FormData): Promise<ActionResult
   }
   const id = medId.data;
   const p = parsed.data;
-  const photoKey = p.photoUrl && /^https?:\/\//i.test(p.photoUrl) ? p.photoUrl : undefined;
+  // A new pill photo (data: URL) replaces the stored one; otherwise leave it unchanged
+  // (the form doesn't re-send the existing photo, so a missing value must NOT wipe it).
+  const newPhotoKey = isImageDataUrl(p.photoUrl)
+    ? await uploadImageDataUrl({ circleId: ctx.circleId, category: 'medications/images', dataUrl: p.photoUrl })
+    : undefined;
 
   try {
-    const dto = await withAuthedDb(async (tx) => {
+    const result = await withAuthedDb(async (tx) => {
       const [row] = await tx
         .update(medication)
         .set({
@@ -319,7 +340,7 @@ export async function updateMedication(formData: FormData): Promise<ActionResult
           purpose: p.purpose || null,
           prescriber: p.prescriber || null,
           instructions: p.instructions || null,
-          ...(photoKey !== undefined ? { photoS3Key: photoKey } : {}),
+          ...(newPhotoKey !== undefined ? { photoS3Key: newPhotoKey } : {}),
           supplyCount: p.supplyCount,
           refillThreshold: p.refillThreshold,
           isPrn: p.isPrn,
@@ -343,6 +364,19 @@ export async function updateMedication(formData: FormData): Promise<ActionResult
         );
       }
 
+      // Surviving attachments (to keep them on the reconciled card without a reload).
+      const atts = await tx
+        .select({
+          id: medicationAttachment.id,
+          kind: medicationAttachment.kind,
+          s3Key: medicationAttachment.s3Key,
+          fileName: medicationAttachment.fileName,
+          contentType: medicationAttachment.contentType,
+        })
+        .from(medicationAttachment)
+        .where(and(eq(medicationAttachment.medicationId, id), isNull(medicationAttachment.deletedAt)))
+        .orderBy(medicationAttachment.createdAt);
+
       await tx.insert(timelineEvent).values({
         circleId: ctx.circleId,
         actorMembershipId: ctx.membershipId,
@@ -358,8 +392,20 @@ export async function updateMedication(formData: FormData): Promise<ActionResult
         tx,
       );
 
-      return buildMedicationDTO(row, p);
+      return { row, atts };
     });
+
+    const photoUrl = await resolveStoredUrl(result.row.photoS3Key);
+    const attachments: MedAttachment[] = await Promise.all(
+      result.atts.map(async (a) => ({
+        id: a.id,
+        kind: a.kind,
+        fileName: a.fileName ?? 'Attachment',
+        url: await resolveStoredUrl(a.s3Key),
+        contentType: a.contentType ?? undefined,
+      })),
+    );
+    const dto = buildMedicationDTO(result.row, p, { photoUrl, attachments });
 
     serverLog('medications', 'updateMedication', 'success', { actor: ctx.userId, id });
     return { ok: true, data: dto };
@@ -768,6 +814,125 @@ export async function createRefillTask(medId: string): Promise<ActionResult> {
     return { ok: true };
   } catch (err) {
     serverLog('medications', 'createRefillTask', 'failure', { actor: ctx.userId, reason: (err as Error)?.name ?? 'error' });
+    return { ok: false, error: GENERIC_ERROR };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Attachments (images + documents) — manage only (owner / family_admin)
+// ---------------------------------------------------------------------------
+
+/**
+ * Upload one file (image OR document) to a medication. The bytes go to S3 under this circle's
+ * medications/{images|documents} prefix; the row holds the key + metadata. Returns the attachment
+ * with a resolved (presigned) URL so the UI can show it immediately.
+ */
+export async function uploadMedicationAttachment(formData: FormData): Promise<ActionResult<MedAttachment>> {
+  const ctx = await getActorContext();
+  serverLog('medications', 'uploadAttachment', 'start', { actor: ctx?.userId });
+  if (!ctx) return { ok: false, error: 'No active care circle.' };
+  if (!canManageMeds(ctx.role)) {
+    serverLog('medications', 'uploadAttachment', 'failure', { actor: ctx.userId, reason: 'forbidden' });
+    return { ok: false, error: FORBIDDEN };
+  }
+
+  const medId = z.string().uuid().safeParse(formData.get('medId')?.toString());
+  const kind = z.enum(['image', 'document']).safeParse(formData.get('kind')?.toString());
+  const file = formData.get('file');
+  if (!medId.success || !kind.success || !(file instanceof File) || file.size === 0) {
+    serverLog('medications', 'uploadAttachment', 'failure', { actor: ctx.userId, reason: 'validation' });
+    return { ok: false, error: 'Please choose a valid file.' };
+  }
+
+  try {
+    // Confirm the med belongs to the active circle before uploading (RLS also enforces this).
+    const [med] = await withAuthedDb((tx) =>
+      tx
+        .select({ id: medication.id })
+        .from(medication)
+        .where(and(eq(medication.id, medId.data), eq(medication.circleId, ctx.circleId), isNull(medication.deletedAt)))
+        .limit(1),
+    );
+    if (!med) return { ok: false, error: 'Medication not found.' };
+
+    const category = kind.data === 'image' ? 'medications/images' : 'medications/documents';
+    const uploaded = await uploadFile({ circleId: ctx.circleId, category, file });
+    if (!uploaded) {
+      serverLog('medications', 'uploadAttachment', 'failure', { actor: ctx.userId, reason: 'storage' });
+      return { ok: false, error: 'Upload failed. Check that file storage is configured.' };
+    }
+
+    const [row] = await withAuthedDb(async (tx) => {
+      const inserted = await tx
+        .insert(medicationAttachment)
+        .values({
+          circleId: ctx.circleId,
+          medicationId: medId.data,
+          kind: kind.data,
+          s3Key: uploaded.key,
+          fileName: uploaded.fileName,
+          contentType: uploaded.contentType,
+          sizeBytes: uploaded.size,
+          uploadedByMembershipId: ctx.membershipId,
+        })
+        .returning({ id: medicationAttachment.id });
+      await recordAuditEvent(
+        ctx.userId,
+        { circleId: ctx.circleId, action: 'create', entityType: 'medication_attachment', entityId: medId.data, summary: `Added a medication ${kind.data}` },
+        tx,
+      );
+      return inserted;
+    });
+
+    const url = await resolveStoredUrl(uploaded.key);
+    serverLog('medications', 'uploadAttachment', 'success', { actor: ctx.userId, id: row.id, kind: kind.data });
+    return {
+      ok: true,
+      data: { id: row.id, kind: kind.data, fileName: uploaded.fileName, url, contentType: uploaded.contentType },
+    };
+  } catch (err) {
+    serverLog('medications', 'uploadAttachment', 'failure', { actor: ctx.userId, reason: (err as Error)?.name ?? 'error' });
+    return { ok: false, error: GENERIC_ERROR };
+  }
+}
+
+/** Remove a medication attachment (soft-delete the row, then best-effort delete the S3 object). */
+export async function deleteMedicationAttachment(attachmentId: string): Promise<ActionResult> {
+  const ctx = await getActorContext();
+  serverLog('medications', 'deleteAttachment', 'start', { actor: ctx?.userId });
+  if (!ctx) return { ok: false, error: 'No active care circle.' };
+  if (!canManageMeds(ctx.role)) return { ok: false, error: FORBIDDEN };
+
+  const id = z.string().uuid().safeParse(attachmentId);
+  if (!id.success) return { ok: false, error: GENERIC_ERROR };
+
+  try {
+    const removedKey = await withAuthedDb(async (tx) => {
+      const [row] = await tx
+        .update(medicationAttachment)
+        .set({ deletedAt: new Date() })
+        .where(
+          and(
+            eq(medicationAttachment.id, id.data),
+            eq(medicationAttachment.circleId, ctx.circleId),
+            isNull(medicationAttachment.deletedAt),
+          ),
+        )
+        .returning({ s3Key: medicationAttachment.s3Key, medicationId: medicationAttachment.medicationId });
+      if (!row) throw new Error('not_found_or_forbidden');
+      await recordAuditEvent(
+        ctx.userId,
+        { circleId: ctx.circleId, action: 'delete', entityType: 'medication_attachment', entityId: row.medicationId, summary: 'Removed a medication attachment' },
+        tx,
+      );
+      return row.s3Key;
+    });
+
+    await deleteObject(removedKey); // best-effort; the row is already gone for the UI
+    serverLog('medications', 'deleteAttachment', 'success', { actor: ctx.userId, id: id.data });
+    return { ok: true };
+  } catch (err) {
+    serverLog('medications', 'deleteAttachment', 'failure', { actor: ctx.userId, reason: (err as Error)?.name ?? 'error' });
     return { ok: false, error: GENERIC_ERROR };
   }
 }
