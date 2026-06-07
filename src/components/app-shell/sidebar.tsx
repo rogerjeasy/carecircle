@@ -70,7 +70,7 @@ const navItems = [
 ];
 
 // Placeholder shown in the circle switcher until the real circles load.
-const PLACEHOLDER_CIRCLE = { id: "", name: "Care Circle", initials: "··", color: "bg-muted" };
+const PLACEHOLDER_CIRCLE = { id: "", name: "Care Circle", initials: "··", color: "bg-muted", imageUrl: null };
 
 interface SidebarProps {
   collapsed: boolean;
@@ -112,6 +112,9 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
               )}
             >
               <Avatar className="h-9 w-9 shrink-0">
+                {activeCircle.imageUrl && (
+                  <AvatarImage src={activeCircle.imageUrl} alt={activeCircle.name} />
+                )}
                 <AvatarFallback className={activeCircle.color + " text-white text-sm font-semibold"}>
                   {activeCircle.initials}
                 </AvatarFallback>
@@ -141,6 +144,9 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
                 className="gap-3"
               >
                 <Avatar className="h-7 w-7">
+                  {circle.imageUrl && (
+                    <AvatarImage src={circle.imageUrl} alt={circle.name} />
+                  )}
                   <AvatarFallback className={circle.color + " text-white text-xs font-semibold"}>
                     {circle.initials}
                   </AvatarFallback>

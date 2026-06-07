@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -65,7 +65,7 @@ const navItems = [
 ];
 
 // Placeholder shown in the circle switcher until the real circles load.
-const PLACEHOLDER_CIRCLE = { id: "", name: "Care Circle", initials: "··", color: "bg-muted" };
+const PLACEHOLDER_CIRCLE = { id: "", name: "Care Circle", initials: "··", color: "bg-muted", imageUrl: null };
 
 interface MobileNavSheetProps {
   open: boolean;
@@ -100,6 +100,9 @@ export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="w-full justify-start gap-3 h-auto py-2.5">
                 <Avatar className="h-9 w-9 shrink-0">
+                  {activeCircle.imageUrl && (
+                    <AvatarImage src={activeCircle.imageUrl} alt={activeCircle.name} />
+                  )}
                   <AvatarFallback className={activeCircle.color + " text-white text-sm font-semibold"}>
                     {activeCircle.initials}
                   </AvatarFallback>
@@ -125,6 +128,9 @@ export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
                   className="gap-3"
                 >
                   <Avatar className="h-7 w-7">
+                    {circle.imageUrl && (
+                      <AvatarImage src={circle.imageUrl} alt={circle.name} />
+                    )}
                     <AvatarFallback className={circle.color + " text-white text-xs font-semibold"}>
                       {circle.initials}
                     </AvatarFallback>

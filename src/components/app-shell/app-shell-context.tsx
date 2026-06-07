@@ -107,6 +107,8 @@ export interface SidebarCircle {
   name: string;
   initials: string;
   color: string;
+  /** Recipient photo URL for the avatar, or null to fall back to the colored monogram. */
+  imageUrl: string | null;
 }
 
 // Avatar colors cycled across the user's circles, by order (primary circle first).
