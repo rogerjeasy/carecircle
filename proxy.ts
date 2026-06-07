@@ -22,6 +22,13 @@ const PUBLIC_ROUTES = new Set([
   '/pricing',
   '/how-it-works',
   '/style-guide',
+  '/about',
+  '/contact',
+  '/blog',
+  '/privacy',
+  '/terms',
+  '/security',
+  '/hipaa',
 ]);
 
 // Public path prefixes (e.g. dynamic invitation links accepted while logged out).
