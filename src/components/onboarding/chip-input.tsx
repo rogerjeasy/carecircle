@@ -47,7 +47,11 @@ export function ChipInput({ label, value, onChange, suggestions, placeholder }: 
       onChange([...value, chip.trim()]);
     }
     setInputValue("");
-    setShowSuggestions(false);
+    // Keep the dropdown open so the user can click straight through to the next item. Selecting via
+    // onMouseDown+preventDefault never blurs the input, so the focus() below can't re-fire onFocus —
+    // leaving this false would hide suggestions until the user typed again (only the very first pick
+    // worked, because that click is what focuses the input in the first place).
+    setShowSuggestions(true);
     setHighlightedIndex(-1);
     inputRef.current?.focus();
   };

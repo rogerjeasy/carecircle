@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { toast } from "sonner";
-import { Heart, User, X, Plus, Trash2, Sparkles, Users } from "lucide-react";
+import { Heart, User, X, Plus, Trash2, Sparkles, Users, Cake, Languages as LanguagesIcon, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -307,6 +307,24 @@ export function Step4InviteCircle({ data, updateData }: StepProps) {
 export function Step5Done({ data }: { data: OnboardingData }) {
   const recipientName = data.recipientName || "Your loved one";
 
+  // Map the stored values back to the human-readable labels the user picked. Language is stored
+  // lowercased (the Select uses `lang.toLowerCase()` as its value), so re-match case-insensitively;
+  // timezone is stored as its IANA value, so look up its friendly label.
+  const languageLabel = data.primaryLanguage
+    ? languages.find((l) => l.toLowerCase() === data.primaryLanguage.toLowerCase()) ?? data.primaryLanguage
+    : null;
+  const timezoneLabel = data.timezone
+    ? timezones.find((t) => t.value === data.timezone)?.label ?? data.timezone
+    : null;
+  // DOB is a date-only "YYYY-MM-DD" string; anchor it to local midnight so it doesn't shift a day.
+  const dobLabel = data.recipientDateOfBirth
+    ? new Date(`${data.recipientDateOfBirth}T00:00:00`).toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : null;
+
   return (
     <div className="text-center space-y-6 py-6">
       <div className="mx-auto w-20 h-20 rounded-full bg-success/10 flex items-center justify-center">
@@ -338,6 +356,29 @@ export function Step5Done({ data }: { data: OnboardingData }) {
               {data.relationship && <p className="text-sm text-muted-foreground capitalize">Your {data.relationship}</p>}
             </div>
           </div>
+
+          {(dobLabel || languageLabel || timezoneLabel) && (
+            <div className="space-y-2 pt-2 border-t text-sm">
+              {dobLabel && (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Cake className="h-4 w-4 shrink-0" />
+                  <span>{dobLabel}</span>
+                </div>
+              )}
+              {languageLabel && (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <LanguagesIcon className="h-4 w-4 shrink-0" />
+                  <span>{languageLabel}</span>
+                </div>
+              )}
+              {timezoneLabel && (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Clock className="h-4 w-4 shrink-0" />
+                  <span>{timezoneLabel}</span>
+                </div>
+              )}
+            </div>
+          )}
 
           {(data.conditions.length > 0 || data.allergies.length > 0) && (
             <div className="flex flex-wrap gap-1.5 pt-2 border-t">
