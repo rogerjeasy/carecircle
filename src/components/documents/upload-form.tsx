@@ -129,29 +129,19 @@ export function UploadForm({ now, uploaderId, onUploaded, onCancel }: UploadForm
       return;
     }
 
-    let done = 0;
-    files.forEach((file, idx) => {
-      const timer = setInterval(() => {
-        setFiles((prev) =>
-          prev.map((f) => (f.id === file.id ? { ...f, progress: Math.min(100, f.progress + 8 + idx) } : f))
-        );
-      }, 90);
-      timers.current.push(timer);
-      // Stop this file's timer once it reaches 100.
-      const stopper = setInterval(() => {
-        setFiles((prev) => {
-          const f = prev.find((x) => x.id === file.id);
-          if (f && f.progress >= 100) {
-            clearInterval(timer);
-            clearInterval(stopper);
-            done += 1;
-            if (done === files.length) finish();
-          }
-          return prev;
-        });
-      }, 100);
-      timers.current.push(stopper);
-    });
+    // A tick counter drives every file's bar; later files lag slightly for texture.
+    let base = 0;
+    const lastLag = (files.length - 1) * 12;
+    const timer = setInterval(() => {
+      base += 8;
+      const value = base;
+      setFiles((prev) => prev.map((f, i) => ({ ...f, progress: Math.max(0, Math.min(100, value - i * 12)) })));
+      if (value >= 100 + lastLag) {
+        clearInterval(timer);
+        finish();
+      }
+    }, 80);
+    timers.current.push(timer);
   };
 
   const finish = () => {
