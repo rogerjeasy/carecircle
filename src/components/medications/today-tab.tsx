@@ -3,7 +3,7 @@
 import * as React from "react";
 import { addDays, format, isToday, isTomorrow, isYesterday } from "date-fns";
 import { toast } from "sonner";
-import { ChevronLeft, ChevronRight, Clock, Sparkles } from "lucide-react";
+import { ChevronLeft, ChevronRight, Clock, Plus, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,25 +22,41 @@ import {
 import { DoseRow } from "./dose-row";
 import { PrnRow } from "./prn-row";
 import { AdherenceGrid } from "./adherence-grid";
-import { initialDoses, initialPrn, PERIOD_ORDER, periodMeta } from "./data";
+import { PERIOD_ORDER, periodMeta } from "./data";
 import { nowTimeLabel } from "./utils";
-import type { Dose, GivenBy, Medication, Period, PrnMed } from "./types";
+import { recordDose, undoDose, logPrn as logPrnAction, createRefillTask } from "@/lib/medications/actions";
+import type { AdherenceSummary, Dose, GivenBy, Medication, Period, PrnMed } from "./types";
 
 export interface TodayTabProps {
   meds: Medication[];
   canRecord: boolean;
   canManage: boolean;
   userName: string;
+  /** Today's scheduled doses, assembled server-side. */
+  initialDoses: Dose[];
+  /** Active as-needed (PRN) meds + today's usage. */
+  initialPrn: PrnMed[];
+  /** Weekly adherence summary, or null when none could be loaded. */
+  adherence: AdherenceSummary | null;
+  /** Open the (screen-owned) Add medication modal. */
+  onAddMedication: () => void;
 }
 
 /** The "Today" tab: date stepper, progress header, doses grouped by time of day, and PRN meds. */
-export function TodayTab({ meds, canRecord, canManage, userName }: TodayTabProps) {
+export function TodayTab({ meds, canRecord, canManage, userName, initialDoses, initialPrn, adherence, onAddMedication }: TodayTabProps) {
   const [doses, setDoses] = React.useState<Dose[]>(initialDoses);
   const [prn, setPrn] = React.useState<PrnMed[]>(initialPrn);
   const [dayOffset, setDayOffset] = React.useState(0);
   const [justGivenId, setJustGivenId] = React.useState<string | null>(null);
   const [confirm, setConfirm] = React.useState<{ doseId: string; kind: "skipped" | "refused" } | null>(null);
   const givenTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Re-seed local optimistic state when the server data changes (e.g. after a router.refresh).
+  // This is the intended "reset state on prop change" pattern, so the rule below is a false positive.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  React.useEffect(() => setDoses(initialDoses), [initialDoses]);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  React.useEffect(() => setPrn(initialPrn), [initialPrn]);
 
   const medsById = React.useMemo(() => {
     const map = new Map<string, Medication>();
@@ -74,8 +90,33 @@ export function TodayTab({ meds, canRecord, canManage, userName }: TodayTabProps
     []
   );
 
+  /** Run a server action with optimistic UI: apply now, revert + toast on failure. */
+  const persist = React.useCallback(
+    async (
+      action: () => Promise<{ ok: boolean; error?: string }>,
+      snapshot: { doses: Dose[]; prn: PrnMed[] },
+      onError?: () => void
+    ) => {
+      try {
+        const res = await action();
+        if (!res.ok) {
+          setDoses(snapshot.doses);
+          setPrn(snapshot.prn);
+          onError?.();
+          toast.error(res.error ?? "Couldn't save — please try again");
+        }
+      } catch {
+        setDoses(snapshot.doses);
+        setPrn(snapshot.prn);
+        onError?.();
+        toast.error("Couldn't save — please try again");
+      }
+    },
+    []
+  );
+
   const markGiven = (dose: Dose, via: GivenBy) => {
-    // Optimistic update with a soft success cue.
+    const snapshot = { doses, prn };
     setDoses((prev) =>
       prev.map((d) =>
         d.id === dose.id
@@ -93,15 +134,30 @@ export function TodayTab({ meds, canRecord, canManage, userName }: TodayTabProps
     toast.success(`${dose.name} ${dose.strength} marked given`, {
       description: via === "patient" ? "Recorded as taken by the patient" : `Recorded by ${userName}`,
     });
+    if (dose.scheduleId && dose.scheduledForISO) {
+      void persist(
+        () => recordDose({ medId: dose.medId, scheduleId: dose.scheduleId!, scheduledForISO: dose.scheduledForISO!, outcome: "given", via }),
+        snapshot
+      );
+    }
   };
 
   const setOutcome = (doseId: string, kind: "skipped" | "refused") => {
+    const dose = doses.find((x) => x.id === doseId);
+    const snapshot = { doses, prn };
     setDoses((prev) => prev.map((d) => (d.id === doseId ? { ...d, status: kind } : d)));
-    const d = doses.find((x) => x.id === doseId);
-    toast(`${d?.name ?? "Dose"} marked ${kind}`);
+    toast(`${dose?.name ?? "Dose"} marked ${kind}`);
+    if (dose?.scheduleId && dose.scheduledForISO) {
+      void persist(
+        () => recordDose({ medId: dose.medId, scheduleId: dose.scheduleId!, scheduledForISO: dose.scheduledForISO!, outcome: kind }),
+        snapshot
+      );
+    }
   };
 
   const undo = (doseId: string) => {
+    const dose = doses.find((x) => x.id === doseId);
+    const snapshot = { doses, prn };
     setDoses((prev) =>
       prev.map((d) =>
         d.id === doseId
@@ -109,11 +165,15 @@ export function TodayTab({ meds, canRecord, canManage, userName }: TodayTabProps
           : d
       )
     );
+    if (dose?.scheduleId && dose.scheduledForISO) {
+      void persist(() => undoDose({ scheduleId: dose.scheduleId!, scheduledForISO: dose.scheduledForISO! }), snapshot);
+    }
   };
 
   const snooze = (dose: Dose) => toast(`${dose.name} snoozed 15 minutes`);
 
   const logLate = (dose: Dose) => {
+    const snapshot = { doses, prn };
     setDoses((prev) =>
       prev.map((d) =>
         d.id === dose.id
@@ -123,22 +183,53 @@ export function TodayTab({ meds, canRecord, canManage, userName }: TodayTabProps
     );
     flashGiven(dose.id);
     toast.success(`${dose.name} logged as given (late)`);
+    if (dose.scheduleId && dose.scheduledForISO) {
+      void persist(
+        () => recordDose({ medId: dose.medId, scheduleId: dose.scheduleId!, scheduledForISO: dose.scheduledForISO!, outcome: "given", via: "caregiver" }),
+        snapshot
+      );
+    }
   };
 
   const logPrn = (prnId: string) => {
-    setPrn((prev) =>
-      prev.map((p) =>
-        p.id === prnId && p.takenToday < p.maxPerDay
-          ? { ...p, takenToday: p.takenToday + 1, lastTaken: nowTimeLabel() }
-          : p
-      )
-    );
     const p = prn.find((x) => x.id === prnId);
-    toast.success(`${p?.name ?? "PRN"} dose logged`);
+    if (!p || p.takenToday >= p.maxPerDay) return;
+    const snapshot = { doses, prn };
+    setPrn((prev) =>
+      prev.map((x) => (x.id === prnId ? { ...x, takenToday: x.takenToday + 1, lastTaken: nowTimeLabel() } : x))
+    );
+    toast.success(`${p.name} dose logged`);
+    void persist(() => logPrnAction(prnId), snapshot);
   };
 
-  const createRefill = (medName: string) =>
+  const createRefill = (medId: string, medName: string) => {
     toast.success("Refill task created", { description: `Reorder ${medName} added to Tasks` });
+    void createRefillTask(medId).then((res) => {
+      if (!res.ok) toast.error(res.error ?? "Couldn't create the refill task");
+    });
+  };
+
+  // Adherence that updates live: today's column is derived from the in-progress dose list (so a
+  // freshly given/missed dose is reflected immediately), the prior 6 days come from the server.
+  const liveAdherence = React.useMemo(() => {
+    const todayStr = format(new Date(), "yyyy-MM-dd");
+    const todayCells = doses.map((d) =>
+      d.status === "given" ? "given" : d.status === "upcoming" ? "upcoming" : "missed"
+    ) as ("given" | "missed" | "upcoming")[];
+
+    const priorDays = (adherence?.days ?? []).filter((d) => d.date !== todayStr);
+    const days = [...priorDays, { date: todayStr, cells: todayCells }];
+
+    let given = 0;
+    let missed = 0;
+    for (const day of days) {
+      for (const c of day.cells) {
+        if (c === "given") given++;
+        else if (c === "missed") missed++;
+      }
+    }
+    return { given, missed, days };
+  }, [adherence, doses]);
 
   const dosesByPeriod = React.useMemo(() => {
     const groups: Record<Period, Dose[]> = { Morning: [], Afternoon: [], Evening: [], Night: [] };
@@ -147,9 +238,20 @@ export function TodayTab({ meds, canRecord, canManage, userName }: TodayTabProps
   }, [doses]);
 
   const isViewingToday = dayOffset === 0;
+  const hasDoses = doses.length > 0;
 
   return (
     <div className="space-y-5">
+      {/* Quick add (managers only) — also available on the All medications tab */}
+      {canManage && (
+        <div className="flex justify-end">
+          <Button size="sm" className="h-10" onClick={onAddMedication}>
+            <Plus className="h-4 w-4" />
+            <span className="ml-1">Add medication</span>
+          </Button>
+        </div>
+      )}
+
       {/* Date stepper + progress header */}
       <Card>
         <CardContent className="flex flex-col gap-4 p-4 sm:p-5">
@@ -178,7 +280,7 @@ export function TodayTab({ meds, canRecord, canManage, userName }: TodayTabProps
             </Button>
           </div>
 
-          {isViewingToday && (
+          {isViewingToday && hasDoses && (
             <div className="space-y-2">
               <div className="flex items-center justify-between gap-2">
                 <p className="text-sm font-medium">
@@ -195,8 +297,8 @@ export function TodayTab({ meds, canRecord, canManage, userName }: TodayTabProps
         </CardContent>
       </Card>
 
-      {/* Weekly adherence mini-view */}
-      <AdherenceGrid />
+      {/* Weekly adherence mini-view (today's column updates live with the dose list) */}
+      <AdherenceGrid summary={liveAdherence} />
 
       {!isViewingToday ? (
         <Card>
@@ -216,56 +318,72 @@ export function TodayTab({ meds, canRecord, canManage, userName }: TodayTabProps
       ) : (
         <>
           {/* Scheduled doses grouped by period */}
-          <div className="space-y-5">
-            {PERIOD_ORDER.map((period) => {
-              const list = dosesByPeriod[period];
-              if (list.length === 0) return null;
-              const Icon = periodMeta[period].icon;
-              const periodGiven = list.filter((d) => d.status === "given").length;
-              return (
-                <section key={period} aria-label={period}>
-                  <div className="mb-2 flex items-center gap-2 px-1">
-                    <Icon className={cn("h-4 w-4", periodMeta[period].tint)} aria-hidden="true" />
-                    <h3 className="text-sm font-semibold">{period}</h3>
-                    <span className="text-xs tabular-nums text-muted-foreground">
-                      {periodGiven}/{list.length}
-                    </span>
-                  </div>
-                  <ul className="space-y-2">
-                    {list.map((dose) => (
-                      <DoseRow
-                        key={dose.id}
-                        dose={dose}
-                        med={medsById.get(dose.medId)}
-                        canRecord={canRecord}
-                        canManage={canManage}
-                        justGiven={justGivenId === dose.id}
-                        onMarkGiven={(via) => markGiven(dose, via)}
-                        onRequestOutcome={(kind) => setConfirm({ doseId: dose.id, kind })}
-                        onUndo={() => undo(dose.id)}
-                        onSnooze={() => snooze(dose)}
-                        onLogLate={() => logLate(dose)}
-                        onCreateRefill={() => createRefill(dose.name)}
-                      />
-                    ))}
-                  </ul>
-                </section>
-              );
-            })}
-          </div>
+          {hasDoses ? (
+            <div className="space-y-5">
+              {PERIOD_ORDER.map((period) => {
+                const list = dosesByPeriod[period];
+                if (list.length === 0) return null;
+                const Icon = periodMeta[period].icon;
+                const periodGiven = list.filter((d) => d.status === "given").length;
+                return (
+                  <section key={period} aria-label={period}>
+                    <div className="mb-2 flex items-center gap-2 px-1">
+                      <Icon className={cn("h-4 w-4", periodMeta[period].tint)} aria-hidden="true" />
+                      <h3 className="text-sm font-semibold">{period}</h3>
+                      <span className="text-xs tabular-nums text-muted-foreground">
+                        {periodGiven}/{list.length}
+                      </span>
+                    </div>
+                    <ul className="space-y-2">
+                      {list.map((dose) => (
+                        <DoseRow
+                          key={dose.id}
+                          dose={dose}
+                          med={medsById.get(dose.medId)}
+                          canRecord={canRecord}
+                          canManage={canManage}
+                          justGiven={justGivenId === dose.id}
+                          onMarkGiven={(via) => markGiven(dose, via)}
+                          onRequestOutcome={(kind) => setConfirm({ doseId: dose.id, kind })}
+                          onUndo={() => undo(dose.id)}
+                          onSnooze={() => snooze(dose)}
+                          onLogLate={() => logLate(dose)}
+                          onCreateRefill={() => createRefill(dose.medId, dose.name)}
+                        />
+                      ))}
+                    </ul>
+                  </section>
+                );
+              })}
+            </div>
+          ) : (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center gap-2 px-6 py-12 text-center">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-secondary text-primary">
+                  <Clock className="h-6 w-6" aria-hidden="true" />
+                </div>
+                <p className="font-medium">No doses scheduled for today</p>
+                <p className="text-sm text-muted-foreground">
+                  Scheduled medications will appear here when it&apos;s time for a dose.
+                </p>
+              </CardContent>
+            </Card>
+          )}
 
           {/* PRN */}
-          <section aria-label="As needed">
-            <div className="mb-2 flex items-center gap-2 px-1">
-              <Sparkles className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-              <h3 className="text-sm font-semibold">As needed (PRN)</h3>
-            </div>
-            <ul className="space-y-2">
-              {prn.map((p) => (
-                <PrnRow key={p.id} prn={p} canRecord={canRecord} onLog={() => logPrn(p.id)} />
-              ))}
-            </ul>
-          </section>
+          {prn.length > 0 && (
+            <section aria-label="As needed">
+              <div className="mb-2 flex items-center gap-2 px-1">
+                <Sparkles className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                <h3 className="text-sm font-semibold">As needed (PRN)</h3>
+              </div>
+              <ul className="space-y-2">
+                {prn.map((p) => (
+                  <PrnRow key={p.id} prn={p} canRecord={canRecord} onLog={() => logPrn(p.id)} />
+                ))}
+              </ul>
+            </section>
+          )}
         </>
       )}
 

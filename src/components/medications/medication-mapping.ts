@@ -36,5 +36,12 @@ export function valuesToMedication(values: MedFormValues, id: string, existing?:
     active: existing?.active ?? true,
     discontinued: existing?.discontinued,
     discontinuedNote: existing?.discontinuedNote,
+    // Keep the structured fields so editing the optimistic row (pre server reconcile) is faithful.
+    route: values.route || "Oral",
+    instructions: values.instructions.trim(),
+    isPrn: values.isPrn,
+    prnMaxPerDay: existing?.prnMaxPerDay,
+    refillThreshold: values.refillThreshold,
+    scheduleRows: values.isPrn ? [] : values.schedules.map((s) => ({ time: s.time, days: s.days })),
   };
 }

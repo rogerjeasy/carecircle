@@ -55,20 +55,28 @@ function medicationToValues(med?: Medication): MedFormValues {
       refillThreshold: 7,
     };
   }
-  const isPrn = /as needed|prn/i.test(med.schedule);
+  // Prefer the real, structured fields the server provides; fall back to safe defaults for
+  // demo/optimistic-only rows that don't carry them (so the form still opens cleanly).
+  const isPrn = med.isPrn ?? /as needed|prn/i.test(med.schedule);
+  const rows = med.scheduleRows ?? [];
+  const schedules = isPrn
+    ? []
+    : rows.length > 0
+      ? rows.map((r, i) => ({ id: `row-${i}`, time: r.time, days: [...r.days] }))
+      : [{ id: "row-0", time: "08:00", days: [...EVERY_DAY] }];
   return {
     name: med.name,
     strength: med.strength,
     form: med.form || "Tablet",
-    route: "Oral",
+    route: med.route || "Oral",
     purpose: med.purpose,
     prescriber: med.prescriber,
-    instructions: "",
+    instructions: med.instructions ?? "",
     photoUrl: null,
     isPrn,
-    schedules: isPrn ? [] : [{ id: "row-0", time: "08:00", days: [...EVERY_DAY] }],
+    schedules,
     supplyCount: med.supplyDays,
-    refillThreshold: 7,
+    refillThreshold: med.refillThreshold ?? 7,
   };
 }
 

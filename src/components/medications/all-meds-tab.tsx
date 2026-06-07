@@ -9,26 +9,26 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { GatedControl } from "./gated-control";
 import { MedCard } from "./med-card";
-import { MedicationFormModal } from "./medication-form-modal";
 import { PrintMedicationList } from "./print-medication-list";
-import { valuesToMedication } from "./medication-mapping";
-import type { MedFormValues } from "./schema";
+import { setMedicationActive, reactivateMedication, createRefillTask } from "@/lib/medications/actions";
 import type { Medication } from "./types";
 
 export interface AllMedsTabProps {
   meds: Medication[];
   setMeds: React.Dispatch<React.SetStateAction<Medication[]>>;
   canManage: boolean;
+  /** Open the (screen-owned) Add modal. */
+  onAdd: () => void;
+  /** Open the (screen-owned) Edit modal for a medication. */
+  onEdit: (med: Medication) => void;
+  /** Called after a mutation that can change Today's schedule, so the screen can refresh it. */
+  onMutated: () => void;
 }
 
-type ModalState = { mode: "add" } | { mode: "edit"; med: Medication } | null;
-
-/** The "All medications" tab: search, the active grid, a collapsible Discontinued section, Add/Edit. */
-export function AllMedsTab({ meds, setMeds, canManage }: AllMedsTabProps) {
+/** The "All medications" tab: search, the active grid, a collapsible Discontinued section. */
+export function AllMedsTab({ meds, setMeds, canManage, onAdd, onEdit, onMutated }: AllMedsTabProps) {
   const [query, setQuery] = React.useState("");
   const [showDiscontinued, setShowDiscontinued] = React.useState(false);
-  const [modal, setModal] = React.useState<ModalState>(null);
-  const newIdRef = React.useRef(1);
 
   const q = query.trim().toLowerCase();
   const matches = (m: Medication) =>
@@ -40,36 +40,40 @@ export function AllMedsTab({ meds, setMeds, canManage }: AllMedsTabProps) {
   const activeMeds = meds.filter((m) => !m.discontinued && matches(m));
   const discontinuedMeds = meds.filter((m) => m.discontinued && matches(m));
 
-  // Names of currently-taken meds, used by the safety check (optionally excluding one med by id).
-  const currentMedNames = (excludeId?: string) =>
-    meds.filter((m) => m.active && !m.discontinued && m.id !== excludeId).map((m) => m.name);
-
   const toggleActive = (id: string, next: boolean) => {
+    const prevMeds = meds;
     setMeds((prev) => prev.map((m) => (m.id === id ? { ...m, active: next } : m)));
     const m = meds.find((x) => x.id === id);
     toast(next ? `${m?.name} resumed` : `${m?.name} paused`);
+    void setMedicationActive(id, next).then((res) => {
+      if (!res.ok) {
+        setMeds(prevMeds);
+        toast.error(res.error ?? "Couldn't update — please try again");
+      } else {
+        onMutated(); // pausing/resuming changes which doses appear in Today
+      }
+    });
   };
 
-  const createRefill = (name: string) =>
+  const createRefill = (id: string, name: string) => {
     toast.success("Refill task created", { description: `Reorder ${name} added to Tasks` });
+    void createRefillTask(id).then((res) => {
+      if (!res.ok) toast.error(res.error ?? "Couldn't create the refill task");
+    });
+  };
 
   const reactivate = (med: Medication) => {
+    const prevMeds = meds;
     setMeds((prev) => prev.map((m) => (m.id === med.id ? { ...m, discontinued: false, active: true } : m)));
     toast.success(`${med.name} reactivated`);
-  };
-
-  const handleSubmit = (values: MedFormValues) => {
-    if (modal?.mode === "edit") {
-      const updated = valuesToMedication(values, modal.med.id, modal.med);
-      setMeds((prev) => prev.map((m) => (m.id === modal.med.id ? updated : m)));
-      toast.success(`${updated.name} updated`);
-    } else {
-      const id = `med-${newIdRef.current++}`;
-      const created = valuesToMedication(values, id);
-      setMeds((prev) => [created, ...prev]);
-      toast.success(`${created.name} added`);
-    }
-    setModal(null);
+    void reactivateMedication(med.id).then((res) => {
+      if (!res.ok) {
+        setMeds(prevMeds);
+        toast.error(res.error ?? "Couldn't reactivate — please try again");
+      } else {
+        onMutated(); // a reactivated scheduled med may have doses today
+      }
+    });
   };
 
   const noMedsAtAll = meds.filter((m) => !m.discontinued).length === 0;
@@ -91,7 +95,7 @@ export function AllMedsTab({ meds, setMeds, canManage }: AllMedsTabProps) {
         <div className="flex shrink-0 gap-2">
           <PrintMedicationList meds={meds} />
           <GatedControl canManage={canManage}>
-            <Button className="h-11 flex-1 sm:flex-none" onClick={() => setModal({ mode: "add" })}>
+            <Button className="h-11 flex-1 sm:flex-none" onClick={onAdd}>
               <Plus className="h-4 w-4" />
               <span className="ml-1">Add medication</span>
             </Button>
@@ -100,7 +104,7 @@ export function AllMedsTab({ meds, setMeds, canManage }: AllMedsTabProps) {
       </div>
 
       {noMedsAtAll ? (
-        <EmptyMeds canManage={canManage} onAdd={() => setModal({ mode: "add" })} />
+        <EmptyMeds canManage={canManage} onAdd={onAdd} />
       ) : activeMeds.length === 0 ? (
         <NoSearchResults query={query} />
       ) : (
@@ -111,8 +115,8 @@ export function AllMedsTab({ meds, setMeds, canManage }: AllMedsTabProps) {
               med={med}
               canManage={canManage}
               onToggleActive={(next) => toggleActive(med.id, next)}
-              onEdit={() => setModal({ mode: "edit", med })}
-              onCreateRefill={() => createRefill(med.name)}
+              onEdit={() => onEdit(med)}
+              onCreateRefill={() => createRefill(med.id, med.name)}
             />
           ))}
         </div>
@@ -168,17 +172,6 @@ export function AllMedsTab({ meds, setMeds, canManage }: AllMedsTabProps) {
           )}
         </div>
       )}
-
-      {modal && (
-        <MedicationFormModal
-          open
-          onOpenChange={(o) => !o && setModal(null)}
-          mode={modal.mode}
-          initial={modal.mode === "edit" ? modal.med : undefined}
-          currentMedNames={currentMedNames(modal.mode === "edit" ? modal.med.id : undefined)}
-          onSubmit={handleSubmit}
-        />
-      )}
     </div>
   );
 }
@@ -201,7 +194,11 @@ function EmptyMeds({ canManage, onAdd }: { canManage: boolean; onAdd: () => void
       </div>
       <div>
         <p className="text-base font-semibold">No medications yet</p>
-        <p className="mt-1 text-sm text-muted-foreground">Add the first medication to start tracking doses.</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {canManage
+            ? "Add the first medication to start tracking doses."
+            : "Once a coordinator adds medications, they’ll show up here."}
+        </p>
       </div>
       <GatedControl canManage={canManage}>
         <Button onClick={onAdd}>
