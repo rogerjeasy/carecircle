@@ -1,16 +1,11 @@
 // Pure helpers shared across the Care Rota screen.
 
 import type { UserRole } from "@/components/app-shell/app-shell-context";
-import { MEMBERS } from "./data";
 import type { Member, Shift } from "./types";
 
 /** Editing the rota is open to coordinators and family; others view. */
 export function canManageRota(role: UserRole): boolean {
   return role === "coordinator" || role === "family";
-}
-
-export function memberById(id: string): Member | undefined {
-  return MEMBERS.find((m) => m.id === id);
 }
 
 export function firstName(name: string): string {
@@ -60,19 +55,19 @@ function shiftCovers(shift: Shift, dayIndex: number, minutes: number): boolean {
 }
 
 /** The member currently on-call (if any), based on the live clock. */
-export function onCallNow(shifts: Shift[], now: Date): { shift: Shift; member: Member } | null {
+export function onCallNow(shifts: Shift[], now: Date, members: Member[]): { shift: Shift; member: Member } | null {
   const dayIndex = now.getDay();
   const minutes = now.getHours() * 60 + now.getMinutes();
   const shift = shifts.find((s) => s.type === "on-call" && shiftCovers(s, dayIndex, minutes));
   if (!shift) return null;
-  const member = memberById(shift.memberId);
+  const member = members.find((m) => m.id === shift.memberId);
   return member ? { shift, member } : null;
 }
 
 /** The member physically present right now (if any). */
-export function inPersonNow(shifts: Shift[], now: Date): Member | null {
+export function inPersonNow(shifts: Shift[], now: Date, members: Member[]): Member | null {
   const dayIndex = now.getDay();
   const minutes = now.getHours() * 60 + now.getMinutes();
   const shift = shifts.find((s) => s.type === "in-person" && shiftCovers(s, dayIndex, minutes));
-  return shift ? memberById(shift.memberId) ?? null : null;
+  return shift ? members.find((m) => m.id === shift.memberId) ?? null : null;
 }

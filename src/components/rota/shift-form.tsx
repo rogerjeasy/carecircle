@@ -13,7 +13,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { FormField } from "./form-field";
-import { DAY_FULL, MEMBERS } from "./data";
+import { DAY_FULL } from "./data";
+import { useRotaMembers } from "./members-context";
 import { firstName } from "./utils";
 import type { Shift, ShiftType } from "./types";
 
@@ -61,6 +62,7 @@ export interface ShiftFormProps {
 
 /** The Add-shift form. Scrolls internally with a sticky footer; hosted in a modal. */
 export function ShiftForm({ initialValues, onSubmit, onCancel }: ShiftFormProps) {
+  const { members } = useRotaMembers();
   const [values, setValues] = React.useState<ShiftFormValues>(initialValues);
   const [errors, setErrors] = React.useState<Errors>({});
   const [submitting, setSubmitting] = React.useState(false);
@@ -100,7 +102,7 @@ export function ShiftForm({ initialValues, onSubmit, onCancel }: ShiftFormProps)
                 <SelectValue placeholder="Who's on?" />
               </SelectTrigger>
               <SelectContent>
-                {MEMBERS.map((m) => (
+                {members.map((m) => (
                   <SelectItem key={m.id} value={m.id}>
                     {m.name} ({firstName(m.name)})
                   </SelectItem>

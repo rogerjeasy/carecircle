@@ -4,13 +4,15 @@ import { Phone, UserCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useRotaMembers } from "./members-context";
 import { firstName, inPersonNow, onCallNow, timeRange } from "./utils";
 import type { Shift } from "./types";
 
 /** The "On call now: Grace" highlight, plus who's physically present right now. */
 export function OnCallBanner({ shifts, now }: { shifts: Shift[]; now: Date }) {
-  const onCall = onCallNow(shifts, now);
-  const inPerson = inPersonNow(shifts, now);
+  const { members } = useRotaMembers();
+  const onCall = onCallNow(shifts, now, members);
+  const inPerson = inPersonNow(shifts, now, members);
 
   return (
     <Card

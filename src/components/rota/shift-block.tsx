@@ -3,7 +3,8 @@
 import { Phone, User, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { firstName, memberById, timeRange } from "./utils";
+import { useRotaMembers } from "./members-context";
+import { firstName, timeRange } from "./utils";
 import type { Shift } from "./types";
 
 /** A colored block representing one person's shift: avatar, name, time range, in-person/on-call. */
@@ -20,7 +21,8 @@ export function ShiftBlock({
   highlight?: boolean;
   className?: string;
 }) {
-  const member = memberById(shift.memberId);
+  const { byId } = useRotaMembers();
+  const member = byId(shift.memberId);
   if (!member) return null;
   const onCall = shift.type === "on-call";
   const TypeIcon = onCall ? Phone : User;

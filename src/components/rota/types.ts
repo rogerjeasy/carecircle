@@ -24,3 +24,12 @@ export interface Shift {
   end: string;
   type: ShiftType;
 }
+
+/** Everything the Care Rota screen needs, assembled server-side and passed in as one prop. */
+export interface RotaData {
+  /** The active circle — used to remount the screen on circle switch. */
+  circleId: string;
+  shifts: Shift[];
+  /** Circle members who can take shifts (with avatar + block colours). */
+  members: Member[];
+}
