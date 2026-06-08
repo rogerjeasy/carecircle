@@ -1,18 +1,9 @@
-// Demo seed data + display constants for the Health screen.
+// Display constants for the Health screen. The readings + members are loaded from the server
+// (see src/lib/health/queries.ts) — this file only holds static presentation metadata + the
+// default alert thresholds.
 
 import { Droplet, Heart, HeartPulse, Moon, Scale, Smile } from "lucide-react";
-import { addDays, startOfDay } from "date-fns";
-import type { MetricConfig, MetricKey, Member, Reading, ThresholdMap } from "./types";
-
-/** Who's being cared for (used in copy). */
-export const CARE_RECIPIENT = { name: "Antonio" } as const;
-
-export const MEMBERS: Member[] = [
-  { id: "grace", name: "Grace Martinez", initials: "GM", color: "bg-primary/10 text-primary" },
-  { id: "maria", name: "Maria Rodriguez", initials: "MR", color: "bg-accent/10 text-accent" },
-  { id: "paolo", name: "Paolo Bianchi", initials: "PB", color: "bg-info/10 text-info" },
-  { id: "carlos", name: "Carlos Rodriguez", initials: "CR", color: "bg-success/10 text-success" },
-];
+import type { MetricConfig, MetricKey, ThresholdMap } from "./types";
 
 export const METRIC_ORDER: MetricKey[] = ["bp", "glucose", "weight", "sleep", "mood", "hr"];
 
@@ -52,55 +43,3 @@ export const DEFAULT_THRESHOLDS: ThresholdMap = {
   mood: { enabled: true, min: 3, max: 5 },
   hr: { enabled: true, min: 50, max: 90 },
 };
-
-const RECORDERS = ["grace", "maria", "paolo", "carlos"];
-
-// Recent 7 days of BP, hand-picked so "elevated 5 of last 7 days" holds (systolic ≥ 140 five times).
-const BP_SYS_RECENT = [142, 141, 144, 143, 140, 136, 138];
-const BP_DIA_RECENT = [90, 88, 91, 89, 87, 85, 88];
-
-const round = (n: number, dp: number) => Math.round(n * 10 ** dp) / 10 ** dp;
-
-/** Value generator per metric, where `d` = days ago (0 = today). */
-function valueFor(metric: MetricKey, d: number): { value: number; secondary?: number } {
-  switch (metric) {
-    case "bp":
-      if (d < 7) return { value: BP_SYS_RECENT[d], secondary: BP_DIA_RECENT[d] };
-      return { value: 126 + Math.round(5 * Math.sin(d / 3)), secondary: 80 + Math.round(4 * Math.sin(d / 4)) };
-    case "glucose":
-      return { value: 112 + Math.round(16 * Math.sin(d / 2.5)) };
-    case "weight":
-      // Drifts ~2kg down over the last 30 days (now ≈ 76.0, 30 days ago ≈ 78.0).
-      return { value: round(76 + (d / 30) * 2 + 0.3 * Math.sin(d / 2), 1) };
-    case "sleep":
-      return { value: round(7 + 1.1 * Math.sin(d / 2), 1) };
-    case "mood":
-      return { value: Math.max(1, Math.min(5, Math.round(4 + Math.sin(d / 3)))) };
-    case "hr":
-      return { value: 64 + Math.round(8 * Math.sin(d / 2.2)) };
-  }
-}
-
-const METRIC_HOUR: Record<MetricKey, number> = { bp: 8, glucose: 8, weight: 7, sleep: 7, mood: 20, hr: 8 };
-
-/** Build 90 days of daily readings for every metric, dated relative to `now`. */
-export function buildReadings(now: Date, days = 90): Reading[] {
-  const out: Reading[] = [];
-  for (const metric of METRIC_ORDER) {
-    for (let d = days - 1; d >= 0; d--) {
-      const at = addDays(startOfDay(now), -d);
-      at.setHours(METRIC_HOUR[metric], 0, 0, 0);
-      const { value, secondary } = valueFor(metric, d);
-      out.push({
-        id: `${metric}-${d}`,
-        metric,
-        at,
-        value,
-        secondary,
-        recordedBy: RECORDERS[(d + METRIC_ORDER.indexOf(metric)) % RECORDERS.length],
-        note: d === 0 && metric === "bp" ? "Measured after morning walk." : undefined,
-      });
-    }
-  }
-  return out;
-}

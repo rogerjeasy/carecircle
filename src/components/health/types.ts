@@ -41,6 +41,19 @@ export interface Thresholds {
 
 export type ThresholdMap = Record<MetricKey, Thresholds>;
 
+/** Everything the Health screen needs, assembled server-side and passed in as one prop. */
+export interface HealthData {
+  /** The active circle these readings belong to — used to remount the screen on circle switch. */
+  circleId: string;
+  readings: Reading[];
+  /** Circle members (for the "recorded by" picker + readings table). */
+  members: Member[];
+  /** The signed-in user's membership id (default "recorded by"), or null. */
+  currentMembershipId: string | null;
+  /** The care recipient's first name, for friendly copy (or null). */
+  recipientName: string | null;
+}
+
 /** Static display config for a metric. */
 export interface MetricConfig {
   key: MetricKey;

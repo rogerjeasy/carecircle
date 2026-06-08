@@ -15,7 +15,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { FormField, fieldAria } from "./form-field";
-import { DEFAULT_THRESHOLDS, MEMBERS, METRIC_ORDER, metricConfigs, metricIcons, MOOD_FACES } from "./data";
+import { DEFAULT_THRESHOLDS, METRIC_ORDER, metricConfigs, metricIcons, MOOD_FACES } from "./data";
+import { useHealthMembers } from "./members-context";
 import { firstName, statusOf } from "./utils";
 import type { MetricKey, Reading } from "./types";
 
@@ -32,7 +33,7 @@ export interface LogValues {
   recordedBy: string;
 }
 
-export function defaultLogValues(now: Date, metric: MetricKey = "bp", recordedBy = "grace"): LogValues {
+export function defaultLogValues(now: Date, metric: MetricKey = "bp", recordedBy = ""): LogValues {
   return {
     metric,
     systolic: "",
@@ -122,6 +123,7 @@ export interface LogReadingFormProps {
 
 /** The Log-reading form: pick a metric, fill the right inputs, with live friendly validation. */
 export function LogReadingForm({ initialValues, onSubmit, onCancel }: LogReadingFormProps) {
+  const { members } = useHealthMembers();
   const [values, setValues] = React.useState<LogValues>(initialValues);
   const [touched, setTouched] = React.useState(false);
   const [submitting, setSubmitting] = React.useState(false);
@@ -326,7 +328,7 @@ export function LogReadingForm({ initialValues, onSubmit, onCancel }: LogReading
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {MEMBERS.map((m) => (
+                {members.map((m) => (
                   <SelectItem key={m.id} value={m.id}>
                     {firstName(m.name)}
                   </SelectItem>

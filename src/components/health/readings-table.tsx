@@ -6,7 +6,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { StatusPill } from "./status-pill";
 import { useIsPhone } from "./use-is-phone";
 import { metricConfigs } from "./data";
-import { formatValue, memberById, statusOf } from "./utils";
+import { useHealthMembers } from "./members-context";
+import { formatValue, statusOf } from "./utils";
 import type { MetricKey, Reading, Thresholds } from "./types";
 
 const MAX_ROWS = 12;
@@ -23,6 +24,7 @@ export function ReadingsTable({
   thresholds: Thresholds;
 }) {
   const isPhone = useIsPhone();
+  const { byId } = useHealthMembers();
   const cfg = metricConfigs[metric];
   const rows = [...series].reverse().slice(0, MAX_ROWS);
 
@@ -41,7 +43,7 @@ export function ReadingsTable({
     return (
       <ul className="space-y-2" aria-label={`${cfg.name} readings`}>
         {rows.map((r) => {
-          const member = memberById(r.recordedBy);
+          const member = byId(r.recordedBy);
           const status = statusOf(metric, r.value, r.secondary, thresholds);
           return (
             <li key={r.id} className="rounded-xl border bg-card p-3">
@@ -80,7 +82,7 @@ export function ReadingsTable({
         </thead>
         <tbody>
           {rows.map((r, i) => {
-            const member = memberById(r.recordedBy);
+            const member = byId(r.recordedBy);
             const status = statusOf(metric, r.value, r.secondary, thresholds);
             return (
               <tr key={r.id} className={cn(i % 2 === 1 && "bg-muted/20")}>
