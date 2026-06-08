@@ -33,8 +33,11 @@ export interface Task {
   order: number;
 }
 
-/** Seed shape in data.ts — `dueOffset` in days from today resolves to a real `due` date. */
-export interface TaskSeed extends Omit<Task, "due"> {
-  /** Days from today for the due date, or null for no due date. */
-  dueOffset: number | null;
+/** Everything the Tasks screen needs, assembled server-side and passed in as one prop. */
+export interface TasksData {
+  /** The active circle these tasks belong to — used to remount the screen on circle switch. */
+  circleId: string;
+  tasks: Task[];
+  /** Assignable circle members (for the assignee picker + fair-share chart). */
+  members: Member[];
 }

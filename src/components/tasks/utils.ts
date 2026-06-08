@@ -2,17 +2,11 @@
 
 import { format, isToday, isTomorrow, isYesterday, startOfDay } from "date-fns";
 import type { UserRole } from "@/components/app-shell/app-shell-context";
-import { MEMBERS } from "./data";
 import type { Member, Task, TaskStatus } from "./types";
 
 /** Managing tasks is open to active caregiving roles; recipients/read-only view. */
 export function canManageTasks(role: UserRole): boolean {
   return role === "coordinator" || role === "family" || role === "caregiver";
-}
-
-export function memberById(id: string | null | undefined): Member | undefined {
-  if (!id) return undefined;
-  return MEMBERS.find((m) => m.id === id);
 }
 
 export function firstName(name: string): string {
@@ -38,13 +32,13 @@ export interface FairShareRow {
   count: number;
 }
 
-/** Completed-task counts per member this "week" (the demo treats all `done` tasks as this week). */
-export function fairShare(tasks: Task[]): FairShareRow[] {
+/** Completed-task counts per member (treats all `done` tasks as this week's contribution). */
+export function fairShare(tasks: Task[], members: Member[]): FairShareRow[] {
   const counts = new Map<string, number>();
   tasks
     .filter((t) => t.status === "done" && t.assigneeId)
     .forEach((t) => counts.set(t.assigneeId!, (counts.get(t.assigneeId!) ?? 0) + 1));
-  return MEMBERS.map((member) => ({ member, count: counts.get(member.id) ?? 0 })).sort(
+  return members.map((member) => ({ member, count: counts.get(member.id) ?? 0 })).sort(
     (a, b) => b.count - a.count
   );
 }

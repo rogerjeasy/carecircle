@@ -9,7 +9,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CATEGORY_OPTIONS, MEMBERS, STATUS_COLUMNS } from "./data";
+import { CATEGORY_OPTIONS, STATUS_COLUMNS } from "./data";
+import { useTaskMembers } from "./members-context";
 import { firstName } from "./utils";
 import type { TaskCategory, TaskStatus } from "./types";
 
@@ -33,6 +34,7 @@ export function FiltersBar({
   filters: TaskFilters;
   onChange: (next: TaskFilters) => void;
 }) {
+  const { members } = useTaskMembers();
   const set = (patch: Partial<TaskFilters>) => onChange({ ...filters, ...patch });
 
   return (
@@ -49,7 +51,7 @@ export function FiltersBar({
         <SelectContent>
           <SelectItem value="all">Everyone</SelectItem>
           <SelectItem value="unassigned">Unassigned</SelectItem>
-          {MEMBERS.map((m) => (
+          {members.map((m) => (
             <SelectItem key={m.id} value={m.id}>
               {firstName(m.name)}
             </SelectItem>

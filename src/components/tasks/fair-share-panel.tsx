@@ -5,14 +5,19 @@ import { Bar, BarChart, Cell, LabelList, ResponsiveContainer, XAxis, YAxis } fro
 import { HandHeart, HeartHandshake } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
-import { MEMBERS } from "./data";
+import { useTaskMembers } from "./members-context";
 import { fairShare, fairShareMessage, firstName } from "./utils";
-import type { Task } from "./types";
+import type { Member, Task } from "./types";
 
 /** A custom Y-axis tick: the member's avatar monogram + first name, drawn in-SVG for clean alignment. */
-function AvatarTick(props: { x?: number; y?: number; payload?: { value?: string } }) {
-  const { x = 0, y = 0, payload } = props;
-  const member = MEMBERS.find((m) => m.id === payload?.value);
+function AvatarTick(props: {
+  x?: number;
+  y?: number;
+  payload?: { value?: string };
+  membersById?: Map<string, Member>;
+}) {
+  const { x = 0, y = 0, payload, membersById } = props;
+  const member = membersById?.get(payload?.value ?? "");
   if (!member) return null;
   return (
     <g transform={`translate(${x},${y})`}>
@@ -28,7 +33,9 @@ function AvatarTick(props: { x?: number; y?: number; payload?: { value?: string 
 }
 
 export function FairSharePanel({ tasks, className }: { tasks: Task[]; className?: string }) {
-  const rows = React.useMemo(() => fairShare(tasks), [tasks]);
+  const { members } = useTaskMembers();
+  const membersById = React.useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
+  const rows = React.useMemo(() => fairShare(tasks, members), [tasks, members]);
   const message = React.useMemo(() => fairShareMessage(rows), [rows]);
   const maxCount = Math.max(1, ...rows.map((r) => r.count));
   const data = rows.map((r) => ({ id: r.member.id, count: r.count, fill: r.member.bar }));
@@ -57,7 +64,7 @@ export function FairSharePanel({ tasks, className }: { tasks: Task[]; className?
                 width={92}
                 axisLine={false}
                 tickLine={false}
-                tick={<AvatarTick />}
+                tick={<AvatarTick membersById={membersById} />}
                 interval={0}
               />
               <Bar dataKey="count" radius={[6, 6, 6, 6]} isAnimationActive={false} background={{ fill: "hsl(var(--muted))" }}>

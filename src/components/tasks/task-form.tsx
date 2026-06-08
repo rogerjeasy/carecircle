@@ -14,7 +14,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { FormField, fieldAria } from "./form-field";
-import { CATEGORY_OPTIONS, MEMBERS, RECURRENCE_OPTIONS, STATUS_COLUMNS } from "./data";
+import { CATEGORY_OPTIONS, RECURRENCE_OPTIONS, STATUS_COLUMNS } from "./data";
+import { useTaskMembers } from "./members-context";
 import { firstName } from "./utils";
 import {
   validateTaskForm,
@@ -37,6 +38,7 @@ const delay = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
 /** The New / Edit task form. Scrolls internally with a sticky footer; hosted in a modal. */
 export function TaskForm({ mode, initial, initialValues, onSubmit, onCancel }: TaskFormProps) {
+  const { members } = useTaskMembers();
   const [values, setValues] = React.useState<TaskFormValues>(() =>
     initial ? taskToValues(initial) : initialValues
   );
@@ -120,7 +122,7 @@ export function TaskForm({ mode, initial, initialValues, onSubmit, onCancel }: T
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="unassigned">Unassigned</SelectItem>
-                {MEMBERS.map((m) => (
+                {members.map((m) => (
                   <SelectItem key={m.id} value={m.id}>
                     {firstName(m.name)}
                   </SelectItem>

@@ -16,7 +16,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MemberAvatar } from "./member-avatar";
 import { categoryMeta, STATUS_COLUMNS } from "./data";
-import { dueLabel, isOverdue, memberById } from "./utils";
+import { useTaskMembers } from "./members-context";
+import { dueLabel, isOverdue } from "./utils";
 import type { Task, TaskStatus } from "./types";
 
 export interface TaskCardProps {
@@ -44,9 +45,10 @@ export function TaskCard({
   draggableProps,
   dragging,
 }: TaskCardProps) {
+  const { byId } = useTaskMembers();
   const cat = categoryMeta[task.category];
   const CatIcon = cat.icon;
-  const assignee = memberById(task.assigneeId);
+  const assignee = byId(task.assigneeId);
   const done = task.status === "done";
   const overdue = isOverdue(task, now);
 
