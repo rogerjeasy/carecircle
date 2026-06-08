@@ -5,9 +5,9 @@ import type { UserRole } from "@/components/app-shell/app-shell-context";
 import { CAPABILITIES, PERMISSIONS, roleMeta } from "./data";
 import type { Access, CapabilityKey, CircleRole, Member, MemberStatus } from "./types";
 
-/** Managing people (roles, invites, suspend/remove) is limited to coordinators and family admins. */
+/** Managing people (roles, invites, suspend/remove) is limited to coordinators (owner / family admin). */
 export function canManagePeople(role: UserRole): boolean {
-  return role === "coordinator" || role === "family";
+  return role === "coordinator";
 }
 
 export function firstName(name: string): string {

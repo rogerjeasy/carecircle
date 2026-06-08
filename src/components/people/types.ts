@@ -33,6 +33,8 @@ export interface Member {
   initials: string;
   color: string;
   email: string;
+  /** Contact phone (callable on the emergency card), or "" if none on file. */
+  phone: string;
   /** Free-text relationship, e.g. "Daughter", "Home aide". */
   relationship: string;
   role: CircleRole;
@@ -48,11 +50,12 @@ export interface Invite {
   sentAt: Date;
 }
 
-export interface MemberSeed extends Omit<Member, "lastActive"> {
-  /** Hours since last active, or null (e.g. invited / never). */
-  lastActiveHoursAgo: number | null;
-}
-
-export interface InviteSeed extends Omit<Invite, "sentAt"> {
-  sentDaysAgo: number;
+/** Everything the People screen needs, assembled server-side and passed in as one prop. */
+export interface PeopleData {
+  /** The active circle — used to remount the screen on circle switch. */
+  circleId: string;
+  members: Member[];
+  invites: Invite[];
+  /** The care recipient's first name, for the header copy (or null). */
+  recipientName: string | null;
 }

@@ -31,13 +31,14 @@ let rowCounter = 1;
 const newRow = (): Row => ({ id: `row-${rowCounter++}`, email: "", role: "family", touched: false });
 
 export interface InviteFormProps {
-  now: Date;
+  /** Performs the real invite and returns the created invites (or [] on failure). */
+  onSubmit: (rows: { email: string; role: CircleRole }[], note: string) => Promise<Invite[]>;
   onInvited: (invites: Invite[]) => void;
   onCancel: () => void;
 }
 
 /** The invite form: repeatable email+role rows, a note, and a live role-capability summary. */
-export function InviteForm({ now, onInvited, onCancel }: InviteFormProps) {
+export function InviteForm({ onSubmit, onInvited, onCancel }: InviteFormProps) {
   const [rows, setRows] = React.useState<Row[]>(() => [newRow()]);
   const [note, setNote] = React.useState("");
   const [summaryRole, setSummaryRole] = React.useState<CircleRole>("family");
@@ -59,15 +60,13 @@ export function InviteForm({ now, onInvited, onCancel }: InviteFormProps) {
     setRows((prev) => prev.map((r) => ({ ...r, touched: true })));
     if (!canSubmit || submitting) return;
     setSubmitting(true);
-    await new Promise((r) => setTimeout(r, 650));
-    const invites: Invite[] = validRows.map((r, i) => ({
-      id: `inv-${Date.now()}-${i}`,
-      email: r.email.trim(),
-      role: r.role,
-      sentAt: now,
-    }));
-    setSent(invites);
+    const created = await onSubmit(
+      validRows.map((r) => ({ email: r.email.trim(), role: r.role })),
+      note
+    );
     setSubmitting(false);
+    if (created.length === 0) return; // failure — the caller surfaces the error; stay on the form
+    setSent(created);
     setPhase("done");
   };
 

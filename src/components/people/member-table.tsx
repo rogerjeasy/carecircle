@@ -1,6 +1,6 @@
 "use client";
 
-import { MoreHorizontal, RefreshCw, Shield, Trash2, UserCheck, UserX } from "lucide-react";
+import { MoreHorizontal, Phone, RefreshCw, Shield, Trash2, UserCheck, UserX } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,7 @@ import { useIsPhone } from "./use-is-phone";
 import { lastActiveLabel } from "./utils";
 import type { Member } from "./types";
 
-export type MemberAction = "change-role" | "resend" | "suspend" | "reactivate" | "remove";
+export type MemberAction = "change-role" | "edit-phone" | "resend" | "suspend" | "reactivate" | "remove";
 
 export interface MemberTableProps {
   members: Member[];
@@ -41,6 +41,7 @@ export function MemberTable({ members, canManage, onAction }: MemberTableProps) 
                 <p className="truncate font-semibold leading-tight">{m.name}</p>
                 <p className="truncate text-sm text-muted-foreground">{m.relationship}</p>
                 <p className="truncate text-xs text-muted-foreground">{m.email}</p>
+                {m.phone && <p className="truncate text-xs tabular-nums text-muted-foreground">{m.phone}</p>}
               </div>
               <MemberActionsMenu member={m} canManage={canManage} onAction={onAction} />
             </div>
@@ -82,6 +83,7 @@ export function MemberTable({ members, canManage, onAction }: MemberTableProps) 
                   <div className="min-w-0">
                     <p className="truncate font-medium">{m.name}</p>
                     <p className="truncate text-xs text-muted-foreground">{m.email}</p>
+                    {m.phone && <p className="truncate text-xs tabular-nums text-muted-foreground">{m.phone}</p>}
                   </div>
                 </div>
               </td>
@@ -128,6 +130,10 @@ function MemberActionsMenu({
         <DropdownMenuItem disabled={!canManage} onClick={() => onAction(member, "change-role")}>
           <Shield className="mr-2 h-4 w-4" />
           Change role
+        </DropdownMenuItem>
+        <DropdownMenuItem disabled={!canManage} onClick={() => onAction(member, "edit-phone")}>
+          <Phone className="mr-2 h-4 w-4" />
+          {member.phone ? "Edit phone" : "Add phone"}
         </DropdownMenuItem>
         {member.status === "invited" && (
           <DropdownMenuItem disabled={!canManage} onClick={() => onAction(member, "resend")}>
