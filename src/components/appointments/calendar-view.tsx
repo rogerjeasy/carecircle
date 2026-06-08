@@ -23,7 +23,8 @@ import { AssignedMember } from "./member-avatar";
 import { StatusBadge } from "./status-badge";
 import { useIsPhone } from "./use-is-phone";
 import { kindMeta } from "./data";
-import { appointmentsOnDay, friendlyDay, memberById, timeLabel } from "./utils";
+import { useApptMembers } from "./members-context";
+import { appointmentsOnDay, friendlyDay, timeLabel } from "./utils";
 import type { Appointment } from "./types";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -370,8 +371,9 @@ function PhoneAgenda({ appointments, selectedDay, onSelectDay, onOpenAppt, onAdd
 /* ------------------------------------------------------------------ */
 
 function AgendaRow({ appt, onOpen }: { appt: Appointment; onOpen: () => void }) {
+  const { byId } = useApptMembers();
   const Icon = kindMeta[appt.kind].icon;
-  const member = memberById(appt.assignedMemberId);
+  const member = byId(appt.assignedMemberId);
   return (
     <button
       type="button"

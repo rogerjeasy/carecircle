@@ -55,10 +55,13 @@ export interface Appointment {
   postedToTimeline?: boolean;
 }
 
-/** The shape of the seed rows in data.ts (resolved to `Appointment` once we know "today"). */
-export interface AppointmentSeed extends Omit<Appointment, "start"> {
-  /** Days from today (negative = past, 0 = today, positive = upcoming). */
-  dayOffset: number;
-  /** "HH:mm" 24h local time. */
-  time: string;
+/** Everything the Appointments screen needs, assembled server-side and passed in as one prop. */
+export interface AppointmentsData {
+  /** The active circle these appointments belong to — used to remount the screen on circle switch. */
+  circleId: string;
+  appointments: Appointment[];
+  /** Assignable circle members (for "who's taking them"). */
+  members: Member[];
+  /** The care recipient's first name, for friendly copy (or null if not set). */
+  recipientName: string | null;
 }

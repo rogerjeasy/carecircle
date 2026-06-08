@@ -13,7 +13,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { FormField, fieldAria } from "./form-field";
-import { APPOINTMENT_KINDS, MEMBERS, statusMeta } from "./data";
+import { APPOINTMENT_KINDS, statusMeta } from "./data";
+import { useApptMembers } from "./members-context";
 import { firstName } from "./utils";
 import {
   emptyValues,
@@ -39,6 +40,7 @@ const delay = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
 /** The Add / Edit appointment form. Scrolls internally with a sticky footer; hosted in a modal. */
 export function AppointmentForm({ mode, initial, defaultDate, onSubmit, onCancel }: AppointmentFormProps) {
+  const { members } = useApptMembers();
   const [values, setValues] = React.useState<AppointmentFormValues>(() =>
     initial ? appointmentToValues(initial) : emptyValues(defaultDate)
   );
@@ -193,7 +195,7 @@ export function AppointmentForm({ mode, initial, defaultDate, onSubmit, onCancel
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="unassigned">Unassigned</SelectItem>
-                {MEMBERS.map((m) => (
+                {members.map((m) => (
                   <SelectItem key={m.id} value={m.id}>
                     {m.name} ({firstName(m.name)})
                   </SelectItem>

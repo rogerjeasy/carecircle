@@ -6,7 +6,8 @@ import { Card } from "@/components/ui/card";
 import { AssignedMember } from "./member-avatar";
 import { StatusBadge } from "./status-badge";
 import { kindMeta } from "./data";
-import { dateTimeLabel, memberById, prepProgress } from "./utils";
+import { useApptMembers } from "./members-context";
+import { dateTimeLabel, prepProgress } from "./utils";
 import type { Appointment } from "./types";
 
 /**
@@ -14,8 +15,9 @@ import type { Appointment } from "./types";
  * member ("Paolo is taking him"), and a prep-readiness hint. The whole card opens the detail view.
  */
 export function AppointmentCard({ appt, onOpen }: { appt: Appointment; onOpen: () => void }) {
+  const { byId } = useApptMembers();
   const Icon = kindMeta[appt.kind].icon;
-  const member = memberById(appt.assignedMemberId);
+  const member = byId(appt.assignedMemberId);
   const prep = prepProgress(appt);
   const cancelled = appt.status === "cancelled";
 

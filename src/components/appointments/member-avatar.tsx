@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { firstName } from "./utils";
-import { CARE_RECIPIENT } from "./data";
+import { useApptMembers } from "./members-context";
 import type { Member } from "./types";
 
 export interface AssignedMemberProps {
@@ -19,6 +19,7 @@ export interface AssignedMemberProps {
  * one is assigned it renders a dashed placeholder + "Unassigned" so the gap is obvious but quiet.
  */
 export function AssignedMember({ member, withLabel = true, size = "md", className }: AssignedMemberProps) {
+  const { recipientName } = useApptMembers();
   const dim = size === "sm" ? "h-7 w-7" : "h-8 w-8";
   const text = size === "sm" ? "text-[10px]" : "text-xs";
 
@@ -50,7 +51,7 @@ export function AssignedMember({ member, withLabel = true, size = "md", classNam
       {withLabel && (
         <span className="truncate text-sm text-muted-foreground">
           <span className="font-medium text-foreground">{firstName(member.name)}</span> is taking{" "}
-          {CARE_RECIPIENT.pronounObject}
+          {recipientName ?? "them"}
         </span>
       )}
     </div>

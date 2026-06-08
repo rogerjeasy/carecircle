@@ -2,18 +2,11 @@
 
 import { format, isPast, isSameDay, isToday, isTomorrow, isYesterday } from "date-fns";
 import type { UserRole } from "@/components/app-shell/app-shell-context";
-import { MEMBERS } from "./data";
-import type { Appointment, Member } from "./types";
+import type { Appointment } from "./types";
 
 /** Scheduling/editing is open to active caregiving roles; recipients and read-only members view. */
 export function canManageAppointments(role: UserRole): boolean {
   return role === "coordinator" || role === "family" || role === "caregiver";
-}
-
-/** Look up a member by id (e.g. the assigned one). */
-export function memberById(id: string | null | undefined): Member | undefined {
-  if (!id) return undefined;
-  return MEMBERS.find((m) => m.id === id);
 }
 
 /** First name only, for compact "Paolo is taking him" style attribution. */

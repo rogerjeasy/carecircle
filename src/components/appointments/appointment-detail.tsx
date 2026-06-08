@@ -43,8 +43,9 @@ import { ResponsiveModal } from "./responsive-modal";
 import { GatedControl } from "./gated-control";
 import { AssignedMember } from "./member-avatar";
 import { StatusBadge } from "./status-badge";
-import { kindMeta, MEMBERS } from "./data";
-import { dateTimeLabel, firstName, memberById, prepProgress } from "./utils";
+import { kindMeta } from "./data";
+import { useApptMembers } from "./members-context";
+import { dateTimeLabel, firstName, prepProgress } from "./utils";
 import type { Appointment, PrepQuestion } from "./types";
 
 export interface AppointmentDetailProps {
@@ -68,8 +69,9 @@ export function AppointmentDetail({
   onEdit,
   onPostToTimeline,
 }: AppointmentDetailProps) {
+  const { members, byId } = useApptMembers();
   const Icon = kindMeta[appt.kind].icon;
-  const member = memberById(appt.assignedMemberId);
+  const member = byId(appt.assignedMemberId);
   const prep = prepProgress(appt);
 
   const [newPrep, setNewPrep] = React.useState("");
@@ -171,7 +173,7 @@ export function AppointmentDetail({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="unassigned">Unassigned</SelectItem>
-                  {MEMBERS.map((m) => (
+                  {members.map((m) => (
                     <SelectItem key={m.id} value={m.id}>
                       {firstName(m.name)}
                     </SelectItem>
