@@ -72,6 +72,39 @@ export const INSURANCE = {
 export const LANGUAGES = ["English", "Español", "Português", "Français", "Italiano"];
 export const TIMEZONES = ["Europe/Lisbon (WEST)", "Europe/Madrid", "America/New_York", "America/Los_Angeles", "UTC"];
 
+// --- Emergency Card: server-projected data (recipient profile + active meds + contacts) ---
+export interface EmergencyContact {
+  name: string;
+  role: string;
+  /** May be "" when no number is on file (the Call button is then hidden). */
+  phone: string;
+}
+
+export interface EmergencyMed {
+  name: string;
+  strength: string;
+}
+
+export interface EmergencyCardData {
+  fullName: string;
+  initials: string;
+  /** Ready-to-use recipient photo URL (presigned for S3 keys), or null to use initials. */
+  avatarUrl: string | null;
+  age: number | null;
+  /** Formatted date of birth, e.g. "12 March 1948", or null. */
+  dob: string | null;
+  bloodType: string | null;
+  allergies: string[];
+  conditions: string[];
+  /** e.g. "On file", or null when none recorded. */
+  advanceDirective: string | null;
+  meds: EmergencyMed[];
+  /** Next-of-kin / emergency contacts. */
+  contacts: EmergencyContact[];
+  /** Primary doctor (a clinician member), or null. */
+  doctor: EmergencyContact | null;
+}
+
 // --- Emergency Card translations (key labels only; data stays as-is) ---
 export type ECLang = "en" | "es" | "pt" | "fr";
 
