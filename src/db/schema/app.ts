@@ -16,9 +16,11 @@ import {
   jsonb,
   date,
   integer,
+  doublePrecision,
   index,
   unique,
   check,
+  vector,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 import { users } from './auth';
@@ -99,6 +101,55 @@ export const doseStatusEnum = pgEnum('dose_status', [
 // Medication attachments are either images (pill photos, scans) or documents (leaflets, PDFs).
 export const medAttachmentKindEnum = pgEnum('med_attachment_kind', ['image', 'document']);
 
+// ---- Documents vault vocabularies (mirror src/components/documents/types.ts) ----
+export const docCategoryEnum = pgEnum('doc_category', [
+  'medical',
+  'insurance',
+  'legal',
+  'financial',
+  'id',
+  'advance-directive',
+]);
+// Sensitivity drives the document RLS tiers (standard → all members; sensitive → care team + family;
+// restricted → coordinators/family). See drizzle/0015_documents_rls.sql.
+export const docSensitivityEnum = pgEnum('doc_sensitivity', ['standard', 'sensitive', 'restricted']);
+export const docKindEnum = pgEnum('doc_kind', ['pdf', 'image', 'doc']);
+
+// Tasks vocabularies (mirror src/components/tasks/types.ts).
+export const taskCategoryEnum = pgEnum('task_category', ['errand', 'medical', 'admin', 'refill', 'visit']);
+export const taskStatusEnum = pgEnum('task_status', ['open', 'doing', 'done']);
+
+// Appointments vocabularies (mirror src/components/appointments/types.ts).
+export const apptKindEnum = pgEnum('appt_kind', [
+  'checkup',
+  'specialist',
+  'lab',
+  'imaging',
+  'therapy',
+  'dental',
+  'other',
+]);
+export const apptStatusEnum = pgEnum('appt_status', [
+  'scheduled',
+  'confirmed',
+  'needs-prep',
+  'completed',
+  'cancelled',
+]);
+
+// Health observation metrics (mirror src/components/health/types.ts MetricKey).
+export const observationMetricEnum = pgEnum('observation_metric', [
+  'bp',
+  'glucose',
+  'weight',
+  'sleep',
+  'mood',
+  'hr',
+]);
+
+// Care rota shift kinds (mirror src/components/rota/types.ts ShiftType).
+export const shiftTypeEnum = pgEnum('shift_type', ['in-person', 'on-call']);
+
 // Shared audit columns.
 const audit = {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
@@ -136,6 +187,8 @@ export const careRecipientProfile = pgTable('care_recipient_profile', {
   dietaryNeeds: text('dietary_needs'),
   preferences: text('preferences'),
   primaryLanguage: text('primary_language'),
+  // Free-text advance directive shown on the emergency card, e.g. "DNR on file".
+  advanceDirective: text('advance_directive'),
   emergencyContacts: jsonb('emergency_contacts').$type<unknown[]>().default([]),
   insuranceSummary: jsonb('insurance_summary'),
   ...audit,
@@ -155,6 +208,8 @@ export const membership = pgTable(
     role: roleEnum('role').notNull(),
     status: membershipStatusEnum('status').notNull().default('active'),
     relationshipLabel: text('relationship_label'),
+    // Contact phone for this member, surfaced on the emergency card (callable). Optional.
+    phone: text('phone'),
     notifyEscalations: boolean('notify_escalations').notNull().default(true),
     ...audit,
   },
@@ -407,6 +462,177 @@ export const medicationAttachment = pgTable(
 );
 
 // ============================================================================
+// Documents vault — S3-backed files with a sensitivity tier (CareCircle-Data-Model.md §document).
+// Sensitivity is the crux of the document RLS: who can SELECT a row depends on their role.
+// Bytes live in S3 (care-circles/{circleId}/documents/…); this row holds the key + metadata.
+// ============================================================================
+export const documents = pgTable(
+  'document',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    circleId: uuid('circle_id')
+      .notNull()
+      .references(() => careCircle.id, { onDelete: 'cascade' }),
+    title: text('title').notNull(),
+    category: docCategoryEnum('category').notNull(),
+    sensitivity: docSensitivityEnum('sensitivity').notNull().default('standard'),
+    kind: docKindEnum('kind').notNull(),
+    // S3 object key (private bucket). Resolve with resolveStoredUrl() before sending to the client.
+    s3Key: text('s3_key').notNull(),
+    contentType: text('content_type'),
+    fileName: text('file_name'),
+    sizeBytes: integer('size_bytes'),
+    expiresAt: timestamp('expires_at', { withTimezone: true }),
+    isEmergencyVisible: boolean('is_emergency_visible').notNull().default(false),
+    uploadedByMembershipId: uuid('uploaded_by_membership_id').references(() => membership.id, {
+      onDelete: 'set null',
+    }),
+    ...audit,
+  },
+  (t) => [
+    index('document_circle_idx').on(t.circleId),
+    index('document_circle_category_idx').on(t.circleId, t.category),
+    // Hot read: a circle's live documents by sensitivity (the RLS tier check).
+    index('document_circle_sensitivity_idx')
+      .on(t.circleId, t.sensitivity)
+      .where(sql`${t.deletedAt} is null`),
+  ],
+);
+
+// ============================================================================
+// Tasks — the coordination unit that shares the caregiving load (CareCircle-Data-Model.md §task).
+// Assignable to a circle member; completed tasks feed the "fair share" view.
+// ============================================================================
+export const tasks = pgTable(
+  'task',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    circleId: uuid('circle_id')
+      .notNull()
+      .references(() => careCircle.id, { onDelete: 'cascade' }),
+    title: text('title').notNull(),
+    details: text('details'),
+    category: taskCategoryEnum('category').notNull().default('errand'),
+    status: taskStatusEnum('status').notNull().default('open'),
+    assignedToMembershipId: uuid('assigned_to_membership_id').references(() => membership.id, {
+      onDelete: 'set null',
+    }),
+    dueAt: timestamp('due_at', { withTimezone: true }),
+    // 'none' | 'daily' | 'weekly' | 'custom' (free text so the rule can evolve).
+    recurrence: text('recurrence').notNull().default('none'),
+    // Manual ordering within a status column (lower = higher up).
+    sortOrder: integer('sort_order').notNull().default(0),
+    completedAt: timestamp('completed_at', { withTimezone: true }),
+    completedByMembershipId: uuid('completed_by_membership_id').references(() => membership.id, {
+      onDelete: 'set null',
+    }),
+    createdByMembershipId: uuid('created_by_membership_id').references(() => membership.id, {
+      onDelete: 'set null',
+    }),
+    ...audit,
+  },
+  (t) => [
+    // Hot read: a circle's board, by column then manual order.
+    index('task_circle_status_order_idx').on(t.circleId, t.status, t.sortOrder),
+    index('task_circle_idx').on(t.circleId),
+  ],
+);
+
+// ============================================================================
+// Appointments — visits to plan, prep, assign, and summarise (CareCircle-Data-Model.md §appointment).
+// The "prep questions" checklist + visit summary live on the row (jsonb / text) since they're always
+// read with the appointment; assignment + status mirror the rest of the coordination tables.
+// ============================================================================
+export const appointment = pgTable(
+  'appointment',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    circleId: uuid('circle_id')
+      .notNull()
+      .references(() => careCircle.id, { onDelete: 'cascade' }),
+    title: text('title').notNull(),
+    kind: apptKindEnum('kind').notNull().default('other'),
+    provider: text('provider'),
+    location: text('location'),
+    startsAt: timestamp('starts_at', { withTimezone: true }).notNull(),
+    durationMin: integer('duration_min').notNull().default(30),
+    assignedToMembershipId: uuid('assigned_to_membership_id').references(() => membership.id, {
+      onDelete: 'set null',
+    }),
+    status: apptStatusEnum('status').notNull().default('scheduled'),
+    notes: text('notes'),
+    // "Questions to ask the doctor" checklist: [{ id, text, done }].
+    prep: jsonb('prep').$type<{ id: string; text: string; done: boolean }[]>().notNull().default([]),
+    visitSummary: text('visit_summary'),
+    postedToTimeline: boolean('posted_to_timeline').notNull().default(false),
+    createdByMembershipId: uuid('created_by_membership_id').references(() => membership.id, {
+      onDelete: 'set null',
+    }),
+    ...audit,
+  },
+  (t) => [
+    // Hot read: a circle's calendar/list, by time.
+    index('appointment_circle_start_idx').on(t.circleId, t.startsAt),
+  ],
+);
+
+// ============================================================================
+// Observations — recorded vitals (CareCircle-Data-Model.md §observation). One row per reading;
+// blood pressure stores systolic in `value` and diastolic in `secondary`.
+// ============================================================================
+export const observation = pgTable(
+  'observation',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    circleId: uuid('circle_id')
+      .notNull()
+      .references(() => careCircle.id, { onDelete: 'cascade' }),
+    metric: observationMetricEnum('metric').notNull(),
+    value: doublePrecision('value').notNull(),
+    // Diastolic for blood pressure; null for single-value metrics.
+    secondary: doublePrecision('secondary'),
+    recordedAt: timestamp('recorded_at', { withTimezone: true }).notNull(),
+    note: text('note'),
+    recordedByMembershipId: uuid('recorded_by_membership_id').references(() => membership.id, {
+      onDelete: 'set null',
+    }),
+    ...audit,
+  },
+  (t) => [
+    // Hot read: a circle's series for a metric over time.
+    index('observation_circle_metric_time_idx').on(t.circleId, t.metric, t.recordedAt),
+  ],
+);
+
+// ============================================================================
+// Care rota — recurring weekly shifts (who's on, in person vs on call). The data-model's
+// deferred `care_shift`: a lightweight weekly pattern keyed by day-of-week + HH:mm times.
+// ============================================================================
+export const careShift = pgTable(
+  'care_shift',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    circleId: uuid('circle_id')
+      .notNull()
+      .references(() => careCircle.id, { onDelete: 'cascade' }),
+    assignedToMembershipId: uuid('assigned_to_membership_id').references(() => membership.id, {
+      onDelete: 'set null',
+    }),
+    // 0 = Sunday … 6 = Saturday (matches JS Date.getDay()).
+    dayIndex: integer('day_index').notNull(),
+    // "HH:mm" 24h local. If endTime <= startTime, the shift runs overnight into the next day.
+    startTime: text('start_time').notNull(),
+    endTime: text('end_time').notNull(),
+    shiftType: shiftTypeEnum('shift_type').notNull().default('in-person'),
+    createdByMembershipId: uuid('created_by_membership_id').references(() => membership.id, {
+      onDelete: 'set null',
+    }),
+    ...audit,
+  },
+  (t) => [index('care_shift_circle_day_idx').on(t.circleId, t.dayIndex)],
+);
+
+// ============================================================================
 // Timeline interactions — comments + reactions on timeline_event rows.
 // timeline_event (above) is the activity-stream spine; these two tables let the
 // care circle converse and acknowledge on each update (CareCircle-Data-Model.md
@@ -457,4 +683,100 @@ export const timelineReaction = pgTable(
     unique('timeline_reaction_event_member_uq').on(t.timelineEventId, t.membershipId),
     index('timeline_reaction_event_idx').on(t.timelineEventId),
   ],
+);
+
+// ============================================================================
+// RAG chunks — the vector store for "Ask CareCircle", kept INSIDE Aurora via pgvector.
+// One row = one embedded text chunk of a source record (document / timeline / audit). Because
+// these rows are tenant-scoped (circle_id) and sensitivity-tagged, the SAME Row-Level Security
+// that guards documents guards retrieval — a similarity query can only ever return chunks the
+// caller is allowed to read. Embeddings are produced by Amazon Bedrock Titan (1024-d).
+// ============================================================================
+export const ragSourceEnum = pgEnum('rag_source', ['document', 'timeline', 'audit']);
+
+/** Embedding dimension — must match the Bedrock Titan output + the migration's vector(N). */
+export const RAG_EMBEDDING_DIM = 1024;
+
+export const ragChunk = pgTable(
+  'rag_chunk',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    circleId: uuid('circle_id')
+      .notNull()
+      .references(() => careCircle.id, { onDelete: 'cascade' }),
+    source: ragSourceEnum('source').notNull(),
+    // The id of the originating record (document.id / timeline_event.id / audit_log.id).
+    sourceId: uuid('source_id').notNull(),
+    // Mirrors the documents sensitivity tiers; the RLS SELECT policy gates by this + role.
+    sensitivity: docSensitivityEnum('sensitivity').notNull().default('standard'),
+    // Provenance for the UI source card.
+    title: text('title').notNull(),
+    detail: text('detail').notNull().default(''),
+    href: text('href').notNull().default(''),
+    chunkIndex: integer('chunk_index').notNull(),
+    chunkCount: integer('chunk_count').notNull(),
+    content: text('content').notNull(),
+    embedding: vector('embedding', { dimensions: RAG_EMBEDDING_DIM }).notNull(),
+    // When the underlying record was created (for the "time" shown on a source card).
+    sourceCreatedAt: timestamp('source_created_at', { withTimezone: true }).notNull(),
+    ...audit,
+  },
+  (t) => [
+    // Re-ingest overwrites in place: one row per (source, sourceId, chunkIndex).
+    unique('rag_chunk_source_uq').on(t.source, t.sourceId, t.chunkIndex),
+    index('rag_chunk_circle_idx').on(t.circleId),
+    index('rag_chunk_circle_source_idx').on(t.circleId, t.source, t.sourceId),
+    // Approximate-nearest-neighbour index for cosine similarity search.
+    index('rag_chunk_embedding_hnsw_idx').using('hnsw', t.embedding.op('vector_cosine_ops')),
+  ],
+);
+
+// ============================================================================
+// Ask CareCircle — saved conversations. A conversation is PRIVATE to the user who started it
+// (RLS: circle ∈ caller's circles AND user_id = current_app_user_id()), so each caregiver keeps
+// their own chat history with the assistant; messages persist so a refresh restores the thread.
+// ============================================================================
+export const askRoleEnum = pgEnum('ask_role', ['user', 'assistant']);
+
+export const askConversation = pgTable(
+  'ask_conversation',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    circleId: uuid('circle_id')
+      .notNull()
+      .references(() => careCircle.id, { onDelete: 'cascade' }),
+    // The owner. Conversations are per-user, not shared across the circle.
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    title: text('title').notNull(),
+    ...audit,
+  },
+  (t) => [
+    // Hot read: a user's conversations in a circle, newest first.
+    index('ask_conversation_circle_user_idx').on(t.circleId, t.userId, t.updatedAt),
+  ],
+);
+
+export const askMessage = pgTable(
+  'ask_message',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    conversationId: uuid('conversation_id')
+      .notNull()
+      .references(() => askConversation.id, { onDelete: 'cascade' }),
+    // Denormalised for a single-predicate RLS check (no join needed in the policy).
+    circleId: uuid('circle_id')
+      .notNull()
+      .references(() => careCircle.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    role: askRoleEnum('role').notNull(),
+    content: text('content').notNull(),
+    // For assistant turns: the SourceRef[] cited (label/type/href/…), rendered as source cards.
+    sources: jsonb('sources'),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [index('ask_message_conversation_idx').on(t.conversationId, t.createdAt)],
 );

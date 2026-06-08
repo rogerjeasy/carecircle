@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // pdf-parse (RAG ingest PDF text extraction) wraps pdfjs-dist; neither bundles cleanly under
+  // Turbopack. Externalize both so they're required from node_modules at runtime.
+  serverExternalPackages: ["pdf-parse", "pdfjs-dist"],
   experimental: {
     serverActions: {
       // Medication attachments (images up to 5 MB, documents up to 15 MB) and pill-photo data

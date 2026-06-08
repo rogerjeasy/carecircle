@@ -72,11 +72,35 @@ Optional providers/services (the app runs without them — see `.env.example` fo
   and `NEXT_PUBLIC_AUTH_APPLE_ENABLED="true"` to reveal the button.
 - **Password-reset emails:** set `RESEND_API_KEY` (+ a verified `EMAIL_FROM`). If unset, reset links
   are printed to the server console so the flow still works end-to-end in local dev.
+- **Ask CareCircle (RAG):** all on AWS — see step 4a below.
+
+### 4a. 👤 Ask CareCircle (RAG) — Amazon Bedrock + Aurora pgvector
+
+"Ask CareCircle" embeds the record with **Bedrock Titan**, stores vectors **in Aurora** (`rag_chunk`,
+via the `pgvector` extension), retrieves them under RLS, and answers with **Claude on Bedrock**. It
+needs only AWS — no external vector DB or API keys.
+
+1. **Enable model access** in the Bedrock console (region must match `AWS_REGION`, e.g. us-east-1):
+   - **Claude Sonnet 4.5** (generation) — first-time use needs the one-time "use case details" form.
+   - **Titan Text Embeddings v2** (embeddings).
+2. **IAM:** the credentials in `.env` need `bedrock:InvokeModel` on BOTH the Titan model and the
+   Claude inference profile (cross-region profiles span us-east-1/us-east-2/us-west-2 — allow
+   `arn:aws:bedrock:*::foundation-model/...` + the `inference-profile/us.anthropic...` ARN).
+3. **`.env`** (see `.env.example`): `AWS_REGION` + AWS creds, and
+   `BEDROCK_MODEL_ID="us.anthropic.claude-sonnet-4-5-20250929-v1:0"` (the inference-profile id —
+   copy the exact one from the Bedrock console). `BEDROCK_EMBED_MODEL_ID` defaults to
+   `amazon.titan-embed-text-v2:0`.
+4. **pgvector:** `npm run db:migrate` (step 5) runs `CREATE EXTENSION IF NOT EXISTS vector` as the
+   admin connection and creates the `rag_chunk` table + HNSW index. On Aurora the master user can
+   create the extension; if it errors, ensure your engine version supports pgvector.
+5. **Backfill existing records** into the index once (signed in as a platform admin):
+   `curl -X POST http://localhost:3000/api/ingest -H "Content-Type: application/json" -d "{}"`.
+   New documents/timeline posts index automatically on write.
 
 ## 5. Run migrations + seed
 
 ```bash
-npm run db:migrate     # creates tables + RLS policies (runs as admin)
+npm run db:migrate     # creates tables + RLS policies (runs as admin); also CREATE EXTENSION vector + rag_chunk
 # (re-run the two GRANT statements from step 3 now, so carecircle_app can see the new tables)
 npm run db:seed        # inserts the demo circle; prints the owner user id
 ```
