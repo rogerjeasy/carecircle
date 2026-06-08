@@ -11,6 +11,7 @@
  *  - A note's body can be free-text PII, so `postNote`/`addComment` take FormData (Next's dev logger
  *    never prints FormData contents); logs carry ids/counts/reasons, never the body.
  */
+import { after } from 'next/server';
 import { z } from 'zod';
 import { and, eq, isNull } from 'drizzle-orm';
 import { requireSession, withAuthedDb } from '@/db/dal';
@@ -18,6 +19,7 @@ import { getActiveCircleId } from '@/lib/circle/active-circle';
 import { recordAuditEvent } from '@/db/audit';
 import { serverLog } from '@/lib/log';
 import { timelineEvent, timelineComment, timelineReaction, membership } from '@/db/schema';
+import { ingestTimelineById } from '@/lib/rag/ingest';
 import { canContribute, canPostPrivate } from './access';
 import { getTimelineData } from './queries';
 import { authorColorFor, initialsFrom } from '@/components/timeline/utils';
@@ -127,6 +129,9 @@ export async function postNote(formData: FormData): Promise<PostNoteResult> {
       );
       return inserted;
     });
+
+    // Index the note into the vector store after the response is sent.
+    after(() => ingestTimelineById(row.id, { userId: ctx.userId, circleId: ctx.circleId }));
 
     const name = ctx.name?.trim() || 'You';
     const dto: TimelineEvent = {

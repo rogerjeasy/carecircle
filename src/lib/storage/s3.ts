@@ -240,6 +240,26 @@ export async function uploadFile(opts: {
   }
 }
 
+/**
+ * Download an object's raw bytes by key — used by the RAG ingest worker to extract text for
+ * embedding. Returns null (never throws) when S3 isn't configured or the fetch fails, so ingestion
+ * can skip an unreadable file without crashing.
+ */
+export async function getObjectBytes(key: string): Promise<Buffer | null> {
+  if (!BUCKET || !isS3Configured()) return null;
+  try {
+    const { GetObjectCommand } = await import('@aws-sdk/client-s3');
+    const client = await s3Client();
+    const res = await client.send(new GetObjectCommand({ Bucket: BUCKET, Key: key }));
+    if (!res.Body) return null;
+    const bytes = await res.Body.transformToByteArray();
+    return Buffer.from(bytes);
+  } catch (err) {
+    serverLog('storage', 'getObjectBytes', 'failure', { reason: (err as { name?: string })?.name ?? 'error' });
+    return null;
+  }
+}
+
 /** Delete an object by key. Best-effort: logs and swallows errors. */
 export async function deleteObject(key: string): Promise<void> {
   if (!BUCKET || !isS3Configured()) return;

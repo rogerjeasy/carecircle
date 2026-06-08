@@ -11,6 +11,7 @@
  *  - Files are uploaded as FormData (Next's dev logger never prints FormData contents); the bucket
  *    is private and clients only ever receive short-lived presigned URLs.
  */
+import { after } from 'next/server';
 import { z } from 'zod';
 import { and, eq, isNull, sql } from 'drizzle-orm';
 import { requireSession, withAuthedDb } from '@/db/dal';
@@ -19,6 +20,7 @@ import { recordAuditEvent } from '@/db/audit';
 import { serverLog } from '@/lib/log';
 import { documents, membership } from '@/db/schema';
 import { uploadFile, resolveStoredUrl, deleteObject } from '@/lib/storage/s3';
+import { ingestDocumentById, removeSourceForActor } from '@/lib/rag/ingest';
 import { avatarColorFor, initialsFrom, formatSize } from '@/components/documents/utils';
 import { canManageDocs } from './access';
 import type { DocCategory, DocumentItem, FileKind, Sensitivity } from '@/components/documents/types';
@@ -133,6 +135,9 @@ export async function uploadDocument(formData: FormData): Promise<UploadDocResul
       return inserted;
     });
 
+    // Index the document into the vector store after the response is sent (chunk → embed → upsert).
+    after(() => ingestDocumentById(row.id, { userId: ctx.userId, circleId: ctx.circleId }));
+
     const url = await resolveStoredUrl(uploaded.key, URL_TTL_SECONDS);
     const name = ctx.name?.trim() || 'You';
     const dto: DocumentItem = {
@@ -220,6 +225,7 @@ export async function deleteDocument(docId: string): Promise<ActionResult> {
       return row.s3Key;
     });
     await deleteObject(removedKey); // best-effort
+    after(() => removeSourceForActor({ userId: ctx.userId, circleId: ctx.circleId }, 'document', id.data)); // drop its vectors too
     serverLog('documents', 'deleteDocument', 'success', { actor: ctx.userId, id: id.data });
     return { ok: true };
   } catch (err) {
