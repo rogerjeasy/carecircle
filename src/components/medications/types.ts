@@ -55,6 +55,12 @@ export interface MedicationsData {
   doses: Dose[];
   prn: PrnMed[];
   adherence: AdherenceSummary;
+  /**
+   * Per-medication 7-day adherence percentage (given ÷ recorded scheduled doses), keyed by
+   * medication id. `null` when no scheduled doses were recorded in the window. Used by the
+   * clinician dashboard's "Current medications" table; the Medications screen itself ignores it.
+   */
+  adherenceByMed: Record<string, number | null>;
 }
 
 export interface Medication {
