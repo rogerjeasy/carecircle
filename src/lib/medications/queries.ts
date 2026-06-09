@@ -369,6 +369,7 @@ export async function getMedicationsData(): Promise<MedicationsData | null> {
       });
 
     const adherence = buildAdherence(weekAdmins, now);
+    const adherenceByMed = buildAdherenceByMed(weekAdmins);
 
     serverLog('medications', 'getMedicationsData', 'success', {
       email: maskEmail(session.user?.email),
@@ -378,7 +379,7 @@ export async function getMedicationsData(): Promise<MedicationsData | null> {
       prn: prn.length,
     });
 
-    return { circleId, meds: medications, doses, prn, adherence };
+    return { circleId, meds: medications, doses, prn, adherence, adherenceByMed };
   } catch (err) {
     serverLog('medications', 'getMedicationsData', 'failure', {
       email: maskEmail(session.user?.email),
@@ -420,4 +421,31 @@ function buildAdherence(
     days.push({ date: format(day, 'yyyy-MM-dd'), cells });
   }
   return { given, missed, days };
+}
+
+/**
+ * Per-medication adherence over the recorded week: of the SCHEDULED doses recorded for each med,
+ * the share that were actually given/taken (PRN uses excluded). `null` for meds with no recorded
+ * scheduled doses in the window (the clinician table renders these as "—").
+ */
+function buildAdherenceByMed(
+  weekAdmins: { medicationId: string; status: string; scheduleId: string | null }[],
+): Record<string, number | null> {
+  const tally = new Map<string, { given: number; total: number }>();
+  for (const a of weekAdmins) {
+    if (a.scheduleId == null) continue; // PRN — not part of the scheduled regimen
+    const t = tally.get(a.medicationId) ?? { given: 0, total: 0 };
+    if (a.status === 'given' || a.status === 'taken') {
+      t.given++;
+      t.total++;
+    } else if (a.status === 'skipped' || a.status === 'refused' || a.status === 'missed') {
+      t.total++;
+    }
+    tally.set(a.medicationId, t);
+  }
+  const out: Record<string, number | null> = {};
+  for (const [medId, t] of tally) {
+    out[medId] = t.total > 0 ? Math.round((t.given / t.total) * 100) : null;
+  }
+  return out;
 }

@@ -28,6 +28,20 @@ export function maskEmail(email?: string | null): string {
   return `***@${email.slice(at + 1)}`;
 }
 
+/**
+ * Best-effort Postgres error code (e.g. '42P01' undefined_table, '42501' insufficient_privilege).
+ * Drizzle wraps DB errors, so the real `code` is often on a nested `.cause` — walk the chain.
+ */
+export function dbErrorCode(err: unknown): string | undefined {
+  let cur: unknown = err;
+  for (let i = 0; i < 6 && cur; i++) {
+    const code = (cur as { code?: unknown }).code;
+    if (typeof code === 'string') return code;
+    cur = (cur as { cause?: unknown }).cause;
+  }
+  return undefined;
+}
+
 function formatMeta(meta?: LogMeta): string {
   if (!meta) return '';
   const parts = Object.entries(meta)
