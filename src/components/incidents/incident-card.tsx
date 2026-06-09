@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { severityMeta, typeMeta } from "./data";
-import { ackSummary, firstName, incidentTime, memberById } from "./utils";
+import { ackSummary, incidentTime } from "./utils";
 import type { Incident } from "./types";
 
 /** A list card linking to an incident's detail view. */
@@ -14,7 +14,6 @@ export function IncidentCard({ incident }: { incident: Incident }) {
   const meta = typeMeta[incident.type];
   const Icon = meta.icon;
   const sev = severityMeta[incident.severity];
-  const reporter = memberById(incident.reporterId);
   const acks = ackSummary(incident);
   const isHigh = incident.severity === "high" && incident.status !== "resolved";
 
@@ -44,7 +43,7 @@ export function IncidentCard({ incident }: { incident: Incident }) {
               <Clock className="h-3 w-3" aria-hidden="true" />
               {incidentTime(incident.at)}
             </span>
-            <span className="truncate">by {reporter ? firstName(reporter.name) : "—"}</span>
+            <span className="truncate">by {incident.reporterName}</span>
             <span className="inline-flex items-center gap-1">
               <MessageSquare className="h-3 w-3" aria-hidden="true" />
               {incident.comments.length}

@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   ArrowLeft,
@@ -23,69 +24,76 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useHydrated, useIncidents, updateIncident } from "./incident-store";
-import { EMERGENCY_CONTACT, severityMeta, typeMeta } from "./data";
-import { ackMeta, ackSummary, canResolveIncidents, firstName, incidentTime, memberById, relativeTime } from "./utils";
-import type { Comment, Incident } from "./types";
+import { acknowledgeIncident, addIncidentComment, resolveIncident } from "@/lib/incidents/actions";
+import { severityMeta, typeMeta } from "./data";
+import { ackMeta, ackSummary, canResolveIncidents, firstName, incidentTime, relativeTime } from "./utils";
+import type { EmergencyContact, Incident, IncidentDetailData } from "./types";
 
-const CURRENT_USER = "maria";
-
-export function IncidentDetailView({ id }: { id: string }) {
+export function IncidentDetailView({ data }: { data: IncidentDetailData | null }) {
   const { role } = useAppShell();
-  const incidents = useIncidents();
-  const hydrated = useHydrated();
-
-  const incident = incidents.find((i) => i.id === id);
-
-  if (!hydrated) return <DetailSkeleton />;
-  if (!incident) return <NotFound />;
-
-  return <Detail incident={incident} canResolve={canResolveIncidents(role)} />;
+  if (!data) return <NotFound />;
+  return (
+    <Detail
+      incident={data.incident}
+      emergencyContact={data.emergencyContact}
+      canResolve={canResolveIncidents(role)}
+    />
+  );
 }
 
-function Detail({ incident, canResolve }: { incident: Incident; canResolve: boolean }) {
+function Detail({
+  incident,
+  emergencyContact,
+  canResolve,
+}: {
+  incident: Incident;
+  emergencyContact: EmergencyContact | null;
+  canResolve: boolean;
+}) {
+  const router = useRouter();
   const meta = typeMeta[incident.type];
   const Icon = meta.icon;
   const sev = severityMeta[incident.severity];
-  const reporter = memberById(incident.reporterId);
   const isHigh = incident.severity === "high";
   const summary = ackSummary(incident);
 
   const [comment, setComment] = React.useState("");
   const [resolving, setResolving] = React.useState(false);
   const [note, setNote] = React.useState("");
-  const commentIdRef = React.useRef(1);
+  const [pending, startTransition] = React.useTransition();
 
-  const acknowledge = () => {
-    updateIncident(incident.id, {
-      notifications: incident.notifications.map((n) =>
-        n.memberId === CURRENT_USER ? { ...n, status: "acknowledged", at: new Date() } : n
-      ),
-    });
+  const acknowledge = async () => {
+    const res = await acknowledgeIncident(incident.id);
+    if (!res.ok) return toast.error(res.error);
     toast.success("You acknowledged this incident");
+    startTransition(() => router.refresh());
   };
 
-  const addComment = () => {
+  const submitComment = async (e: React.FormEvent) => {
+    e.preventDefault();
     const text = comment.trim();
     if (!text) return;
-    const c: Comment = { id: `nc-${commentIdRef.current++}`, authorId: CURRENT_USER, text, at: new Date() };
-    updateIncident(incident.id, { comments: [...incident.comments, c] });
+    const fd = new FormData();
+    fd.set("id", incident.id);
+    fd.set("body", text);
+    const res = await addIncidentComment(fd);
+    if (!res.ok) return toast.error(res.error);
     setComment("");
+    startTransition(() => router.refresh());
   };
 
-  const resolve = () => {
-    updateIncident(incident.id, {
-      status: "resolved",
-      resolutionNote: note.trim() || undefined,
-      resolvedAt: new Date(),
-      resolvedById: CURRENT_USER,
-    });
+  const resolve = async () => {
+    const fd = new FormData();
+    fd.set("id", incident.id);
+    fd.set("note", note.trim());
+    const res = await resolveIncident(fd);
+    if (!res.ok) return toast.error(res.error);
     setResolving(false);
     toast.success("Incident marked resolved");
+    startTransition(() => router.refresh());
   };
 
-  const myNotif = incident.notifications.find((n) => n.memberId === CURRENT_USER);
+  const canAck = incident.myAck != null && incident.myAck !== "acknowledged";
 
   return (
     <div className="space-y-5">
@@ -121,7 +129,7 @@ function Detail({ incident, canResolve }: { incident: Incident; canResolve: bool
                 {incidentTime(incident.at)}
               </span>
               <span className="inline-flex items-center gap-1">
-                Reported by <span className="font-medium text-foreground">{reporter ? firstName(reporter.name) : "—"}</span>
+                Reported by <span className="font-medium text-foreground">{incident.reporterName}</span>
               </span>
             </p>
           </div>
@@ -132,14 +140,16 @@ function Detail({ incident, canResolve }: { incident: Incident; canResolve: bool
       {isHigh && incident.status !== "resolved" && (
         <div className="flex flex-wrap items-center gap-2 rounded-xl border border-destructive/40 bg-destructive/5 p-3">
           <span className="text-sm font-medium text-destructive">Need help fast?</span>
-          <Button asChild size="sm" variant="destructive">
-            <a href={`tel:${EMERGENCY_CONTACT.phone.replace(/[^+\d]/g, "")}`}>
-              <Phone className="h-4 w-4" />
-              <span className="ml-1">Call {firstName(EMERGENCY_CONTACT.name)}</span>
-            </a>
-          </Button>
+          {emergencyContact?.phone && (
+            <Button asChild size="sm" variant="destructive">
+              <a href={`tel:${emergencyContact.phone.replace(/[^+\d]/g, "")}`}>
+                <Phone className="h-4 w-4" />
+                <span className="ml-1">Call {firstName(emergencyContact.name)}</span>
+              </a>
+            </Button>
+          )}
           <Button asChild size="sm" variant="outline">
-            <Link href="/documents">
+            <Link href="/emergency-card">
               <ExternalLink className="h-4 w-4" />
               <span className="ml-1">Emergency Card</span>
             </Link>
@@ -170,7 +180,7 @@ function Detail({ incident, canResolve }: { incident: Incident; canResolve: bool
                   </Link>
                 </Button>
                 <Button asChild variant="outline" size="sm">
-                  <Link href="/documents">
+                  <Link href="/emergency-card">
                     <ExternalLink className="h-4 w-4" />
                     <span className="ml-1">Emergency Card</span>
                   </Link>
@@ -188,29 +198,32 @@ function Detail({ incident, canResolve }: { incident: Incident; canResolve: bool
                   {summary.acknowledged}/{summary.total} acknowledged
                 </span>
               </div>
-              <ul className="space-y-2">
-                {incident.notifications.map((n) => {
-                  const m = memberById(n.memberId);
-                  const a = ackMeta[n.status];
-                  return (
-                    <li key={n.memberId} className="flex items-center gap-3">
-                      <Avatar className="h-8 w-8 shrink-0">
-                        <AvatarFallback className={cn("text-xs font-semibold", m?.color)}>{m?.initials ?? "?"}</AvatarFallback>
-                      </Avatar>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium">{m?.name ?? "Unknown"}</p>
-                        <p className="truncate text-xs text-muted-foreground">{m?.roleLabel}</p>
-                      </div>
-                      <span className={cn("inline-flex shrink-0 items-center gap-1.5 text-xs font-medium", a.tint)}>
-                        <span className={cn("h-1.5 w-1.5 rounded-full", a.dot)} aria-hidden="true" />
-                        {a.label}
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
-              {myNotif && myNotif.status !== "acknowledged" && (
-                <Button variant="outline" size="sm" className="w-full" onClick={acknowledge}>
+              {incident.notifications.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No one was notified for this incident.</p>
+              ) : (
+                <ul className="space-y-2">
+                  {incident.notifications.map((n) => {
+                    const a = ackMeta[n.status];
+                    return (
+                      <li key={n.membershipId} className="flex items-center gap-3">
+                        <Avatar className="h-8 w-8 shrink-0">
+                          <AvatarFallback className={cn("text-xs font-semibold", n.color)}>{n.initials}</AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-medium">{n.name}</p>
+                          <p className="truncate text-xs text-muted-foreground">{n.roleLabel}</p>
+                        </div>
+                        <span className={cn("inline-flex shrink-0 items-center gap-1.5 text-xs font-medium", a.tint)}>
+                          <span className={cn("h-1.5 w-1.5 rounded-full", a.dot)} aria-hidden="true" />
+                          {a.label}
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+              {canAck && (
+                <Button variant="outline" size="sm" className="w-full" onClick={acknowledge} disabled={pending}>
                   <ShieldCheck className="h-4 w-4" />
                   <span className="ml-1">Acknowledge</span>
                 </Button>
@@ -226,11 +239,9 @@ function Detail({ incident, canResolve }: { incident: Incident; canResolve: bool
                   <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
                   Resolved
                 </p>
-                {incident.resolutionNote && (
-                  <p className="text-sm text-foreground/90">{incident.resolutionNote}</p>
-                )}
+                {incident.resolutionNote && <p className="text-sm text-foreground/90">{incident.resolutionNote}</p>}
                 <p className="text-xs text-muted-foreground">
-                  {incident.resolvedById ? `${firstName(memberById(incident.resolvedById)?.name ?? "")} · ` : ""}
+                  {incident.resolvedByName ? `${incident.resolvedByName} · ` : ""}
                   {incident.resolvedAt ? incidentTime(incident.resolvedAt) : ""}
                 </p>
               </CardContent>
@@ -247,10 +258,10 @@ function Detail({ incident, canResolve }: { incident: Incident; canResolve: bool
                   aria-label="Resolution notes"
                 />
                 <div className="flex justify-end gap-2">
-                  <Button variant="outline" size="sm" onClick={() => setResolving(false)}>
+                  <Button variant="outline" size="sm" onClick={() => setResolving(false)} disabled={pending}>
                     Cancel
                   </Button>
-                  <Button size="sm" onClick={resolve}>
+                  <Button size="sm" onClick={resolve} disabled={pending}>
                     <CheckCircle2 className="h-4 w-4" />
                     <span className="ml-1">Mark resolved</span>
                   </Button>
@@ -281,33 +292,24 @@ function Detail({ incident, canResolve }: { incident: Incident; canResolve: bool
               </p>
             ) : (
               <ul className="space-y-3">
-                {incident.comments.map((c) => {
-                  const m = memberById(c.authorId);
-                  return (
-                    <li key={c.id} className="flex gap-2.5">
-                      <Avatar className="h-7 w-7 shrink-0">
-                        <AvatarFallback className={cn("text-[10px] font-semibold", m?.color)}>{m?.initials ?? "?"}</AvatarFallback>
-                      </Avatar>
-                      <div className="min-w-0 flex-1">
-                        <p className="flex items-baseline gap-2">
-                          <span className="truncate text-sm font-medium">{m ? firstName(m.name) : "Unknown"}</span>
-                          <span className="shrink-0 text-xs text-muted-foreground">{relativeTime(c.at)}</span>
-                        </p>
-                        <p className="break-words text-sm text-foreground/90">{c.text}</p>
-                      </div>
-                    </li>
-                  );
-                })}
+                {incident.comments.map((c) => (
+                  <li key={c.id} className="flex gap-2.5">
+                    <Avatar className="h-7 w-7 shrink-0">
+                      <AvatarFallback className={cn("text-[10px] font-semibold", c.authorColor)}>{c.authorInitials}</AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0 flex-1">
+                      <p className="flex items-baseline gap-2">
+                        <span className="truncate text-sm font-medium">{c.authorName}</span>
+                        <span className="shrink-0 text-xs text-muted-foreground">{relativeTime(c.at)}</span>
+                      </p>
+                      <p className="break-words text-sm text-foreground/90">{c.text}</p>
+                    </div>
+                  </li>
+                ))}
               </ul>
             )}
 
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                addComment();
-              }}
-              className="mt-auto flex items-center gap-2 pt-1"
-            >
+            <form onSubmit={submitComment} className="mt-auto flex items-center gap-2 pt-1">
               <Input
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
@@ -315,28 +317,12 @@ function Detail({ incident, canResolve }: { incident: Incident; canResolve: bool
                 aria-label="Add a comment"
                 className="h-10"
               />
-              <Button type="submit" size="icon" className="h-10 w-10 shrink-0" disabled={!comment.trim()} aria-label="Send comment">
+              <Button type="submit" size="icon" className="h-10 w-10 shrink-0" disabled={!comment.trim() || pending} aria-label="Send comment">
                 <Send className="h-4 w-4" />
               </Button>
             </form>
           </CardContent>
         </Card>
-      </div>
-    </div>
-  );
-}
-
-function DetailSkeleton() {
-  return (
-    <div className="space-y-5">
-      <Skeleton className="h-4 w-28" />
-      <Skeleton className="h-20 w-full rounded-2xl" />
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-        <div className="space-y-5">
-          <Skeleton className="h-40 w-full rounded-2xl" />
-          <Skeleton className="h-44 w-full rounded-2xl" />
-        </div>
-        <Skeleton className="h-64 w-full rounded-2xl" />
       </div>
     </div>
   );
@@ -350,7 +336,7 @@ function NotFound() {
       </div>
       <div>
         <p className="text-base font-semibold">Incident not found</p>
-        <p className="mt-1 text-sm text-muted-foreground">It may have been resolved in another session.</p>
+        <p className="mt-1 text-sm text-muted-foreground">It may have been removed, or belongs to another circle.</p>
       </div>
       <Button asChild variant="outline">
         <Link href="/incidents">

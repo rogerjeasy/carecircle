@@ -2,20 +2,17 @@
 
 import { ShieldCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { IncidentCard } from "./incident-card";
 import { ReportIncidentButton } from "./report-incident-button";
-import { useHydrated, useIncidents } from "./incident-store";
-import { CARE_RECIPIENT } from "./data";
+import type { Incident, IncidentsData } from "./types";
 
 /** The Incidents list: open incidents first, then resolved, with a Report trigger. */
-export function IncidentsScreen() {
-  const incidents = useIncidents();
-  const hydrated = useHydrated();
+export function IncidentsScreen({ initial }: { initial: IncidentsData | null }) {
+  const incidents = initial?.incidents ?? [];
+  const recipientName = initial?.recipientName ?? "your loved one";
 
-  const open = incidents.filter((i) => i.status === "open").sort((a, b) => b.at.getTime() - a.at.getTime());
-  const resolved = incidents.filter((i) => i.status === "resolved").sort((a, b) => b.at.getTime() - a.at.getTime());
+  const open = incidents.filter((i) => i.status === "open");
+  const resolved = incidents.filter((i) => i.status === "resolved");
 
   return (
     <div className="space-y-6">
@@ -23,27 +20,12 @@ export function IncidentsScreen() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
           <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">Incidents</h1>
-          <p className="mt-1 text-muted-foreground">Falls, hospitalizations and emergencies for {CARE_RECIPIENT.name}.</p>
+          <p className="mt-1 text-muted-foreground">Falls, hospitalizations and emergencies for {recipientName}.</p>
         </div>
         <ReportIncidentButton variant="default" className="w-full sm:w-auto" />
       </div>
 
-      {!hydrated ? (
-        <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-          {[0, 1, 2, 3].map((i) => (
-            <Card key={i} className="p-4">
-              <div className="flex gap-3">
-                <Skeleton className="h-11 w-11 rounded-xl" />
-                <div className="flex-1 space-y-2">
-                  <Skeleton className="h-4 w-1/2" />
-                  <Skeleton className="h-3 w-full" />
-                  <Skeleton className="h-3 w-2/3" />
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
-      ) : incidents.length === 0 ? (
+      {incidents.length === 0 ? (
         <EmptyState />
       ) : (
         <div className="space-y-6">
@@ -63,7 +45,7 @@ function Section({
 }: {
   title: string;
   count: number;
-  items: import("./types").Incident[];
+  items: Incident[];
   emptyHint?: string;
 }) {
   return (

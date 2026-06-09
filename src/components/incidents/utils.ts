@@ -2,16 +2,11 @@
 
 import { format, formatDistanceToNowStrict, isToday, isYesterday } from "date-fns";
 import type { UserRole } from "@/components/app-shell/app-shell-context";
-import { MEMBERS } from "./data";
-import type { AckStatus, Incident, Member } from "./types";
+import type { AckStatus, Incident } from "./types";
 
-/** Resolving an incident is limited to coordinators and family admins. */
+/** Resolving an incident is limited to coordinators and family (UI role vocabulary). */
 export function canResolveIncidents(role: UserRole): boolean {
   return role === "coordinator" || role === "family";
-}
-
-export function memberById(id: string): Member | undefined {
-  return MEMBERS.find((m) => m.id === id);
 }
 
 export function firstName(name: string): string {

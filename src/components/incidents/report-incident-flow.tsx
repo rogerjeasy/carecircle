@@ -2,7 +2,9 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { format } from "date-fns";
+import { toast } from "sonner";
 import {
   ArrowLeft,
   Camera,
@@ -20,18 +22,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
 import { FormField } from "./form-field";
-import { addIncident } from "./incident-store";
-import {
-  CARE_RECIPIENT,
-  DEFAULT_NOTIFY_IDS,
-  EMERGENCY_CONTACT,
-  MEMBERS,
-  severityMeta,
-  typeMeta,
-} from "./data";
+import { reportIncident, fetchReportContext } from "@/lib/incidents/actions";
+import { severityMeta, typeMeta } from "./data";
 import { firstName } from "./utils";
-import type { IncidentType, Notification, Severity } from "./types";
+import type { IncidentReportContext, IncidentType, Severity } from "./types";
 
 const TYPES: IncidentType[] = ["fall", "hospitalization", "emergency", "other"];
 const SEVERITIES: Severity[] = ["low", "medium", "high"];
@@ -51,6 +47,7 @@ export interface ReportIncidentFlowProps {
 
 /** The multi-step report flow: type → details/severity/notify → reassuring confirmation. */
 export function ReportIncidentFlow({ onClose, onReported }: ReportIncidentFlowProps) {
+  const router = useRouter();
   const [now] = React.useState(() => new Date());
   const [step, setStep] = React.useState<"type" | "details" | "done">("type");
   const [type, setType] = React.useState<IncidentType | null>(null);
@@ -58,12 +55,47 @@ export function ReportIncidentFlow({ onClose, onReported }: ReportIncidentFlowPr
   const [description, setDescription] = React.useState("");
   const [date, setDate] = React.useState(format(now, "yyyy-MM-dd"));
   const [time, setTime] = React.useState(format(now, "HH:mm"));
+  const [photoFile, setPhotoFile] = React.useState<File | null>(null);
   const [photoUrl, setPhotoUrl] = React.useState<string | null>(null);
-  const [notify, setNotify] = React.useState<Set<string>>(() => new Set(DEFAULT_NOTIFY_IDS));
+  const [notify, setNotify] = React.useState<Set<string>>(() => new Set());
   const [triedSubmit, setTriedSubmit] = React.useState(false);
   const [submitting, setSubmitting] = React.useState(false);
   const [newId, setNewId] = React.useState<string | null>(null);
   const photoInputRef = React.useRef<HTMLInputElement>(null);
+
+  // The real circle context (members to notify, recipient name, emergency contact).
+  const [ctx, setCtx] = React.useState<IncidentReportContext | null>(null);
+  const [ctxLoading, setCtxLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    let active = true;
+    fetchReportContext()
+      .then((c) => {
+        if (!active || !c) return;
+        setCtx(c);
+        setNotify(new Set(c.defaultNotifyIds));
+      })
+      .catch(() => {
+        /* keep an empty notify list — reporting still works */
+      })
+      .finally(() => {
+        if (active) setCtxLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  // Revoke the object URL when the photo changes / on unmount (avoid leaks).
+  React.useEffect(() => {
+    return () => {
+      if (photoUrl) URL.revokeObjectURL(photoUrl);
+    };
+  }, [photoUrl]);
+
+  const members = ctx?.members ?? [];
+  const recipientName = ctx?.recipientName ?? "your loved one";
+  const emergencyContact = ctx?.emergencyContact ?? null;
 
   const isHigh = severity === "high";
   const descError = triedSubmit && description.trim().length < 3 ? "Please describe what happened" : undefined;
@@ -76,34 +108,40 @@ export function ReportIncidentFlow({ onClose, onReported }: ReportIncidentFlowPr
       return next;
     });
 
-  const notifiedNames = MEMBERS.filter((m) => notify.has(m.id)).map((m) => firstName(m.name));
+  const setPhoto = (file: File | null) => {
+    setPhotoUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return file ? URL.createObjectURL(file) : null;
+    });
+    setPhotoFile(file);
+  };
+
+  const notifiedNames = members.filter((m) => notify.has(m.id)).map((m) => firstName(m.name));
 
   const submit = async () => {
     setTriedSubmit(true);
     if (!type || description.trim().length < 3) return;
     setSubmitting(true);
-    await new Promise((r) => setTimeout(r, 700));
-    const id = `inc-${Date.now()}`;
-    const notifications: Notification[] = MEMBERS.filter((m) => notify.has(m.id)).map((m) => ({
-      memberId: m.id,
-      status: "pending",
-    }));
-    addIncident({
-      id,
-      type,
-      severity,
-      description: description.trim(),
-      at: new Date(`${date}T${time}`),
-      reporterId: "maria",
-      photoUrl: photoUrl ?? undefined,
-      status: "open",
-      notifications,
-      comments: [],
-    });
-    setNewId(id);
+
+    const fd = new FormData();
+    fd.set(
+      "payload",
+      JSON.stringify({ type, severity, description: description.trim(), date, time, notify: [...notify] }),
+    );
+    if (photoFile) fd.set("photo", photoFile);
+
+    const res = await reportIncident(fd);
+    if (!res.ok) {
+      setSubmitting(false);
+      toast.error(res.error);
+      return;
+    }
+    setNewId(res.data.id);
     setSubmitting(false);
     setStep("done");
-    onReported?.(id);
+    onReported?.(res.data.id);
+    // Refresh server components (incidents list, dashboard, timeline) so the new incident appears.
+    router.refresh();
   };
 
   /* ----------------------------- Step: type ----------------------------- */
@@ -164,27 +202,31 @@ export function ReportIncidentFlow({ onClose, onReported }: ReportIncidentFlowPr
             <div>
               <p className="text-lg font-semibold">Incident reported</p>
               <p className="mt-1 text-sm text-muted-foreground">
-                {joinNames(notifiedNames)} {notifiedNames.length === 1 ? "has" : "have"} been notified.
+                {notifiedNames.length > 0
+                  ? `${joinNames(notifiedNames)} ${notifiedNames.length === 1 ? "has" : "have"} been notified.`
+                  : "Saved to the circle's record."}
               </p>
             </div>
           </div>
 
           <div className="mt-6 space-y-2">
             <p className="text-sm font-medium">Next steps</p>
-            <a
-              href={`tel:${EMERGENCY_CONTACT.phone.replace(/[^+\d]/g, "")}`}
-              className="flex items-center gap-3 rounded-xl border bg-card p-3 transition-colors hover:bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-destructive/10 text-destructive">
-                <Phone className="h-4 w-4" aria-hidden="true" />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block text-sm font-medium">Call {EMERGENCY_CONTACT.name}</span>
-                <span className="block truncate text-xs text-muted-foreground">{EMERGENCY_CONTACT.phone}</span>
-              </span>
-              <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-            </a>
-            <NextStepLink href="/documents" label="Open Emergency Card" sub="Key documents for responders" />
+            {emergencyContact?.phone && (
+              <a
+                href={`tel:${emergencyContact.phone.replace(/[^+\d]/g, "")}`}
+                className="flex items-center gap-3 rounded-xl border bg-card p-3 transition-colors hover:bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-destructive/10 text-destructive">
+                  <Phone className="h-4 w-4" aria-hidden="true" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-sm font-medium">Call {emergencyContact.name}</span>
+                  <span className="block truncate text-xs text-muted-foreground">{emergencyContact.phone}</span>
+                </span>
+                <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+              </a>
+            )}
+            <NextStepLink href="/emergency-card" label="Open Emergency Card" sub="Key details for responders" />
             {newId && <NextStepLink href={`/incidents/${newId}`} label="View incident" sub="Track responses & resolve" />}
           </div>
         </div>
@@ -251,17 +293,19 @@ export function ReportIncidentFlow({ onClose, onReported }: ReportIncidentFlowPr
               This looks urgent
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
-              If {CARE_RECIPIENT.name} is in danger, call emergency services first.
+              If {recipientName} is in danger, call emergency services first.
             </p>
             <div className="mt-2 flex flex-wrap gap-2">
-              <Button asChild size="sm" variant="destructive">
-                <a href={`tel:${EMERGENCY_CONTACT.phone.replace(/[^+\d]/g, "")}`}>
-                  <Phone className="h-4 w-4" />
-                  <span className="ml-1">Call {firstName(EMERGENCY_CONTACT.name)}</span>
-                </a>
-              </Button>
+              {emergencyContact?.phone && (
+                <Button asChild size="sm" variant="destructive">
+                  <a href={`tel:${emergencyContact.phone.replace(/[^+\d]/g, "")}`}>
+                    <Phone className="h-4 w-4" />
+                    <span className="ml-1">Call {firstName(emergencyContact.name)}</span>
+                  </a>
+                </Button>
+              )}
               <Button asChild size="sm" variant="outline">
-                <Link href="/documents">
+                <Link href="/emergency-card">
                   <ExternalLink className="h-4 w-4" />
                   <span className="ml-1">Emergency Card</span>
                 </Link>
@@ -276,7 +320,7 @@ export function ReportIncidentFlow({ onClose, onReported }: ReportIncidentFlowPr
             id="description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Describe what happened, who was there, and how Antonio is doing now…"
+            placeholder={`Describe what happened, who was there, and how ${recipientName} is doing now…`}
             rows={4}
             aria-invalid={descError ? true : undefined}
             className={cn(descError && "border-destructive focus-visible:ring-destructive")}
@@ -303,7 +347,7 @@ export function ReportIncidentFlow({ onClose, onReported }: ReportIncidentFlowPr
             className="sr-only"
             onChange={(e) => {
               const f = e.target.files?.[0];
-              if (f) setPhotoUrl(URL.createObjectURL(f));
+              if (f) setPhoto(f);
               e.target.value = "";
             }}
           />
@@ -312,7 +356,7 @@ export function ReportIncidentFlow({ onClose, onReported }: ReportIncidentFlowPr
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={photoUrl} alt="Incident photo preview" className="h-12 w-12 shrink-0 rounded-lg object-cover" />
               <span className="min-w-0 flex-1 truncate text-sm text-muted-foreground">Photo attached</span>
-              <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={() => setPhotoUrl(null)} aria-label="Remove photo">
+              <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={() => setPhoto(null)} aria-label="Remove photo">
                 <X className="h-4 w-4" />
               </Button>
             </div>
@@ -326,24 +370,42 @@ export function ReportIncidentFlow({ onClose, onReported }: ReportIncidentFlowPr
 
         {/* Notify */}
         <FormField htmlFor="notify" label="Who should be notified now?">
-          <ul id="notify" className="space-y-1.5">
-            {MEMBERS.map((m) => (
-              <li key={m.id} className="flex items-center gap-3 rounded-xl border bg-card p-2.5">
-                <Avatar className="h-8 w-8 shrink-0">
-                  <AvatarFallback className={cn("text-xs font-semibold", m.color)}>{m.initials}</AvatarFallback>
-                </Avatar>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">{m.name}</p>
-                  <p className="truncate text-xs text-muted-foreground">{m.roleLabel}</p>
-                </div>
-                <Switch
-                  checked={notify.has(m.id)}
-                  onCheckedChange={() => toggleNotify(m.id)}
-                  aria-label={`Notify ${m.name}`}
-                />
-              </li>
-            ))}
-          </ul>
+          {ctxLoading ? (
+            <ul className="space-y-1.5">
+              {[0, 1, 2].map((i) => (
+                <li key={i} className="flex items-center gap-3 rounded-xl border bg-card p-2.5">
+                  <Skeleton className="h-8 w-8 shrink-0 rounded-full" />
+                  <div className="flex-1 space-y-1.5">
+                    <Skeleton className="h-3.5 w-1/3" />
+                    <Skeleton className="h-3 w-1/4" />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : members.length === 0 ? (
+            <p className="rounded-xl border border-dashed px-3 py-4 text-center text-sm text-muted-foreground">
+              No other members to notify yet.
+            </p>
+          ) : (
+            <ul id="notify" className="space-y-1.5">
+              {members.map((m) => (
+                <li key={m.id} className="flex items-center gap-3 rounded-xl border bg-card p-2.5">
+                  <Avatar className="h-8 w-8 shrink-0">
+                    <AvatarFallback className={cn("text-xs font-semibold", m.color)}>{m.initials}</AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">{m.name}</p>
+                    <p className="truncate text-xs text-muted-foreground">{m.roleLabel}</p>
+                  </div>
+                  <Switch
+                    checked={notify.has(m.id)}
+                    onCheckedChange={() => toggleNotify(m.id)}
+                    aria-label={`Notify ${m.name}`}
+                  />
+                </li>
+              ))}
+            </ul>
+          )}
         </FormField>
       </div>
 
