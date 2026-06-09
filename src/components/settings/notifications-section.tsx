@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { SettingsSection, Field, ToggleRow } from "./section";
+import { DailyDigestSettings } from "./daily-digest-settings";
 import { useIsPhone } from "./use-is-phone";
 import {
   DEFAULT_MATRIX,
@@ -122,23 +123,8 @@ export function NotificationsSettingsSection() {
         </CardContent>
       </Card>
 
-      {/* Daily digest */}
-      <Card>
-        <CardContent className="space-y-4 p-4 sm:p-6">
-          <div>
-            <p className="text-sm font-semibold">Daily digest</p>
-            <p className="text-xs text-muted-foreground">Choose who receives the evening summary and when.</p>
-          </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field htmlFor="digest-who" label="Send to">
-              <Input id="digest-who" defaultValue="Maria, Paolo" />
-            </Field>
-            <Field htmlFor="digest-when" label="Send at">
-              <Input id="digest-when" type="time" defaultValue="20:00" />
-            </Field>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Daily digest — real nightly auto-send config + the caller's own opt-in. */}
+      <DailyDigestSettings />
     </SettingsSection>
   );
 }
