@@ -29,6 +29,7 @@ export type StorageCategory =
   | 'documents'
   | 'timeline'
   | 'avatars'
+  | 'incidents'
   // Medications "collection": images (pill photos / extra photos) and documents (leaflets, scans).
   // Nested so the bucket has care-circles/{id}/medications/images/… and …/medications/documents/….
   | 'medications/images'
