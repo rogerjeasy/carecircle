@@ -2,11 +2,12 @@
 
 import * as React from "react";
 import { toast } from "sonner";
-import { addDays, format, isToday, isYesterday } from "date-fns";
+import { addDays, format, parseISO } from "date-fns";
 import {
   ChevronLeft,
   ChevronRight,
   Clock,
+  RefreshCw,
   Settings2,
   Share2,
   Sparkles,
@@ -24,37 +25,88 @@ import { DigestGenerating } from "./digest-skeleton";
 import { ByTheNumbers } from "./by-the-numbers";
 import { SourceChips } from "./source-chips";
 import { useReducedMotion } from "./use-reduced-motion";
-import { CARE_RECIPIENT, DIGEST_SETTINGS, digestForOffset } from "./data";
+import { DIGEST_SETTINGS } from "./data";
+import { loadDigest, generateDigest, rateDigest } from "@/lib/digest/actions";
+import type { Digest, Feedback } from "./types";
 
-/** The Daily Digest: a warm, AI-written end-of-day summary with a date stepper. */
-export function DigestScreen() {
+export interface DigestScreenProps {
+  recipientName: string | null;
+  /** Server's "today" as yyyy-MM-dd, the anchor for the date stepper. */
+  today: string;
+  /** Today's saved digest (or null) + the caller's feedback, to avoid a load flash. */
+  initialDigest: Digest | null;
+  initialFeedback: Feedback;
+  /** Whether this member may generate/re-generate (non read-only). */
+  canGenerate: boolean;
+}
+
+interface DayState {
+  digest: Digest | null;
+  feedback: Feedback;
+}
+
+/** The Daily Digest: a warm, AI-written end-of-day summary built from the day's real care record. */
+export function DigestScreen({ recipientName, today, initialDigest, initialFeedback, canGenerate }: DigestScreenProps) {
   const reduced = useReducedMotion();
-  const [now] = React.useState(() => new Date());
   const [offset, setOffset] = React.useState(0);
-  // `generating` is derived: true until the day's digest has been "written" (readyOffset === offset).
-  const [readyOffset, setReadyOffset] = React.useState<number | null>(null);
+  const [byDate, setByDate] = React.useState<Record<string, DayState>>({
+    [today]: { digest: initialDigest, feedback: initialFeedback },
+  });
+  const [generating, setGenerating] = React.useState(false);
   const [speaking, setSpeaking] = React.useState(false);
-  const [feedbackByOffset, setFeedbackByOffset] = React.useState<Record<number, "up" | "down">>({});
 
-  const generating = readyOffset !== offset;
-  const feedback = feedbackByOffset[offset] ?? null;
-  const date = addDays(now, offset);
-  const digest = digestForOffset(offset);
-  const dateLabel = isToday(date) ? "Today" : isYesterday(date) ? "Yesterday" : format(date, "EEE, MMM d");
+  const date = addDays(parseISO(`${today}T00:00:00`), offset);
+  const dateStr = format(date, "yyyy-MM-dd");
+  const dateLabel = offset === 0 ? "Today" : offset === -1 ? "Yesterday" : format(date, "EEE, MMM d");
+
+  const current = byDate[dateStr];
+  const digest = current?.digest ?? null;
+  const feedback = current?.feedback ?? null;
+  // A day not yet in the cache is still loading (the effect below fetches it).
+  const loading = current === undefined;
 
   const stopSpeech = React.useCallback(() => {
     if (typeof window !== "undefined" && "speechSynthesis" in window) window.speechSynthesis.cancel();
     setSpeaking(false);
   }, []);
 
-  // "Write" the digest on mount + whenever the day changes (the setState runs inside the timeout).
+  // Fetch a day's saved digest the first time it's viewed (when it isn't in the cache yet).
   React.useEffect(() => {
+    // Stop any read-aloud when the day changes (cancel directly — no state write inside the effect).
     if (typeof window !== "undefined" && "speechSynthesis" in window) window.speechSynthesis.cancel();
-    const t = setTimeout(() => setReadyOffset(offset), 950);
-    return () => clearTimeout(t);
-  }, [offset]);
+    if (current !== undefined) return;
+    let cancelled = false;
+    void loadDigest(dateStr).then((res) => {
+      if (cancelled) return;
+      if (res.ok) setByDate((prev) => ({ ...prev, [dateStr]: { digest: res.digest, feedback: res.feedback } }));
+      else {
+        toast.error(res.error);
+        // Mark as resolved-empty so we stop showing the loading state.
+        setByDate((prev) => ({ ...prev, [dateStr]: { digest: null, feedback: null } }));
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [dateStr, current]);
 
   React.useEffect(() => () => stopSpeech(), [stopSpeech]);
+
+  const handleGenerate = async () => {
+    if (generating) return;
+    setGenerating(true);
+    try {
+      const res = await generateDigest(dateStr);
+      if (res.ok) {
+        setByDate((prev) => ({ ...prev, [dateStr]: { digest: res.digest, feedback: null } }));
+        toast.success("Digest ready");
+      } else {
+        toast.error(res.error);
+      }
+    } finally {
+      setGenerating(false);
+    }
+  };
 
   const toggleListen = () => {
     if (!digest) return;
@@ -75,13 +127,16 @@ export function DigestScreen() {
   };
 
   const giveFeedback = (value: "up" | "down") => {
-    setFeedbackByOffset((prev) => {
-      const next = { ...prev };
-      if (next[offset] === value) delete next[offset];
-      else next[offset] = value;
-      return next;
+    if (!digest) return;
+    const next: Feedback = feedback === value ? null : value;
+    setByDate((prev) => ({ ...prev, [dateStr]: { digest, feedback: next } }));
+    if (next) toast("Thanks — this helps tune future digests");
+    void rateDigest(digest.id, next).then((res) => {
+      if (!res.ok) {
+        setByDate((prev) => ({ ...prev, [dateStr]: { digest, feedback } })); // revert
+        toast.error(res.error);
+      }
     });
-    if (feedback !== value) toast("Thanks — this helps tune future digests");
   };
 
   return (
@@ -90,7 +145,9 @@ export function DigestScreen() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
           <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">Daily digest</h1>
-          <p className="mt-1 text-muted-foreground">A warm end-of-day update on {CARE_RECIPIENT.name}.</p>
+          <p className="mt-1 text-muted-foreground">
+            A warm end-of-day update{recipientName ? ` on ${recipientName}` : ""}.
+          </p>
         </div>
         <Popover>
           <PopoverTrigger asChild>
@@ -100,16 +157,15 @@ export function DigestScreen() {
             </Button>
           </PopoverTrigger>
           <PopoverContent align="end" className="w-72">
-            <p className="text-sm font-semibold">Who gets the digest</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Sent to {DIGEST_SETTINGS.recipients.join(" and ")}.
-            </p>
+            <p className="text-sm font-semibold">When the digest is written</p>
             <p className="mt-3 flex items-center gap-1.5 text-sm">
               <Clock className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
               <span className="font-medium">{DIGEST_SETTINGS.cadence}</span>
               <span className="text-muted-foreground">at {DIGEST_SETTINGS.time}</span>
             </p>
-            <p className="mt-3 text-xs text-muted-foreground">Manage recipients and timing in Settings.</p>
+            <p className="mt-3 text-xs text-muted-foreground">
+              Digests summarise the day&apos;s real care record. Manage recipients and timing in Settings.
+            </p>
           </PopoverContent>
         </Popover>
       </div>
@@ -139,11 +195,11 @@ export function DigestScreen() {
 
       {/* Digest body — comfortable centered reading width */}
       <div className="mx-auto w-full max-w-2xl space-y-5">
-        {generating ? (
+        {loading || generating ? (
           <DigestGenerating />
         ) : digest ? (
           <>
-            <DigestCard key={offset} digest={digest} reduced={reduced} />
+            <DigestCard key={dateStr} digest={digest} reduced={reduced} />
 
             {/* Actions */}
             <div className="flex flex-wrap items-center gap-2">
@@ -155,6 +211,12 @@ export function DigestScreen() {
                 {speaking ? <Square className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
                 <span className="ml-1">{speaking ? "Stop" : "Listen"}</span>
               </Button>
+              {canGenerate && (
+                <Button variant="ghost" size="sm" onClick={handleGenerate} className="text-muted-foreground">
+                  <RefreshCw className="h-4 w-4" />
+                  <span className="ml-1">Regenerate</span>
+                </Button>
+              )}
               <div className="ml-auto flex items-center gap-1">
                 <span className="mr-1 text-xs text-muted-foreground">Helpful?</span>
                 <Button
@@ -180,29 +242,37 @@ export function DigestScreen() {
               </div>
             </div>
 
-            <ByTheNumbers numbers={digest.numbers} />
+            <ByTheNumbers stats={digest.stats} />
             <SourceChips sources={digest.sources} />
           </>
         ) : (
-          <EmptyState />
+          <EmptyState canGenerate={canGenerate} onGenerate={handleGenerate} label={dateLabel} />
         )}
       </div>
     </div>
   );
 }
 
-function EmptyState() {
+function EmptyState({ canGenerate, onGenerate, label }: { canGenerate: boolean; onGenerate: () => void; label: string }) {
   return (
     <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed px-6 py-16 text-center">
       <div className="flex h-14 w-14 items-center justify-center rounded-full bg-secondary text-primary">
         <Sparkles className="h-7 w-7" aria-hidden="true" />
       </div>
       <div>
-        <p className="text-base font-semibold">No digest yet for this day</p>
+        <p className="text-base font-semibold">No digest yet for {label.toLowerCase()}</p>
         <p className="mt-1 text-sm text-muted-foreground">
-          Digests are written each evening once the day&apos;s care is logged.
+          {canGenerate
+            ? "Write a warm summary from the day's logged care — meds, vitals, notes and more."
+            : "Digests are written each evening once the day's care is logged."}
         </p>
       </div>
+      {canGenerate && (
+        <Button onClick={onGenerate}>
+          <Sparkles className="h-4 w-4" />
+          <span className="ml-1">Generate digest</span>
+        </Button>
+      )}
     </div>
   );
 }
