@@ -6,7 +6,16 @@ import { Calendar, Check, HeartHandshake, Phone, Pill, Volume2, Square } from "l
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { EMERGENCY_CONTACTS, RECIPIENT, TODAY_APPTS, TODAY_DOSES, type Dose } from "./data";
+import type { DashboardData } from "@/components/dashboard/types";
+
+interface RecipientDose {
+  id: string;
+  name: string;
+  strength: string;
+  time: string;
+  purpose: string;
+  given: boolean;
+}
 
 function greeting(): string {
   const h = new Date().getHours();
@@ -16,10 +25,22 @@ function greeting(): string {
 }
 
 /** Care recipient home — dignified, large-type, high-contrast, oversized tap targets. */
-export function RecipientHome() {
-  const [doses, setDoses] = React.useState<Dose[]>(TODAY_DOSES);
+export function RecipientHome({ data }: { data: DashboardData | null }) {
+  const recipientName = data?.recipient?.firstName ?? "there";
+  const appts = data?.todayAppointments ?? [];
+  const family = data?.emergencyContact ?? null;
+
+  const [doses, setDoses] = React.useState<RecipientDose[]>(() =>
+    (data?.todayDoses ?? []).map((d) => ({
+      id: d.id,
+      name: d.name,
+      strength: d.strength,
+      time: d.time,
+      purpose: d.purpose,
+      given: d.status === "given",
+    })),
+  );
   const [speaking, setSpeaking] = React.useState(false);
-  const family = EMERGENCY_CONTACTS[0];
 
   React.useEffect(() => () => {
     if (typeof window !== "undefined" && "speechSynthesis" in window) window.speechSynthesis.cancel();
@@ -44,9 +65,9 @@ export function RecipientHome() {
     }
     const text =
       due.length > 0
-        ? `${greeting()}, ${RECIPIENT.name}. You have ${due.length} ${due.length === 1 ? "medicine" : "medicines"} to take. ` +
+        ? `${greeting()}, ${recipientName}. You have ${due.length} ${due.length === 1 ? "medicine" : "medicines"} to take. ` +
           due.map((d) => `${d.name}, ${d.strength}, at ${d.time}.`).join(" ")
-        : `${greeting()}, ${RECIPIENT.name}. You've taken all your medicines today. Well done.`;
+        : `${greeting()}, ${recipientName}. You've taken all your medicines today. Well done.`;
     const u = new SpeechSynthesisUtterance(text);
     u.rate = 0.95;
     u.onend = () => setSpeaking(false);
@@ -62,10 +83,14 @@ export function RecipientHome() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
-            {greeting()}, {RECIPIENT.name}
+            {greeting()}, {recipientName}
           </h1>
           <p className="mt-1 text-muted-foreground">
-            {due.length > 0 ? `You have ${due.length} ${due.length === 1 ? "medicine" : "medicines"} to take.` : "You've taken all your medicines today 💚"}
+            {doses.length === 0
+              ? "No medicines scheduled today."
+              : due.length > 0
+                ? `You have ${due.length} ${due.length === 1 ? "medicine" : "medicines"} to take.`
+                : "You've taken all your medicines today 💚"}
           </p>
         </div>
         <Button
@@ -85,37 +110,44 @@ export function RecipientHome() {
           <Pill className="h-5 w-5 text-primary" aria-hidden="true" />
           Today&apos;s medicines
         </h2>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {doses.map((d) => (
-            <Card key={d.id} className={cn("flex h-full flex-col", d.given && "bg-success/5")}>
-              <CardContent className="flex h-full flex-col gap-3 p-5">
-                <div className="min-w-0">
-                  <p className="text-2xl font-bold leading-tight">
-                    {d.name} <span className="text-lg font-semibold text-muted-foreground">{d.strength}</span>
-                  </p>
-                  <p className="mt-1 text-base text-muted-foreground">{d.time} · {d.purpose}</p>
-                </div>
-                <div className="mt-auto">
-                  {d.given ? (
-                    <div className="flex h-14 items-center justify-center gap-2 rounded-xl bg-success/10 text-base font-semibold text-success">
-                      <Check className="h-5 w-5" aria-hidden="true" />
-                      Taken
-                    </div>
-                  ) : (
-                    <Button
-                      className="h-16 w-full text-lg"
-                      onClick={() => tookIt(d.id)}
-                      aria-label={`I took ${d.name} ${d.strength}`}
-                    >
-                      <Check className="h-6 w-6" />
-                      <span className="ml-2">I took it</span>
-                    </Button>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        {doses.length === 0 ? (
+          <p className="text-base text-muted-foreground">There are no medicines to take today.</p>
+        ) : (
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {doses.map((d) => (
+              <Card key={d.id} className={cn("flex h-full flex-col", d.given && "bg-success/5")}>
+                <CardContent className="flex h-full flex-col gap-3 p-5">
+                  <div className="min-w-0">
+                    <p className="text-2xl font-bold leading-tight">
+                      {d.name} <span className="text-lg font-semibold text-muted-foreground">{d.strength}</span>
+                    </p>
+                    <p className="mt-1 text-base text-muted-foreground">
+                      {d.time}
+                      {d.purpose ? ` · ${d.purpose}` : ""}
+                    </p>
+                  </div>
+                  <div className="mt-auto">
+                    {d.given ? (
+                      <div className="flex h-14 items-center justify-center gap-2 rounded-xl bg-success/10 text-base font-semibold text-success">
+                        <Check className="h-5 w-5" aria-hidden="true" />
+                        Taken
+                      </div>
+                    ) : (
+                      <Button
+                        className="h-16 w-full text-lg"
+                        onClick={() => tookIt(d.id)}
+                        aria-label={`I took ${d.name} ${d.strength}`}
+                      >
+                        <Check className="h-6 w-6" />
+                        <span className="ml-2">I took it</span>
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Appointments */}
@@ -124,27 +156,43 @@ export function RecipientHome() {
           <Calendar className="h-5 w-5 text-primary" aria-hidden="true" />
           Appointments
         </h2>
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-          {TODAY_APPTS.map((a) => (
-            <Card key={a.title}>
-              <CardContent className="p-5">
-                <p className="text-xl font-semibold">{a.title}</p>
-                <p className="mt-1 text-base text-muted-foreground">{a.time}</p>
-                <p className="text-base text-muted-foreground">{a.provider} · {a.location}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        {appts.length === 0 ? (
+          <p className="text-base text-muted-foreground">No appointments coming up.</p>
+        ) : (
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            {appts.map((a) => (
+              <Card key={a.id}>
+                <CardContent className="p-5">
+                  <p className="text-xl font-semibold">{a.title}</p>
+                  <p className="mt-1 text-base text-muted-foreground">{a.whenLabel}</p>
+                  <p className="text-base text-muted-foreground">
+                    {[a.provider, a.location].filter(Boolean).join(" · ")}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Help actions */}
       <section aria-label="Get help" className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Button asChild className="h-20 text-xl">
-          <a href={`tel:${family.phone.replace(/[^+\d]/g, "")}`} aria-label={`Call ${family.name}`}>
+        {family?.phone ? (
+          <Button asChild className="h-20 text-xl">
+            <a href={`tel:${family.phone.replace(/[^+\d]/g, "")}`} aria-label={`Call ${family.name}`}>
+              <Phone className="h-7 w-7" />
+              <span className="ml-2">Call family</span>
+            </a>
+          </Button>
+        ) : (
+          <Button
+            className="h-20 text-xl"
+            onClick={() => toast("No family phone number is saved yet")}
+          >
             <Phone className="h-7 w-7" />
             <span className="ml-2">Call family</span>
-          </a>
-        </Button>
+          </Button>
+        )}
         <Button
           variant="destructive"
           className="h-20 text-xl"

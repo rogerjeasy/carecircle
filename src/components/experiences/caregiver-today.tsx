@@ -9,12 +9,37 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
-import { RECIPIENT, TODAY_DOSES, TODAY_TASKS, type Dose, type ShiftTask } from "./data";
+import type { DashboardData } from "@/components/dashboard/types";
+
+interface ShiftDose {
+  id: string;
+  name: string;
+  strength: string;
+  time: string;
+  purpose: string;
+  given: boolean;
+}
+interface ShiftTask {
+  id: string;
+  title: string;
+  done: boolean;
+}
 
 /** Caregiver "My shift today" — only what an aide on the move needs, with big tap targets. */
-export function CaregiverToday() {
-  const [doses, setDoses] = React.useState<Dose[]>(TODAY_DOSES);
-  const [tasks, setTasks] = React.useState<ShiftTask[]>(TODAY_TASKS);
+export function CaregiverToday({ data }: { data: DashboardData | null }) {
+  const recipientName = data?.recipient?.firstName ?? "your loved one";
+
+  const [doses, setDoses] = React.useState<ShiftDose[]>(() =>
+    (data?.todayDoses ?? []).map((d) => ({
+      id: d.id,
+      name: d.name,
+      strength: d.strength,
+      time: d.time,
+      purpose: d.purpose,
+      given: d.status === "given",
+    })),
+  );
+  const [tasks, setTasks] = React.useState<ShiftTask[]>(() => data?.myTasks ?? []);
   const [update, setUpdate] = React.useState("");
 
   const markGiven = (id: string) => {
@@ -41,9 +66,13 @@ export function CaregiverToday() {
             My shift today
           </p>
           <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
-            Caring for {RECIPIENT.name}
+            Caring for {recipientName}
           </h1>
-          <p className="mt-1 text-muted-foreground">He&apos;s had a calm morning. {givenCount} of {doses.length} doses given so far.</p>
+          <p className="mt-1 text-muted-foreground">
+            {doses.length > 0
+              ? `${givenCount} of ${doses.length} doses given so far.`
+              : "No medications scheduled today."}
+          </p>
         </div>
         <Badge variant="success" className="w-fit gap-1.5">
           <span className="h-1.5 w-1.5 rounded-full bg-success" aria-hidden="true" />
@@ -55,49 +84,60 @@ export function CaregiverToday() {
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         {/* Medications */}
         <SectionCard icon={Pill} title="Today's medications">
-          <ul className="space-y-2.5">
-            {doses.map((d) => (
-              <li key={d.id} className="flex items-center gap-3 rounded-xl border bg-card p-3">
-                <div className="min-w-0 flex-1">
-                  <p className={cn("truncate font-medium", d.given && "text-muted-foreground line-through")}>
-                    {d.name} <span className="font-normal text-muted-foreground">{d.strength}</span>
-                  </p>
-                  <p className="truncate text-sm text-muted-foreground">{d.time} · {d.purpose}</p>
-                </div>
-                {d.given ? (
-                  <span className="inline-flex shrink-0 items-center gap-1 text-sm font-medium text-success">
-                    <Check className="h-4 w-4" aria-hidden="true" /> Given
-                  </span>
-                ) : (
-                  <Button size="sm" className="h-11 shrink-0 px-4" onClick={() => markGiven(d.id)}>
-                    Mark given
-                  </Button>
-                )}
-              </li>
-            ))}
-          </ul>
+          {doses.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Nothing scheduled today.</p>
+          ) : (
+            <ul className="space-y-2.5">
+              {doses.map((d) => (
+                <li key={d.id} className="flex items-center gap-3 rounded-xl border bg-card p-3">
+                  <div className="min-w-0 flex-1">
+                    <p className={cn("truncate font-medium", d.given && "text-muted-foreground line-through")}>
+                      {d.name} <span className="font-normal text-muted-foreground">{d.strength}</span>
+                    </p>
+                    <p className="truncate text-sm text-muted-foreground">
+                      {d.time}
+                      {d.purpose ? ` · ${d.purpose}` : ""}
+                    </p>
+                  </div>
+                  {d.given ? (
+                    <span className="inline-flex shrink-0 items-center gap-1 text-sm font-medium text-success">
+                      <Check className="h-4 w-4" aria-hidden="true" /> Given
+                    </span>
+                  ) : (
+                    <Button size="sm" className="h-11 shrink-0 px-4" onClick={() => markGiven(d.id)}>
+                      Mark given
+                    </Button>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
         </SectionCard>
 
         {/* Tasks */}
         <SectionCard icon={ListChecks} title="My tasks">
-          <ul className="space-y-2">
-            {tasks.map((t) => (
-              <li key={t.id} className="flex items-center gap-3 rounded-xl border bg-card p-3">
-                <Checkbox
-                  id={`task-${t.id}`}
-                  checked={t.done}
-                  onCheckedChange={() => toggleTask(t.id)}
-                  className="h-6 w-6"
-                />
-                <label
-                  htmlFor={`task-${t.id}`}
-                  className={cn("min-w-0 flex-1 cursor-pointer text-sm font-medium", t.done && "text-muted-foreground line-through")}
-                >
-                  {t.title}
-                </label>
-              </li>
-            ))}
-          </ul>
+          {tasks.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No tasks for your shift.</p>
+          ) : (
+            <ul className="space-y-2">
+              {tasks.map((t) => (
+                <li key={t.id} className="flex items-center gap-3 rounded-xl border bg-card p-3">
+                  <Checkbox
+                    id={`task-${t.id}`}
+                    checked={t.done}
+                    onCheckedChange={() => toggleTask(t.id)}
+                    className="h-6 w-6"
+                  />
+                  <label
+                    htmlFor={`task-${t.id}`}
+                    className={cn("min-w-0 flex-1 cursor-pointer text-sm font-medium", t.done && "text-muted-foreground line-through")}
+                  >
+                    {t.title}
+                  </label>
+                </li>
+              ))}
+            </ul>
+          )}
         </SectionCard>
 
         {/* Vitals to record */}
@@ -128,7 +168,7 @@ export function CaregiverToday() {
           <Textarea
             value={update}
             onChange={(e) => setUpdate(e.target.value)}
-            placeholder={`Share a quick note about ${RECIPIENT.name}'s day…`}
+            placeholder={`Share a quick note about ${recipientName}'s day…`}
             rows={4}
             aria-label="Add an update"
           />

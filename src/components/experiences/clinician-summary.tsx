@@ -14,23 +14,28 @@ import { AlertTriangle, FileText, Lock, Pill, ShieldAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import type { DashboardData } from "@/components/dashboard/types";
 import { useIsPhone } from "./use-is-phone";
 import { useReducedMotion } from "./use-reduced-motion";
-import {
-  ALLERGIES,
-  BP_TREND,
-  CONDITIONS,
-  CURRENT_MEDS,
-  GLUCOSE_TREND,
-  MEDICAL_DOCS,
-  RECENT_INCIDENTS,
-  RECIPIENT,
-} from "./data";
 
 /** Clinician read-only clinical summary. */
-export function ClinicianSummary() {
+export function ClinicianSummary({ data }: { data: DashboardData | null }) {
   const isPhone = useIsPhone();
   const reduced = useReducedMotion();
+
+  const recipient = data?.recipient ?? null;
+  const fullName = recipient?.fullName ?? "Care recipient";
+  const conditions = recipient?.conditions ?? [];
+  const allergies = recipient?.allergies ?? [];
+  const meds = data?.clinical.meds ?? [];
+  const bpTrend = data?.clinical.bpTrend ?? [];
+  const glucoseTrend = data?.clinical.glucoseTrend ?? [];
+  const incidents = data?.clinical.incidents ?? [];
+  const docs = data?.clinical.documents ?? [];
+
+  const ageDob = [recipient?.age != null ? `${recipient.age} years` : null, recipient?.dob ? `DOB ${recipient.dob}` : null]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
     <div className="space-y-5">
@@ -41,44 +46,52 @@ export function ClinicianSummary() {
           <div className="min-w-0">
             <p className="text-sm font-semibold">Read-only clinical access</p>
             <p className="text-xs text-muted-foreground">
-              You can view {RECIPIENT.name}&apos;s clinical record but cannot make changes.
+              You can view {recipient?.firstName ?? "the recipient"}&apos;s clinical record but cannot make changes.
             </p>
           </div>
         </div>
         <Badge variant="secondary" className="w-fit gap-1.5">
           <Lock className="h-3 w-3" aria-hidden="true" />
-          Access expires in 6 days
+          View only
         </Badge>
       </div>
 
       {/* Header */}
       <div>
-        <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">{RECIPIENT.fullName}</h1>
-        <p className="mt-1 text-muted-foreground">{RECIPIENT.age} years · DOB {RECIPIENT.dob}</p>
+        <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">{fullName}</h1>
+        {ageDob && <p className="mt-1 text-muted-foreground">{ageDob}</p>}
       </div>
 
       {/* Summary: conditions / allergies / blood type */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <SummaryCard title="Conditions">
-          <ul className="flex flex-wrap gap-1.5">
-            {CONDITIONS.map((c) => (
-              <li key={c}>
-                <Badge variant="secondary">{c}</Badge>
-              </li>
-            ))}
-          </ul>
+          {conditions.length === 0 ? (
+            <p className="text-sm text-muted-foreground">None recorded</p>
+          ) : (
+            <ul className="flex flex-wrap gap-1.5">
+              {conditions.map((c) => (
+                <li key={c}>
+                  <Badge variant="secondary">{c}</Badge>
+                </li>
+              ))}
+            </ul>
+          )}
         </SummaryCard>
         <SummaryCard title="Allergies">
-          <ul className="flex flex-wrap gap-1.5">
-            {ALLERGIES.map((a) => (
-              <li key={a}>
-                <Badge variant="outline" className="border-destructive/40 text-destructive">{a}</Badge>
-              </li>
-            ))}
-          </ul>
+          {allergies.length === 0 ? (
+            <p className="text-sm text-muted-foreground">None recorded</p>
+          ) : (
+            <ul className="flex flex-wrap gap-1.5">
+              {allergies.map((a) => (
+                <li key={a}>
+                  <Badge variant="outline" className="border-destructive/40 text-destructive">{a}</Badge>
+                </li>
+              ))}
+            </ul>
+          )}
         </SummaryCard>
         <SummaryCard title="Blood type">
-          <p className="text-2xl font-bold tabular-nums">{RECIPIENT.bloodType}</p>
+          <p className="text-2xl font-bold tabular-nums">{recipient?.bloodType ?? "—"}</p>
         </SummaryCard>
       </div>
 
@@ -91,16 +104,18 @@ export function ClinicianSummary() {
               <Pill className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
               Current medications
             </h2>
-            {isPhone ? (
+            {meds.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No active medications.</p>
+            ) : isPhone ? (
               <ul className="space-y-2">
-                {CURRENT_MEDS.map((m) => (
-                  <li key={m.name} className="rounded-xl border bg-card p-3">
+                {meds.map((m) => (
+                  <li key={`${m.name}-${m.strength}`} className="rounded-xl border bg-card p-3">
                     <div className="flex items-baseline justify-between gap-2">
                       <p className="font-medium">{m.name} <span className="font-normal text-muted-foreground">{m.strength}</span></p>
-                      <span className="text-sm font-semibold tabular-nums">{m.adherence}%</span>
+                      <span className="text-sm font-semibold tabular-nums">{m.adherence != null ? `${m.adherence}%` : "—"}</span>
                     </div>
                     <p className="text-xs text-muted-foreground">{m.schedule}</p>
-                    <AdherenceBar value={m.adherence} className="mt-2" />
+                    {m.adherence != null && <AdherenceBar value={m.adherence} className="mt-2" />}
                   </li>
                 ))}
               </ul>
@@ -116,15 +131,19 @@ export function ClinicianSummary() {
                     </tr>
                   </thead>
                   <tbody>
-                    {CURRENT_MEDS.map((m) => (
-                      <tr key={m.name} className="border-b last:border-0">
+                    {meds.map((m) => (
+                      <tr key={`${m.name}-${m.strength}`} className="border-b last:border-0">
                         <td className="py-3 pr-4 font-medium">{m.name} <span className="font-normal text-muted-foreground">{m.strength}</span></td>
                         <td className="px-4 py-3 text-muted-foreground">{m.schedule}</td>
                         <td className="py-3 pl-4">
-                          <span className="flex items-center gap-2">
-                            <AdherenceBar value={m.adherence} className="w-20" />
-                            <span className="tabular-nums text-muted-foreground">{m.adherence}%</span>
-                          </span>
+                          {m.adherence != null ? (
+                            <span className="flex items-center gap-2">
+                              <AdherenceBar value={m.adherence} className="w-20" />
+                              <span className="tabular-nums text-muted-foreground">{m.adherence}%</span>
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -141,36 +160,41 @@ export function ClinicianSummary() {
             <h2 className="text-base font-semibold">Vitals — last 7 days</h2>
             <div>
               <p className="mb-1 text-xs font-medium text-muted-foreground">Blood pressure (mmHg)</p>
-              <div className="h-40 w-full" aria-hidden="true">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={BP_TREND} margin={{ top: 6, right: 6, bottom: 0, left: -12 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                    <XAxis dataKey="label" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={{ stroke: "hsl(var(--border))" }} />
-                    <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} width={32} domain={[60, 150]} />
-                    <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} />
-                    <Line type="monotone" dataKey="sys" name="Systolic" stroke="hsl(var(--chart-1))" strokeWidth={2} dot={false} isAnimationActive={!reduced} />
-                    <Line type="monotone" dataKey="dia" name="Diastolic" stroke="hsl(var(--chart-2))" strokeWidth={2} dot={false} isAnimationActive={!reduced} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
+              {bpTrend.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No readings recorded.</p>
+              ) : (
+                <div className="h-40 w-full" aria-hidden="true">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={bpTrend} margin={{ top: 6, right: 6, bottom: 0, left: -12 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                      <XAxis dataKey="label" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={{ stroke: "hsl(var(--border))" }} />
+                      <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} width={32} domain={[60, 150]} />
+                      <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} />
+                      <Line type="monotone" dataKey="sys" name="Systolic" stroke="hsl(var(--chart-1))" strokeWidth={2} dot={false} isAnimationActive={!reduced} />
+                      <Line type="monotone" dataKey="dia" name="Diastolic" stroke="hsl(var(--chart-2))" strokeWidth={2} dot={false} isAnimationActive={!reduced} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
             </div>
             <div>
               <p className="mb-1 text-xs font-medium text-muted-foreground">Glucose (mg/dL)</p>
-              <div className="h-32 w-full" aria-hidden="true">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={GLUCOSE_TREND} margin={{ top: 6, right: 6, bottom: 0, left: -12 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                    <XAxis dataKey="label" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={{ stroke: "hsl(var(--border))" }} />
-                    <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} width={32} domain={[90, 150]} />
-                    <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} />
-                    <Line type="monotone" dataKey="v" name="Glucose" stroke="hsl(var(--chart-4))" strokeWidth={2} dot={false} isAnimationActive={!reduced} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
+              {glucoseTrend.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No readings recorded.</p>
+              ) : (
+                <div className="h-32 w-full" aria-hidden="true">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={glucoseTrend} margin={{ top: 6, right: 6, bottom: 0, left: -12 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                      <XAxis dataKey="label" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={{ stroke: "hsl(var(--border))" }} />
+                      <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} width={32} domain={[90, 150]} />
+                      <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} />
+                      <Line type="monotone" dataKey="v" name="Glucose" stroke="hsl(var(--chart-4))" strokeWidth={2} dot={false} isAnimationActive={!reduced} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
             </div>
-            <p className="sr-only">
-              Blood pressure has been stable around 128 to 134 systolic over the past week. Glucose ranged 109 to 132 mg/dL.
-            </p>
           </CardContent>
         </Card>
       </div>
@@ -183,18 +207,22 @@ export function ClinicianSummary() {
               <AlertTriangle className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
               Recent incidents
             </h2>
-            <ul className="space-y-2">
-              {RECENT_INCIDENTS.map((i) => (
-                <li key={i.when} className="rounded-xl border bg-card p-3">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">{i.type}</span>
-                    <Badge variant={i.severity === "High" ? "destructive" : "warning"}>{i.severity}</Badge>
-                    <span className="ml-auto text-xs text-muted-foreground">{i.when}</span>
-                  </div>
-                  <p className="mt-1 text-sm text-muted-foreground">{i.summary}</p>
-                </li>
-              ))}
-            </ul>
+            {incidents.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No incidents reported.</p>
+            ) : (
+              <ul className="space-y-2">
+                {incidents.map((i, idx) => (
+                  <li key={`${i.when}-${idx}`} className="rounded-xl border bg-card p-3">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{i.type}</span>
+                      <Badge variant={i.severity === "High" ? "destructive" : "warning"}>{i.severity}</Badge>
+                      <span className="ml-auto text-xs text-muted-foreground">{i.when}</span>
+                    </div>
+                    <p className="mt-1 text-sm text-muted-foreground">{i.summary}</p>
+                  </li>
+                ))}
+              </ul>
+            )}
           </CardContent>
         </Card>
 
@@ -204,24 +232,28 @@ export function ClinicianSummary() {
               <FileText className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
               Medical documents
             </h2>
-            <ul className="space-y-2">
-              {MEDICAL_DOCS.map((d) => (
-                <li key={d.title}>
-                  <Link
-                    href="/documents"
-                    className="flex items-center gap-3 rounded-xl border bg-card p-3 transition-colors hover:bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  >
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-secondary text-primary">
-                      <FileText className="h-4 w-4" aria-hidden="true" />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-medium">{d.title}</span>
-                      <span className="block text-xs text-muted-foreground">{d.kind} · {d.date}</span>
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            {docs.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No medical documents.</p>
+            ) : (
+              <ul className="space-y-2">
+                {docs.map((d, idx) => (
+                  <li key={`${d.title}-${idx}`}>
+                    <Link
+                      href="/documents"
+                      className="flex items-center gap-3 rounded-xl border bg-card p-3 transition-colors hover:bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-secondary text-primary">
+                        <FileText className="h-4 w-4" aria-hidden="true" />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-medium">{d.title}</span>
+                        <span className="block text-xs text-muted-foreground">{d.kind} · {d.date}</span>
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
           </CardContent>
         </Card>
       </div>
