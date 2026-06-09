@@ -14,6 +14,8 @@
  * To add a new email: write a `somethingEmail(args): EmailContent` that calls `baseLayout(...)`.
  */
 
+import type { Digest, DigestStat, SourceMoment } from '@/components/digest/types';
+
 export type EmailContent = { subject: string; html: string; text: string };
 
 // ---- Brand palette (mirrors the app's teal primary; safe literal hex for email clients) ----
@@ -314,6 +316,167 @@ export function welcomeEmail(params: { recipientName: string; dashboardUrl: stri
   return {
     subject,
     html: baseLayout({ title: subject, preheader: `${recipientName}'s Care Circle is set up and ready to go.`, contentHtml: content }),
+    text,
+  };
+}
+
+/**
+ * "Urgent: an incident was reported" — emailed to notified members the moment a HIGH-severity
+ * incident (a fall, an ER visit) is logged, alongside the SNS escalation fan-out. Leads with what
+ * happened and a single CTA to respond; reminds the reader to call emergency services if in danger.
+ */
+export function incidentEscalationEmail(params: {
+  recipientName: string;
+  reporterName: string;
+  typeLabel: string;
+  severityLabel: string;
+  occurredAtLabel: string;
+  description: string;
+  incidentUrl: string;
+}): EmailContent {
+  const { recipientName, reporterName, typeLabel, severityLabel, occurredAtLabel, description, incidentUrl } = params;
+  const subject = `Urgent: ${typeLabel} reported for ${recipientName}`;
+
+  const content =
+    `<div style="font-size:36px;line-height:1;margin:0 0 8px;">🚨</div>` +
+    heading(`${typeLabel} — needs attention`) +
+    paragraph(
+      `<strong>${esc(reporterName)}</strong> reported ${esc(typeLabel.toLowerCase())} for <strong>${esc(recipientName)}</strong>.`,
+    ) +
+    paragraph(`Severity: ${pill(severityLabel)} &nbsp;&middot;&nbsp; <span style="color:${BRAND.muted};font-size:14px;">${esc(occurredAtLabel)}</span>`) +
+    noteBlock(description, reporterName) +
+    button(incidentUrl, 'View incident & respond') +
+    paragraph(
+      `<span style="color:${BRAND.muted};font-size:13px;">If ${esc(recipientName)} is in immediate danger, call your local emergency number first.</span>`,
+    ) +
+    fallbackLink(incidentUrl);
+
+  const text = [
+    `URGENT: ${typeLabel} reported for ${recipientName}`,
+    '',
+    `${reporterName} reported ${typeLabel.toLowerCase()} for ${recipientName}.`,
+    `Severity: ${severityLabel} · ${occurredAtLabel}`,
+    '',
+    `"${description}"`,
+    '',
+    'View the incident and respond:',
+    incidentUrl,
+    '',
+    `If ${recipientName} is in immediate danger, call your local emergency number first.`,
+    '',
+    '— CareCircle',
+  ].join('\n');
+
+  return {
+    subject,
+    html: baseLayout({ title: subject, preheader: `${reporterName} reported ${typeLabel.toLowerCase()} for ${recipientName}.`, contentHtml: content }),
+    text,
+  };
+}
+
+// ---- Daily Digest ----------------------------------------------------------
+
+/** A small icon (web-safe glyph) for each kind of source moment. */
+const SOURCE_GLYPH: Record<SourceMoment['type'], string> = {
+  med: '💊',
+  vital: '❤',
+  note: '📝',
+  appointment: '📅',
+  activity: '🚶',
+  meal: '🍽',
+};
+
+/** The "by the numbers" stat row, rendered as evenly-spaced cells. */
+function statCards(stats: DigestStat[]): string {
+  if (stats.length === 0) return '';
+  const cells = stats
+    .map(
+      (s) => `
+      <td align="center" valign="top" style="padding:14px 8px;background:${BRAND.accentBg};border-radius:12px;">
+        <div style="font-family:${FONT};font-size:20px;font-weight:700;line-height:1.2;color:${BRAND.primaryDark};">${esc(s.emoji ? `${s.emoji} ${s.value}` : s.value)}</div>
+        <div style="font-family:${FONT};font-size:12px;line-height:1.4;color:${BRAND.muted};margin-top:4px;">${esc(s.label)}</div>
+      </td>`,
+    )
+    .join('<td style="width:10px;font-size:0;line-height:0;">&nbsp;</td>');
+  return `
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:4px 0 24px;">
+    <tr>${cells}</tr>
+  </table>`;
+}
+
+/** The "moments from the day" list, each with a time and label. */
+function sourceList(sources: SourceMoment[]): string {
+  if (sources.length === 0) return '';
+  const rows = sources
+    .map(
+      (m) => `
+      <tr>
+        <td width="28" valign="top" style="padding:6px 8px 6px 0;font-family:${FONT};font-size:15px;line-height:1.5;">${SOURCE_GLYPH[m.type] ?? '•'}</td>
+        <td valign="top" style="padding:6px 0;font-family:${FONT};font-size:14px;line-height:1.5;color:${BRAND.ink};">${esc(m.label)}</td>
+        <td align="right" valign="top" style="padding:6px 0 6px 8px;font-family:${FONT};font-size:13px;line-height:1.5;color:${BRAND.faint};white-space:nowrap;">${esc(m.time)}</td>
+      </tr>`,
+    )
+    .join('');
+  return `
+  <p style="margin:24px 0 8px;font-family:${FONT};font-size:13px;font-weight:600;letter-spacing:0.3px;text-transform:uppercase;color:${BRAND.muted};">Moments from the day</p>
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-top:1px solid ${BRAND.line};">
+    ${rows}
+  </table>`;
+}
+
+/**
+ * The nightly Daily Digest email — the warm, end-of-day update mailed to opted-in members.
+ * Renders the AI headline + mood, the day's real "by the numbers" stats, Claude's narrative
+ * paragraphs, and the source moments, with a CTA back to the in-app digest screen.
+ */
+export function dailyDigestEmail(params: {
+  digest: Digest;
+  recipientName: string;
+  dayLabel: string;
+  digestUrl: string;
+}): EmailContent {
+  const { digest, recipientName, dayLabel, digestUrl } = params;
+  const subject = `${recipientName}'s day — ${digest.headline}`;
+
+  const content =
+    `<div style="font-size:40px;line-height:1;margin:0 0 12px;">${esc(digest.emoji)}</div>` +
+    heading(digest.headline) +
+    paragraph(
+      `<span style="color:${BRAND.muted};font-size:14px;">${esc(recipientName)}&rsquo;s day &middot; ${esc(dayLabel)}</span>`,
+    ) +
+    statCards(digest.stats) +
+    digest.paragraphs.map((p) => paragraph(esc(p))).join('') +
+    sourceList(digest.sources) +
+    `<div style="margin-top:24px;">${button(digestUrl, 'Open in CareCircle')}</div>` +
+    paragraph(
+      `<span style="color:${BRAND.muted};font-size:13px;">You&rsquo;re receiving this nightly digest because you&rsquo;re part of ${esc(recipientName)}&rsquo;s circle. You can turn it off anytime in your circle settings.</span>`,
+    );
+
+  const text = [
+    `${recipientName}'s day — ${dayLabel}`,
+    digest.headline,
+    '',
+    ...(digest.stats.length ? [digest.stats.map((s) => `${s.label}: ${s.emoji ? `${s.emoji} ` : ''}${s.value}`).join('  ·  '), ''] : []),
+    ...digest.paragraphs,
+    ...(digest.sources.length
+      ? ['', 'Moments from the day:', ...digest.sources.map((m) => `  ${m.time}  ${m.label}`)]
+      : []),
+    '',
+    'Open the full digest in CareCircle:',
+    digestUrl,
+    '',
+    `You're receiving this nightly digest because you're part of ${recipientName}'s circle. You can turn it off anytime in your circle settings.`,
+    '',
+    '— CareCircle',
+  ].join('\n');
+
+  return {
+    subject,
+    html: baseLayout({
+      title: subject,
+      preheader: `${recipientName}'s day: ${digest.headline}`,
+      contentHtml: content,
+    }),
     text,
   };
 }
