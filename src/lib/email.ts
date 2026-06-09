@@ -19,8 +19,11 @@ import {
   invitationEmail,
   welcomeEmail,
   joinedCircleEmail,
+  dailyDigestEmail,
+  incidentEscalationEmail,
 } from '@/lib/email-templates';
 import { serverLog, maskEmail } from '@/lib/log';
+import type { Digest } from '@/components/digest/types';
 
 const FROM = process.env.EMAIL_FROM ?? 'CareCircle <onboarding@resend.dev>';
 
@@ -207,6 +210,43 @@ export async function sendJoinedCircleEmail(params: {
   await deliver({ to, subject, html, text });
 }
 
+/**
+ * Email one member their nightly Daily Digest. Best-effort: the caller (cron) decides whether a
+ * single failed send should stop the run — it shouldn't, so this throws and the caller catches per
+ * recipient. `deliver()` already logs success/failure with a masked address.
+ */
+export async function sendDigestEmail(params: {
+  to: string;
+  digest: Digest;
+  recipientName: string;
+  dayLabel: string;
+  digestUrl: string;
+}): Promise<void> {
+  const { to, ...rest } = params;
+  const { subject, html, text } = dailyDigestEmail(rest);
+  await deliver({ to, subject, html, text });
+}
+
+/**
+ * Email one member the urgent "incident reported" alert. Best-effort at the call site: a single
+ * failed send must not block the others (the caller fans out with Promise.allSettled). `deliver()`
+ * logs success/failure with a masked address.
+ */
+export async function sendIncidentEscalationEmail(params: {
+  to: string;
+  recipientName: string;
+  reporterName: string;
+  typeLabel: string;
+  severityLabel: string;
+  occurredAtLabel: string;
+  description: string;
+  incidentUrl: string;
+}): Promise<void> {
+  const { to, ...rest } = params;
+  const { subject, html, text } = incidentEscalationEmail(rest);
+  await deliver({ to, subject, html, text });
+}
+
 // ============================================================================
 // Urgent escalation alerts — Amazon SNS (the diagram's "push & urgent escalation")
 // ============================================================================
@@ -218,6 +258,58 @@ async function snsClient() {
     _sns = new SNSClient({ region: process.env.AWS_REGION });
   }
   return _sns;
+}
+
+/**
+ * Normalize a stored phone to E.164 (`+` then 8–15 digits) for SNS, or null if it can't be. We keep
+ * a leading `+`; otherwise a raw national number is rejected (we won't guess a country code).
+ */
+function normalizeE164(raw: string | null | undefined): string | null {
+  if (!raw) return null;
+  const trimmed = raw.trim();
+  const plus = trimmed.startsWith('+');
+  const digits = trimmed.replace(/[^\d]/g, '');
+  if (!plus || digits.length < 8 || digits.length > 15) return null;
+  return `+${digits}`;
+}
+
+/**
+ * Send a direct SMS to ONE phone number via Amazon SNS (`Publish` with `PhoneNumber`). Best-effort
+ * and NEVER throws — an SMS hiccup must not roll back the incident that triggered it. Returns true
+ * only on a successful publish; logs to the console (and returns false) when SNS/AWS isn't
+ * configured or the number isn't valid E.164. `serverLog` records the outcome, never the number.
+ */
+export async function sendSms(params: { phone: string; message: string }): Promise<boolean> {
+  const phone = normalizeE164(params.phone);
+  if (!phone) {
+    serverLog('escalation', 'sms', 'failure', { reason: 'bad_number' });
+    return false;
+  }
+  if (!hasAwsCredentials()) {
+    console.warn(`\n[escalation] SNS SMS not configured — not actually texting.\n  message: ${params.message}\n`);
+    serverLog('escalation', 'sms', 'failure', { reason: 'not_configured' });
+    return false;
+  }
+  try {
+    const { PublishCommand } = await import('@aws-sdk/client-sns');
+    const client = await snsClient();
+    await client.send(
+      new PublishCommand({
+        PhoneNumber: phone,
+        // SNS splits long bodies into multiple segments; keep it tight to stay cheap + readable.
+        Message: params.message.replace(/\s+/g, ' ').trim().slice(0, 600),
+        // Transactional = higher delivery priority than Promotional (right for urgent care alerts).
+        MessageAttributes: {
+          'AWS.SNS.SMS.SMSType': { DataType: 'String', StringValue: 'Transactional' },
+        },
+      }),
+    );
+    serverLog('escalation', 'sms', 'success', {});
+    return true;
+  } catch (err) {
+    serverLog('escalation', 'sms', 'failure', { reason: (err as Error)?.name ?? 'error' });
+    return false;
+  }
 }
 
 /**
