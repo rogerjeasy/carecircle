@@ -29,7 +29,7 @@ import { getEmergencyCardData } from '@/lib/emergency-card/queries';
 import { getDigestByDate } from '@/lib/digest/queries';
 import { getCareRecipient } from '@/lib/circle/care-recipient';
 import { onCallNow, to12h, toMinutes, firstName as memberFirstName } from '@/components/rota/utils';
-import { formatValue, statusOf, latestReading, readingsFor, moodFace } from '@/components/health/utils';
+import { formatValue, statusOf, latestReading, readingsFor, moodFace, computeInsights } from '@/components/health/utils';
 import { DEFAULT_THRESHOLDS } from '@/components/health/data';
 import type {
   DashboardClinicalMed,
@@ -244,6 +244,9 @@ export async function getDashboardData(): Promise<DashboardData | null> {
     const latestMood = latestReading(readings, 'mood');
     const moodLabel = latestMood ? moodFace(latestMood.value).label : null;
 
+    // Real decline-detection insight from the vitals (first warning, e.g. weight loss / elevated BP).
+    const insight = computeInsights(readings, DEFAULT_THRESHOLDS, now).find((i) => i.tone === 'warning')?.text ?? null;
+
     const bpTrend = bpSeries.map((r) => ({
       label: format(r.at, 'EEE'),
       sys: Math.round(r.value),
@@ -346,6 +349,7 @@ export async function getDashboardData(): Promise<DashboardData | null> {
       weekAtGlance,
       digest,
       bannerSubtext,
+      insight,
       clinical: { meds: clinicalMeds, bpTrend, glucoseTrend, incidents, documents: clinicalDocs },
       emergencyContact,
     };
