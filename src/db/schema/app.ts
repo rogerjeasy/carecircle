@@ -229,6 +229,12 @@ export const membership = pgTable(
     // Whether this member receives the nightly Daily Digest email. On by default; a member can
     // opt out (e.g. the on-site caregiver who already lived the day) without leaving the circle.
     notifyDigest: boolean('notify_digest').notNull().default(true),
+    // Per-member Settings → Notifications preferences: the type×channel matrix + quiet hours.
+    // Null until first saved (the UI then falls back to its defaults). A personal preference blob.
+    notificationPrefs: jsonb('notification_prefs').$type<{
+      matrix: Record<string, Record<string, boolean>>;
+      quiet: { enabled: boolean; from: string; to: string };
+    }>(),
     ...audit,
   },
   (t) => [
@@ -623,6 +629,35 @@ export const observation = pgTable(
 );
 
 // ============================================================================
+// Health alert settings — the per-circle safe ranges edited in Health → Alerts. One row per
+// (circle, metric); metrics without a row fall back to the shared defaults
+// (src/components/health/data.ts DEFAULT_THRESHOLDS). `logObservation` evaluates every new
+// reading against these and raises an urgent timeline event when out of range.
+// ============================================================================
+export const healthAlertSetting = pgTable(
+  'health_alert_setting',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    circleId: uuid('circle_id')
+      .notNull()
+      .references(() => careCircle.id, { onDelete: 'cascade' }),
+    metric: observationMetricEnum('metric').notNull(),
+    enabled: boolean('enabled').notNull().default(true),
+    // Below `min` → low; above `max` → elevated (mood alerts only on `min`).
+    min: doublePrecision('min').notNull(),
+    max: doublePrecision('max').notNull(),
+    // Diastolic bounds (blood pressure only).
+    diaMin: doublePrecision('dia_min'),
+    diaMax: doublePrecision('dia_max'),
+    updatedByMembershipId: uuid('updated_by_membership_id').references(() => membership.id, {
+      onDelete: 'set null',
+    }),
+    ...audit,
+  },
+  (t) => [unique('health_alert_setting_circle_metric_uq').on(t.circleId, t.metric)],
+);
+
+// ============================================================================
 // Care rota — recurring weekly shifts (who's on, in person vs on call). The data-model's
 // deferred `care_shift`: a lightweight weekly pattern keyed by day-of-week + HH:mm times.
 // ============================================================================
@@ -948,4 +983,54 @@ export const incidentComment = pgTable(
     index('incident_comment_incident_idx').on(t.incidentId),
     index('incident_comment_circle_idx').on(t.circleId),
   ],
+);
+
+// ============================================================================
+// Billing (preview) — a circle's payment methods + invoices, managed by coordinators.
+// IMPORTANT (PCI): we NEVER store a full card number or CVV. A `payment_method` row holds only the
+// display metadata a tokenizing processor would hand back (brand + last 4 + expiry) — exactly what
+// the UI shows. Invoices are issued by a billing engine (not built yet), so the table starts empty
+// and the UI renders a "no invoices" state until one exists.
+// ============================================================================
+export const paymentMethod = pgTable(
+  'payment_method',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    circleId: uuid('circle_id')
+      .notNull()
+      .references(() => careCircle.id, { onDelete: 'cascade' }),
+    // Card network, e.g. "visa", "mastercard", "amex", "discover", or "card" when unknown.
+    brand: text('brand').notNull(),
+    // Last four digits only — safe to store + display.
+    last4: text('last4').notNull(),
+    expMonth: integer('exp_month').notNull(),
+    expYear: integer('exp_year').notNull(),
+    isDefault: boolean('is_default').notNull().default(false),
+    addedByMembershipId: uuid('added_by_membership_id').references(() => membership.id, {
+      onDelete: 'set null',
+    }),
+    ...audit,
+  },
+  (t) => [index('payment_method_circle_idx').on(t.circleId)],
+);
+
+export const invoice = pgTable(
+  'invoice',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    circleId: uuid('circle_id')
+      .notNull()
+      .references(() => careCircle.id, { onDelete: 'cascade' }),
+    // Human invoice number, e.g. "INV-2026-006".
+    number: text('number').notNull(),
+    amountCents: integer('amount_cents').notNull().default(0),
+    currency: text('currency').notNull().default('usd'),
+    // "paid" | "open" | "void".
+    status: text('status').notNull().default('open'),
+    issuedAt: timestamp('issued_at', { withTimezone: true }).defaultNow().notNull(),
+    // A presigned/external link to the invoice PDF, when one exists.
+    pdfUrl: text('pdf_url'),
+    ...audit,
+  },
+  (t) => [index('invoice_circle_time_idx').on(t.circleId, t.issuedAt)],
 );

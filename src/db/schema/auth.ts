@@ -19,6 +19,9 @@ export const users = pgTable(
     // Set only for email/password (Credentials) accounts. OAuth-only users leave this null
     // and can sign in solely through their provider. Hash format: see src/lib/password.ts.
     passwordHash: text('password_hash'),
+    // Account preferences (Settings → Account). Nullable; the UI falls back to sensible defaults.
+    language: text('language'),
+    timezone: text('timezone'),
   },
   // Case-insensitive uniqueness: one identity per email regardless of casing, so the
   // Credentials provider and the OAuth adapter can't create duplicate accounts.
