@@ -77,7 +77,8 @@ let _s3: import('@aws-sdk/client-s3').S3Client | null = null;
 async function s3Client() {
   if (!_s3) {
     const { S3Client } = await import('@aws-sdk/client-s3');
-    _s3 = new S3Client({ region: process.env.AWS_REGION });
+    const { awsCredentials } = await import('@/lib/aws/credentials');
+    _s3 = new S3Client({ region: process.env.AWS_REGION, credentials: await awsCredentials() });
   }
   return _s3;
 }
