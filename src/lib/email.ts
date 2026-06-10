@@ -69,7 +69,8 @@ let _ses: import('@aws-sdk/client-sesv2').SESv2Client | null = null;
 async function sesClient() {
   if (!_ses) {
     const { SESv2Client } = await import('@aws-sdk/client-sesv2');
-    _ses = new SESv2Client({ region: process.env.AWS_REGION });
+    const { awsCredentials } = await import('@/lib/aws/credentials');
+    _ses = new SESv2Client({ region: process.env.AWS_REGION, credentials: await awsCredentials() });
   }
   return _ses;
 }
@@ -255,7 +256,8 @@ let _sns: import('@aws-sdk/client-sns').SNSClient | null = null;
 async function snsClient() {
   if (!_sns) {
     const { SNSClient } = await import('@aws-sdk/client-sns');
-    _sns = new SNSClient({ region: process.env.AWS_REGION });
+    const { awsCredentials } = await import('@/lib/aws/credentials');
+    _sns = new SNSClient({ region: process.env.AWS_REGION, credentials: await awsCredentials() });
   }
   return _sns;
 }

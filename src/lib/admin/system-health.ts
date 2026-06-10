@@ -25,6 +25,7 @@ import { SESv2Client, GetAccountCommand } from '@aws-sdk/client-sesv2';
 import { BedrockClient, ListFoundationModelsCommand } from '@aws-sdk/client-bedrock';
 import { pingDb, getOpenIncidentCount } from '@/db/admin-queries';
 import { isPlatformDbConfigured } from '@/db/admin-db';
+import { awsCredentials } from '@/lib/aws/credentials';
 import type { Service, ServiceStatus, HealthMetrics, SystemHealthData } from './system-types';
 
 const REGION = process.env.AWS_REGION ?? 'us-east-1';
@@ -34,9 +35,15 @@ type Probe = { status: ServiceStatus; metric: string };
 
 const NOT_CONFIGURED: Probe = { status: 'degraded', metric: 'not configured' };
 
-/** True when AWS is wired at all (region + a credential). Probes are meaningless otherwise. */
+/** True when AWS is wired at all (region + a credential — static key, role/OIDC, or profile). */
 function awsConfigured(): boolean {
-  return Boolean(process.env.AWS_REGION && process.env.AWS_ACCESS_KEY_ID);
+  return Boolean(
+    process.env.AWS_REGION &&
+      (process.env.AWS_ACCESS_KEY_ID ||
+        process.env.AWS_ROLE_ARN ||
+        process.env.AWS_WEB_IDENTITY_TOKEN_FILE ||
+        process.env.AWS_PROFILE),
+  );
 }
 
 // Lazy singleton SDK clients — one connection pool per service, reused across every probe.
@@ -46,10 +53,14 @@ let _sns: SNSClient | null = null;
 let _ses: SESv2Client | null = null;
 let _bedrock: BedrockClient | null = null;
 
-const s3 = () => (_s3 ??= new S3Client({ region: REGION, maxAttempts: 1 }));
-const sns = () => (_sns ??= new SNSClient({ region: REGION, maxAttempts: 1 }));
-const ses = () => (_ses ??= new SESv2Client({ region: REGION, maxAttempts: 1 }));
-const bedrock = () => (_bedrock ??= new BedrockClient({ region: REGION, maxAttempts: 1 }));
+const s3 = async () =>
+  (_s3 ??= new S3Client({ region: REGION, maxAttempts: 1, credentials: await awsCredentials() }));
+const sns = async () =>
+  (_sns ??= new SNSClient({ region: REGION, maxAttempts: 1, credentials: await awsCredentials() }));
+const ses = async () =>
+  (_ses ??= new SESv2Client({ region: REGION, maxAttempts: 1, credentials: await awsCredentials() }));
+const bedrock = async () =>
+  (_bedrock ??= new BedrockClient({ region: REGION, maxAttempts: 1, credentials: await awsCredentials() }));
 
 /**
  * Run an AWS SDK probe under a hard timeout. Any successful response = operational (latency shown);
@@ -81,17 +92,17 @@ async function checkAwsServices() {
 
   const [bedrockP, s3P, sesP, snsP] = await Promise.all([
     probe(configured, async (abortSignal) => {
-      await bedrock().send(new ListFoundationModelsCommand({}), { abortSignal });
+      await (await bedrock()).send(new ListFoundationModelsCommand({}), { abortSignal });
     }),
     probe(configured && Boolean(bucket), async (abortSignal) => {
-      await s3().send(new HeadBucketCommand({ Bucket: bucket! }), { abortSignal });
+      await (await s3()).send(new HeadBucketCommand({ Bucket: bucket! }), { abortSignal });
     }),
     probe(configured, async (abortSignal) => {
-      const acct = await ses().send(new GetAccountCommand({}), { abortSignal });
+      const acct = await (await ses()).send(new GetAccountCommand({}), { abortSignal });
       if (acct.SendingEnabled === false) return { status: 'degraded', metric: 'sending paused' };
     }),
     probe(configured && Boolean(topicArn), async (abortSignal) => {
-      await sns().send(new GetTopicAttributesCommand({ TopicArn: topicArn! }), { abortSignal });
+      await (await sns()).send(new GetTopicAttributesCommand({ TopicArn: topicArn! }), { abortSignal });
     }),
   ]);
 
