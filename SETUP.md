@@ -129,8 +129,27 @@ If counts are 0 without context and non-zero with it, **RLS is enforcing** — e
 
 ## 8. 👤 Deploy to Vercel
 
-- Add `DATABASE_URL`, `MIGRATION_DATABASE_URL`, `AUTH_SECRET`, `AUTH_URL` (your `*.vercel.app`), and any Google keys under **Project → Settings → Environment Variables** (use the Vercel ↔ AWS OIDC integration where possible — no stored keys).
-- Push to GitHub; Vercel builds and deploys. Grab your **Vercel Team ID** (Settings → General) for the submission.
+- Add `DATABASE_URL`, `MIGRATION_DATABASE_URL`, `AUTH_SECRET`, `AUTH_URL` (your `*.vercel.app`), `CRON_SECRET`, and any Google keys under **Project → Settings → Environment Variables**.
+- Push to GitHub; Vercel builds and deploys (the two cron jobs in `vercel.json` — digest + care scans — start firing automatically with `Authorization: Bearer $CRON_SECRET`). Grab your **Vercel Team ID** (Settings → General) for the submission.
+
+### 8a. 👤 Vercel OIDC → AWS (keyless production credentials — recommended)
+
+Production needs **no stored AWS keys**: every AWS client resolves credentials through
+`src/lib/aws/credentials.ts`, which exchanges Vercel's per-invocation OIDC token for short-lived
+STS credentials when `AWS_ROLE_ARN` is set (and falls back to the standard chain locally).
+
+1. **Vercel:** Project → Settings → **OpenID Connect** — note the team's issuer URL
+   (`https://oidc.vercel.com/<team-slug>`) and audience.
+2. **AWS IAM → Identity providers → Add provider:** type *OpenID Connect*, the issuer URL above,
+   audience `https://vercel.com/<team-slug>`.
+3. **Create a role** trusting that provider, with a condition pinning `sub` to this project, e.g.
+   `"oidc.vercel.com/<team-slug>:sub": "owner:<team-slug>:project:carecircle:environment:production"`.
+   Attach least-privilege policies only: `bedrock:InvokeModel` (Titan + the Claude inference
+   profile), S3 read/write on the uploads bucket, `ses:SendEmail`, `sns:Publish`.
+4. **Vercel env:** set `AWS_ROLE_ARN` to the role's ARN — and delete
+   `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` from the project.
+
+Local dev keeps using a static least-privilege key pair in `.env` (the SDK default chain).
 
 ## 9. Next build steps (Day 4+ of the plan)
 
