@@ -11,7 +11,8 @@ import { withAuthedDb } from '@/db/dal';
 import { getActiveCircleId } from '@/lib/circle/active-circle';
 import { serverLog, maskEmail } from '@/lib/log';
 import { observation, careRecipientProfile, membership, users } from '@/db/schema';
-import type { HealthData, Member, MetricKey, Reading } from '@/components/health/types';
+import { loadThresholds } from './alerts';
+import type { HealthData, Member, MetricKey, Reading, ThresholdMap } from '@/components/health/types';
 
 const AVATAR_COLORS = [
   'bg-primary/10 text-primary',
@@ -71,7 +72,9 @@ export async function getHealthData(): Promise<HealthData | null> {
         .where(eq(careRecipientProfile.circleId, circleId))
         .limit(1);
 
-      return { readingRows, memberRows, recipient };
+      const thresholds = await loadThresholds(tx, circleId);
+
+      return { readingRows, memberRows, recipient, thresholds };
     });
 
     const members: Member[] = data.memberRows.map((m, i) => {
@@ -99,9 +102,27 @@ export async function getHealthData(): Promise<HealthData | null> {
       members: members.length,
     });
 
-    return { circleId, readings, members, currentMembershipId, recipientName };
+    return { circleId, readings, members, currentMembershipId, recipientName, thresholds: data.thresholds };
   } catch (err) {
     serverLog('health', 'getHealthData', 'failure', {
+      email: maskEmail(session.user?.email),
+      reason: (err as { code?: string })?.code ?? (err as Error)?.name ?? 'error',
+    });
+    return null;
+  }
+}
+
+/** The active circle's persisted alert ranges (for Health → Alerts). Null if no session/circle. */
+export async function getAlertThresholds(): Promise<{ circleId: string; thresholds: ThresholdMap } | null> {
+  const session = await auth();
+  if (!session?.user?.id) return null;
+  try {
+    const circleId = await getActiveCircleId();
+    if (!circleId) return null;
+    const thresholds = await withAuthedDb((tx) => loadThresholds(tx, circleId));
+    return { circleId, thresholds };
+  } catch (err) {
+    serverLog('health', 'getAlertThresholds', 'failure', {
       email: maskEmail(session.user?.email),
       reason: (err as { code?: string })?.code ?? (err as Error)?.name ?? 'error',
     });

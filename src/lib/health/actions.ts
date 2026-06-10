@@ -16,11 +16,14 @@ import { requireSession, withAuthedDb } from '@/db/dal';
 import { getActiveCircleId } from '@/lib/circle/active-circle';
 import { recordAuditEvent } from '@/db/audit';
 import { serverLog } from '@/lib/log';
-import { observation, membership, timelineEvent } from '@/db/schema';
-import { canLogReadings } from './access';
-import type { MetricKey, Reading } from '@/components/health/types';
+import { observation, membership, timelineEvent, healthAlertSetting, careRecipientProfile } from '@/db/schema';
+import { canLogReadings, canManageAlertSettings } from './access';
+import { evaluateReading, loadThresholds, notifyOutOfRange, rangeLabel, THRESHOLD_METRICS } from './alerts';
+import type { MetricKey, Reading, StatusLevel, ThresholdMap } from '@/components/health/types';
 
-export type LogObservationResult = { ok: true; data: Reading } | { ok: false; error: string };
+export type LogObservationResult =
+  | { ok: true; data: Reading; status: StatusLevel }
+  | { ok: false; error: string };
 
 const GENERIC_ERROR = 'Something went wrong. Please try again.';
 const FORBIDDEN = 'You do not have permission to do that.';
@@ -99,7 +102,7 @@ export async function logObservation(formData: FormData): Promise<LogObservation
   const recordedAt = new Date(p.atISO);
 
   try {
-    const row = await withAuthedDb(async (tx) => {
+    const { row, status, recipientName } = await withAuthedDb(async (tx) => {
       // Resolve the chosen recorder to a membership in this circle, else attribute to the actor.
       let recordedById = me.id;
       if (p.recordedBy) {
@@ -124,25 +127,61 @@ export async function logObservation(formData: FormData): Promise<LogObservation
         })
         .returning();
 
+      // Evaluate against the circle's safe ranges (drizzle/0038 RLS) — an out-of-range reading
+      // posts as URGENT so it tops the notifications feed for the whole circle.
+      const thresholds = await loadThresholds(tx, circleId);
+      const status = evaluateReading(p.metric, p.value, p.secondary, thresholds);
+      const reading = formatReading(p.metric, p.value, p.secondary);
+      const summary =
+        status === 'normal'
+          ? `${firstName(user.name)} logged ${METRIC_LABEL[p.metric]}: ${reading}`
+          : `${firstName(user.name)} logged ${METRIC_LABEL[p.metric]}: ${reading} — ${rangeLabel(status)}`;
+
       await tx.insert(timelineEvent).values({
         circleId,
         actorMembershipId: me.id,
         eventType: 'vital',
-        summary: `${firstName(user.name)} logged ${METRIC_LABEL[p.metric]}: ${formatReading(p.metric, p.value, p.secondary)}`,
+        summary,
         refType: 'observation',
         refId: created.id,
+        isUrgent: status !== 'normal',
       });
       await recordAuditEvent(
         user.id,
-        { circleId, action: 'create', entityType: 'observation', entityId: created.id, summary: `Logged a ${p.metric} reading` },
+        {
+          circleId,
+          action: 'create',
+          entityType: 'observation',
+          entityId: created.id,
+          summary: status === 'normal' ? `Logged a ${p.metric} reading` : `Logged a ${p.metric} reading (out of range)`,
+        },
         tx,
       );
-      return created;
+
+      const [recipient] = await tx
+        .select({ fullName: careRecipientProfile.fullName })
+        .from(careRecipientProfile)
+        .where(eq(careRecipientProfile.circleId, circleId))
+        .limit(1);
+
+      return { row: created, status, recipientName: recipient?.fullName?.trim().split(/\s+/)[0] ?? null };
     });
 
-    serverLog('health', 'logObservation', 'success', { actor: user.id, id: row.id, metric: p.metric });
+    // Best-effort urgent fan-out AFTER the commit — the reading + urgent event are already durable.
+    if (status !== 'normal') {
+      await notifyOutOfRange({
+        circleId,
+        metricLabel: METRIC_LABEL[p.metric],
+        formattedValue: formatReading(p.metric, p.value, p.secondary),
+        status,
+        recipientName,
+      });
+    }
+
+    serverLog('health', 'logObservation', 'success', { actor: user.id, id: row.id, metric: p.metric, status });
     return {
       ok: true,
+      status,
       data: {
         id: row.id,
         metric: p.metric,
@@ -155,6 +194,118 @@ export async function logObservation(formData: FormData): Promise<LogObservation
     };
   } catch (err) {
     serverLog('health', 'logObservation', 'failure', { actor: user.id, reason: (err as Error)?.name ?? 'error' });
+    return { ok: false, error: GENERIC_ERROR };
+  }
+}
+
+// ============================================================================
+// Alert thresholds — Health → Alerts "Save changes"
+// ============================================================================
+
+export type SaveAlertThresholdsResult = { ok: true } | { ok: false; error: string };
+
+const thresholdSchema = z
+  .object({
+    enabled: z.boolean(),
+    min: z.number().finite(),
+    max: z.number().finite(),
+    diaMin: z.number().finite().optional(),
+    diaMax: z.number().finite().optional(),
+  })
+  .refine((t) => !t.enabled || t.min < t.max, { message: 'min must be below max' });
+
+const thresholdMapSchema = z.object({
+  bp: thresholdSchema,
+  glucose: thresholdSchema,
+  weight: thresholdSchema,
+  sleep: thresholdSchema,
+  mood: thresholdSchema,
+  hr: thresholdSchema,
+});
+
+/**
+ * Persist the circle's alert safe ranges (one row per metric, upserted). Coordinators + family
+ * only — re-checked here against the caller's REAL role and enforced again by RLS (drizzle/0038).
+ */
+export async function saveAlertThresholds(formData: FormData): Promise<SaveAlertThresholdsResult> {
+  const user = await requireSession();
+  serverLog('health', 'saveAlertThresholds', 'start', { actor: user.id });
+  const circleId = await getActiveCircleId();
+  if (!circleId) return { ok: false, error: 'No active care circle.' };
+
+  const [me] = await withAuthedDb((tx) =>
+    tx
+      .select({ id: membership.id, role: membership.role })
+      .from(membership)
+      .where(
+        and(
+          eq(membership.circleId, circleId),
+          eq(membership.userId, user.id),
+          eq(membership.status, 'active'),
+          isNull(membership.deletedAt),
+        ),
+      )
+      .limit(1),
+  );
+  if (!me) return { ok: false, error: 'No active care circle.' };
+  if (!canManageAlertSettings(me.role)) {
+    serverLog('health', 'saveAlertThresholds', 'failure', { actor: user.id, reason: 'forbidden' });
+    return { ok: false, error: FORBIDDEN };
+  }
+
+  let raw: unknown = {};
+  try {
+    raw = JSON.parse(formData.get('payload')?.toString() ?? '{}');
+  } catch {
+    return { ok: false, error: GENERIC_ERROR };
+  }
+  const parsed = thresholdMapSchema.safeParse(raw);
+  if (!parsed.success) {
+    serverLog('health', 'saveAlertThresholds', 'failure', { actor: user.id, reason: 'validation' });
+    return { ok: false, error: 'Please check the ranges — each minimum must be below its maximum.' };
+  }
+  const map = parsed.data as ThresholdMap;
+
+  try {
+    await withAuthedDb(async (tx) => {
+      for (const metric of THRESHOLD_METRICS) {
+        const t = map[metric];
+        const values = {
+          circleId,
+          metric,
+          enabled: t.enabled,
+          min: t.min,
+          max: t.max,
+          diaMin: metric === 'bp' ? t.diaMin ?? null : null,
+          diaMax: metric === 'bp' ? t.diaMax ?? null : null,
+          updatedByMembershipId: me.id,
+        };
+        await tx
+          .insert(healthAlertSetting)
+          .values(values)
+          .onConflictDoUpdate({
+            target: [healthAlertSetting.circleId, healthAlertSetting.metric],
+            set: {
+              enabled: values.enabled,
+              min: values.min,
+              max: values.max,
+              diaMin: values.diaMin,
+              diaMax: values.diaMax,
+              updatedByMembershipId: me.id,
+              updatedAt: new Date(),
+            },
+          });
+      }
+      await recordAuditEvent(
+        user.id,
+        { circleId, action: 'update', entityType: 'health_alert_setting', summary: 'Updated health alert safe ranges' },
+        tx,
+      );
+    });
+    serverLog('health', 'saveAlertThresholds', 'success', { actor: user.id, circleId });
+    return { ok: true };
+  } catch (err) {
+    serverLog('health', 'saveAlertThresholds', 'failure', { actor: user.id, reason: (err as Error)?.name ?? 'error' });
     return { ok: false, error: GENERIC_ERROR };
   }
 }
