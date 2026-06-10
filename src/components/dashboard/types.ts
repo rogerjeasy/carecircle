@@ -169,6 +169,8 @@ export interface DashboardData {
   digest: DashboardDigest | null;
   /** Coordinator banner secondary line, e.g. "Mood: cheerful · Last update 20 minutes ago by Grace". */
   bannerSubtext: string;
+  /** A real decline-detection insight from the vitals (e.g. "Weight down 2.0kg over 30 days"), or null. */
+  insight: string | null;
   clinical: DashboardClinical;
   /** Primary emergency contact for the recipient's "Call family" action. */
   emergencyContact: { name: string; phone: string } | null;

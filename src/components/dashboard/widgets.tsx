@@ -115,7 +115,7 @@ export function StatCard({
   );
 }
 
-export function InsightBanner({ onDismiss, visible }: { onDismiss: () => void; visible: boolean }) {
+export function InsightBanner({ text, onDismiss, visible }: { text: string; onDismiss: () => void; visible: boolean }) {
   if (!visible) return null;
 
   return (
@@ -125,10 +125,8 @@ export function InsightBanner({ onDismiss, visible }: { onDismiss: () => void; v
           <TrendingDown className="h-4 w-4 text-warning" />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium">Decline detected</p>
-          <p className="text-xs text-muted-foreground">
-            Antonio&apos;s weight is down 2kg this month — consider mentioning at Thursday&apos;s visit.
-          </p>
+          <p className="text-sm font-medium">Worth a look</p>
+          <p className="text-xs text-muted-foreground">{text}</p>
         </div>
         <Button
           variant="ghost"

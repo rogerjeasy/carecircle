@@ -68,9 +68,9 @@ export function CoordinatorDashboard({ data }: { data: DashboardData | null }) {
         weekAtGlance={data?.weekAtGlance ?? []}
       />
 
-      {/* Insight Banner - Dismissible */}
-      {role !== "readonly" && (
-        <InsightBanner visible={insightVisible} onDismiss={() => setInsightVisible(false)} />
+      {/* Insight Banner - Dismissible, shown only when there's a real vitals insight */}
+      {role !== "readonly" && data?.insight && (
+        <InsightBanner text={data.insight} visible={insightVisible} onDismiss={() => setInsightVisible(false)} />
       )}
 
       {/* Stat Cards Grid */}
