@@ -41,10 +41,11 @@ export function HealthScreen({ initial }: HealthScreenProps) {
   const members = initial?.members ?? [];
   const currentMembershipId = initial?.currentMembershipId ?? null;
   const recipientName = initial?.recipientName ?? null;
+  const thresholds = initial?.thresholds ?? DEFAULT_THRESHOLDS;
 
   const insights = React.useMemo(
-    () => computeInsights(readings, DEFAULT_THRESHOLDS, now),
-    [readings, now]
+    () => computeInsights(readings, thresholds, now),
+    [readings, thresholds, now]
   );
 
   const handleLog = async (values: LogValues) => {
@@ -69,7 +70,13 @@ export function HealthScreen({ initial }: HealthScreenProps) {
     const res = await logObservation(fd);
     if (res.ok) {
       setReadings((prev) => prev.map((r) => (r.id === tempId ? res.data : r)));
-      toast.success("Reading saved", { description: "Added to the chart and shared on the timeline." });
+      if (res.status === "normal") {
+        toast.success("Reading saved", { description: "Added to the chart and shared on the timeline." });
+      } else {
+        toast.warning("Reading saved — outside the safe range", {
+          description: "The circle has been alerted with an urgent timeline update.",
+        });
+      }
     } else {
       setReadings((prev) => prev.filter((r) => r.id !== tempId));
       toast.error(res.error ?? "Couldn't save the reading");
@@ -133,7 +140,7 @@ export function HealthScreen({ initial }: HealthScreenProps) {
                   metric={metric}
                   readings={readings}
                   range={range}
-                  thresholds={DEFAULT_THRESHOLDS[metric]}
+                  thresholds={thresholds[metric]}
                   now={now}
                   selected={metric === focus}
                   onSelect={() => setFocus(metric)}
@@ -146,7 +153,7 @@ export function HealthScreen({ initial }: HealthScreenProps) {
               onSelectMetric={setFocus}
               readings={readings}
               range={range}
-              thresholds={DEFAULT_THRESHOLDS}
+              thresholds={thresholds}
               now={now}
             />
           </>
@@ -158,6 +165,7 @@ export function HealthScreen({ initial }: HealthScreenProps) {
             onOpenChange={setLogOpen}
             initialValues={defaultLogValues(now, focus, currentMembershipId ?? "")}
             onSubmit={handleLog}
+            thresholds={thresholds}
           />
         )}
       </div>

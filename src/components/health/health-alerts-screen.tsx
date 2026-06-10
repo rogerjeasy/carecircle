@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { DEFAULT_THRESHOLDS, METRIC_ORDER, metricConfigs, metricIcons } from "./data";
 import { canManageAlerts, moodFace } from "./utils";
+import { saveAlertThresholds } from "@/lib/health/actions";
 import type { MetricKey, ThresholdMap, Thresholds } from "./types";
 
 /** Human-readable preview of what an enabled alert will trigger on. */
@@ -33,12 +34,19 @@ function previewText(metric: MetricKey, t: Thresholds): string {
   }
 }
 
-/** The Health alerts settings panel: per-metric safe ranges with a live trigger preview. */
-export function HealthAlertsScreen() {
+export interface HealthAlertsScreenProps {
+  /** The circle's persisted ranges (server-loaded); defaults when there's no circle yet. */
+  initialThresholds?: ThresholdMap;
+}
+
+/** The Health alerts settings panel: per-metric safe ranges, persisted per circle. */
+export function HealthAlertsScreen({ initialThresholds }: HealthAlertsScreenProps) {
   const { role } = useAppShell();
   const canManage = canManageAlerts(role);
 
-  const [thresholds, setThresholds] = React.useState<ThresholdMap>(() => structuredCopy(DEFAULT_THRESHOLDS));
+  const [thresholds, setThresholds] = React.useState<ThresholdMap>(() =>
+    structuredCopy(initialThresholds ?? DEFAULT_THRESHOLDS)
+  );
   const [saving, setSaving] = React.useState(false);
   const [saved, setSaved] = React.useState(false);
 
@@ -47,12 +55,26 @@ export function HealthAlertsScreen() {
     setThresholds((prev) => ({ ...prev, [metric]: { ...prev[metric], ...p } }));
   };
 
+  const rangesValid = METRIC_ORDER.every((m) => !thresholds[m].enabled || thresholds[m].min < thresholds[m].max);
+
   const save = async () => {
+    if (!rangesValid) {
+      toast.error("Please fix the highlighted ranges first.");
+      return;
+    }
     setSaving(true);
-    await new Promise((r) => setTimeout(r, 600));
+    const fd = new FormData();
+    fd.set("payload", JSON.stringify(thresholds));
+    const res = await saveAlertThresholds(fd);
     setSaving(false);
-    setSaved(true);
-    toast.success("Alert settings saved");
+    if (res.ok) {
+      setSaved(true);
+      toast.success("Alert settings saved", {
+        description: "New readings are checked against these ranges for the whole circle.",
+      });
+    } else {
+      toast.error(res.error ?? "Couldn't save the alert settings");
+    }
   };
 
   return (

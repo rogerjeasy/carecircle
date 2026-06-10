@@ -18,7 +18,7 @@ import { FormField, fieldAria } from "./form-field";
 import { DEFAULT_THRESHOLDS, METRIC_ORDER, metricConfigs, metricIcons, MOOD_FACES } from "./data";
 import { useHealthMembers } from "./members-context";
 import { firstName, statusOf } from "./utils";
-import type { MetricKey, Reading } from "./types";
+import type { MetricKey, Reading, ThresholdMap } from "./types";
 
 export interface LogValues {
   metric: MetricKey;
@@ -97,8 +97,8 @@ export function logValuesToReading(v: LogValues, id: string): Reading {
 }
 
 /** Live status preview ("This would be flagged as elevated"). */
-function previewStatus(v: LogValues) {
-  const thr = DEFAULT_THRESHOLDS[v.metric];
+function previewStatus(v: LogValues, thresholds: ThresholdMap) {
+  const thr = thresholds[v.metric];
   if (v.metric === "bp") {
     const s = num(v.systolic);
     const d = num(v.diastolic);
@@ -119,10 +119,12 @@ export interface LogReadingFormProps {
   initialValues: LogValues;
   onSubmit: (values: LogValues) => void;
   onCancel: () => void;
+  /** The circle's alert ranges (defaults when not provided). */
+  thresholds?: ThresholdMap;
 }
 
 /** The Log-reading form: pick a metric, fill the right inputs, with live friendly validation. */
-export function LogReadingForm({ initialValues, onSubmit, onCancel }: LogReadingFormProps) {
+export function LogReadingForm({ initialValues, onSubmit, onCancel, thresholds = DEFAULT_THRESHOLDS }: LogReadingFormProps) {
   const { members } = useHealthMembers();
   const [values, setValues] = React.useState<LogValues>(initialValues);
   const [touched, setTouched] = React.useState(false);
@@ -135,7 +137,7 @@ export function LogReadingForm({ initialValues, onSubmit, onCancel }: LogReading
   const showErr = (k: keyof LogValues) => (touched ? errors[k] : undefined);
 
   const cfg = metricConfigs[values.metric];
-  const status = previewStatus(values);
+  const status = previewStatus(values, thresholds);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

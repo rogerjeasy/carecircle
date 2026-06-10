@@ -52,6 +52,8 @@ export interface HealthData {
   currentMembershipId: string | null;
   /** The care recipient's first name, for friendly copy (or null). */
   recipientName: string | null;
+  /** The circle's persisted alert safe ranges merged over the defaults. */
+  thresholds: ThresholdMap;
 }
 
 /** Static display config for a metric. */
