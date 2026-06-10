@@ -9,12 +9,13 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { NotificationList } from "./notification-list";
-import { markAllRead, useHydrated, useNotifications } from "./store";
+import { markAllRead, useHydrated, useLoadNotifications, useNotifications } from "./store";
 import { useIsPhone } from "./use-is-phone";
 import { unreadCount } from "./utils";
 
 /** The top-bar bell + its compact, scrollable notifications panel (Popover tablet+, Sheet phone). */
 export function NotificationsBell() {
+  useLoadNotifications();
   const items = useNotifications();
   const hydrated = useHydrated();
   const isPhone = useIsPhone();

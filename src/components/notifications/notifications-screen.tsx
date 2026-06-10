@@ -6,13 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NotificationList } from "./notification-list";
 import { NotificationsSkeleton } from "./notification-skeletons";
-import { markAllRead, useHydrated, useNotifications } from "./store";
+import { markAllRead, useHydrated, useLoadNotifications, useNotifications } from "./store";
 import { FILTERS } from "./data";
 import { matchesFilter, unreadCount } from "./utils";
 import type { NotificationFilter } from "./types";
 
 /** The full-page Notifications center. */
 export function NotificationsScreen() {
+  useLoadNotifications();
   const items = useNotifications();
   const hydrated = useHydrated();
   const [filter, setFilter] = React.useState<NotificationFilter>("all");
