@@ -1,0 +1,46 @@
+# CareCircle schedulers — replaces Vercel Crons, which the Hobby plan limits to once per day
+# (our hourly digest / 6-hourly scans schedules were REJECTING every deployment; see
+# https://vercel.com/docs/cron-jobs/usage-and-pricing). The cron routes were designed for "any
+# pinger" with the CRON_SECRET bearer, so GitHub Actions pings them on the original schedules.
+#
+# Setup (GitHub repo → Settings):
+#   - Secrets and variables → Actions → Secrets:   CRON_SECRET (same value as on Vercel)
+#   - Secrets and variables → Actions → Variables: APP_URL (e.g. https://carecircle.vercel.app)
+#
+# Notes: GitHub schedules can fire a few minutes late — harmless, the digest route gates on each
+# circle's local digestHour and is idempotent per day. GitHub disables schedules after 60 days
+# without repo activity; any push re-enables them.
+name: Cron
+
+on:
+  schedule:
+    - cron: "0 * * * *"    # hourly  → /api/cron/digest
+    - cron: "15 */6 * * *" # 4×/day  → /api/cron/scans
+  workflow_dispatch:
+    inputs:
+      job:
+        description: Which cron endpoint to ping
+        type: choice
+        options: [digest, scans]
+        default: digest
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping cron endpoint
+        env:
+          APP_URL: ${{ vars.APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          # schedule is empty on manual runs; the digest schedule is the hourly one.
+          JOB: ${{ github.event_name == 'workflow_dispatch' && inputs.job || (github.event.schedule == '0 * * * *' && 'digest' || 'scans') }}
+        run: |
+          if [ -z "$APP_URL" ] || [ -z "$CRON_SECRET" ]; then
+            echo "::error::Set the APP_URL repo variable and CRON_SECRET repo secret (Settings → Secrets and variables → Actions)."
+            exit 1
+          fi
+          echo "Pinging /api/cron/$JOB"
+          # -f fails the job on 4xx/5xx so a broken secret or route shows up red here.
+          curl -sS -f -m 290 \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "$APP_URL/api/cron/$JOB"
