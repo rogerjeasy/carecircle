@@ -122,6 +122,8 @@ interface AppShellContextValue {
   user: CurrentUser | null;
   /** True until the first profile fetch resolves. */
   userLoading: boolean;
+  /** Patch the signed-in user's avatar in-place (e.g. right after a photo change in Settings). */
+  setUserImage: (url: string | null) => void;
   /** Clear client-side state and end the session server-side, then redirect to /sign-in. */
   signOut: () => Promise<void>;
   /** The user's real care circles, primary first (empty while loading / if none). */
@@ -215,6 +217,12 @@ export function AppShellProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("role-view", newRole);
   }, []);
 
+  // Update just the avatar so the sidebar/nav reflect a new photo immediately, without a full
+  // re-fetch (the resolved URL comes back from the profile-save action).
+  const setUserImage = React.useCallback((url: string | null) => {
+    setUser((u) => (u ? { ...u, image: url } : u));
+  }, []);
+
   const setActiveCircleId = React.useCallback(
     async (id: string) => {
       // Persist the cookie FIRST (fail-closed server validation), so any circle-scoped re-fetch
@@ -258,6 +266,7 @@ export function AppShellProvider({ children }: { children: React.ReactNode }) {
         canAccessRoute,
         user,
         userLoading,
+        setUserImage,
         signOut,
         circles,
         activeCircleId,
