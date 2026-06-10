@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Accessibility,
   Droplet,
@@ -18,27 +19,33 @@ import {
   Utensils,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAppShell } from "@/components/app-shell/app-shell-context";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { EditProfileModal } from "./edit-profile-modal";
-import { CONTACTS, CURRENT_MEDS, INSURANCE, PREFERENCES, PROFILE, type Contact } from "./data";
+import type { ProfileContact, RecipientProfileData } from "@/lib/profile/queries";
 
-export function ProfileScreen() {
-  const { role } = useAppShell();
-  const canEdit = role === "coordinator" || role === "family";
-  const [loading, setLoading] = React.useState(true);
+export function ProfileScreen({ initial }: { initial: RecipientProfileData | null }) {
+  const router = useRouter();
   const [editing, setEditing] = React.useState(false);
 
-  React.useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 550);
-    return () => clearTimeout(t);
-  }, []);
+  if (!initial) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed px-6 py-16 text-center">
+        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-secondary text-muted-foreground">
+          <Users className="h-7 w-7" aria-hidden="true" />
+        </div>
+        <div>
+          <p className="text-base font-semibold">No care recipient profile yet</p>
+          <p className="mt-1 text-sm text-muted-foreground">Once the circle is set up, the recipient&apos;s profile appears here.</p>
+        </div>
+      </div>
+    );
+  }
 
-  if (loading) return <ProfileSkeleton />;
+  const p = initial;
+  const ageDob = [p.age != null ? `${p.age} years` : null, p.dob ? `DOB ${p.dob}` : null].filter(Boolean).join(" · ");
 
   return (
     <div className="space-y-5">
@@ -46,15 +53,17 @@ export function ProfileScreen() {
       <Card>
         <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:p-6">
           <Avatar className="h-20 w-20 shrink-0">
-            <AvatarFallback className="bg-secondary text-2xl font-semibold text-primary">AR</AvatarFallback>
+            {p.avatarUrl && <AvatarImage src={p.avatarUrl} alt={p.fullName} />}
+            <AvatarFallback className="bg-secondary text-2xl font-semibold text-primary">{p.initials}</AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1">
-            <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">{PROFILE.fullName}</h1>
-            <p className="mt-1 text-muted-foreground">{PROFILE.age} years · DOB {PROFILE.dob}</p>
-            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
-              <span>🗣 {PROFILE.language}</span>
-              <span>🕑 {PROFILE.timezone}</span>
-            </div>
+            <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">{p.fullName}</h1>
+            {ageDob && <p className="mt-1 text-muted-foreground">{ageDob}</p>}
+            {p.language && (
+              <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                <span>🗣 {p.language}</span>
+              </div>
+            )}
           </div>
           <div className="flex flex-wrap gap-2 sm:flex-col sm:items-stretch">
             <Button asChild>
@@ -63,7 +72,7 @@ export function ProfileScreen() {
                 <span className="ml-1">Emergency Card</span>
               </Link>
             </Button>
-            {canEdit && (
+            {p.canEdit && (
               <Button variant="outline" onClick={() => setEditing(true)}>
                 <Pencil className="h-4 w-4" />
                 <span className="ml-1">Edit</span>
@@ -73,118 +82,98 @@ export function ProfileScreen() {
         </CardContent>
       </Card>
 
-      {/* Sections — single comfortable column on phone/iPad-portrait, two columns from lg up */}
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 lg:items-start">
         {/* Health summary */}
         <Section icon={HeartPulse} title="Health summary">
           <div className="space-y-3 text-sm">
-            <ChipRow label="Conditions" chips={PROFILE.conditions} />
-            <ChipRow label="Allergies" chips={PROFILE.allergies} danger />
+            <ChipRow label="Conditions" chips={p.conditions} empty="None recorded" />
+            <ChipRow label="Allergies" chips={p.allergies} danger empty="None recorded" />
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <InfoLine icon={Droplet} label="Blood type" value={PROFILE.bloodType} />
-              <InfoLine icon={Accessibility} label="Mobility" value={PROFILE.mobility} />
+              <InfoLine icon={Droplet} label="Blood type" value={p.bloodType ?? "—"} />
+              {p.mobility && <InfoLine icon={Accessibility} label="Mobility" value={p.mobility} />}
             </div>
-            <div className="flex flex-wrap items-start gap-2">
-              <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                <Utensils className="h-3.5 w-3.5" aria-hidden="true" /> Dietary
-              </span>
-              <ul className="flex flex-wrap gap-1.5">
-                {PROFILE.dietary.map((d) => (
-                  <li key={d}><Badge variant="secondary">{d}</Badge></li>
-                ))}
-              </ul>
-            </div>
+            {p.dietary.length > 0 && (
+              <div className="flex flex-wrap items-start gap-2">
+                <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                  <Utensils className="h-3.5 w-3.5" aria-hidden="true" /> Dietary
+                </span>
+                <ul className="flex flex-wrap gap-1.5">
+                  {p.dietary.map((d) => (
+                    <li key={d}><Badge variant="secondary">{d}</Badge></li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         </Section>
 
         {/* Current medications */}
-        <Section
-          icon={Pill}
-          title="Current medications"
-          action={<SectionLink href="/medications" label="Manage" />}
-        >
-          <ul className="divide-y">
-            {CURRENT_MEDS.map((m) => (
-              <li key={m.name} className="flex items-center justify-between gap-3 py-2.5 first:pt-0 last:pb-0">
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">
-                    {m.name} <span className="font-normal text-muted-foreground">{m.strength}</span>
-                  </p>
-                  <p className="truncate text-xs text-muted-foreground">{m.schedule}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
+        <Section icon={Pill} title="Current medications" action={<SectionLink href="/medications" label="Manage" />}>
+          {p.meds.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No active medications.</p>
+          ) : (
+            <ul className="divide-y">
+              {p.meds.map((m) => (
+                <li key={`${m.name}-${m.strength}`} className="flex items-center justify-between gap-3 py-2.5 first:pt-0 last:pb-0">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium">
+                      {m.name} <span className="font-normal text-muted-foreground">{m.strength}</span>
+                    </p>
+                    <p className="truncate text-xs text-muted-foreground">{m.schedule}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
         </Section>
 
         {/* Care preferences */}
         <Section icon={Sparkles} title="Care preferences">
-          <div className="space-y-4 text-sm">
-            <ChipRow label="Likes" chips={PREFERENCES.likes} />
-            <ChipRow label="Dislikes" chips={PREFERENCES.dislikes} />
-            <div>
-              <p className="mb-1 text-xs font-medium text-muted-foreground">Routines</p>
-              <ul className="space-y-1.5">
-                {PREFERENCES.routines.map((r) => (
-                  <li key={r} className="flex items-start gap-2">
-                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" aria-hidden="true" />
-                    <span className="text-foreground/90">{r}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="rounded-xl bg-muted/50 p-3">
+          {p.comfort ? (
+            <div className="rounded-xl bg-muted/50 p-3 text-sm">
               <p className="mb-1 text-xs font-medium text-muted-foreground">Comfort notes</p>
-              <p className="text-foreground/90">{PREFERENCES.comfort}</p>
+              <p className="whitespace-pre-wrap text-foreground/90">{p.comfort}</p>
             </div>
-          </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              No care notes yet.{p.canEdit ? " Add the human details that help someone care well." : ""}
+            </p>
+          )}
         </Section>
 
         {/* Key contacts */}
         <Section icon={Users} title="Key contacts">
-          <div className="space-y-4">
-            <ContactGroup label="Doctors" icon={Stethoscope} contacts={CONTACTS.doctors} />
-            <ContactGroup label="Pharmacy" icon={Pill} contacts={[CONTACTS.pharmacy]} />
-            <ContactGroup label="Next of kin" icon={Users} contacts={CONTACTS.nextOfKin} />
-          </div>
+          {p.doctors.length === 0 && p.nextOfKin.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No contacts on file.</p>
+          ) : (
+            <div className="space-y-4">
+              {p.doctors.length > 0 && <ContactGroup label="Doctors" icon={Stethoscope} contacts={p.doctors} />}
+              {p.nextOfKin.length > 0 && <ContactGroup label="Next of kin" icon={Users} contacts={p.nextOfKin} />}
+            </div>
+          )}
         </Section>
 
         {/* Insurance */}
-        <Section icon={ShieldCheck} title="Insurance" className="lg:col-span-2">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        {p.insurance && (
+          <Section icon={ShieldCheck} title="Insurance" className="lg:col-span-2">
             <div className="space-y-1.5 text-sm">
-              <InfoLine icon={ShieldCheck} label="Provider" value={INSURANCE.provider} />
-              <p className="text-muted-foreground">Plan: <span className="text-foreground">{INSURANCE.plan}</span></p>
-              <p className="text-muted-foreground">Member ID: <span className="font-medium tabular-nums text-foreground">{INSURANCE.memberId}</span></p>
-              <p className="text-muted-foreground">Group: <span className="tabular-nums text-foreground">{INSURANCE.group}</span></p>
+              <InfoLine icon={ShieldCheck} label="Provider" value={p.insurance.provider || "—"} />
+              {p.insurance.plan && <p className="text-muted-foreground">Plan: <span className="text-foreground">{p.insurance.plan}</span></p>}
+              {p.insurance.memberId && <p className="text-muted-foreground">Member ID: <span className="font-medium tabular-nums text-foreground">{p.insurance.memberId}</span></p>}
+              {p.insurance.group && <p className="text-muted-foreground">Group: <span className="tabular-nums text-foreground">{p.insurance.group}</span></p>}
             </div>
-            <div>
-              <p className="mb-2 text-xs font-medium text-muted-foreground">Linked documents</p>
-              <ul className="space-y-2">
-                {INSURANCE.documents.map((d) => (
-                  <li key={d.title}>
-                    <Link
-                      href="/documents"
-                      className="flex items-center gap-3 rounded-xl border bg-card p-2.5 transition-colors hover:bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    >
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-secondary text-primary">
-                        <ShieldCheck className="h-4 w-4" aria-hidden="true" />
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm font-medium">{d.title}</span>
-                        <span className="block truncate text-xs text-muted-foreground">{d.date}</span>
-                      </span>
-                      <ExternalLink className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </Section>
+          </Section>
+        )}
       </div>
 
-      {editing && <EditProfileModal open onOpenChange={setEditing} />}
+      {editing && (
+        <EditProfileModal
+          open
+          onOpenChange={setEditing}
+          profile={p}
+          onSaved={() => router.refresh()}
+        />
+      )}
     </div>
   );
 }
@@ -230,19 +219,23 @@ function SectionLink({ href, label }: { href: string; label: string }) {
   );
 }
 
-function ChipRow({ label, chips, danger }: { label: string; chips: string[]; danger?: boolean }) {
+function ChipRow({ label, chips, danger, empty }: { label: string; chips: string[]; danger?: boolean; empty?: string }) {
   return (
     <div className="flex flex-wrap items-start gap-2">
       <span className="text-xs font-medium text-muted-foreground">{label}</span>
-      <ul className="flex flex-wrap gap-1.5">
-        {chips.map((c) => (
-          <li key={c}>
-            <Badge variant="outline" className={cn(danger ? "border-destructive/40 text-destructive" : "border-transparent bg-secondary")}>
-              {c}
-            </Badge>
-          </li>
-        ))}
-      </ul>
+      {chips.length === 0 ? (
+        <span className="text-xs text-muted-foreground">{empty ?? "—"}</span>
+      ) : (
+        <ul className="flex flex-wrap gap-1.5">
+          {chips.map((c) => (
+            <li key={c}>
+              <Badge variant="outline" className={cn(danger ? "border-destructive/40 text-destructive" : "border-transparent bg-secondary")}>
+                {c}
+              </Badge>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
@@ -259,7 +252,7 @@ function InfoLine({ icon: Icon, label, value }: { icon: typeof Droplet; label: s
   );
 }
 
-function ContactGroup({ label, icon: Icon, contacts }: { label: string; icon: typeof Users; contacts: Contact[] }) {
+function ContactGroup({ label, icon: Icon, contacts }: { label: string; icon: typeof Users; contacts: ProfileContact[] }) {
   return (
     <div>
       <p className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
@@ -268,53 +261,28 @@ function ContactGroup({ label, icon: Icon, contacts }: { label: string; icon: ty
       </p>
       <ul className="space-y-2">
         {contacts.map((c) => (
-          <li key={c.phone} className="flex items-center gap-2 rounded-xl border p-2.5">
+          <li key={`${c.name}-${c.phone}`} className="flex items-center gap-2 rounded-xl border p-2.5">
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium">{c.name}</p>
               <p className="truncate text-xs text-muted-foreground">{c.role}</p>
             </div>
-            <Button asChild variant="ghost" size="icon" className="h-9 w-9 shrink-0">
-              <a href={`tel:${c.phone.replace(/[^+\d]/g, "")}`} aria-label={`Call ${c.name}`}>
-                <Phone className="h-4 w-4" />
-              </a>
-            </Button>
-            <Button asChild variant="ghost" size="icon" className="h-9 w-9 shrink-0">
-              <a href={`sms:${c.phone.replace(/[^+\d]/g, "")}`} aria-label={`Message ${c.name}`}>
-                <MessageSquare className="h-4 w-4" />
-              </a>
-            </Button>
+            {c.phone && (
+              <>
+                <Button asChild variant="ghost" size="icon" className="h-9 w-9 shrink-0">
+                  <a href={`tel:${c.phone.replace(/[^+\d]/g, "")}`} aria-label={`Call ${c.name}`}>
+                    <Phone className="h-4 w-4" />
+                  </a>
+                </Button>
+                <Button asChild variant="ghost" size="icon" className="h-9 w-9 shrink-0">
+                  <a href={`sms:${c.phone.replace(/[^+\d]/g, "")}`} aria-label={`Message ${c.name}`}>
+                    <MessageSquare className="h-4 w-4" />
+                  </a>
+                </Button>
+              </>
+            )}
           </li>
         ))}
       </ul>
-    </div>
-  );
-}
-
-function ProfileSkeleton() {
-  return (
-    <div className="space-y-5">
-      <Card>
-        <CardContent className="flex items-center gap-4 p-6">
-          <Skeleton className="h-20 w-20 rounded-full" />
-          <div className="flex-1 space-y-2">
-            <Skeleton className="h-7 w-56" />
-            <Skeleton className="h-4 w-40" />
-          </div>
-          <Skeleton className="h-10 w-36 rounded-xl" />
-        </CardContent>
-      </Card>
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <Card key={i}>
-            <CardContent className="space-y-3 p-5">
-              <Skeleton className="h-5 w-40" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-3/4" />
-              <Skeleton className="h-4 w-2/3" />
-            </CardContent>
-          </Card>
-        ))}
-      </div>
     </div>
   );
 }

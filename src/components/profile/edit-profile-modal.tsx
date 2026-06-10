@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { toast } from "sonner";
-import { Check, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,35 +15,54 @@ import {
 } from "@/components/ui/select";
 import { ResponsiveModal } from "./responsive-modal";
 import { FormField } from "./form-field";
-import { LANGUAGES, PREFERENCES, PROFILE, TIMEZONES } from "./data";
+import { LANGUAGES } from "./data";
+import { updateRecipientProfile } from "@/lib/profile/actions";
+import type { RecipientProfileData } from "@/lib/profile/queries";
 
-const delay = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
-
-/** Edit profile — grouped fields in a Dialog (tablet+) / Sheet (phone). */
-export function EditProfileModal({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
+/** Edit the care recipient's profile — wired to the real update action. */
+export function EditProfileModal({
+  open,
+  onOpenChange,
+  profile,
+  onSaved,
+}: {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  profile: RecipientProfileData;
+  onSaved?: () => void;
+}) {
   const [values, setValues] = React.useState({
-    fullName: PROFILE.fullName,
-    dob: PROFILE.dob,
-    language: PROFILE.language,
-    timezone: PROFILE.timezone,
-    bloodType: PROFILE.bloodType,
-    mobility: PROFILE.mobility,
-    dietary: PROFILE.dietary.join(", "),
-    comfort: PREFERENCES.comfort,
+    fullName: profile.fullName,
+    dob: profile.dobInput ?? "",
+    language: profile.language ?? LANGUAGES[0],
+    bloodType: profile.bloodType ?? "",
+    mobility: profile.mobility ?? "",
+    dietary: profile.dietary.join(", "),
+    comfort: profile.comfort ?? "",
   });
   const [saving, setSaving] = React.useState(false);
-  const [saved, setSaved] = React.useState(false);
   const set = (patch: Partial<typeof values>) => setValues((v) => ({ ...v, ...patch }));
 
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (saving || saved) return;
+    if (saving) return;
     setSaving(true);
-    await delay(650);
+    const fd = new FormData();
+    fd.set("fullName", values.fullName);
+    fd.set("dob", values.dob);
+    fd.set("language", values.language);
+    fd.set("bloodType", values.bloodType);
+    fd.set("mobility", values.mobility);
+    fd.set("dietary", values.dietary);
+    fd.set("comfort", values.comfort);
+    const res = await updateRecipientProfile(fd);
     setSaving(false);
-    setSaved(true);
+    if (!res.ok) {
+      toast.error(res.error);
+      return;
+    }
     toast.success("Profile updated");
-    await delay(500);
+    onSaved?.();
     onOpenChange(false);
   };
 
@@ -52,7 +71,7 @@ export function EditProfileModal({ open, onOpenChange }: { open: boolean; onOpen
       open={open}
       onOpenChange={onOpenChange}
       title="Edit profile"
-      description={`Keep ${PROFILE.name}'s details and care notes up to date.`}
+      description={`Keep ${profile.fullName}'s details and care notes up to date.`}
     >
       <form onSubmit={save} className="flex min-h-0 flex-1 flex-col">
         <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-5 py-4 sm:px-6">
@@ -61,7 +80,7 @@ export function EditProfileModal({ open, onOpenChange }: { open: boolean; onOpen
               <Input id="ep-name" value={values.fullName} onChange={(e) => set({ fullName: e.target.value })} />
             </FormField>
             <FormField htmlFor="ep-dob" label="Date of birth">
-              <Input id="ep-dob" value={values.dob} onChange={(e) => set({ dob: e.target.value })} />
+              <Input id="ep-dob" type="date" value={values.dob} onChange={(e) => set({ dob: e.target.value })} />
             </FormField>
             <FormField htmlFor="ep-lang" label="Primary language">
               <Select value={values.language} onValueChange={(v) => set({ language: v })}>
@@ -71,19 +90,11 @@ export function EditProfileModal({ open, onOpenChange }: { open: boolean; onOpen
                 </SelectContent>
               </Select>
             </FormField>
-            <FormField htmlFor="ep-tz" label="Time zone" full>
-              <Select value={values.timezone} onValueChange={(v) => set({ timezone: v })}>
-                <SelectTrigger id="ep-tz"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {TIMEZONES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </FormField>
           </Group>
 
           <Group title="Health">
             <FormField htmlFor="ep-blood" label="Blood type">
-              <Input id="ep-blood" value={values.bloodType} onChange={(e) => set({ bloodType: e.target.value })} />
+              <Input id="ep-blood" value={values.bloodType} onChange={(e) => set({ bloodType: e.target.value })} placeholder="e.g. O+" />
             </FormField>
             <FormField htmlFor="ep-mobility" label="Mobility" full>
               <Input id="ep-mobility" value={values.mobility} onChange={(e) => set({ mobility: e.target.value })} />
@@ -108,13 +119,11 @@ export function EditProfileModal({ open, onOpenChange }: { open: boolean; onOpen
 
         <div className="shrink-0 border-t bg-background px-5 py-3 sm:px-6">
           <div className="flex items-center justify-end gap-2">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={saving || saved}>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
               Cancel
             </Button>
-            <Button type="submit" disabled={saving || saved} className="min-w-[8.5rem]">
-              {saved ? (
-                <><Check className="h-4 w-4" /><span className="ml-1">Saved</span></>
-              ) : saving ? (
+            <Button type="submit" disabled={saving} className="min-w-[8.5rem]">
+              {saving ? (
                 <><Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" /><span className="ml-1">Saving…</span></>
               ) : (
                 <span>Save changes</span>
