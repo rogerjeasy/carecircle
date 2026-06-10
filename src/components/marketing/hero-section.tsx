@@ -2,11 +2,12 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ArrowRight, Play, Check, Pill, Clock } from "lucide-react";
+import { ArrowRight, Check, Pill, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { RunDemoButton } from "./run-demo-button";
 
 // Animation hook for scroll-triggered animations
 function useScrollAnimation() {
@@ -75,12 +76,7 @@ export function HeroSection() {
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
-              <Link href="#how-it-works">
-                <Button size="lg" variant="outline" className="gap-2">
-                  <Play className="h-4 w-4" />
-                  See how it works
-                </Button>
-              </Link>
+              <RunDemoButton />
             </div>
           </div>
 
