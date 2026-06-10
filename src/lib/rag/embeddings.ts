@@ -13,7 +13,8 @@ let _client: import('@aws-sdk/client-bedrock-runtime').BedrockRuntimeClient | nu
 async function client() {
   if (!_client) {
     const { BedrockRuntimeClient } = await import('@aws-sdk/client-bedrock-runtime');
-    _client = new BedrockRuntimeClient({ region: process.env.AWS_REGION });
+    const { awsCredentials } = await import('@/lib/aws/credentials');
+    _client = new BedrockRuntimeClient({ region: process.env.AWS_REGION, credentials: await awsCredentials() });
   }
   return _client;
 }
