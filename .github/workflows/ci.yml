@@ -1,0 +1,63 @@
+# CareCircle CI — lint, type-check, unit tests, AND the Row-Level-Security integration proof.
+#
+# The last step is the one that matters for the security story: rls.integration.test.ts spins the
+# real migrations up against a real Postgres (with pgvector, matching Aurora), creates the same
+# least-privilege `carecircle_app` role the app uses, and asserts that the DATABASE — not the UI —
+# refuses cross-tenant reads and enforces the document/RAG sensitivity tiers per role. Every green
+# run is a fresh proof that "a hired aide physically cannot read a financial document".
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    # Throwaway password for the job-scoped Postgres service container. Defined once
+    # here and interpolated below so no connection string carries an embedded literal
+    # (keeps the pre-commit secret scanner meaningful for real credentials).
+    env:
+      POSTGRES_TEST_PASSWORD: postgres
+
+    services:
+      # pgvector/pgvector tracks the official postgres image + the vector extension the
+      # migrations CREATE (mirrors Aurora PostgreSQL with pgvector enabled).
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: carecircle_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type-check
+        run: npm run type-check
+
+      - name: Tests — unit + RLS integration (real Postgres, real policies, real app role)
+        env:
+          # Points the RLS suite at the THROWAWAY service database (it drops/recreates the schema).
+          TEST_DATABASE_URL: postgresql://postgres:${{ env.POSTGRES_TEST_PASSWORD }}@localhost:5432/carecircle_test
+        run: npm test

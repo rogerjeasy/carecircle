@@ -7,6 +7,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock,
+  Languages,
   RefreshCw,
   Settings2,
   Share2,
@@ -26,7 +27,9 @@ import { ByTheNumbers } from "./by-the-numbers";
 import { SourceChips } from "./source-chips";
 import { useReducedMotion } from "./use-reduced-motion";
 import { DIGEST_SETTINGS } from "./data";
-import { loadDigest, generateDigest, rateDigest } from "@/lib/digest/actions";
+import { loadDigest, generateDigest, rateDigest, translateDigest } from "@/lib/digest/actions";
+import { languageFor, ENGLISH_CODE } from "@/lib/digest/languages";
+import type { DigestNarrativeTranslation } from "@/lib/digest/translate";
 import type { Digest, Feedback } from "./types";
 
 export interface DigestScreenProps {
@@ -38,6 +41,8 @@ export interface DigestScreenProps {
   initialFeedback: Feedback;
   /** Whether this member may generate/re-generate (non read-only). */
   canGenerate: boolean;
+  /** The viewer's digest language ('en' = no translation). Drives the diaspora auto-translate. */
+  viewerLanguage?: string;
 }
 
 interface DayState {
@@ -46,7 +51,14 @@ interface DayState {
 }
 
 /** The Daily Digest: a warm, AI-written end-of-day summary built from the day's real care record. */
-export function DigestScreen({ recipientName, today, initialDigest, initialFeedback, canGenerate }: DigestScreenProps) {
+export function DigestScreen({
+  recipientName,
+  today,
+  initialDigest,
+  initialFeedback,
+  canGenerate,
+  viewerLanguage = ENGLISH_CODE,
+}: DigestScreenProps) {
   const reduced = useReducedMotion();
   const [offset, setOffset] = React.useState(0);
   const [byDate, setByDate] = React.useState<Record<string, DayState>>({
@@ -54,6 +66,12 @@ export function DigestScreen({ recipientName, today, initialDigest, initialFeedb
   });
   const [generating, setGenerating] = React.useState(false);
   const [speaking, setSpeaking] = React.useState(false);
+
+  // ---- Diaspora translation: when the viewer reads in another language, fetch (cached on the
+  // server) and show the translated narrative by default, with a one-tap original toggle.
+  const langMeta = viewerLanguage !== ENGLISH_CODE ? languageFor(viewerLanguage) : null;
+  const [translationsById, setTranslationsById] = React.useState<Record<string, DigestNarrativeTranslation | null>>({});
+  const [showOriginal, setShowOriginal] = React.useState(false);
 
   const date = addDays(parseISO(`${today}T00:00:00`), offset);
   const dateStr = format(date, "yyyy-MM-dd");
@@ -92,6 +110,28 @@ export function DigestScreen({ recipientName, today, initialDigest, initialFeedb
 
   React.useEffect(() => () => stopSpeech(), [stopSpeech]);
 
+  // Fetch the translation for the visible digest (no-op for English readers; server caches per
+  // language per day, so repeats are instant). `null` marks a failed attempt so we don't loop.
+  const digestId = digest?.id ?? null;
+  React.useEffect(() => {
+    if (!langMeta || !digestId || translationsById[digestId] !== undefined) return;
+    let cancelled = false;
+    void translateDigest(digestId, viewerLanguage).then((res) => {
+      if (cancelled) return;
+      setTranslationsById((prev) => ({ ...prev, [digestId]: res.ok ? res.translation : null }));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [digestId, langMeta, viewerLanguage, translationsById]);
+
+  const translation = langMeta && digest ? (translationsById[digest.id] ?? null) : null;
+  // What the card + read-aloud actually show: the translation (unless toggled back) or the original.
+  const displayDigest: Digest | null =
+    digest && translation && !showOriginal
+      ? { ...digest, headline: translation.headline, paragraphs: translation.paragraphs }
+      : digest;
+
   const handleGenerate = async () => {
     if (generating) return;
     setGenerating(true);
@@ -109,7 +149,7 @@ export function DigestScreen({ recipientName, today, initialDigest, initialFeedb
   };
 
   const toggleListen = () => {
-    if (!digest) return;
+    if (!displayDigest) return;
     if (typeof window === "undefined" || !("speechSynthesis" in window)) {
       toast("Read-aloud isn't supported on this device");
       return;
@@ -118,7 +158,9 @@ export function DigestScreen({ recipientName, today, initialDigest, initialFeedb
       stopSpeech();
       return;
     }
-    const utter = new SpeechSynthesisUtterance(`${digest.headline}. ${digest.paragraphs.join(" ")}`);
+    const utter = new SpeechSynthesisUtterance(`${displayDigest.headline}. ${displayDigest.paragraphs.join(" ")}`);
+    // Reading the translated text? Hint the speech engine at the right voice.
+    if (translation && !showOriginal) utter.lang = viewerLanguage;
     utter.onend = () => setSpeaking(false);
     utter.onerror = () => setSpeaking(false);
     window.speechSynthesis.cancel();
@@ -197,9 +239,24 @@ export function DigestScreen({ recipientName, today, initialDigest, initialFeedb
       <div className="mx-auto w-full max-w-2xl space-y-5">
         {loading || generating ? (
           <DigestGenerating />
-        ) : digest ? (
+        ) : digest && displayDigest ? (
           <>
-            <DigestCard key={dateStr} digest={digest} reduced={reduced} />
+            {/* Language banner — the diaspora moment: same day, the reader's own language. */}
+            {langMeta && translation && (
+              <div className="flex items-center justify-between gap-2 rounded-xl border bg-primary/5 px-3 py-2 text-sm">
+                <span className="flex min-w-0 items-center gap-1.5 text-muted-foreground">
+                  <Languages className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+                  <span className="truncate">
+                    {showOriginal ? "Showing the original (English)" : `Translated to ${langMeta.nativeLabel} for you`}
+                  </span>
+                </span>
+                <Button variant="ghost" size="sm" className="shrink-0" onClick={() => setShowOriginal((v) => !v)}>
+                  {showOriginal ? `Read in ${langMeta.nativeLabel}` : "Show original"}
+                </Button>
+              </div>
+            )}
+
+            <DigestCard key={`${dateStr}-${showOriginal || !translation ? "en" : viewerLanguage}`} digest={displayDigest} reduced={reduced} />
 
             {/* Actions */}
             <div className="flex flex-wrap items-center gap-2">

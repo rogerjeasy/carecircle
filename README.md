@@ -3,6 +3,8 @@
 > **One shared record for everyone caring for someone.**
 > The calm, role-aware home for a family's caregiving — across siblings, cities, and time zones.
 
+[![CI — lint, types, unit + RLS integration proof](https://github.com/rogerjeasy/carecircle/actions/workflows/ci.yml/badge.svg)](https://github.com/rogerjeasy/carecircle/actions/workflows/ci.yml)
+
 Built for the **H0: Hack the Zero Stack** hackathon (AWS Databases + Vercel/v0). <br>
 **Track:** Monetizable B2C (with a clear B2B expansion) · **Primary database:** **Amazon Aurora PostgreSQL (Serverless v2)** · **AI:** Amazon Bedrock (Claude + Titan) · **Frontend:** Next.js on **Vercel**.
 
@@ -30,7 +32,7 @@ The deliberate architectural choices Aurora makes possible:
 
 The rest of the stack: **Next.js on Vercel** (Vercel Cron drives the nightly digest **and the daily care scans** — refill sweep, missed-dose reconciliation, decline alerts), **Amazon S3** (documents & photos), **Amazon SES/SNS** (email + urgent escalation), and **keyless AWS access in production** — Vercel's OIDC token is exchanged for short-lived STS credentials (`AWS_ROLE_ARN`), so no long-lived AWS keys are stored anywhere. Infrastructure is defined in Terraform under [`infra/`](./infra).
 
-A full diagram + component legend lives in [`../CareCircle-Architecture.md`](../CareCircle-Architecture.md) (editable source: `../CareCircle-Architecture.drawio`).
+A full diagram + component legend lives in [`docs/architecture.md`](./docs/architecture.md) (editable source: [`docs/CareCircle-Architecture.drawio`](./docs/CareCircle-Architecture.drawio)); the data model is documented in [`docs/data-model.md`](./docs/data-model.md).
 
 ---
 
@@ -45,7 +47,7 @@ A full diagram + component legend lives in [`../CareCircle-Architecture.md`](../
 | **Tasks & rota** | Assignable/recurring tasks, weekly shift schedule, **fair-share** contribution view |
 | **Roles & permissions** | Owner, family (full/limited), professional caregiver, read-only, care recipient, clinician — DB-enforced |
 | **Vitals & health** | BP, glucose, weight, sleep, mood, HR with trend charts & **per-circle alert safe ranges** (DB-persisted; out-of-range readings post urgent alerts + SNS escalation) |
-| **Smart layer (AI)** | **Daily Digest** (warm AI summary), **Ask CareCircle** (permission-aware RAG), **daily care scans** (refill sweep, missed-dose reconciliation, 3-day decline alerts) |
+| **Smart layer (AI)** | **Daily Digest** (warm AI summary, **translated into each member's own language** — the aide reads it in Tagalog, the son in Dubai in English, cached one model call per language per day), **Ask CareCircle** (permission-aware RAG), **daily care scans** (refill sweep, missed-dose reconciliation, 3-day decline alerts) |
 | **Notifications** | Role/event-aware alerts; urgent escalation (a logged fall alerts coordinators instantly) |
 | **Emergency mode** | One-tap shareable emergency card for EMS/ER |
 | **Admin (B2B)** | Cross-tenant platform console (email-allowlisted, audited) for staff/agencies |
@@ -81,10 +83,18 @@ cp .env.example .env          # then fill in the values (see comments in that fi
 
 npm run db:migrate            # apply schema + RLS policies (uses MIGRATION_DATABASE_URL)
 npm run db:setup-rls          # create the least-privilege carecircle_app role + prove RLS, repoint DATABASE_URL
-npm run db:seed               # seed the Maria / Antonio / Paolo / Grace demo circle
+npm run db:seed               # seed the living demo circle (6 weeks of meds, vitals, tasks, docs, an incident…)
 
 npm run dev                   # http://localhost:3000
 ```
+
+**Demo personas** (all password `CareCircle123`, printed by the seed): `maria@carecircle.demo` (coordinator) ·
+`paolo@carecircle.demo` (remote family) · `grace@carecircle.demo` (aide — reads the digest in Tagalog) ·
+`antonio@carecircle.demo` (care recipient) · `rosa@carecircle.demo` (read-only) · `admin@carecircle.demo` (platform admin → `/admin`).
+Set `NEXT_PUBLIC_DEMO_MODE=1` to show one-click persona sign-in buttons on `/sign-in` **and** the homepage
+**"Run demo"** button, which creates an anonymous guest account (RLS-scoped to only the demo circle, `family`
+role, wiped on re-seed) and lands a reviewer on the live dashboard with zero sign-up — see `src/lib/auth/demo.ts`
+for the fail-closed security model.
 
 Key environment variables (full list + guidance in [`.env.example`](./.env.example)):
 
@@ -118,6 +128,7 @@ TEST_DATABASE_URL=... npm test   # additionally runs the RLS integration suite
 
 - **Unit suite** (`src/**/__tests__/*.test.ts`): proves the application-layer authorization matrices (who can manage meds, record doses, see restricted documents, report/resolve incidents, post private notes, reach the cross-tenant admin console, …) and that the **AWS Bedrock client is mocked** — no real AWS calls in tests.
 - **RLS integration suite** (`src/db/__tests__/rls.integration.test.ts`): runs **only** when `TEST_DATABASE_URL` points at a throwaway Postgres. It applies the real migrations, connects as the least-privilege `carecircle_app` role, and asserts the database itself enforces **cross-tenant isolation** and the **sensitivity tiers** for `rag_chunk` retrieval (a read-only member can never retrieve a `restricted` chunk; circle A never sees circle B). AWS is never touched — vectors are inserted directly.
+- **CI** ([`.github/workflows/ci.yml`](./.github/workflows/ci.yml)): every push runs lint, type-check, the unit suite, **and the RLS integration suite against a real `pgvector/pgvector` Postgres service** — so the badge at the top of this README is a continuously re-verified proof of the security claim, not a one-time assertion.
 
 ---
 

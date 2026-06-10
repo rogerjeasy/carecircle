@@ -19,6 +19,15 @@ const fraunces = Fraunces({
 export const metadata: Metadata = {
   title: "CareCircle — Coordinate Care Together",
   description: "A calm, warm app that helps families coordinate care for aging parents across cities and countries.",
+  applicationName: "CareCircle",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "CareCircle",
+  },
+  icons: {
+    apple: "/icons/apple-touch-icon.png",
+  },
 };
 
 export const viewport: Viewport = {

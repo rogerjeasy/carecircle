@@ -9,7 +9,7 @@
  * or out. Authorization is enforced server-side — `canManage` only governs what we render.
  */
 import * as React from "react";
-import { Mail } from "lucide-react";
+import { Languages, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -26,8 +26,10 @@ import {
   loadDigestSettings,
   updateDigestSettings,
   setMyDigestOptIn,
+  setMyDigestLanguage,
   type DigestSettings,
 } from "@/lib/digest/settings";
+import { DIGEST_LANGUAGES } from "@/lib/digest/languages";
 
 /** "20" → "8:00 PM". Whole-hour labels for the send-time picker. */
 function hourLabel(h: number): string {
@@ -87,7 +89,7 @@ export function DailyDigestSettings() {
     );
   }
 
-  const { enabled, hour, canManage, myOptIn } = settings;
+  const { enabled, hour, canManage, myOptIn, myLanguage } = settings;
 
   return (
     <Card>
@@ -172,6 +174,38 @@ export function DailyDigestSettings() {
             />
           }
         />
+
+        {/* Per-member language — the diaspora feature. Personal: each member reads (and is
+            emailed) the same day's digest in their own language, translated once and cached. */}
+        <Field
+          htmlFor="digest-language"
+          label={
+            <span className="flex items-center gap-1.5">
+              <Languages className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+              My digest language
+            </span>
+          }
+          hint="The digest is written once from the day's record, then translated for you."
+        >
+          <Select
+            value={myLanguage}
+            disabled={pending}
+            onValueChange={(v) =>
+              persist({ ...settings, myLanguage: v }, () => setMyDigestLanguage(v), settings)
+            }
+          >
+            <SelectTrigger id="digest-language" className="sm:max-w-[14rem]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {DIGEST_LANGUAGES.map((l) => (
+                <SelectItem key={l.code} value={l.code}>
+                  {l.code === "en" ? l.label : `${l.nativeLabel} · ${l.label}`}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </Field>
       </CardContent>
     </Card>
   );
