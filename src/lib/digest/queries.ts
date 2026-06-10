@@ -6,10 +6,11 @@ import 'server-only';
  * Security (see AGENTS.md): RLS-scoped via `withAuthedDb()`. The digest is shared across the circle
  * (any member may read it); feedback rows are private to the rater (RLS enforces both).
  */
-import { and, desc, eq } from 'drizzle-orm';
-import { withAuthedDb } from '@/db/dal';
-import { dailyDigest, digestFeedback } from '@/db/schema';
+import { and, desc, eq, isNull } from 'drizzle-orm';
+import { getSessionUserId, withAuthedDb } from '@/db/dal';
+import { dailyDigest, digestFeedback, membership } from '@/db/schema';
 import { serverLog, dbErrorCode } from '@/lib/log';
+import { ENGLISH_CODE } from './languages';
 import type { Digest, DigestStat, Feedback, MoodKey, SourceMoment } from '@/components/digest/types';
 
 /** Map a stored row to the UI Digest shape. */
@@ -79,6 +80,36 @@ export async function getMyFeedback(digestId: string): Promise<Feedback> {
     const code = dbErrorCode(err);
     if (code !== '42P01') serverLog('digest', 'getMyFeedback', 'failure', { reason: code ?? (err as Error)?.name ?? 'error' });
     return null;
+  }
+}
+
+/**
+ * The signed-in member's digest language in this circle ('en' when unset). Filtered by userId —
+ * the membership RLS policy also exposes co-members of the circle, who must not be mistaken
+ * for the caller.
+ */
+export async function getMyDigestLanguage(circleId: string): Promise<string> {
+  try {
+    const userId = await getSessionUserId();
+    if (!userId) return ENGLISH_CODE;
+    const [row] = await withAuthedDb((tx) =>
+      tx
+        .select({ preferredLanguage: membership.preferredLanguage })
+        .from(membership)
+        .where(
+          and(
+            eq(membership.circleId, circleId),
+            eq(membership.userId, userId),
+            eq(membership.status, 'active'),
+            isNull(membership.deletedAt),
+          ),
+        )
+        .limit(1),
+    );
+    return row?.preferredLanguage ?? ENGLISH_CODE;
+  } catch (err) {
+    serverLog('digest', 'getMyDigestLanguage', 'failure', { reason: (err as Error)?.name ?? 'error' });
+    return ENGLISH_CODE;
   }
 }
 

@@ -16,6 +16,7 @@ import { recordAuditEvent } from '@/db/audit';
 import { getActiveCircleId } from '@/lib/circle/active-circle';
 import { serverLog } from '@/lib/log';
 import { careCircle, membership } from '@/db/schema';
+import { isSupportedLanguage, languageFor, ENGLISH_CODE } from './languages';
 
 const GENERIC_ERROR = 'Something went wrong. Please try again.';
 const FORBIDDEN = 'You do not have permission to do that.';
@@ -59,6 +60,8 @@ export interface DigestSettings {
   canManage: boolean;
   /** The caller's own delivery opt-in. */
   myOptIn: boolean;
+  /** The caller's digest language ('en' default — see digest/languages.ts). */
+  myLanguage: string;
 }
 
 export type LoadSettingsResult = { ok: true; settings: DigestSettings } | { ok: false; error: string };
@@ -75,7 +78,7 @@ export async function loadDigestSettings(): Promise<LoadSettingsResult> {
         .where(eq(careCircle.id, ctx.circleId))
         .limit(1);
       const [me] = await tx
-        .select({ notifyDigest: membership.notifyDigest })
+        .select({ notifyDigest: membership.notifyDigest, preferredLanguage: membership.preferredLanguage })
         .from(membership)
         .where(eq(membership.id, ctx.membershipId))
         .limit(1);
@@ -84,6 +87,7 @@ export async function loadDigestSettings(): Promise<LoadSettingsResult> {
         hour: circle?.hour ?? 20,
         canManage: MANAGE_ROLES.has(ctx.role),
         myOptIn: me?.notifyDigest ?? true,
+        myLanguage: me?.preferredLanguage ?? ENGLISH_CODE,
       };
     });
     serverLog('digest', 'loadSettings', 'success', { actor: ctx.userId });
@@ -135,6 +139,39 @@ export async function updateDigestSettings(input: { enabled: boolean; hour: numb
     return { ok: true };
   } catch (err) {
     serverLog('digest', 'updateSettings', 'failure', { actor: ctx.userId, reason: (err as Error)?.name ?? 'error' });
+    return { ok: false, error: GENERIC_ERROR };
+  }
+}
+
+/** Set the caller's OWN digest language (the diaspora feature — see digest/languages.ts). */
+export async function setMyDigestLanguage(lang: string): Promise<SimpleResult> {
+  const ctx = await getActorContext();
+  if (!ctx) return { ok: false, error: 'No active care circle.' };
+  if (!isSupportedLanguage(lang)) return { ok: false, error: GENERIC_ERROR };
+
+  try {
+    await withAuthedDb(async (tx) => {
+      // RLS already scopes to the caller's circles; pinning the membership id keeps this to MY row.
+      await tx
+        .update(membership)
+        .set({ preferredLanguage: lang === ENGLISH_CODE ? null : lang })
+        .where(eq(membership.id, ctx.membershipId));
+      await recordAuditEvent(
+        ctx.userId,
+        {
+          circleId: ctx.circleId,
+          action: 'update',
+          entityType: 'membership',
+          entityId: ctx.membershipId,
+          summary: `Set their digest language to ${languageFor(lang)?.label ?? lang}`,
+        },
+        tx,
+      );
+    });
+    serverLog('digest', 'setLanguage', 'success', { actor: ctx.userId, lang });
+    return { ok: true };
+  } catch (err) {
+    serverLog('digest', 'setLanguage', 'failure', { actor: ctx.userId, reason: (err as Error)?.name ?? 'error' });
     return { ok: false, error: GENERIC_ERROR };
   }
 }

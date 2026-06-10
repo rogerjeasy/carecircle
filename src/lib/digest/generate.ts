@@ -354,7 +354,9 @@ async function persistDigest(
     })
     .onConflictDoUpdate({
       target: [dailyDigest.circleId, dailyDigest.digestDate],
-      set: { headline, emoji, mood, paragraphs, stats, sources, model, generatedByMembershipId: actor.membershipId, updatedAt: new Date() },
+      // Re-generation rewrites the narrative, so cached translations of the OLD text are stale —
+      // reset them; they're re-translated lazily on the next non-English read/send.
+      set: { headline, emoji, mood, paragraphs, stats, sources, model, generatedByMembershipId: actor.membershipId, translations: null, updatedAt: new Date() },
     })
     .returning({ id: dailyDigest.id });
 

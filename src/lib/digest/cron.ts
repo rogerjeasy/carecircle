@@ -24,6 +24,8 @@ import { serverLog } from '@/lib/log';
 import { getAppOrigin } from '@/lib/url';
 import { sendDigestEmail } from '@/lib/email';
 import { generateDigestForCircleSystem } from './generate';
+import { translateNarrative, cacheDigestTranslation, type DigestNarrativeTranslation } from './translate';
+import { ENGLISH_CODE } from './languages';
 
 export interface DigestCronResult {
   /** Circles with auto-send enabled that we considered this run. */
@@ -114,9 +116,9 @@ export async function runDigestCron(opts?: { now?: Date; force?: boolean }): Pro
       await db.update(careCircle).set({ lastDigestSentDate: localDate }).where(eq(careCircle.id, c.id));
       result.generated += 1;
 
-      // Opted-in, active members with an email address.
+      // Opted-in, active members with an email address (and their digest language).
       const recipients = await db
-        .select({ email: users.email, name: users.name })
+        .select({ email: users.email, name: users.name, preferredLanguage: membership.preferredLanguage })
         .from(membership)
         .innerJoin(users, eq(users.id, membership.userId))
         .where(
@@ -128,10 +130,27 @@ export async function runDigestCron(opts?: { now?: Date; force?: boolean }): Pro
           ),
         );
 
+      // The diaspora moment: translate the narrative ONCE per language used in this circle, cache
+      // it on the digest row, and send each member the day in their own tongue. Best-effort — a
+      // failed translation falls back to the English original, never blocks the send.
+      const languages = [...new Set(recipients.map((r) => r.preferredLanguage).filter((l): l is string => Boolean(l) && l !== ENGLISH_CODE))];
+      const byLanguage = new Map<string, DigestNarrativeTranslation>();
+      let cachedTranslations: Record<string, DigestNarrativeTranslation> = {};
+      for (const lang of languages) {
+        const t = await translateNarrative({ id: digest.id, headline: digest.headline, paragraphs: digest.paragraphs }, lang);
+        if (t) {
+          byLanguage.set(lang, t);
+          cachedTranslations = { ...cachedTranslations, [lang]: t };
+          await cacheDigestTranslation(db, digest.id, cachedTranslations, lang, t);
+        }
+      }
+
       const dayLabel = format(parseISO(`${localDate}T00:00:00`), 'EEEE, MMMM d');
       for (const r of recipients) {
+        const t = r.preferredLanguage ? byLanguage.get(r.preferredLanguage) : undefined;
+        const localized = t ? { ...digest, headline: t.headline, paragraphs: t.paragraphs } : digest;
         try {
-          await sendDigestEmail({ to: r.email, digest, recipientName, dayLabel, digestUrl });
+          await sendDigestEmail({ to: r.email, digest: localized, recipientName, dayLabel, digestUrl });
           result.emailed += 1;
         } catch {
           // `deliver()` already logged the failure with a masked address; one bad send must not

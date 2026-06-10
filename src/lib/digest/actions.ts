@@ -12,10 +12,17 @@ import { and, eq, isNull } from 'drizzle-orm';
 import { requireSession, withAuthedDb } from '@/db/dal';
 import { getActiveCircleId } from '@/lib/circle/active-circle';
 import { serverLog, dbErrorCode } from '@/lib/log';
-import { membership, digestFeedback } from '@/db/schema';
+import { membership, digestFeedback, dailyDigest } from '@/db/schema';
 import { canGenerateDigest } from './access';
 import { getDigestByDate, getMyFeedback } from './queries';
 import { generateDigestForDate } from './generate';
+import {
+  translateNarrative,
+  cacheDigestTranslation,
+  cachedTranslation,
+  type DigestNarrativeTranslation,
+} from './translate';
+import { isSupportedLanguage } from './languages';
 import { isBedrockConfigured } from '@/lib/ask/bedrock';
 import type { Digest, Feedback } from '@/components/digest/types';
 
@@ -93,6 +100,66 @@ export async function generateDigest(dateStr: string): Promise<GenerateDigestRes
     return { ok: true, digest };
   } catch (err) {
     serverLog('digest', 'generateDigest', 'failure', { actor: ctx.userId, reason: dbErrorCode(err) ?? (err as Error)?.name ?? 'error' });
+    return { ok: false, error: GENERIC_ERROR };
+  }
+}
+
+export type TranslateDigestResult =
+  | { ok: true; translation: DigestNarrativeTranslation }
+  | { ok: false; error: string };
+
+/**
+ * Translate a digest's narrative into the caller's language (the diaspora feature). RLS-scoped:
+ * the digest row is read inside the member's transaction, so they can only translate digests of
+ * circles they belong to. Cached on the row — one model call per language per day.
+ */
+export async function translateDigest(digestId: string, lang: string): Promise<TranslateDigestResult> {
+  const ctx = await getActorContext();
+  if (!ctx) return { ok: false, error: 'No active care circle.' };
+  const id = z.string().uuid().safeParse(digestId);
+  if (!id.success || !isSupportedLanguage(lang) || lang === 'en') return { ok: false, error: GENERIC_ERROR };
+  if (!isBedrockConfigured()) {
+    return { ok: false, error: 'Translations aren’t available yet — Bedrock is not configured.' };
+  }
+
+  try {
+    // Read the row (RLS-scoped). The model call happens OUTSIDE a transaction; the best-effort
+    // cache write opens its own short transaction inside translateDigestNarrative.
+    const [row] = await withAuthedDb((tx) =>
+      tx
+        .select({
+          id: dailyDigest.id,
+          headline: dailyDigest.headline,
+          paragraphs: dailyDigest.paragraphs,
+          translations: dailyDigest.translations,
+        })
+        .from(dailyDigest)
+        .where(and(eq(dailyDigest.id, id.data), eq(dailyDigest.circleId, ctx.circleId)))
+        .limit(1),
+    );
+    if (!row) return { ok: false, error: GENERIC_ERROR };
+
+    const cached = cachedTranslation(row.translations, lang);
+    if (cached) {
+      serverLog('digest', 'translateDigest', 'success', { actor: ctx.userId, lang, cached: true });
+      return { ok: true, translation: cached };
+    }
+
+    // Model call OUTSIDE any transaction; then a short best-effort cache write.
+    const translation = await translateNarrative(
+      {
+        id: row.id,
+        headline: row.headline,
+        paragraphs: Array.isArray(row.paragraphs) ? (row.paragraphs as string[]) : [],
+      },
+      lang,
+    );
+    if (!translation) return { ok: false, error: 'Couldn’t translate this digest right now.' };
+    await withAuthedDb((tx) => cacheDigestTranslation(tx, row.id, row.translations, lang, translation));
+    serverLog('digest', 'translateDigest', 'success', { actor: ctx.userId, lang, cached: false });
+    return { ok: true, translation };
+  } catch (err) {
+    serverLog('digest', 'translateDigest', 'failure', { actor: ctx.userId, lang, reason: (err as Error)?.name ?? 'error' });
     return { ok: false, error: GENERIC_ERROR };
   }
 }
