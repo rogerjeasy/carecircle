@@ -10,7 +10,7 @@
  *  - Operational `serverLog` only (listing your own circles is not a sensitive export).
  */
 import { cookies } from 'next/headers';
-import { and, asc, eq } from 'drizzle-orm';
+import { and, asc, eq, isNull } from 'drizzle-orm';
 import { auth } from '@/auth';
 import { getSessionUserId, withAuthedDb } from '@/db/dal';
 import { membership, careCircle, careRecipientProfile, users } from '@/db/schema';
@@ -73,7 +73,13 @@ export async function getUserCircles(): Promise<CircleSummary[]> {
         // One recipient profile per circle (avatarUrl is nullable / the row may be absent),
         // so left-join to keep circles without a photo.
         .leftJoin(careRecipientProfile, eq(careRecipientProfile.circleId, careCircle.id))
-        .where(and(eq(membership.userId, userId), eq(membership.status, 'active')))
+        .where(
+          and(
+            eq(membership.userId, userId),
+            eq(membership.status, 'active'),
+            isNull(careCircle.deletedAt), // hide circles that have been deleted in Settings
+          ),
+        )
         .orderBy(asc(membership.createdAt)),
     );
 

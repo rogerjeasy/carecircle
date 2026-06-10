@@ -15,7 +15,7 @@ import 'server-only';
  *  - Resolution is read-only; writing the cookie happens in the `setActiveCircle` server action.
  */
 import { cookies } from 'next/headers';
-import { and, asc, eq } from 'drizzle-orm';
+import { and, asc, eq, isNull } from 'drizzle-orm';
 import { getSessionUserId, withAuthedDb } from '@/db/dal';
 import { membership, careCircle } from '@/db/schema';
 
@@ -50,7 +50,13 @@ export async function resolveActiveMembership(): Promise<ActiveMembership | null
       })
       .from(membership)
       .innerJoin(careCircle, eq(careCircle.id, membership.circleId))
-      .where(and(eq(membership.userId, userId), eq(membership.status, 'active')))
+      .where(
+        and(
+          eq(membership.userId, userId),
+          eq(membership.status, 'active'),
+          isNull(careCircle.deletedAt), // a deleted circle can never be resolved as active
+        ),
+      )
       .orderBy(asc(membership.createdAt)),
   );
 
