@@ -10,7 +10,7 @@ export function EmptyState({ hasFilters }: { hasFilters: boolean }) {
       <p className="text-muted-foreground mt-1 max-w-sm mx-auto">
         {hasFilters
           ? "No events match your current filters. Try adjusting your search or filter criteria."
-          : "Be the first to share an update about Antonio's care."}
+          : "Be the first to share an update with the care circle."}
       </p>
     </div>
   );
