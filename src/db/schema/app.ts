@@ -229,6 +229,10 @@ export const membership = pgTable(
     // Whether this member receives the nightly Daily Digest email. On by default; a member can
     // opt out (e.g. the on-site caregiver who already lived the day) without leaving the circle.
     notifyDigest: boolean('notify_digest').notNull().default(true),
+    // BCP-47-ish language code ('en', 'tl', 'es', …) this member reads the Daily Digest in.
+    // Null = English. Drives the digest screen's "read in my language" view AND which translation
+    // of the digest email they receive — the diaspora circle reads the same day in different tongues.
+    preferredLanguage: text('preferred_language'),
     // Per-member Settings → Notifications preferences: the type×channel matrix + quiet hours.
     // Null until first saved (the UI then falls back to its defaults). A personal preference blob.
     notificationPrefs: jsonb('notification_prefs').$type<{
@@ -865,6 +869,10 @@ export const dailyDigest = pgTable(
     generatedByMembershipId: uuid('generated_by_membership_id').references(() => membership.id, {
       onDelete: 'set null',
     }),
+    // Cached model translations of the narrative, keyed by language code ('tl', 'es', …). Filled
+    // lazily the first time a member needs that language (digest screen or email), then reused —
+    // one Claude call per language per day, not per member.
+    translations: jsonb('translations').$type<Record<string, { headline: string; paragraphs: string[] }>>(),
     ...audit,
   },
   (t) => [
