@@ -42,8 +42,9 @@ export function LockedCard({ doc }: { doc: DocumentItem }) {
                 <Info className="h-3.5 w-3.5" />
               </button>
             </TooltipTrigger>
-            <TooltipContent side="top" className="max-w-[14rem]">
-              Access is enforced in the database — not just hidden here.
+            <TooltipContent side="top" className="max-w-[15rem]">
+              Denied by the database&apos;s row-level security policy — not just hidden in the
+              interface. Access attempts are recorded in the audit ledger.
             </TooltipContent>
           </Tooltip>
         </div>

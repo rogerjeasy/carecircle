@@ -221,7 +221,8 @@ export function DocumentsScreen({ initial }: DocumentsScreenProps) {
           <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
           <span>
             Some documents may be <span className="font-medium text-foreground">restricted to coordinators</span>. Access
-            is enforced in the database — restricted files are never sent to your device.
+            is enforced by the database itself (row-level security) — restricted files are never sent to your device,
+            and every document view is recorded in the circle&apos;s tamper-proof audit ledger.
           </span>
         </div>
       )}
