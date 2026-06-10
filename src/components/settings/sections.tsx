@@ -2,13 +2,14 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { ChevronRight, HeartPulse, Trash2, Users } from "lucide-react";
-import { useAppShell } from "@/components/app-shell/app-shell-context";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -27,16 +28,119 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { useAppShell } from "@/components/app-shell/app-shell-context";
 import { SettingsSection, Field } from "./section";
 import { LANGUAGES, TIMEZONES } from "./data";
+import {
+  loadAccountSettings,
+  updateAccountProfile,
+  changePassword,
+  deleteAccount,
+  type AccountSettings,
+} from "@/lib/account/actions";
+import {
+  loadCircleSettings,
+  renameCircle,
+  transferOwnership,
+  deleteCircle,
+  type CircleSettings,
+} from "@/lib/circle/settings";
+
+function initialsFrom(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
 
 /* --------------------------------- Account -------------------------------- */
 export function AccountSection() {
-  const { user } = useAppShell();
-  const [name, setName] = React.useState(user?.name ?? "Maria Rodriguez");
-  const [email] = React.useState(user?.email ?? "maria@example.com");
+  const { setUserImage } = useAppShell();
+  const [account, setAccount] = React.useState<AccountSettings | null>(null);
+  const [name, setName] = React.useState("");
   const [language, setLanguage] = React.useState(LANGUAGES[0]);
   const [tz, setTz] = React.useState(TIMEZONES[0]);
+  const [photoDataUrl, setPhotoDataUrl] = React.useState<string | null>(null);
+  const [savingProfile, startProfile] = React.useTransition();
+  const [savingPw, startPw] = React.useTransition();
+  const photoInputRef = React.useRef<HTMLInputElement>(null);
+  const pwFormRef = React.useRef<HTMLFormElement>(null);
+
+  React.useEffect(() => {
+    let active = true;
+    loadAccountSettings().then((res) => {
+      if (!active || !res.ok) return;
+      setAccount(res.account);
+      setName(res.account.name);
+      if (res.account.language) setLanguage(res.account.language);
+      if (res.account.timezone) setTz(res.account.timezone);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  if (!account) {
+    return (
+      <SettingsSection title="Account" description="Your personal details and preferences.">
+        <Card>
+          <CardContent className="space-y-4 p-4 sm:p-6">
+            <Skeleton className="h-16 w-16 rounded-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+          </CardContent>
+        </Card>
+      </SettingsSection>
+    );
+  }
+
+  const avatarSrc = photoDataUrl ?? account.image ?? undefined;
+
+  const onPickPhoto = (file: File) => {
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Please choose an image under 5 MB.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => setPhotoDataUrl(typeof reader.result === "string" ? reader.result : null);
+    reader.readAsDataURL(file);
+  };
+
+  const saveProfile = () => {
+    const fd = new FormData();
+    fd.set("name", name);
+    fd.set("language", language);
+    fd.set("timezone", tz);
+    const changedPhoto = Boolean(photoDataUrl);
+    if (photoDataUrl) fd.set("photo", photoDataUrl);
+    startProfile(async () => {
+      const res = await updateAccountProfile(fd);
+      if (!res.ok) {
+        toast.error(res.error);
+        return;
+      }
+      setAccount((a) => (a ? { ...a, name, language, timezone: tz, image: res.image } : a));
+      setPhotoDataUrl(null);
+      // Reflect a new photo in the sidebar/nav immediately (only when it actually changed).
+      if (changedPhoto) setUserImage(res.image);
+      toast.success("Account updated");
+    });
+  };
+
+  const savePassword = () => {
+    const form = pwFormRef.current;
+    if (!form) return;
+    const fd = new FormData(form);
+    startPw(async () => {
+      const res = await changePassword(fd);
+      if (!res.ok) {
+        toast.error(res.error);
+        return;
+      }
+      form.reset();
+      toast.success("Password updated");
+    });
+  };
 
   return (
     <SettingsSection title="Account" description="Your personal details and preferences.">
@@ -45,13 +149,24 @@ export function AccountSection() {
           {/* Photo */}
           <div className="flex items-center gap-4">
             <Avatar className="h-16 w-16">
-              {user?.image && <AvatarImage src={user.image} alt="" />}
+              {avatarSrc && <AvatarImage src={avatarSrc} alt="" />}
               <AvatarFallback className="bg-accent/10 text-lg font-semibold text-accent">
-                {user?.initials ?? "MR"}
+                {initialsFrom(name || account.email)}
               </AvatarFallback>
             </Avatar>
             <div className="space-y-1">
-              <Button variant="outline" size="sm" onClick={() => toast("Choose a new profile photo")}>
+              <input
+                ref={photoInputRef}
+                type="file"
+                accept="image/*"
+                className="sr-only"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) onPickPhoto(f);
+                  e.target.value = "";
+                }}
+              />
+              <Button variant="outline" size="sm" onClick={() => photoInputRef.current?.click()}>
                 Change photo
               </Button>
               <p className="text-xs text-muted-foreground">JPG or PNG, up to 5 MB.</p>
@@ -63,7 +178,7 @@ export function AccountSection() {
               <Input id="acc-name" value={name} onChange={(e) => setName(e.target.value)} />
             </Field>
             <Field htmlFor="acc-email" label="Email">
-              <Input id="acc-email" type="email" value={email} readOnly className="bg-muted/40" />
+              <Input id="acc-email" type="email" value={account.email} readOnly className="bg-muted/40" />
             </Field>
             <Field htmlFor="acc-lang" label="Language">
               <Select value={language} onValueChange={setLanguage}>
@@ -96,7 +211,9 @@ export function AccountSection() {
           </div>
 
           <div className="flex justify-end">
-            <Button onClick={() => toast.success("Account updated")}>Save changes</Button>
+            <Button onClick={saveProfile} disabled={savingProfile}>
+              {savingProfile ? "Saving…" : "Save changes"}
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -105,22 +222,37 @@ export function AccountSection() {
       <Card>
         <CardContent className="space-y-4 p-4 sm:p-6">
           <p className="text-sm font-semibold">Change password</p>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <Field htmlFor="pw-current" label="Current">
-              <Input id="pw-current" type="password" autoComplete="current-password" />
-            </Field>
-            <Field htmlFor="pw-new" label="New">
-              <Input id="pw-new" type="password" autoComplete="new-password" />
-            </Field>
-            <Field htmlFor="pw-confirm" label="Confirm">
-              <Input id="pw-confirm" type="password" autoComplete="new-password" />
-            </Field>
-          </div>
-          <div className="flex justify-end">
-            <Button variant="outline" onClick={() => toast.success("Password updated")}>
-              Update password
-            </Button>
-          </div>
+          {account.hasPassword ? (
+            <form
+              ref={pwFormRef}
+              onSubmit={(e) => {
+                e.preventDefault();
+                savePassword();
+              }}
+              className="space-y-4"
+            >
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <Field htmlFor="pw-current" label="Current">
+                  <Input id="pw-current" name="current" type="password" autoComplete="current-password" />
+                </Field>
+                <Field htmlFor="pw-new" label="New">
+                  <Input id="pw-new" name="next" type="password" autoComplete="new-password" />
+                </Field>
+                <Field htmlFor="pw-confirm" label="Confirm">
+                  <Input id="pw-confirm" name="confirm" type="password" autoComplete="new-password" />
+                </Field>
+              </div>
+              <div className="flex justify-end">
+                <Button type="submit" variant="outline" disabled={savingPw}>
+                  {savingPw ? "Updating…" : "Update password"}
+                </Button>
+              </div>
+            </form>
+          ) : (
+            <p className="rounded-lg bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
+              You sign in with a social provider, so there&apos;s no password to change here.
+            </p>
+          )}
         </CardContent>
       </Card>
 
@@ -137,7 +269,12 @@ export function AccountSection() {
             label="Delete account"
             title="Delete your account?"
             description="This permanently deletes your account and removes you from all care circles. This cannot be undone."
-            onConfirm={() => toast("Account deletion requested")}
+            onConfirm={async () => {
+              const res = await deleteAccount();
+              if (!res.ok) return toast.error(res.error);
+              // The session is already cleared server-side; hard-navigate home for a clean reset.
+              window.location.href = "/";
+            }}
           />
         </CardContent>
       </Card>
@@ -147,9 +284,66 @@ export function AccountSection() {
 
 /* ------------------------------- Care circle ------------------------------ */
 export function CareCircleSection() {
-  const { role } = useAppShell();
-  const isCoordinator = role === "coordinator";
-  const [circleName, setCircleName] = React.useState("Antonio's Care Circle");
+  const router = useRouter();
+  const [settings, setSettings] = React.useState<CircleSettings | null>(null);
+  const [circleName, setCircleName] = React.useState("");
+  const [transferTo, setTransferTo] = React.useState("");
+  const [saving, startSaving] = React.useTransition();
+
+  React.useEffect(() => {
+    let active = true;
+    loadCircleSettings().then((res) => {
+      if (!active || !res.ok) return;
+      setSettings(res.settings);
+      setCircleName(res.settings.name);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  if (!settings) {
+    return (
+      <SettingsSection title="Care circle" description="Settings for this circle.">
+        <Card>
+          <CardContent className="space-y-4 p-4 sm:p-6">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-12 w-full" />
+          </CardContent>
+        </Card>
+      </SettingsSection>
+    );
+  }
+
+  const { canManage, isOwner, members } = settings;
+
+  const save = () =>
+    startSaving(async () => {
+      const res = await renameCircle(circleName);
+      if (!res.ok) {
+        toast.error(res.error);
+        return;
+      }
+      setSettings((s) => (s ? { ...s, name: circleName } : s));
+      toast.success("Circle updated");
+      router.refresh();
+    });
+
+  const doTransfer = async () => {
+    if (!transferTo) return;
+    const res = await transferOwnership(transferTo);
+    if (!res.ok) return toast.error(res.error);
+    toast.success("Ownership transferred");
+    router.refresh();
+  };
+
+  const doDelete = async () => {
+    const res = await deleteCircle();
+    if (!res.ok) return toast.error(res.error);
+    toast.success("Circle deleted");
+    router.push("/dashboard");
+    router.refresh();
+  };
 
   return (
     <SettingsSection title="Care circle" description="Settings for this circle.">
@@ -160,47 +354,77 @@ export function CareCircleSection() {
               id="circle-name"
               value={circleName}
               onChange={(e) => setCircleName(e.target.value)}
-              disabled={!isCoordinator}
+              disabled={!canManage}
             />
           </Field>
-          <LinkRow href="/dashboard" icon={HeartPulse} title="Care recipient" sub="Antonio Rodriguez · view profile" />
-          {isCoordinator && (
+          <LinkRow
+            href="/people"
+            icon={HeartPulse}
+            title="Care recipient"
+            sub={settings.recipientName ? `${settings.recipientName} · view circle` : "View circle"}
+          />
+          {canManage && (
             <div className="flex justify-end">
-              <Button onClick={() => toast.success("Circle updated")}>Save changes</Button>
+              <Button onClick={save} disabled={saving}>
+                {saving ? "Saving…" : "Save changes"}
+              </Button>
             </div>
           )}
         </CardContent>
       </Card>
 
-      {isCoordinator && (
+      {isOwner && (
         <Card className="border-destructive/30">
           <CardContent className="space-y-4 p-4 sm:p-6">
             <p className="text-sm font-semibold">Ownership &amp; lifecycle</p>
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="min-w-0">
+
+            {/* Transfer ownership */}
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+              <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium">Transfer ownership</p>
-                <p className="text-xs text-muted-foreground">Hand coordinator duties to another member.</p>
+                <p className="mb-2 text-xs text-muted-foreground">Hand coordinator duties to another member.</p>
+                {members.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">Invite another member first.</p>
+                ) : (
+                  <Select value={transferTo} onValueChange={setTransferTo}>
+                    <SelectTrigger className="sm:max-w-xs" aria-label="Choose a member">
+                      <SelectValue placeholder="Choose a member…" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {members.map((m) => (
+                        <SelectItem key={m.membershipId} value={m.membershipId}>
+                          {m.name} · {m.roleLabel}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
-              <Button variant="outline" className="sm:shrink-0" onClick={() => toast("Choose a member to transfer to")}>
-                Transfer
-              </Button>
+              <ConfirmAction
+                trigger={
+                  <Button variant="outline" className="sm:shrink-0" disabled={!transferTo}>
+                    Transfer
+                  </Button>
+                }
+                title="Transfer ownership?"
+                description="The chosen member becomes the coordinator (owner), and you become a family admin. You can ask them to transfer it back later."
+                actionLabel="Transfer"
+                onConfirm={doTransfer}
+              />
             </div>
+
+            {/* Delete circle */}
             <div className="flex flex-col gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-w-0">
-                <p className="text-sm font-medium text-destructive">Archive or delete circle</p>
-                <p className="text-xs text-muted-foreground">Archiving hides it; deleting removes all data.</p>
+                <p className="text-sm font-medium text-destructive">Delete circle</p>
+                <p className="text-xs text-muted-foreground">Removes the circle for everyone. This can&apos;t be undone.</p>
               </div>
-              <div className="flex gap-2 sm:shrink-0">
-                <Button variant="outline" onClick={() => toast("Circle archived")}>
-                  Archive
-                </Button>
-                <DangerAction
-                  label="Delete circle"
-                  title="Delete this care circle?"
-                  description="This permanently deletes the circle and all its data for everyone. This cannot be undone."
-                  onConfirm={() => toast("Circle deletion requested")}
-                />
-              </div>
+              <DangerAction
+                label="Delete circle"
+                title="Delete this care circle?"
+                description="This deletes the circle and hides all of its data for every member. This cannot be undone."
+                onConfirm={doDelete}
+              />
             </div>
           </CardContent>
         </Card>
@@ -261,6 +485,37 @@ function LinkRow({
       </span>
       <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
     </Link>
+  );
+}
+
+/** A confirmation dialog wrapping an arbitrary trigger (neutral action, e.g. transfer). */
+function ConfirmAction({
+  trigger,
+  title,
+  description,
+  actionLabel,
+  onConfirm,
+}: {
+  trigger: React.ReactNode;
+  title: string;
+  description: string;
+  actionLabel: string;
+  onConfirm: () => void;
+}) {
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogDescription>{description}</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={onConfirm}>{actionLabel}</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }
 

@@ -2,28 +2,79 @@
 
 import * as React from "react";
 import { Moon } from "lucide-react";
+import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { Skeleton } from "@/components/ui/skeleton";
 import { SettingsSection, Field, ToggleRow } from "./section";
 import { DailyDigestSettings } from "./daily-digest-settings";
 import { useIsPhone } from "./use-is-phone";
 import {
-  DEFAULT_MATRIX,
   NOTIF_CHANNELS,
   NOTIF_TYPES,
   type ChannelKey,
   type NotifMatrix,
   type NotifTypeKey,
 } from "./data";
+import {
+  loadNotificationSettings,
+  saveNotificationSettings,
+  type NotificationPrefs,
+  type QuietHours,
+} from "@/lib/notifications/settings";
 
 export function NotificationsSettingsSection() {
   const isPhone = useIsPhone();
-  const [matrix, setMatrix] = React.useState<NotifMatrix>(DEFAULT_MATRIX);
-  const [quiet, setQuiet] = React.useState({ enabled: true, from: "21:00", to: "07:00" });
+  const [prefs, setPrefs] = React.useState<NotificationPrefs | null>(null);
+  const [pending, startTransition] = React.useTransition();
+
+  React.useEffect(() => {
+    let active = true;
+    loadNotificationSettings().then((res) => {
+      if (active && res.ok) setPrefs(res.prefs);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  // Optimistically apply `next`, persist it, and roll back on failure.
+  const persist = (next: NotificationPrefs, prev: NotificationPrefs) => {
+    setPrefs(next);
+    startTransition(async () => {
+      const res = await saveNotificationSettings(next);
+      if (!res.ok) {
+        setPrefs(prev);
+        toast.error(res.error ?? "Couldn't save. Please try again.");
+      }
+    });
+  };
+
+  if (!prefs) {
+    return (
+      <SettingsSection title="Notifications" description="Choose what you're notified about, and how.">
+        <Card>
+          <CardContent className="space-y-3 p-4 sm:p-6">
+            <Skeleton className="h-8 w-full" />
+            <Skeleton className="h-8 w-full" />
+            <Skeleton className="h-8 w-full" />
+          </CardContent>
+        </Card>
+      </SettingsSection>
+    );
+  }
+
+  const matrix = prefs.matrix as NotifMatrix;
+  const quiet = prefs.quiet;
 
   const toggle = (type: NotifTypeKey, channel: ChannelKey) =>
-    setMatrix((prev) => ({ ...prev, [type]: { ...prev[type], [channel]: !prev[type][channel] } }));
+    persist(
+      { ...prefs, matrix: { ...matrix, [type]: { ...matrix[type], [channel]: !matrix[type][channel] } } },
+      prefs,
+    );
+
+  const setQuiet = (patch: Partial<QuietHours>) => persist({ ...prefs, quiet: { ...quiet, ...patch } }, prefs);
 
   return (
     <SettingsSection title="Notifications" description="Choose what you're notified about, and how.">
@@ -43,6 +94,7 @@ export function NotificationsSettingsSection() {
                         control={
                           <Switch
                             checked={matrix[t.key][c.key]}
+                            disabled={pending}
                             onCheckedChange={() => toggle(t.key, c.key)}
                             aria-label={`${t.label} — ${c.label}`}
                           />
@@ -76,6 +128,7 @@ export function NotificationsSettingsSection() {
                           <span className="inline-flex">
                             <Switch
                               checked={matrix[t.key][c.key]}
+                              disabled={pending}
                               onCheckedChange={() => toggle(t.key, c.key)}
                               aria-label={`${t.label} — ${c.label}`}
                             />
@@ -105,7 +158,8 @@ export function NotificationsSettingsSection() {
             control={
               <Switch
                 checked={quiet.enabled}
-                onCheckedChange={(v) => setQuiet((q) => ({ ...q, enabled: v }))}
+                disabled={pending}
+                onCheckedChange={(v) => setQuiet({ enabled: v })}
                 aria-label="Enable quiet hours"
               />
             }
@@ -113,10 +167,10 @@ export function NotificationsSettingsSection() {
           {quiet.enabled && (
             <div className="grid grid-cols-2 gap-3">
               <Field htmlFor="quiet-from" label="From">
-                <Input id="quiet-from" type="time" value={quiet.from} onChange={(e) => setQuiet((q) => ({ ...q, from: e.target.value }))} />
+                <Input id="quiet-from" type="time" value={quiet.from} onChange={(e) => setQuiet({ from: e.target.value })} />
               </Field>
               <Field htmlFor="quiet-to" label="To">
-                <Input id="quiet-to" type="time" value={quiet.to} onChange={(e) => setQuiet((q) => ({ ...q, to: e.target.value }))} />
+                <Input id="quiet-to" type="time" value={quiet.to} onChange={(e) => setQuiet({ to: e.target.value })} />
               </Field>
             </div>
           )}
