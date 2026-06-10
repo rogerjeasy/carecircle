@@ -12,9 +12,13 @@
  *  - Operational `serverLog` on the success and failure paths; no audit_log row is written
  *    because reading one's own name/role is not a sensitive cross-tenant view.
  */
+import { eq } from 'drizzle-orm';
 import { auth } from '@/auth';
+import { db } from '@/db';
+import { users } from '@/db/schema';
 import { serverLog, maskEmail } from '@/lib/log';
 import { resolveActiveMembership } from '@/lib/circle/active-circle';
+import { resolveStoredUrl } from '@/lib/storage/s3';
 import { dbRoleToUiRole, uiRoleLabel } from '@/lib/circle/roles';
 import type { UserRole } from '@/components/app-shell/app-shell-context';
 
@@ -59,6 +63,17 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
   const name = sessionUser.name?.trim() || '';
   const email = sessionUser.email ?? '';
 
+  // The avatar is sourced from the DB `user.image` (where a photo uploaded in Settings is stored as
+  // a private S3 key), resolved to a viewable URL — NOT the JWT's `image`, which is set at sign-in
+  // and wouldn't reflect a later photo change. Falls back to the session image (e.g. an OAuth photo).
+  let image: string | null = sessionUser.image ?? null;
+  try {
+    const [row] = await db.select({ image: users.image }).from(users).where(eq(users.id, userId)).limit(1);
+    image = (await resolveStoredUrl(row?.image)) ?? sessionUser.image ?? null;
+  } catch {
+    /* identity read failed — keep the session image */
+  }
+
   // Sensible defaults so the shell still works for a user who has signed in but not yet
   // onboarded into a circle (no membership row yet).
   let role: UserRole = 'coordinator';
@@ -92,7 +107,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     id: userId,
     name,
     email,
-    image: sessionUser.image ?? null,
+    image,
     initials: initialsFrom(name, email),
     role,
     roleLabel,
