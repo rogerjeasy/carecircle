@@ -2,7 +2,7 @@
  * Installs the Postgres LISTEN/NOTIFY plumbing that powers the admin console's live (push, not
  * polled) Safety-alerts feed.
  *
- * An AFTER INSERT trigger on `timeline_event` fires `pg_notify('carecircle_safety', <event id>)`
+ * An AFTER INSERT trigger on `timeline_event` fires `pg_notify('kintwadi_safety', <event id>)`
  * whenever an urgent or incident row is written. The SSE hub (src/lib/admin/live-hub.ts) holds a
  * single LISTEN connection and fans that out to every connected admin — so a new alert appears the
  * instant it's logged, with zero polling.
@@ -20,7 +20,7 @@ if (!url) {
 const sql = postgres(url, { prepare: false, max: 1 });
 
 async function main() {
-  console.log('Installing carecircle_safety NOTIFY trigger…');
+  console.log('Installing kintwadi_safety NOTIFY trigger…');
 
   // The notify channel carries only the event id (payloads are capped at 8000 bytes and we don't
   // want PII in the channel anyway). The hub re-reads the alert through the audited path.
@@ -30,7 +30,7 @@ async function main() {
     as $$
     begin
       if NEW.is_urgent or NEW.event_type = 'incident' then
-        perform pg_notify('carecircle_safety', NEW.id::text);
+        perform pg_notify('kintwadi_safety', NEW.id::text);
       end if;
       return NEW;
     end;
@@ -44,7 +44,7 @@ async function main() {
       for each row execute function notify_safety_event();
   `);
 
-  console.log('✅ Trigger installed. Urgent / incident timeline events now NOTIFY carecircle_safety.');
+  console.log('✅ Trigger installed. Urgent / incident timeline events now NOTIFY kintwadi_safety.');
   await sql.end();
 }
 

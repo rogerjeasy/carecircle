@@ -1,4 +1,4 @@
-// Static UI bits for Ask CareCircle. Answers + sources now come from the server
+// Static UI bits for Ask Kintwadi. Answers + sources now come from the server
 // (src/lib/ask/actions.ts → RAG over this circle's record); no dummy knowledge base here.
 
 import { Calendar, FileText, HeartPulse, Pill, FileBox } from "lucide-react";

@@ -5,13 +5,13 @@ export function PrivacyScreen() {
     <LegalLayout
       eyebrow="Legal"
       title="Privacy Policy"
-      subtitle="How CareCircle collects, uses, and protects the information you trust us with."
+      subtitle="How Kintwadi collects, uses, and protects the information you trust us with."
       updated="June 6, 2026"
       heroImage={legalImg("1554224155-8d04cb21cd6c")}
     >
       <LegalSection title="The short version">
         <p>
-          CareCircle holds sensitive information about families and the people they care for. We collect only what we
+          Kintwadi holds sensitive information about families and the people they care for. We collect only what we
           need to coordinate care, we never sell your data, and we scope every person&apos;s access to their role.
         </p>
       </LegalSection>
@@ -51,8 +51,8 @@ export function PrivacyScreen() {
       <LegalSection title="Contact">
         <p>
           Questions about privacy? Email{" "}
-          <a href="mailto:privacy@carecircle.app" className="font-medium text-primary hover:underline">
-            privacy@carecircle.app
+          <a href="mailto:privacy@kintwadi.app" className="font-medium text-primary hover:underline">
+            privacy@kintwadi.app
           </a>
           .
         </p>

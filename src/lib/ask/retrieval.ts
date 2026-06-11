@@ -1,7 +1,7 @@
 import 'server-only';
 
 /**
- * Retrieval for "Ask CareCircle" — gathers the active circle's real record (recipient, meds,
+ * Retrieval for "Ask Kintwadi" — gathers the active circle's real record (recipient, meds,
  * recent vitals, appointments, timeline, open tasks) into a compact, grounded context block plus
  * a parallel list of citeable SourceRefs. The assistant answers ONLY from this context.
  *

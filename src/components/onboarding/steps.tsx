@@ -36,7 +36,7 @@ export function Step1Welcome() {
         <Heart className="h-10 w-10 text-primary" />
       </div>
       <div className="space-y-3">
-        <h2 className="font-serif text-3xl font-bold text-foreground">Welcome to CareCircle</h2>
+        <h2 className="font-serif text-3xl font-bold text-foreground">Welcome to Kintwadi</h2>
         <p className="text-lg text-muted-foreground max-w-md mx-auto">
           You are about to bring your family and care team together in one place.
         </p>

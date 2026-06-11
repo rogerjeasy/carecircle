@@ -1,4 +1,4 @@
-# CareCircle — Data Model Deep-Dive
+# Kintwadi — Data Model Deep-Dive
 
 *Conceptual model only — no implementation/DDL. This document defines the entities, relationships, integrity rules, and the Row-Level Security (RLS) design that make Amazon Aurora PostgreSQL a **deliberate** architectural choice rather than a default.*
 
@@ -149,7 +149,7 @@ erDiagram
 
 ### 4.4 AI layer (pgvector)
 
-**`care_record_chunk`** — embeddings powering "Ask CareCircle" and the digest.
+**`care_record_chunk`** — embeddings powering "Ask Kintwadi" and the digest.
 - `id`, `circle_id`, `source_type (text)`, `source_id (uuid)`, `content (text)`, `embedding (vector)`, `created_at`.
 - RLS-scoped by `circle_id` so semantic recall can **never** cross families (see §9.7).
 
@@ -168,7 +168,7 @@ The "How is Mom today?" feed is the product's heartbeat, so its modeling is a **
 Why it's the right call:
 1. **One fast, indexed read** — `(circle_id, occurred_at desc)` — drives the feed and pagination.
 2. **One place to enforce visibility** — the `visibility` column + RLS governs who sees each event (e.g., a private mental-health note is hidden from the aide).
-3. **It *is* the digest input** — the Daily Digest simply reads the day's events; the "Ask CareCircle" index embeds them.
+3. **It *is* the digest input** — the Daily Digest simply reads the day's events; the "Ask Kintwadi" index embeds them.
 4. **Comments attach uniformly** to events, so discussion lives next to the care it's about.
 
 ---
@@ -275,7 +275,7 @@ Net effect: the hired aide and read-only relatives **physically cannot** read fi
 
 ### 9.7 pgvector under RLS
 
-`care_record_chunk` carries `circle_id` and the same tenant-isolation policy, so **semantic search inherits security**: an "Ask CareCircle" query physically cannot retrieve another family's memories, even by vector similarity.
+`care_record_chunk` carries `circle_id` and the same tenant-isolation policy, so **semantic search inherits security**: an "Ask Kintwadi" query physically cannot retrieve another family's memories, even by vector similarity.
 - **Performance approach:** pre-filter by `circle_id` (a family's history is small-N), then run the ANN search within that scope — combining a partial/composite strategy with the RLS predicate as the hard guarantee.
 
 ### 9.8 (Advanced) Care-recipient consent overrides
@@ -319,4 +319,4 @@ The access patterns here are **relationship-rich and security-critical**, not si
 
 ---
 
-*Pairs with `CareCircle-Project-Description.md` (product + strategy) and `CareCircle-Architecture.md` (system architecture). Together they cover the full Technical Implementation story with zero hand-waving.*
+*Pairs with `Kintwadi-Project-Description.md` (product + strategy) and `Kintwadi-Architecture.md` (system architecture). Together they cover the full Technical Implementation story with zero hand-waving.*

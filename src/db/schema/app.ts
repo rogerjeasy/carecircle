@@ -1,6 +1,6 @@
 /**
- * CareCircle domain schema (first slice).
- * Design principles (see ../../../CareCircle-Data-Model.md):
+ * Kintwadi domain schema (first slice).
+ * Design principles (see ../../../Kintwadi-Data-Model.md):
  *  - Every tenant-scoped row carries `circle_id` so Row-Level Security is a single indexed check.
  *  - Audit columns on every table; soft-delete via `deleted_at`.
  *  - Controlled vocabularies via pg enums.
@@ -347,7 +347,7 @@ export const invitation = pgTable(
 );
 
 // ============================================================================
-// Medications (see ../../../CareCircle-Data-Model.md §medication)
+// Medications (see ../../../Kintwadi-Data-Model.md §medication)
 // A medication is a prescribed regimen; its schedules expand into per-day dose
 // occurrences; each occurrence (and every PRN use) is logged as one immutable
 // administration row. The "give a medication" flow writes the administration,
@@ -491,7 +491,7 @@ export const medicationAttachment = pgTable(
 );
 
 // ============================================================================
-// Documents vault — S3-backed files with a sensitivity tier (CareCircle-Data-Model.md §document).
+// Documents vault — S3-backed files with a sensitivity tier (Kintwadi-Data-Model.md §document).
 // Sensitivity is the crux of the document RLS: who can SELECT a row depends on their role.
 // Bytes live in S3 (care-circles/{circleId}/documents/…); this row holds the key + metadata.
 // ============================================================================
@@ -529,7 +529,7 @@ export const documents = pgTable(
 );
 
 // ============================================================================
-// Tasks — the coordination unit that shares the caregiving load (CareCircle-Data-Model.md §task).
+// Tasks — the coordination unit that shares the caregiving load (Kintwadi-Data-Model.md §task).
 // Assignable to a circle member; completed tasks feed the "fair share" view.
 // ============================================================================
 export const tasks = pgTable(
@@ -568,7 +568,7 @@ export const tasks = pgTable(
 );
 
 // ============================================================================
-// Appointments — visits to plan, prep, assign, and summarise (CareCircle-Data-Model.md §appointment).
+// Appointments — visits to plan, prep, assign, and summarise (Kintwadi-Data-Model.md §appointment).
 // The "prep questions" checklist + visit summary live on the row (jsonb / text) since they're always
 // read with the appointment; assignment + status mirror the rest of the coordination tables.
 // ============================================================================
@@ -606,7 +606,7 @@ export const appointment = pgTable(
 );
 
 // ============================================================================
-// Observations — recorded vitals (CareCircle-Data-Model.md §observation). One row per reading;
+// Observations — recorded vitals (Kintwadi-Data-Model.md §observation). One row per reading;
 // blood pressure stores systolic in `value` and diastolic in `secondary`.
 // ============================================================================
 export const observation = pgTable(
@@ -722,7 +722,7 @@ export const careShift = pgTable(
 // ============================================================================
 // Timeline interactions — comments + reactions on timeline_event rows.
 // timeline_event (above) is the activity-stream spine; these two tables let the
-// care circle converse and acknowledge on each update (CareCircle-Data-Model.md
+// care circle converse and acknowledge on each update (Kintwadi-Data-Model.md
 // §timeline / §comment). Both are tenant-scoped (circle_id) for a single RLS check.
 // ============================================================================
 
@@ -773,7 +773,7 @@ export const timelineReaction = pgTable(
 );
 
 // ============================================================================
-// RAG chunks — the vector store for "Ask CareCircle", kept INSIDE Aurora via pgvector.
+// RAG chunks — the vector store for "Ask Kintwadi", kept INSIDE Aurora via pgvector.
 // One row = one embedded text chunk of a source record (document / timeline / audit). Because
 // these rows are tenant-scoped (circle_id) and sensitivity-tagged, the SAME Row-Level Security
 // that guards documents guards retrieval — a similarity query can only ever return chunks the
@@ -819,7 +819,7 @@ export const ragChunk = pgTable(
 );
 
 // ============================================================================
-// Ask CareCircle — saved conversations. A conversation is PRIVATE to the user who started it
+// Ask Kintwadi — saved conversations. A conversation is PRIVATE to the user who started it
 // (RLS: circle ∈ caller's circles AND user_id = current_app_user_id()), so each caregiver keeps
 // their own chat history with the assistant; messages persist so a refresh restores the thread.
 // ============================================================================
@@ -937,7 +937,7 @@ export const digestFeedback = pgTable(
 // Incidents — "report an incident" (falls, hospitalizations, emergencies). One incident row, plus
 // a per-notified-member acknowledgement row and a coordinating comment thread. Reporting also emits
 // an `incident` timeline_event (urgent for high severity) so the feed + dashboard surface it.
-// (CareCircle-Data-Model.md §incident.)
+// (Kintwadi-Data-Model.md §incident.)
 // ============================================================================
 export const incident = pgTable(
   'incident',

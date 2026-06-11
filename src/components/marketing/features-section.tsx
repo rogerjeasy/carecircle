@@ -52,7 +52,7 @@ export function ProblemSolutionSection() {
             Caring shouldn&apos;t feel this hard
           </h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto text-pretty">
-            We built CareCircle because we&apos;ve been there. The stress, the miscommunication, the guilt — there&apos;s a better way.
+            We built Kintwadi because we&apos;ve been there. The stress, the miscommunication, the guilt — there&apos;s a better way.
           </p>
         </div>
 

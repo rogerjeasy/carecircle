@@ -83,7 +83,7 @@ function BrandPanel() {
         <span className="grid h-10 w-10 place-items-center rounded-full bg-primary text-primary-foreground">
           <Heart className="h-5 w-5" />
         </span>
-        <span className="text-xl font-semibold">CareCircle</span>
+        <span className="text-xl font-semibold">Kintwadi</span>
       </div>
 
       {/* Main content */}
@@ -99,7 +99,7 @@ function BrandPanel() {
       {/* Testimonial */}
       <div className="relative z-10 rounded-2xl border border-border/50 bg-card/50 p-6 backdrop-blur-sm">
         <blockquote className="text-base italic text-foreground/90">
-          &ldquo;CareCircle finally gave our family a way to stay connected around Dad&apos;s care. 
+          &ldquo;Kintwadi finally gave our family a way to stay connected around Dad&apos;s care. 
           My brother in London and I in Toronto now feel like we&apos;re truly in this together.&rdquo;
         </blockquote>
         <div className="mt-4 flex items-center gap-3">
@@ -131,7 +131,7 @@ function BrandBanner() {
         <span className="grid h-9 w-9 place-items-center rounded-full bg-primary text-primary-foreground">
           <Heart className="h-4 w-4" />
         </span>
-        <span className="text-lg font-semibold">CareCircle</span>
+        <span className="text-lg font-semibold">Kintwadi</span>
       </div>
 
       {/* Tagline */}
@@ -235,7 +235,7 @@ export default function SignUpPage() {
       return;
     }
 
-    toast.success("Welcome to CareCircle!", {
+    toast.success("Welcome to Kintwadi!", {
       description: "Your account has been created successfully.",
     });
     // Hard navigation (not router.push) on purpose: a full request guarantees the freshly
@@ -269,7 +269,7 @@ export default function SignUpPage() {
             <span className="grid h-8 w-8 place-items-center rounded-full bg-primary text-primary-foreground">
               <Heart className="h-4 w-4" />
             </span>
-            <span className="text-lg font-semibold">CareCircle</span>
+            <span className="text-lg font-semibold">Kintwadi</span>
           </div>
           <ThemeToggle />
         </div>

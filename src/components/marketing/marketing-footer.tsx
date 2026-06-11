@@ -38,7 +38,7 @@ export function MarketingFooter() {
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground">
                 <Users className="h-5 w-5" />
               </div>
-              <span className="font-serif text-xl font-semibold">CareCircle</span>
+              <span className="font-serif text-xl font-semibold">Kintwadi</span>
             </Link>
             <p className="mt-4 text-sm text-muted-foreground max-w-xs">
               One shared record for everyone caring for someone. Coordinate care across families, cities, and countries.
@@ -107,7 +107,7 @@ export function MarketingFooter() {
         {/* Bottom */}
         <div className="mt-12 pt-8 border-t flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground">
-            &copy; {new Date().getFullYear()} CareCircle. All rights reserved.
+            &copy; {new Date().getFullYear()} Kintwadi. All rights reserved.
           </p>
           <p className="text-sm text-muted-foreground">
             Made with care for caregivers everywhere.

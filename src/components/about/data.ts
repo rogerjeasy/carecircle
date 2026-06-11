@@ -1,4 +1,4 @@
-// Content for the About page, grounded in CareCircle-Project-Description.md.
+// Content for the About page, grounded in Kintwadi-Project-Description.md.
 
 import {
   Accessibility,
@@ -28,7 +28,7 @@ import {
 export const HERO = {
   tagline: "One shared record for everyone caring for someone.",
   subtitle:
-    "CareCircle is the calm, role-aware home for a family's caregiving — across siblings, cities, and time zones. One source of truth for today's meds, the care timeline, appointments, tasks and vitals.",
+    "Kintwadi is the calm, role-aware home for a family's caregiving — across siblings, cities, and time zones. One source of truth for today's meds, the care timeline, appointments, tasks and vitals.",
 } as const;
 
 /** Big-picture numbers (the "why now" market story). */
@@ -63,7 +63,7 @@ export const PROBLEMS: { icon: typeof Heart; title: string; body: string }[] = [
   },
 ];
 
-/** §2 — What makes CareCircle different. */
+/** §2 — What makes Kintwadi different. */
 export const DIFFERENTIATORS: { icon: typeof Scale; title: string; body: string }[] = [
   {
     icon: Scale,
@@ -101,7 +101,7 @@ export const PILLARS: { icon: typeof FileText; title: string; body: string }[] =
   { icon: CheckSquare, title: "Tasks & rota", body: "Assignable recurring tasks, a shift schedule, and the gentle fair-share report." },
   { icon: ShieldCheck, title: "Roles & permissions", body: "Distinct roles, granular scoping, a clean invite flow, and an immutable audit log." },
   { icon: HeartPulse, title: "Vitals & health", body: "Blood pressure, glucose, weight, sleep and mood — with trends and threshold alerts." },
-  { icon: Sparkles, title: "The smart layer", body: "Daily Digest, decline detection, and Ask CareCircle in plain language." },
+  { icon: Sparkles, title: "The smart layer", body: "Daily Digest, decline detection, and Ask Kintwadi in plain language." },
   { icon: Bell, title: "Notifications", body: "Role- and event-aware alerts, urgent escalation, and in-context comments." },
   { icon: Siren, title: "Emergency mode", body: "One tap surfaces a shareable emergency card, ready for EMS or an ER, in any language." },
 ];

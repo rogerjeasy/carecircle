@@ -26,7 +26,7 @@ import {
 import { serverLog, maskEmail } from '@/lib/log';
 import type { Digest } from '@/components/digest/types';
 
-const FROM = process.env.EMAIL_FROM ?? 'CareCircle <onboarding@resend.dev>';
+const FROM = process.env.EMAIL_FROM ?? 'Kintwadi <onboarding@resend.dev>';
 
 type Email = { to: string; subject: string; html: string; text: string };
 type EmailProvider = 'ses' | 'smtp' | 'resend' | 'console';

@@ -1,11 +1,11 @@
-# CareCircle schedulers — replaces Vercel Crons, which the Hobby plan limits to once per day
+# Kintwadi schedulers — replaces Vercel Crons, which the Hobby plan limits to once per day
 # (our hourly digest / 6-hourly scans schedules were REJECTING every deployment; see
 # https://vercel.com/docs/cron-jobs/usage-and-pricing). The cron routes were designed for "any
 # pinger" with the CRON_SECRET bearer, so GitHub Actions pings them on the original schedules.
 #
 # Setup (GitHub repo → Settings):
 #   - Secrets and variables → Actions → Secrets:   CRON_SECRET (same value as on Vercel)
-#   - Secrets and variables → Actions → Variables: APP_URL (e.g. https://carecircle.vercel.app)
+#   - Secrets and variables → Actions → Variables: APP_URL (e.g. https://kintwadi.vercel.app)
 #
 # Notes: GitHub schedules can fire a few minutes late — harmless, the digest route gates on each
 # circle's local digestHour and is idempotent per day. GitHub disables schedules after 60 days

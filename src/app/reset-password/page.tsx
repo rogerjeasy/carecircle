@@ -74,7 +74,7 @@ function BrandPanel() {
         <span className="grid h-10 w-10 place-items-center rounded-full bg-primary text-primary-foreground">
           <Heart className="h-5 w-5" />
         </span>
-        <span className="text-xl font-semibold">CareCircle</span>
+        <span className="text-xl font-semibold">Kintwadi</span>
       </div>
 
       {/* Main content */}
@@ -91,7 +91,7 @@ function BrandPanel() {
       <div className="relative z-10 rounded-2xl border border-border/50 bg-card/50 p-6 backdrop-blur-sm">
         <p className="text-sm font-medium mb-2">Security tips:</p>
         <ul className="text-sm text-muted-foreground space-y-1">
-          <li>Use a unique password for CareCircle</li>
+          <li>Use a unique password for Kintwadi</li>
           <li>Consider using a password manager</li>
           <li>Never share your password with others</li>
         </ul>
@@ -115,7 +115,7 @@ function BrandBanner() {
         <span className="grid h-9 w-9 place-items-center rounded-full bg-primary text-primary-foreground">
           <Heart className="h-4 w-4" />
         </span>
-        <span className="text-lg font-semibold">CareCircle</span>
+        <span className="text-lg font-semibold">Kintwadi</span>
       </div>
 
       {/* Tagline */}
@@ -315,7 +315,7 @@ export default function ResetPasswordPage() {
             <span className="grid h-8 w-8 place-items-center rounded-full bg-primary text-primary-foreground">
               <Heart className="h-4 w-4" />
             </span>
-            <span className="text-lg font-semibold">CareCircle</span>
+            <span className="text-lg font-semibold">Kintwadi</span>
           </div>
           <ThemeToggle />
         </div>

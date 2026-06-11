@@ -27,7 +27,7 @@ export const tiers: Tier[] = [
       { text: "Basic roles (3 types)", included: true },
       { text: "Mobile app access", included: true },
       { text: "AI Daily Digest", included: false },
-      { text: "Ask CareCircle AI", included: false },
+      { text: "Ask Kintwadi AI", included: false },
       { text: "Document vault", included: false },
       { text: "Advanced insights", included: false },
     ],
@@ -48,7 +48,7 @@ export const tiers: Tier[] = [
       { text: "All 6 role types", included: true },
       { text: "Mobile app access", included: true },
       { text: "AI Daily Digest", included: true },
-      { text: "Ask CareCircle AI", included: true },
+      { text: "Ask Kintwadi AI", included: true },
       { text: "Document vault (5GB)", included: true },
       { text: "Advanced insights", included: true },
     ],
@@ -75,7 +75,7 @@ export const tiers: Tier[] = [
     ],
     cta: "Contact sales",
     ctaVariant: "secondary",
-    ctaHref: "mailto:sales@carecircle.app",
+    ctaHref: "mailto:sales@kintwadi.app",
     popular: false,
   },
 ];
@@ -96,7 +96,7 @@ export const comparisonCategories: ComparisonCategory[] = [
     name: "AI & Intelligence",
     features: [
       { name: "AI Daily Digest", free: false, plus: true, teams: true },
-      { name: "Ask CareCircle AI", free: false, plus: true, teams: true },
+      { name: "Ask Kintwadi AI", free: false, plus: true, teams: true },
       { name: "Smart reminders", free: "Basic", plus: "Advanced", teams: "Advanced" },
       { name: "Care insights", free: false, plus: true, teams: true },
     ],
@@ -152,9 +152,9 @@ export const faqs: Faq[] = [
       "Care Teams is billed annually based on the number of care circles and users. Contact our sales team for a custom quote tailored to your organization's needs.",
   },
   {
-    question: "Is CareCircle HIPAA compliant?",
+    question: "Is Kintwadi HIPAA compliant?",
     answer:
-      "CareCircle implements industry-standard security measures including encryption at rest and in transit. For organizations requiring a signed Business Associate Agreement (BAA), this is available on the Care Teams plan.",
+      "Kintwadi implements industry-standard security measures including encryption at rest and in transit. For organizations requiring a signed Business Associate Agreement (BAA), this is available on the Care Teams plan.",
   },
   {
     question: "Can I add family members for free?",

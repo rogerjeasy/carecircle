@@ -197,7 +197,7 @@ export function TrustSection() {
             Your family&apos;s data, protected
           </h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-            We take privacy seriously. CareCircle is built with security at its core.
+            We take privacy seriously. Kintwadi is built with security at its core.
           </p>
         </div>
 
@@ -241,7 +241,7 @@ export function TestimonialSection() {
         >
           <Quote className="h-10 w-10 text-primary/30 mx-auto mb-6" />
           <blockquote className="font-serif text-xl sm:text-2xl lg:text-3xl font-medium text-balance leading-relaxed">
-            &quot;I live in Toronto, my brother&apos;s in London, and Mom is back in Portugal. CareCircle is the only reason we can coordinate her care without losing our minds. The daily digest keeps me sane.&quot;
+            &quot;I live in Toronto, my brother&apos;s in London, and Mom is back in Portugal. Kintwadi is the only reason we can coordinate her care without losing our minds. The daily digest keeps me sane.&quot;
           </blockquote>
           <div className="mt-8 flex items-center justify-center gap-4">
             <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">

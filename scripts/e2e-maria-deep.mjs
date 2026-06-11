@@ -1,5 +1,5 @@
 /**
- * Deep-dive E2E as Maria (coordinator): all screens + live "Ask CareCircle" RAG question
+ * Deep-dive E2E as Maria (coordinator): all screens + live "Ask Kintwadi" RAG question
  * + Daily Digest state. Run: node scripts/e2e-maria-deep.mjs [baseUrl]
  */
 import { chromium } from "playwright";
@@ -18,8 +18,8 @@ page.on("pageerror", (e) => errors.push(String(e).slice(0, 300)));
 
 // Sign in (generous timeout — dev-mode compiles can be slow on first hit)
 await page.goto(BASE + "/sign-in", { waitUntil: "load", timeout: 90000 });
-await page.fill("#email", "maria@carecircle.demo");
-await page.fill("#password", "CareCircle123");
+await page.fill("#email", "maria@kintwadi.demo");
+await page.fill("#password", "Kintwadi123");
 await Promise.all([
   page.waitForURL((u) => !u.pathname.startsWith("/sign-in"), { timeout: 90000 }),
   page.click('button[type="submit"]'),
@@ -51,7 +51,7 @@ const docText = await page.locator("body").innerText().catch(() => "");
 const seesRestricted = docText.includes("Power of attorney") && docText.includes("Bank authorization");
 console.log(seesRestricted ? "✓ maria sees restricted docs (RBAC contrast with Grace proven)" : "⚠ maria does NOT see restricted docs — check seed/RLS");
 
-// ---- Live Ask CareCircle (RAG round-trip through Bedrock + pgvector) ----
+// ---- Live Ask Kintwadi (RAG round-trip through Bedrock + pgvector) ----
 try {
   await page.goto(BASE + "/ask", { waitUntil: "load", timeout: 60000 });
   await page.waitForTimeout(2000);

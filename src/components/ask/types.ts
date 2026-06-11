@@ -1,4 +1,4 @@
-// Shared domain types for "Ask CareCircle".
+// Shared domain types for "Ask Kintwadi".
 
 export type SourceType = "appointment" | "vital" | "med" | "note" | "timeline" | "document";
 

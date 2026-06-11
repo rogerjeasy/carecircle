@@ -32,7 +32,7 @@ import { ConversationList } from "./conversation-list";
 import { AssistantMessage, ThinkingBubble, UserBubble } from "./message";
 import { useReducedMotion } from "./use-typewriter";
 import { EXAMPLE_PROMPTS } from "./data";
-import { askCareCircle, loadConversation, deleteConversation, renameConversation } from "@/lib/ask/actions";
+import { askKintwadi, loadConversation, deleteConversation, renameConversation } from "@/lib/ask/actions";
 import type { ConversationDetail, ConversationSummary, Message } from "./types";
 
 export interface AskScreenProps {
@@ -44,7 +44,7 @@ export interface AskScreenProps {
   initialConversation: ConversationDetail | null;
 }
 
-/** "Ask CareCircle" — a calm chat over THIS circle's record, with saved, resumable conversations. */
+/** "Ask Kintwadi" — a calm chat over THIS circle's record, with saved, resumable conversations. */
 export function AskScreen({ recipientName, conversations: initialList, initialConversation }: AskScreenProps) {
   const reduced = useReducedMotion();
   const [conversations, setConversations] = React.useState<ConversationSummary[]>(initialList);
@@ -74,7 +74,7 @@ export function AskScreen({ recipientName, conversations: initialList, initialCo
       setInput("");
       setThinking(true);
       try {
-        const res = await askCareCircle(q, activeId);
+        const res = await askKintwadi(q, activeId);
         if (res.ok) {
           setMessages((prev) => [
             ...prev,
@@ -223,7 +223,7 @@ export function AskScreen({ recipientName, conversations: initialList, initialCo
               role="log"
               aria-live="polite"
               aria-relevant="additions"
-              aria-label="Conversation with CareCircle"
+              aria-label="Conversation with Kintwadi"
             >
               {messages.map((m) =>
                 m.role === "user" ? (

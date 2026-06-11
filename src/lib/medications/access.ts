@@ -2,7 +2,7 @@ import 'server-only';
 
 /**
  * Server-side authorization for the Medications feature — the single source of truth the
- * server actions enforce, mirroring the project role matrix (CareCircle-Data-Model.md
+ * server actions enforce, mirroring the project role matrix (Kintwadi-Data-Model.md
  * §authorization) and the DB RLS policies in drizzle/0009_medications_rls.sql.
  *
  * These check the user's REAL membership role in the active circle (resolved under RLS),

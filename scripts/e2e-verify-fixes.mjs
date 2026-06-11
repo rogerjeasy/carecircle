@@ -29,7 +29,7 @@ async function signIn(context, email) {
   const page = await context.newPage();
   await page.goto(BASE + "/sign-in", { waitUntil: "load", timeout: 90000 });
   await page.fill("#email", email);
-  await page.fill("#password", "CareCircle123");
+  await page.fill("#password", "Kintwadi123");
   await Promise.all([
     page.waitForURL((u) => !u.pathname.startsWith("/sign-in"), { timeout: 90000 }),
     page.click('button[type="submit"]'),
@@ -54,7 +54,7 @@ async function signIn(context, email) {
 {
   const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   try {
-    const page = await signIn(context, "maria@carecircle.demo");
+    const page = await signIn(context, "maria@kintwadi.demo");
     check(true, "mobile sign-in completes");
     await page.goto(BASE + "/dashboard", { waitUntil: "load", timeout: 60000 });
     await page.waitForTimeout(2000);
@@ -67,8 +67,8 @@ async function signIn(context, email) {
 
 // ---- 3. First-paint role lens (no coordinator flash) ----
 for (const p of [
-  { email: "antonio@carecircle.demo", label: "antonio (recipient)" },
-  { email: "rosa@carecircle.demo", label: "rosa (read-only)" },
+  { email: "antonio@kintwadi.demo", label: "antonio (recipient)" },
+  { email: "rosa@kintwadi.demo", label: "rosa (read-only)" },
 ]) {
   const context = await browser.newContext({ viewport: { width: 1380, height: 900 } });
   try {
@@ -94,7 +94,7 @@ for (const p of [
 {
   const context = await browser.newContext({ viewport: { width: 1380, height: 900 } });
   try {
-    const page = await signIn(context, "maria@carecircle.demo");
+    const page = await signIn(context, "maria@kintwadi.demo");
     await page.goto(BASE + "/dashboard", { waitUntil: "load", timeout: 60000 });
     await page.waitForTimeout(5000); // let chip fetch + dashboard data settle
     const body = await page.locator("body").innerText().catch(() => "");
@@ -117,7 +117,7 @@ for (const p of [
 {
   const context = await browser.newContext({ viewport: { width: 1380, height: 900 } });
   try {
-    const page = await signIn(context, "rosa@carecircle.demo");
+    const page = await signIn(context, "rosa@kintwadi.demo");
     await page.goto(BASE + "/digest", { waitUntil: "load", timeout: 60000 });
     await page.waitForTimeout(4000); // today's load + yesterday prefetch
     const body = await page.locator("body").innerText().catch(() => "");

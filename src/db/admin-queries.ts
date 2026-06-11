@@ -426,7 +426,7 @@ export async function getTenants(actor: PlatformActor): Promise<Tenant[]> {
  * Anonymous "Run demo" guests get this email domain (see src/lib/auth/demo.ts). It is how the
  * user directory tells a real sign-up from a throwaway reviewer account.
  */
-const GUEST_EMAIL_SUFFIX = '@guest.carecircle.demo';
+const GUEST_EMAIL_SUFFIX = '@guest.kintwadi.demo';
 
 /**
  * The complete platform user directory for /admin/users: every account (normal sign-ups AND

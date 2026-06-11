@@ -30,7 +30,7 @@ export function PublicEmergencyCard({ data, validUntil }: PublicEmergencyCardPro
     <footer className="flex items-start gap-2 border-t pt-4 text-xs text-muted-foreground">
       <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
       <p>
-        Shared by the family via CareCircle. This link is temporary (valid until {validUntil}),
+        Shared by the family via Kintwadi. This link is temporary (valid until {validUntil}),
         can be revoked at any time, and every open is recorded for the family.
       </p>
     </footer>

@@ -7,7 +7,7 @@ import { getPlatformUsers } from "@/db/admin-queries";
 import { AdminPageHeader, MiniStat, DemoFootnote } from "@/components/admin/sections";
 import { UsersDirectory } from "@/components/admin/users-directory";
 
-export const metadata = { title: "Users · CareCircle Admin" };
+export const metadata = { title: "Users · Kintwadi Admin" };
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 

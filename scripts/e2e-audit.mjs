@@ -12,7 +12,7 @@ const OUT = path.join(process.cwd(), ".e2e-audit");
 fs.mkdirSync(OUT, { recursive: true });
 
 // Demo-persona password (public, documented in README); override for non-seed environments.
-const PASSWORD = process.env.E2E_PASSWORD || "CareCircle123";
+const PASSWORD = process.env.E2E_PASSWORD || "Kintwadi123";
 
 const APP_PAGES = [
   "/dashboard", "/timeline", "/medications", "/appointments", "/tasks", "/rota",
@@ -23,13 +23,13 @@ const ADMIN_PAGES = ["/admin", "/admin/overview", "/admin/tenants", "/admin/audi
 const PUBLIC_PAGES = ["/", "/pricing", "/how-it-works", "/about", "/security", "/sign-up"];
 
 const PERSONAS = [
-  { email: "maria@carecircle.demo", name: "maria-coordinator", pages: APP_PAGES },
-  { email: "grace@carecircle.demo", name: "grace-aide", pages: ["/dashboard", "/medications", "/timeline", "/documents", "/tasks", "/people", "/settings"] },
-  { email: "antonio@carecircle.demo", name: "antonio-recipient", pages: ["/dashboard", "/timeline", "/medications"] },
-  { email: "rosa@carecircle.demo", name: "rosa-readonly", pages: ["/dashboard", "/timeline", "/medications", "/documents", "/ask"] },
-  { email: "chen@carecircle.demo", name: "chen-clinician", pages: ["/dashboard", "/health", "/medications"] },
-  { email: "paolo@carecircle.demo", name: "paolo-remote", pages: ["/dashboard", "/digest", "/tasks"] },
-  { email: "admin@carecircle.demo", name: "platform-admin", pages: ADMIN_PAGES },
+  { email: "maria@kintwadi.demo", name: "maria-coordinator", pages: APP_PAGES },
+  { email: "grace@kintwadi.demo", name: "grace-aide", pages: ["/dashboard", "/medications", "/timeline", "/documents", "/tasks", "/people", "/settings"] },
+  { email: "antonio@kintwadi.demo", name: "antonio-recipient", pages: ["/dashboard", "/timeline", "/medications"] },
+  { email: "rosa@kintwadi.demo", name: "rosa-readonly", pages: ["/dashboard", "/timeline", "/medications", "/documents", "/ask"] },
+  { email: "chen@kintwadi.demo", name: "chen-clinician", pages: ["/dashboard", "/health", "/medications"] },
+  { email: "paolo@kintwadi.demo", name: "paolo-remote", pages: ["/dashboard", "/digest", "/tasks"] },
+  { email: "admin@kintwadi.demo", name: "platform-admin", pages: ADMIN_PAGES },
 ];
 
 const results = [];
@@ -109,7 +109,7 @@ for (const p of PERSONAS) {
 {
   const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   try {
-    const page = await signIn(context, "maria@carecircle.demo");
+    const page = await signIn(context, "maria@kintwadi.demo");
     for (const url of ["/dashboard", "/timeline", "/medications"]) await visit(page, "mobile-maria", url);
   } catch (e) {
     console.log(`  ✗ mobile sign-in failed: ${String(e).slice(0, 200)}`);

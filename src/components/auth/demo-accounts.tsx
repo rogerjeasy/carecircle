@@ -16,15 +16,15 @@ import { signInWithCredentials, resolveLandingPath } from "@/lib/auth/actions";
  * Security note: this is a convenience wrapper around the SAME credentials flow as the form above
  * it (server action → Auth.js → scrypt hash check). It grants nothing the form wouldn't.
  */
-const DEMO_PASSWORD = "CareCircle123";
+const DEMO_PASSWORD = "Kintwadi123";
 
 const PERSONAS: { email: string; name: string; lens: string }[] = [
-  { email: "maria@carecircle.demo", name: "Maria", lens: "Coordinator (owner)" },
-  { email: "paolo@carecircle.demo", name: "Paolo", lens: "Remote family" },
-  { email: "grace@carecircle.demo", name: "Grace", lens: "Professional aide" },
-  { email: "antonio@carecircle.demo", name: "Antonio", lens: "Care recipient" },
-  { email: "rosa@carecircle.demo", name: "Rosa", lens: "Read-only" },
-  { email: "chen@carecircle.demo", name: "Dr. Chen", lens: "Clinician" },
+  { email: "maria@kintwadi.demo", name: "Maria", lens: "Coordinator (owner)" },
+  { email: "paolo@kintwadi.demo", name: "Paolo", lens: "Remote family" },
+  { email: "grace@kintwadi.demo", name: "Grace", lens: "Professional aide" },
+  { email: "antonio@kintwadi.demo", name: "Antonio", lens: "Care recipient" },
+  { email: "rosa@kintwadi.demo", name: "Rosa", lens: "Read-only" },
+  { email: "chen@kintwadi.demo", name: "Dr. Chen", lens: "Clinician" },
 ];
 
 export function DemoAccountsPanel() {
@@ -53,7 +53,7 @@ export function DemoAccountsPanel() {
     <div className="mt-6 rounded-2xl border border-primary/20 bg-primary/5 p-4">
       <div className="flex items-center gap-2">
         <Sparkles className="h-4 w-4 text-primary" aria-hidden="true" />
-        <p className="text-sm font-semibold">Reviewing CareCircle? Try a role.</p>
+        <p className="text-sm font-semibold">Reviewing Kintwadi? Try a role.</p>
       </div>
       <p className="mt-1 text-xs text-muted-foreground">
         One shared record, six lenses — each enforced by the database, not the UI.

@@ -15,12 +15,12 @@ export function HipaaScreen() {
     <LegalLayout
       eyebrow="Compliance"
       title="HIPAA"
-      subtitle="CareCircle is built with HIPAA principles in mind — designed to protect health information from day one."
+      subtitle="Kintwadi is built with HIPAA principles in mind — designed to protect health information from day one."
       heroImage={legalImg("1576091160550-2173dba999ef")}
     >
       <LegalSection title="Our approach">
         <p>
-          CareCircle handles Protected Health Information (PHI), so we follow HIPAA&apos;s security and privacy
+          Kintwadi handles Protected Health Information (PHI), so we follow HIPAA&apos;s security and privacy
           principles throughout the product: minimum-necessary access, strong technical safeguards, and a full audit
           trail. This page describes our design posture; it is not a claim of formal certification.
         </p>
@@ -50,8 +50,8 @@ export function HipaaScreen() {
         <p>
           For organizations that require a signed BAA — home-care agencies, assisted-living facilities, and similar — a
           BAA is available on our Care Teams plan. Reach out to{" "}
-          <a href="mailto:sales@carecircle.app" className="font-medium text-primary hover:underline">
-            sales@carecircle.app
+          <a href="mailto:sales@kintwadi.app" className="font-medium text-primary hover:underline">
+            sales@kintwadi.app
           </a>{" "}
           to start the conversation.
         </p>
@@ -60,8 +60,8 @@ export function HipaaScreen() {
       <LegalSection title="Reporting a concern">
         <p>
           If you believe health information may have been handled improperly, contact{" "}
-          <a href="mailto:privacy@carecircle.app" className="font-medium text-primary hover:underline">
-            privacy@carecircle.app
+          <a href="mailto:privacy@kintwadi.app" className="font-medium text-primary hover:underline">
+            privacy@kintwadi.app
           </a>{" "}
           and we&apos;ll investigate.
         </p>

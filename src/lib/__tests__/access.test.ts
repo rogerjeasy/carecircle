@@ -1,5 +1,5 @@
 /**
- * Authorization-matrix tests — the application-layer half of CareCircle's fail-closed,
+ * Authorization-matrix tests — the application-layer half of Kintwadi's fail-closed,
  * defense-in-depth model. Every server action re-checks one of these pure predicates against the
  * user's REAL membership role before mutating, and the same role lists are mirrored by the Aurora
  * RLS policies (drizzle/*_rls.sql) — the DB is the final backstop, these are the first gate.

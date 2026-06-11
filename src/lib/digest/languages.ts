@@ -2,7 +2,7 @@
  * Digest languages — the diaspora feature's registry. Shared by client (pickers, toggle labels)
  * and server (translation prompt), so NO server-only imports here.
  *
- * CareCircle's families span continents: the aide in Manila, the daughter in Toronto, the son in
+ * Kintwadi's families span continents: the aide in Manila, the daughter in Toronto, the son in
  * Dubai. Each member chooses the language THEY read the Daily Digest in; translations are written
  * by Claude on Bedrock once per language per day and cached on the digest row.
  */

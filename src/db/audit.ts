@@ -2,7 +2,7 @@
  * Append-only audit logging — the traceability backbone.
  *
  * Writes go to the immutable `audit_log` table (no UPDATE/DELETE policy exists), giving
- * CareCircle medical-grade accountability: who did what, to which entity, when.
+ * Kintwadi medical-grade accountability: who did what, to which entity, when.
  *
  * 🔒 PROJECT RULE: every sensitive/state-changing action MUST be audited. When you build a new
  * feature (give a medication, edit meds, view/export a document, invite a member, change a role,

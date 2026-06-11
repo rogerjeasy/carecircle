@@ -62,7 +62,7 @@ const navItems = [
   { href: "/people", label: "People", icon: Users },
   { href: "/digest", label: "Digest", icon: Mail },
   { href: "/rota", label: "Rota", icon: CalendarClock },
-  { href: "/ask", label: "Ask CareCircle", icon: Sparkles },
+  { href: "/ask", label: "Ask Kintwadi", icon: Sparkles },
 ];
 
 // Placeholder shown in the circle switcher until the real circles load.

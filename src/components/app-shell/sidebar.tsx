@@ -65,7 +65,7 @@ const navItems = [
   { href: "/people", label: "People", icon: Users },
   { href: "/digest", label: "Digest", icon: Mail },
   { href: "/rota", label: "Rota", icon: CalendarClock },
-  { href: "/ask", label: "Ask CareCircle", icon: Sparkles },
+  { href: "/ask", label: "Ask Kintwadi", icon: Sparkles },
   { href: "/profile", label: "Profile", icon: User },
   { href: "/emergency-card", label: "Emergency Card", icon: ShieldAlert },
 ];

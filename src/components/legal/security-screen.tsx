@@ -17,7 +17,7 @@ export function SecurityScreen() {
     <LegalLayout
       eyebrow="Trust"
       title="Security"
-      subtitle="CareCircle holds sensitive health and family data. Protecting it is a first-class design goal, not an afterthought."
+      subtitle="Kintwadi holds sensitive health and family data. Protecting it is a first-class design goal, not an afterthought."
       heroImage={legalImg("1569949381669-ecf31ae8e613")}
     >
       <LegalSection title="Defense in depth">
@@ -64,8 +64,8 @@ export function SecurityScreen() {
       <LegalSection title="Responsible disclosure">
         <p>
           Found a vulnerability? We appreciate your help. Email{" "}
-          <a href="mailto:security@carecircle.app" className="font-medium text-primary hover:underline">
-            security@carecircle.app
+          <a href="mailto:security@kintwadi.app" className="font-medium text-primary hover:underline">
+            security@kintwadi.app
           </a>{" "}
           and we&apos;ll respond promptly.
         </p>

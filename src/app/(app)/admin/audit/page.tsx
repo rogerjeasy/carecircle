@@ -6,7 +6,7 @@ import { getRecentAuditEvents, getAuditStats, type AuditStats } from "@/db/admin
 import { isPlatformDbConfigured } from "@/db/admin-db";
 import type { AuditEvent } from "@/lib/admin/dashboard-data";
 
-export const metadata = { title: "Audit & logs · CareCircle Admin" };
+export const metadata = { title: "Audit & logs · Kintwadi Admin" };
 
 const num = (n: number) => n.toLocaleString("en-US");
 

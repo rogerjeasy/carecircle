@@ -265,7 +265,7 @@ async function gatherDay(db: DigestDb, circleId: string, dateStr: string): Promi
 
 function systemPrompt(): string {
   return [
-    "You write CareCircle's Daily Digest: a warm, end-of-day update for a family member who couldn't be there.",
+    "You write Kintwadi's Daily Digest: a warm, end-of-day update for a family member who couldn't be there.",
     'Use ONLY the events provided — never invent meds, numbers, visits, or names.',
     'Write 2–3 short paragraphs: calm, specific, plain language, reassuring but honest. If little was logged, say so gently.',
     'Choose a mood from exactly: great, good, okay, low. Pick a short warm headline (max 6 words, no name, no trailing period) and ONE emoji.',

@@ -5,20 +5,20 @@ export function TermsScreen() {
     <LegalLayout
       eyebrow="Legal"
       title="Terms of Service"
-      subtitle="The agreement between you and CareCircle when you use the service."
+      subtitle="The agreement between you and Kintwadi when you use the service."
       updated="June 6, 2026"
       heroImage={legalImg("1606166187734-a4cb74079037")}
     >
-      <LegalSection title="Using CareCircle">
+      <LegalSection title="Using Kintwadi">
         <p>
-          CareCircle helps families and care teams coordinate care. By creating an account you agree to use it lawfully,
+          Kintwadi helps families and care teams coordinate care. By creating an account you agree to use it lawfully,
           to keep your login secure, and to respect the privacy of everyone in your care circles.
         </p>
       </LegalSection>
 
       <LegalSection title="Not a medical service">
         <p>
-          CareCircle is a coordination tool, not a medical device or a provider of medical advice. Safety features such
+          Kintwadi is a coordination tool, not a medical device or a provider of medical advice. Safety features such
           as interaction warnings and decline detection are supportive aids — they don&apos;t replace professional
           clinical judgment. In an emergency, call your local emergency number.
         </p>

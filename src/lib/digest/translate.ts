@@ -73,7 +73,7 @@ export async function translateNarrative(
   try {
     const raw = await askClaude({
       system: [
-        `You translate CareCircle's Daily Digest — a warm end-of-day family caregiving update — into ${language.label}.`,
+        `You translate Kintwadi's Daily Digest — a warm end-of-day family caregiving update — into ${language.label}.`,
         'Translate faithfully but naturally: keep the warm, plain, family tone; never add, drop, or change facts, names, numbers, medication names, or times.',
         'Respond with ONLY a JSON object: {"headline": string, "paragraphs": string[]} with exactly the same number of paragraphs as the input.',
       ].join(' '),

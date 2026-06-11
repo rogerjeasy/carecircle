@@ -33,7 +33,7 @@ export default function StyleGuidePage() {
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
                 <Heart className="h-5 w-5" />
               </div>
-              <span className="text-lg font-semibold tracking-tight">CareCircle</span>
+              <span className="text-lg font-semibold tracking-tight">Kintwadi</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="hidden text-sm text-muted-foreground sm:inline">Design System</span>
@@ -117,7 +117,7 @@ export default function StyleGuidePage() {
                     <span className="text-xs uppercase tracking-wider text-muted-foreground">Body Text</span>
                     <p className="text-base leading-relaxed text-pretty">
                       Body text at 16px with comfortable line-height for extended reading. 
-                      CareCircle helps families coordinate care across cities and time zones, 
+                      Kintwadi helps families coordinate care across cities and time zones, 
                       keeping everyone informed and connected.
                     </p>
                     <p className="text-sm text-muted-foreground">
@@ -368,7 +368,7 @@ export default function StyleGuidePage() {
           {/* Footer */}
           <motion.section variants={fadeInUp} className="pt-8 pb-4 text-center">
             <p className="text-sm text-muted-foreground">
-              CareCircle Design System • Built with warmth and accessibility in mind
+              Kintwadi Design System • Built with warmth and accessibility in mind
             </p>
           </motion.section>
         </motion.div>

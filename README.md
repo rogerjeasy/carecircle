@@ -1,9 +1,11 @@
-# CareCircle
+# Kintwadi
 
 > **One shared record for everyone caring for someone.**
 > The calm, role-aware home for a family's caregiving — across siblings, cities, and time zones.
+>
+> ***Kintwadi*** *(kin-TWAH-dee) is Kikongo for **togetherness — doing it as one**. Siblings, relatives, the parent, the hired aide, the clinician: one circle, one record.*
 
-[![CI — lint, types, unit + RLS integration proof](https://github.com/rogerjeasy/carecircle/actions/workflows/ci.yml/badge.svg)](https://github.com/rogerjeasy/carecircle/actions/workflows/ci.yml)
+[![CI — lint, types, unit + RLS integration proof](https://github.com/rogerjeasy/kintwadi/actions/workflows/ci.yml/badge.svg)](https://github.com/rogerjeasy/kintwadi/actions/workflows/ci.yml)
 
 ![Next.js](https://img.shields.io/badge/Next.js_16-000000?logo=nextdotjs&logoColor=white)
 ![React](https://img.shields.io/badge/React_19-20232A?logo=react&logoColor=61DAFB)
@@ -23,7 +25,7 @@ Built for the **H0: Hack the Zero Stack** hackathon (AWS Databases + Vercel/v0).
 
 When an aging parent starts needing help, their care gets coordinated over chaotic group chats, sticky notes, and half-remembered phone calls — usually by one exhausted "default" child while siblings abroad feel guilty and out of the loop. Medications get missed or doubled. Nobody has the full picture.
 
-**CareCircle is a single, shared, permission-aware care record** for a family and their helpers. Everyone — the local daughter, the brother in another country, the hired aide, even the parent — sees the right slice of one source of truth: today's meds, the care timeline, appointments, tasks, vitals, and documents. An AI **Daily Digest** turns a day of small care logs into a warm human update for the relative who couldn't be there, and **Ask CareCircle** answers natural-language questions grounded in the record — both running entirely on AWS.
+**Kintwadi is a single, shared, permission-aware care record** for a family and their helpers. Everyone — the local daughter, the brother in another country, the hired aide, even the parent — sees the right slice of one source of truth: today's meds, the care timeline, appointments, tasks, vitals, and documents. An AI **Daily Digest** turns a day of small care logs into a warm human update for the relative who couldn't be there, and **Ask Kintwadi** answers natural-language questions grounded in the record — both running entirely on AWS.
 
 ---
 
@@ -36,12 +38,12 @@ The deliberate architectural choices Aurora makes possible:
 - **Row-Level Security (RLS) — RBAC enforced *in the database*.** A hired aide physically cannot read a financial document; a member of one family cannot read another's record. Tenancy is a single indexed `circle_id` check governed by Postgres policies (`drizzle/0001_rls_policies.sql` and the per-feature `*_rls.sql` migrations), not by trusting the UI. The app connects as a **least-privilege role** (`carecircle_app`) that is *subject* to RLS; only migrations/seed use the owner connection.
 - **Atomic (ACID) medication safety.** "Give a medication" writes the administration event, decrements supply, appends a timeline entry, and writes the audit row in **one transaction** (`src/lib/medications/actions.ts` → `recordDose`).
 - **Append-only audit log.** `audit_log` has no UPDATE/DELETE policy — medical-grade, immutable accountability.
-- **`pgvector` in the same database powers "Ask CareCircle".** Documents, timeline events, and audit entries are chunked, embedded with **Amazon Bedrock Titan**, and stored as vectors in Aurora's `rag_chunk` table (HNSW cosine). Retrieval runs **inside the same RLS-scoped transaction**, so the similarity search inherits the *exact same* permission and sensitivity boundary as the documents vault — there is no second vector-store ACL to keep in sync. **Claude on Amazon Bedrock** (Converse API) then writes a grounded, cited answer, and that read is audited. *One database, relational and vector.*
+- **`pgvector` in the same database powers "Ask Kintwadi".** Documents, timeline events, and audit entries are chunked, embedded with **Amazon Bedrock Titan**, and stored as vectors in Aurora's `rag_chunk` table (HNSW cosine). Retrieval runs **inside the same RLS-scoped transaction**, so the similarity search inherits the *exact same* permission and sensitivity boundary as the documents vault — there is no second vector-store ACL to keep in sync. **Claude on Amazon Bedrock** (Converse API) then writes a grounded, cited answer, and that read is audited. *One database, relational and vector.*
 - **Serverless v2** scales with load (and toward ~zero when idle); the roadmap notes a path to **Aurora DSQL** for multi-region strong consistency, because the families we serve are global.
 
 The rest of the stack: **Next.js on Vercel** (scheduler-agnostic, `CRON_SECRET`-gated cron routes drive the nightly digest **and the daily care scans** — refill sweep, missed-dose reconciliation, decline alerts; see "Scheduled jobs" below), **Amazon S3** (documents & photos), **Amazon SES/SNS** (email + urgent escalation — the email layer in `src/lib/email.ts` is provider-pluggable: SES first, with SMTP/Resend fallbacks for local dev and SES-sandbox accounts), and **keyless AWS access in production** — Vercel's OIDC token is exchanged for short-lived STS credentials (`AWS_ROLE_ARN`), so no long-lived AWS keys are stored anywhere. Infrastructure is defined in Terraform under [`infra/`](./infra).
 
-A full diagram + component legend lives in [`docs/architecture.md`](./docs/architecture.md) (editable source: [`docs/CareCircle-Architecture.drawio`](./docs/CareCircle-Architecture.drawio)); the data model is documented in [`docs/data-model.md`](./docs/data-model.md).
+A full diagram + component legend lives in [`docs/architecture.md`](./docs/architecture.md) (editable source: [`docs/Kintwadi-Architecture.drawio`](./docs/Kintwadi-Architecture.drawio)); the data model is documented in [`docs/data-model.md`](./docs/data-model.md).
 
 ---
 
@@ -56,7 +58,7 @@ A full diagram + component legend lives in [`docs/architecture.md`](./docs/archi
 | **Tasks & rota** | Assignable/recurring tasks, weekly shift schedule, **fair-share** contribution view |
 | **Roles & permissions** | Owner, family (full/limited), professional caregiver, read-only, care recipient, clinician — DB-enforced |
 | **Vitals & health** | BP, glucose, weight, sleep, mood, HR with trend charts & **per-circle alert safe ranges** (DB-persisted; out-of-range readings post urgent alerts + SNS escalation) |
-| **Smart layer (AI)** | **Daily Digest** (warm AI summary, **translated into each member's own language** — the aide reads it in Tagalog, the son in Dubai in English, cached one model call per language per day), **Ask CareCircle** (permission-aware RAG), **daily care scans** (refill sweep, missed-dose reconciliation, 3-day decline alerts) |
+| **Smart layer (AI)** | **Daily Digest** (warm AI summary, **translated into each member's own language** — the aide reads it in Tagalog, the son in Dubai in English, cached one model call per language per day), **Ask Kintwadi** (permission-aware RAG), **daily care scans** (refill sweep, missed-dose reconciliation, 3-day decline alerts) |
 | **Notifications** | Role/event-aware alerts; urgent escalation (a logged fall alerts coordinators instantly) |
 | **Emergency mode** | One-tap shareable emergency card for EMS/ER |
 | **Admin (B2B)** | Cross-tenant platform console (email-allowlisted, audited) for staff/agencies |
@@ -146,10 +148,10 @@ npm run db:seed               # seed the living demo circle (6 weeks of meds, vi
 npm run dev                   # http://localhost:3000
 ```
 
-**Demo personas** (all password `CareCircle123`, printed by the seed): `maria@carecircle.demo` (coordinator) ·
-`paolo@carecircle.demo` (remote family) · `grace@carecircle.demo` (aide — reads the digest in Tagalog) ·
-`antonio@carecircle.demo` (care recipient) · `rosa@carecircle.demo` (read-only) · `chen@carecircle.demo`
-(clinician — read-mostly clinical view) · `admin@carecircle.demo` (platform admin → `/admin`).
+**Demo personas** (all password `Kintwadi123`, printed by the seed): `maria@kintwadi.demo` (coordinator) ·
+`paolo@kintwadi.demo` (remote family) · `grace@kintwadi.demo` (aide — reads the digest in Tagalog) ·
+`antonio@kintwadi.demo` (care recipient) · `rosa@kintwadi.demo` (read-only) · `chen@kintwadi.demo`
+(clinician — read-mostly clinical view) · `admin@kintwadi.demo` (platform admin → `/admin`).
 Set `NEXT_PUBLIC_DEMO_MODE=1` to show one-click persona sign-in buttons on `/sign-in` **and** the homepage
 **"Run demo"** button, which creates an anonymous guest account (RLS-scoped to only the demo circle, `family`
 role, wiped on re-seed) and lands a reviewer on the live dashboard with zero sign-up — see `src/lib/auth/demo.ts`

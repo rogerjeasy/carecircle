@@ -16,7 +16,7 @@ import { useAppShell } from "./app-shell-context";
 const FRIENDLY_NAMES: Record<string, string> = {
   "API / Server Actions": "the app service",
   "Aurora PostgreSQL": "saving & loading data",
-  "Amazon Bedrock (Claude)": "the Daily Digest & Ask CareCircle assistant",
+  "Amazon Bedrock (Claude)": "the Daily Digest & Ask Kintwadi assistant",
   "Amazon S3": "documents & photos",
   "Amazon SES": "email notifications",
   "Amazon SNS": "urgent alert notifications",

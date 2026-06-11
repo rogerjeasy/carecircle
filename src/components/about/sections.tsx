@@ -91,7 +91,7 @@ export function DifferenceSection() {
       <SectionHeading
         eyebrow="What makes it different"
         title="The underserved middle"
-        subtitle="Clinical software is built for institutions; family organizers have no concept of care. CareCircle is the family-grade, role-aware care record — built on three ideas no one has combined well."
+        subtitle="Clinical software is built for institutions; family organizers have no concept of care. Kintwadi is the family-grade, role-aware care record — built on three ideas no one has combined well."
       />
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {DIFFERENTIATORS.map((d, i) => (

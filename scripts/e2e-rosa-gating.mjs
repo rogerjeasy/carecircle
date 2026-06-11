@@ -16,8 +16,8 @@ const context = await browser.newContext({ viewport: { width: 1380, height: 900 
 const page = await context.newPage();
 
 await page.goto(BASE + "/sign-in", { waitUntil: "load", timeout: 60000 });
-await page.fill("#email", "rosa@carecircle.demo");
-await page.fill("#password", "CareCircle123");
+await page.fill("#email", "rosa@kintwadi.demo");
+await page.fill("#password", "Kintwadi123");
 await Promise.all([
   page.waitForURL((u) => !u.pathname.startsWith("/sign-in"), { timeout: 60000 }),
   page.click('button[type="submit"]'),

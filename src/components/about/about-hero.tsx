@@ -11,7 +11,7 @@ export function AboutHero() {
       <div className="motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-3 motion-safe:duration-500">
         <Badge variant="secondary" className="mb-4 gap-1.5">
           <Heart className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
-          About CareCircle
+          About Kintwadi
         </Badge>
         <h1 className="mx-auto max-w-3xl text-balance font-serif text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
           {HERO.tagline}

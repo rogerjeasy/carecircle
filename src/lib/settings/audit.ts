@@ -82,7 +82,7 @@ export async function loadCircleAuditLog(): Promise<LoadAuditResult> {
     );
 
     const entries: AuditLogEntry[] = rows.map((r) => {
-      const name = r.actorName ?? 'CareCircle';
+      const name = r.actorName ?? 'Kintwadi';
       return {
         id: r.id,
         actor: {

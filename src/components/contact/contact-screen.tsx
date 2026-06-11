@@ -23,7 +23,7 @@ export function ContactScreen() {
               We&apos;d love to hear from you
             </h1>
             <p className="mx-auto mt-4 max-w-2xl text-pretty text-lg text-muted-foreground">
-              Questions, feedback, or thinking about CareCircle for your family or organization? Send a note and a real
+              Questions, feedback, or thinking about Kintwadi for your family or organization? Send a note and a real
               person will reply.
             </p>
           </div>

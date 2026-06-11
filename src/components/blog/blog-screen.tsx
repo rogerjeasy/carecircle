@@ -17,7 +17,7 @@ export function BlogScreen() {
         {/* Hero */}
         <section className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
           <Badge variant="secondary" className="mb-4">
-            CareCircle blog
+            Kintwadi blog
           </Badge>
           <h1 className="text-balance font-serif text-4xl font-bold tracking-tight sm:text-5xl">
             Notes on caring, together

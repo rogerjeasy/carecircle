@@ -4,7 +4,7 @@
  * "Run demo" — one-tap anonymous guest access to the seeded demo circle, for judges/reviewers
  * who shouldn't have to sign up + onboard before seeing the product.
  *
- * What a click does: creates a REAL, persisted guest account (`guest-…@guest.carecircle.demo`,
+ * What a click does: creates a REAL, persisted guest account (`guest-…@guest.kintwadi.demo`,
  * random password, never shown), adds it to the demo circle as a `family` member, signs it in via
  * the normal Auth.js credentials flow, and the client redirects to /dashboard.
  *
@@ -35,8 +35,8 @@ import { serverLog } from '@/lib/log';
 
 export type StartDemoResult = { ok: true } | { ok: false; error: string };
 
-const DEMO_OWNER_EMAIL = 'maria@carecircle.demo';
-const GUEST_EMAIL_DOMAIN = 'guest.carecircle.demo';
+const DEMO_OWNER_EMAIL = 'maria@kintwadi.demo';
+const GUEST_EMAIL_DOMAIN = 'guest.kintwadi.demo';
 const DEMO_UNAVAILABLE = 'The live demo isn’t available right now. Please try the sign-in page.';
 
 // Best-effort per-IP limiter (per server instance): 3 new guests per 10 minutes is plenty for a

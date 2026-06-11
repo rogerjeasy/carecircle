@@ -1,6 +1,6 @@
 /**
  * Insert a demo urgent/incident timeline event so you can watch the admin console's live Safety
- * feed update in real time (via the carecircle_safety NOTIFY trigger). Dev/demo only.
+ * feed update in real time (via the kintwadi_safety NOTIFY trigger). Dev/demo only.
  *
  * Run:  npm run db:demo-incident
  *       npm run db:demo-incident -- "Blood pressure spiked 4 readings"   (custom summary)

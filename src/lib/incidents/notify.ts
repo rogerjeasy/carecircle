@@ -94,7 +94,7 @@ export async function escalateHighSeverityIncident(params: EscalateParams): Prom
 
     // 3) Direct SMS to each notified member with a phone — a tight, single-segment-ish alert.
     const phones = params.contacts.map((c) => c.phone).filter((p): p is string => Boolean(p));
-    const smsBody = `CareCircle: ${params.reporterName} reported ${typeLabel.toLowerCase()} for ${recipientName} (${severityLabel} severity). Respond: ${incidentUrl}`;
+    const smsBody = `Kintwadi: ${params.reporterName} reported ${typeLabel.toLowerCase()} for ${recipientName} (${severityLabel} severity). Respond: ${incidentUrl}`;
     const smsResults = await Promise.allSettled(phones.map((phone) => sendSms({ phone, message: smsBody })));
     const texted = smsResults.filter((r) => r.status === 'fulfilled' && r.value === true).length;
 

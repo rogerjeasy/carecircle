@@ -52,7 +52,7 @@ Authentication and authorization are **defense-in-depth and fail-closed**. Never
 If a change would bypass any of the above, stop and flag it instead of shipping it.
 
 ### Platform super-admin (cross-tenant)
-The `/admin` console is for CareCircle staff who see ACROSS all circles — this deliberately
+The `/admin` console is for Kintwadi staff who see ACROSS all circles — this deliberately
 crosses the per-circle RLS boundary, so treat it as high-risk. Access is an email allowlist
 (`PLATFORM_ADMIN_EMAILS`), NOT a circle role. Gate every admin route/page/action with
 `requirePlatformAdmin()` (src/db/dal.ts), which layers on top of `requireSession()`. Admin pages

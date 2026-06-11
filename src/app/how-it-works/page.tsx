@@ -219,7 +219,7 @@ function EmotionalIntro() {
             mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
           )}
         >
-          How CareCircle Works
+          How Kintwadi Works
         </Badge>
         <h1
           className={cn(
@@ -241,7 +241,7 @@ function EmotionalIntro() {
           Coordinating care across siblings, cities, and time zones is overwhelming. 
           Information gets lost. People feel left out. Important things slip through the cracks. 
           <span className="block mt-4 font-medium text-foreground">
-            CareCircle brings everyone together in one place — so you can focus on what matters most.
+            Kintwadi brings everyone together in one place — so you can focus on what matters most.
           </span>
         </p>
       </div>
@@ -456,7 +456,7 @@ function SecuritySection() {
             Your family&apos;s data, protected
           </h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto text-pretty">
-            Health information is sensitive. We built CareCircle with security and privacy at its foundation — 
+            Health information is sensitive. We built Kintwadi with security and privacy at its foundation — 
             not as an afterthought.
           </p>
         </div>

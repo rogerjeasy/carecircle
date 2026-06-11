@@ -1,4 +1,4 @@
-# CareCircle — Setup & Provisioning Guide
+# Kintwadi — Setup & Provisioning Guide
 
 Everything needed to take this repo from zero to a running full-stack app on **Aurora PostgreSQL + Vercel**. Steps you (the human) must do are marked 👤 — they need your AWS/Vercel accounts and can't be automated.
 
@@ -17,7 +17,7 @@ Everything needed to take this repo from zero to a running full-stack app on **A
   `src/lib/auth/actions.ts`; migration `0002` adds `user.password_hash` + `password_reset_token`.
 - **RLS bridge**: `withUserContext()` / `withAuthedDb()` set `app.current_user_id` per request (`src/db/rls.ts`, `src/db/dal.ts`).
 - **Seed** script with the Antonio/Maria/Paolo/Grace demo data (`src/db/seed.ts`). Demo accounts
-  share the password **`CareCircle123`** (e.g. `maria@carecircle.demo`) so you can sign in immediately.
+  share the password **`Kintwadi123`** (e.g. `maria@kintwadi.demo`) so you can sign in immediately.
 
 ---
 
@@ -29,7 +29,7 @@ Request the **$100 AWS + $30 v0** credits from the hackathon page. **The AWS for
 
 **Recommended: Vercel Marketplace (simplest, and gives you the submission screenshot).**
 
-1. Create a Vercel project (push this `carecircle/` repo to GitHub, then "Import" it in Vercel — or `vercel link`).
+1. Create a Vercel project (push this `kintwadi/` repo to GitHub, then "Import" it in Vercel — or `vercel link`).
 2. In the Vercel dashboard → your project → **Storage** → **Marketplace** → choose **Aurora (AWS)** → create an **Aurora PostgreSQL Serverless v2** database.
 3. Vercel injects a connection string into the project's env (the **admin/owner** connection).
 4. 📸 **Screenshot the Storage / configuration page** showing the AWS database — this is a required submission artifact (proof of AWS DB usage).
@@ -72,11 +72,11 @@ Optional providers/services (the app runs without them — see `.env.example` fo
   and `NEXT_PUBLIC_AUTH_APPLE_ENABLED="true"` to reveal the button.
 - **Password-reset emails:** set `RESEND_API_KEY` (+ a verified `EMAIL_FROM`). If unset, reset links
   are printed to the server console so the flow still works end-to-end in local dev.
-- **Ask CareCircle (RAG):** all on AWS — see step 4a below.
+- **Ask Kintwadi (RAG):** all on AWS — see step 4a below.
 
-### 4a. 👤 Ask CareCircle (RAG) — Amazon Bedrock + Aurora pgvector
+### 4a. 👤 Ask Kintwadi (RAG) — Amazon Bedrock + Aurora pgvector
 
-"Ask CareCircle" embeds the record with **Bedrock Titan**, stores vectors **in Aurora** (`rag_chunk`,
+"Ask Kintwadi" embeds the record with **Bedrock Titan**, stores vectors **in Aurora** (`rag_chunk`,
 via the `pgvector` extension), retrieves them under RLS, and answers with **Claude on Bedrock**. It
 needs only AWS — no external vector DB or API keys.
 
@@ -144,7 +144,7 @@ STS credentials when `AWS_ROLE_ARN` is set (and falls back to the standard chain
 2. **AWS IAM → Identity providers → Add provider:** type *OpenID Connect*, the issuer URL above,
    audience `https://vercel.com/<team-slug>`.
 3. **Create a role** trusting that provider, with a condition pinning `sub` to this project, e.g.
-   `"oidc.vercel.com/<team-slug>:sub": "owner:<team-slug>:project:carecircle:environment:production"`.
+   `"oidc.vercel.com/<team-slug>:sub": "owner:<team-slug>:project:kintwadi:environment:production"`.
    Attach least-privilege policies only: `bedrock:InvokeModel` (Titan + the Claude inference
    profile), S3 read/write on the uploads bucket, `ses:SendEmail`, `sns:Publish`.
 4. **Vercel env:** set `AWS_ROLE_ARN` to the role's ARN — and delete

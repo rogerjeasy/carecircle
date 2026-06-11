@@ -17,13 +17,13 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
-  title: "CareCircle — Coordinate Care Together",
+  title: "Kintwadi — Coordinate Care Together",
   description: "A calm, warm app that helps families coordinate care for aging parents across cities and countries.",
-  applicationName: "CareCircle",
+  applicationName: "Kintwadi",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "CareCircle",
+    title: "Kintwadi",
   },
   icons: {
     apple: "/icons/apple-touch-icon.png",

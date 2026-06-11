@@ -283,7 +283,7 @@ export function AccountSection() {
 }
 
 /* ------------------------------- Care circle ------------------------------ */
-export function CareCircleSection() {
+export function KintwadiSection() {
   const router = useRouter();
   const [settings, setSettings] = React.useState<CircleSettings | null>(null);
   const [circleName, setCircleName] = React.useState("");

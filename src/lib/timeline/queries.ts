@@ -157,7 +157,7 @@ export async function getTimelineData(beforeISO?: string): Promise<TimelineData 
 
     const events: TimelineEvent[] = data.pageRows.map((r) => {
       const payload = (r.payload ?? {}) as EventPayload;
-      const name = r.actorName ?? 'CareCircle';
+      const name = r.actorName ?? 'Kintwadi';
       return {
         id: r.id,
         type: mapEventType(r.eventType),

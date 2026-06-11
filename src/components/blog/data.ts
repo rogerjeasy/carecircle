@@ -20,7 +20,7 @@ const A = {
 };
 
 export const FEATURED: Post = {
-  title: "Why we built CareCircle: one record for everyone caring for someone",
+  title: "Why we built Kintwadi: one record for everyone caring for someone",
   excerpt:
     "Caregiving for an aging parent is one of the most universal human experiences — and one of the worst-tooled. Here's the story behind a calmer, role-aware way to coordinate care across siblings, cities and time zones.",
   category: "Our story",

@@ -38,7 +38,7 @@ export function PricingScreen() {
         <section className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 mt-24">
           <div className="text-center mb-12">
             <h2 className="font-serif text-3xl sm:text-4xl font-bold mb-4">Frequently asked questions</h2>
-            <p className="text-muted-foreground">Everything you need to know about CareCircle pricing.</p>
+            <p className="text-muted-foreground">Everything you need to know about Kintwadi pricing.</p>
           </div>
           <PricingFaq />
         </section>

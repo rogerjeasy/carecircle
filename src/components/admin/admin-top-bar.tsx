@@ -39,7 +39,7 @@ export function AdminTopBar({ adminEmail }: { adminEmail?: string | null }) {
           <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground">
             <Heart className="h-4 w-4" />
           </span>
-          <span className="truncate text-lg font-semibold">CareCircle</span>
+          <span className="truncate text-lg font-semibold">Kintwadi</span>
           <Badge variant="accent" className="hidden shrink-0 gap-1 sm:inline-flex">
             <ShieldCheck className="h-3 w-3" />
             Admin

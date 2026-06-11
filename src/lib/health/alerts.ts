@@ -99,7 +99,7 @@ export async function notifyOutOfRange(params: {
     const who = recipientName ?? 'the care recipient';
     await sendEscalation({
       subject: `Health alert: ${metricLabel} ${rangeLabel(status)}`,
-      message: `${metricLabel} for ${who} was logged at ${formattedValue} — ${rangeLabel(status)} set for the circle. Open CareCircle → Health for the trend.`,
+      message: `${metricLabel} for ${who} was logged at ${formattedValue} — ${rangeLabel(status)} set for the circle. Open Kintwadi → Health for the trend.`,
       attributes: { kind: 'health_alert', circleId, status },
     });
     serverLog('health', 'alertEscalation', 'success', { circleId, status });

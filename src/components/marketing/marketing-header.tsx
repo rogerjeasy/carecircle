@@ -47,7 +47,7 @@ export function MarketingHeader() {
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform group-hover:scale-105">
             <Users className="h-5 w-5" />
           </div>
-          <span className="font-serif text-xl font-semibold">CareCircle</span>
+          <span className="font-serif text-xl font-semibold">Kintwadi</span>
         </Link>
 
         {/* Desktop Nav */}
@@ -92,7 +92,7 @@ export function MarketingHeader() {
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
                     <Users className="h-4 w-4" />
                   </div>
-                  CareCircle
+                  Kintwadi
                 </SheetTitle>
               </SheetHeader>
               <nav className="mt-8 flex flex-col gap-4">

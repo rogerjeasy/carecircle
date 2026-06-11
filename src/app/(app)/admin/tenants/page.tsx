@@ -6,7 +6,7 @@ import { isPlatformDbConfigured } from "@/db/admin-db";
 import { getTenants } from "@/db/admin-queries";
 import { AdminPageHeader, MiniStat, TenantsTable, TenantCards, DemoFootnote } from "@/components/admin/sections";
 
-export const metadata = { title: "Tenants · CareCircle Admin" };
+export const metadata = { title: "Tenants · Kintwadi Admin" };
 
 export default async function AdminTenantsPage() {
   const admin = await requirePlatformAdmin();

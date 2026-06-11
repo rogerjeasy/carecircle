@@ -144,7 +144,7 @@ export function CircleWizard({ persistKey, onComplete, variant = "onboarding" }:
       }
 
       if (persistKey) localStorage.removeItem(persistKey);
-      toast.success(variant === "dialog" ? "New care circle created" : "Welcome to CareCircle!", {
+      toast.success(variant === "dialog" ? "New care circle created" : "Welcome to Kintwadi!", {
         description:
           result.invitesSent > 0
             ? `Your care circle is ready · ${result.invitesSent} invite${result.invitesSent !== 1 ? "s" : ""} sent.`

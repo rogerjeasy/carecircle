@@ -1,5 +1,5 @@
 /**
- * Follow-up checks: live Ask CareCircle (fixed selector), /incidents + /settings load
+ * Follow-up checks: live Ask Kintwadi (fixed selector), /incidents + /settings load
  * timing as Maria. Run: node scripts/e2e-followup.mjs [baseUrl]
  */
 import { chromium } from "playwright";
@@ -15,8 +15,8 @@ const context = await browser.newContext({ viewport: { width: 1380, height: 900 
 const page = await context.newPage();
 
 await page.goto(BASE + "/sign-in", { waitUntil: "load", timeout: 90000 });
-await page.fill("#email", "maria@carecircle.demo");
-await page.fill("#password", "CareCircle123");
+await page.fill("#email", "maria@kintwadi.demo");
+await page.fill("#password", "Kintwadi123");
 await Promise.all([
   page.waitForURL((u) => !u.pathname.startsWith("/sign-in"), { timeout: 90000 }),
   page.click('button[type="submit"]'),
@@ -37,7 +37,7 @@ for (const url of ["/incidents", "/settings"]) {
   }
 }
 
-// ---- Live Ask CareCircle ----
+// ---- Live Ask Kintwadi ----
 try {
   await page.goto(BASE + "/ask", { waitUntil: "load", timeout: 90000 });
   await page.waitForTimeout(3000);

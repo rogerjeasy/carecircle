@@ -9,7 +9,7 @@
  *    The DB RLS policies (drizzle/0009) are the final backstop if any check is bypassed.
  *  - All tenant writes run through `withAuthedDb()` (RLS-scoped transactions).
  *  - "Give a medication" is ONE transaction: write the administration, decrement supply, emit a
- *    timeline event, and audit — atomically (CareCircle-Data-Model.md §transactions).
+ *    timeline event, and audit — atomically (Kintwadi-Data-Model.md §transactions).
  *  - Two trails on every action: `serverLog(...)` (start/success/failure) + `recordAuditEvent(...)`
  *    when tenant data changed. Med names are health PII, so the rich create/edit action takes
  *    FormData (a single JSON `payload`) — Next's dev logger never prints FormData contents — and

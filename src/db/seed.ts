@@ -11,7 +11,7 @@
  * AWS_REGION (and credentials) are configured; otherwise the rows are still inserted so the
  * vault (and the RBAC deny) renders — files just won't open until a real upload replaces them.
  *
- * Ask CareCircle: after seeding, embed the record into Aurora pgvector with the backfill
+ * Ask Kintwadi: after seeding, embed the record into Aurora pgvector with the backfill
  * route (POST /api/ingest as the platform admin) so retrieval has chunks to search.
  */
 import 'dotenv/config';
@@ -23,7 +23,7 @@ import * as schema from './schema';
 
 // Same hash format as src/lib/password.ts (inlined here so the seed stays a plain node script
 // and doesn't pull in the app's `server-only` guard). Gives the demo accounts a real login.
-const DEMO_PASSWORD = 'CareCircle123';
+const DEMO_PASSWORD = 'Kintwadi123';
 function hashPassword(plain: string): Promise<string> {
   return new Promise((resolve, reject) => {
     const salt = randomBytes(16);
@@ -141,20 +141,20 @@ async function uploadDemoPdf(circleId: string, title: string, lines: string[]): 
 }
 
 const DEMO_EMAILS = [
-  'maria@carecircle.demo',
-  'paolo@carecircle.demo',
-  'grace@carecircle.demo',
-  'antonio@carecircle.demo',
-  'rosa@carecircle.demo',
-  'chen@carecircle.demo',
-  'admin@carecircle.demo',
+  'maria@kintwadi.demo',
+  'paolo@kintwadi.demo',
+  'grace@kintwadi.demo',
+  'antonio@kintwadi.demo',
+  'rosa@kintwadi.demo',
+  'chen@kintwadi.demo',
+  'admin@kintwadi.demo',
 ];
 
 /**
  * Idempotency: wipe any previous demo seed before re-seeding. Deleting the demo users' circles
  * cascades through every tenant table (all carry `circle_id … ON DELETE CASCADE`); the append-only
  * `audit_log` deliberately has NO foreign key, so its rows are removed explicitly. Real (non-demo)
- * users and circles are untouched — only data reachable from the @carecircle.demo accounts goes.
+ * users and circles are untouched — only data reachable from the @kintwadi.demo accounts goes.
  */
 async function resetDemoData() {
   const demoUsers = await db
@@ -165,7 +165,7 @@ async function resetDemoData() {
   const guestUsers = await db
     .select({ id: schema.users.id })
     .from(schema.users)
-    .where(sql`${schema.users.email} like '%@guest.carecircle.demo'`);
+    .where(sql`${schema.users.email} like '%@guest.kintwadi.demo'`);
   demoUsers.push(...guestUsers);
   if (demoUsers.length === 0) return;
   const userIds = demoUsers.map((u) => u.id);
@@ -186,7 +186,7 @@ async function resetDemoData() {
 }
 
 async function main() {
-  console.log('Seeding CareCircle demo data…');
+  console.log('Seeding Kintwadi demo data…');
   await resetDemoData();
 
   // ---------------------------------------------------------------------------
@@ -196,32 +196,32 @@ async function main() {
   const passwordHash = await hashPassword(DEMO_PASSWORD);
   const [maria] = await db
     .insert(schema.users)
-    .values({ name: 'Maria Santos', email: 'maria@carecircle.demo', passwordHash })
+    .values({ name: 'Maria Santos', email: 'maria@kintwadi.demo', passwordHash })
     .returning();
   const [paolo] = await db
     .insert(schema.users)
-    .values({ name: 'Paolo Santos', email: 'paolo@carecircle.demo', passwordHash })
+    .values({ name: 'Paolo Santos', email: 'paolo@kintwadi.demo', passwordHash })
     .returning();
   const [grace] = await db
     .insert(schema.users)
-    .values({ name: 'Grace Reyes', email: 'grace@carecircle.demo', passwordHash })
+    .values({ name: 'Grace Reyes', email: 'grace@kintwadi.demo', passwordHash })
     .returning();
   // The care recipient himself — the "dignity lens": a simplified, respectful view of his own day.
   const [antonio] = await db
     .insert(schema.users)
-    .values({ name: 'Antonio Santos', email: 'antonio@carecircle.demo', passwordHash })
+    .values({ name: 'Antonio Santos', email: 'antonio@kintwadi.demo', passwordHash })
     .returning();
   // Read-only extended family — reassurance without edit rights (and no restricted documents).
   const [rosa] = await db
     .insert(schema.users)
-    .values({ name: 'Rosa Mendoza', email: 'rosa@carecircle.demo', passwordHash })
+    .values({ name: 'Rosa Mendoza', email: 'rosa@kintwadi.demo', passwordHash })
     .returning();
 
-  // Platform super-admin (CareCircle staff). Belongs to NO circle — they operate the platform
+  // Platform super-admin (Kintwadi staff). Belongs to NO circle — they operate the platform
   // console at /admin. Access is granted by listing this email in PLATFORM_ADMIN_EMAILS.
   await db
     .insert(schema.users)
-    .values({ name: 'CareCircle Admin', email: 'admin@carecircle.demo', passwordHash })
+    .values({ name: 'Kintwadi Admin', email: 'admin@kintwadi.demo', passwordHash })
     .returning();
 
   // The care circle + the person being cared for.
@@ -289,7 +289,7 @@ async function main() {
   // "Primary doctor" block on the emergency card (which looks for an active clinician member).
   const [chen] = await db
     .insert(schema.users)
-    .values({ name: 'Dr. Lourdes Chen', email: 'chen@carecircle.demo', passwordHash })
+    .values({ name: 'Dr. Lourdes Chen', email: 'chen@kintwadi.demo', passwordHash })
     .returning();
   await db
     .insert(schema.membership)
@@ -512,7 +512,7 @@ async function main() {
   });
 
   // ---------------------------------------------------------------------------
-  // Appointments: a past trail (incl. THE cardiologist visit Ask CareCircle gets
+  // Appointments: a past trail (incl. THE cardiologist visit Ask Kintwadi gets
   // asked about) + an upcoming follow-up with open prep questions.
   // ---------------------------------------------------------------------------
   const apptRows = await db
@@ -1086,16 +1086,16 @@ async function main() {
   console.log('  Owner user (Maria):', maria.id);
   console.log(`  Demo PDFs uploaded to S3: ${uploadedPdfs}/${docDefs.length}${uploadedPdfs === 0 ? '  (set S3_BUCKET + AWS creds to upload real files)' : ''}`);
   console.log('  Tip: set app.current_user_id to a user id to test RLS by hand.');
-  console.log('  Tip: POST /api/ingest (as the platform admin) to embed the record for Ask CareCircle.');
+  console.log('  Tip: POST /api/ingest (as the platform admin) to embed the record for Ask Kintwadi.');
   console.log(`  Emergency-card public link (72h, what the printed QR encodes):  /e/${shareToken}`);
   console.log('\nDemo sign-in credentials (email / password):');
-  console.log(`  Coordinator     maria@carecircle.demo    ${DEMO_PASSWORD}`);
-  console.log(`  Remote family   paolo@carecircle.demo    ${DEMO_PASSWORD}`);
-  console.log(`  Caregiver       grace@carecircle.demo    ${DEMO_PASSWORD}   (digest in Tagalog)`);
-  console.log(`  Care recipient  antonio@carecircle.demo  ${DEMO_PASSWORD}`);
-  console.log(`  Read-only       rosa@carecircle.demo     ${DEMO_PASSWORD}`);
-  console.log(`  Clinician       chen@carecircle.demo     ${DEMO_PASSWORD}   (read-mostly clinical view)`);
-  console.log(`  Platform admin  admin@carecircle.demo    ${DEMO_PASSWORD}   (→ /admin)`);
+  console.log(`  Coordinator     maria@kintwadi.demo    ${DEMO_PASSWORD}`);
+  console.log(`  Remote family   paolo@kintwadi.demo    ${DEMO_PASSWORD}`);
+  console.log(`  Caregiver       grace@kintwadi.demo    ${DEMO_PASSWORD}   (digest in Tagalog)`);
+  console.log(`  Care recipient  antonio@kintwadi.demo  ${DEMO_PASSWORD}`);
+  console.log(`  Read-only       rosa@kintwadi.demo     ${DEMO_PASSWORD}`);
+  console.log(`  Clinician       chen@kintwadi.demo     ${DEMO_PASSWORD}   (read-mostly clinical view)`);
+  console.log(`  Platform admin  admin@kintwadi.demo    ${DEMO_PASSWORD}   (→ /admin)`);
 
   await client.end();
 }

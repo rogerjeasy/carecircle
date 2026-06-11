@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { AccountSection, CareCircleSection, MembersSection, HealthAlertsSection } from "./sections";
+import { AccountSection, KintwadiSection, MembersSection, HealthAlertsSection } from "./sections";
 import { NotificationsSettingsSection } from "./notifications-section";
 import { BillingSection } from "./billing-section";
 import { PrivacySecuritySection } from "./privacy-section";
@@ -10,7 +10,7 @@ import { SECTIONS, type SectionId } from "./data";
 
 const RENDERERS: Record<SectionId, React.ComponentType> = {
   account: AccountSection,
-  "care-circle": CareCircleSection,
+  "care-circle": KintwadiSection,
   members: MembersSection,
   notifications: NotificationsSettingsSection,
   "health-alerts": HealthAlertsSection,
@@ -27,7 +27,7 @@ export function SettingsScreen() {
     <div className="space-y-5">
       <div>
         <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">Settings</h1>
-        <p className="mt-1 text-muted-foreground">Manage your account, this circle, and how CareCircle works for you.</p>
+        <p className="mt-1 text-muted-foreground">Manage your account, this circle, and how Kintwadi works for you.</p>
       </div>
 
       {/* Phone: scrollable tab strip */}

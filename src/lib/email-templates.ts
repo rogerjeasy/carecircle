@@ -1,5 +1,5 @@
 /**
- * CareCircle email templates — the look & feel of everything we send.
+ * Kintwadi email templates — the look & feel of everything we send.
  *
  * Why a dedicated module: `email.ts` owns *delivery* (SES / SMTP / Resend / console); this owns
  * *content*. Each builder returns `{ subject, html, text }` — a polished, branded HTML version
@@ -105,7 +105,7 @@ function baseLayout(opts: { title: string; preheader: string; contentHtml: strin
                   <td style="vertical-align:middle;">
                     <table role="presentation" cellspacing="0" cellpadding="0" border="0"><tr>
                       <td width="36" height="36" align="center" valign="middle" bgcolor="${BRAND.primary}" style="border-radius:999px;color:#ffffff;font-size:18px;line-height:36px;font-family:${FONT};">&#9829;</td>
-                      <td style="padding-left:10px;font-family:${FONT};font-size:18px;font-weight:700;color:${BRAND.ink};">CareCircle</td>
+                      <td style="padding-left:10px;font-family:${FONT};font-size:18px;font-weight:700;color:${BRAND.ink};">Kintwadi</td>
                     </tr></table>
                   </td>
                 </tr>
@@ -122,10 +122,10 @@ function baseLayout(opts: { title: string; preheader: string; contentHtml: strin
           <tr>
             <td style="padding:22px 28px;">
               <p style="margin:0 0 6px;font-family:${FONT};font-size:12px;line-height:1.6;color:${BRAND.faint};">
-                CareCircle — coordinated care for the people you love.
+                Kintwadi — coordinated care for the people you love.
               </p>
               <p style="margin:0;font-family:${FONT};font-size:12px;line-height:1.6;color:${BRAND.faint};">
-                &copy; ${year} CareCircle. You're receiving this because someone used your email address with CareCircle.
+                &copy; ${year} Kintwadi. You're receiving this because someone used your email address with Kintwadi.
               </p>
             </td>
           </tr>
@@ -170,11 +170,11 @@ export const ROLE_LABELS: Record<string, string> = {
 /** "Reset your password" — one-time link, 1-hour expiry. */
 export function passwordResetEmail(params: { resetUrl: string }): EmailContent {
   const { resetUrl } = params;
-  const subject = 'Reset your CareCircle password';
+  const subject = 'Reset your Kintwadi password';
   const content =
     heading('Reset your password') +
     paragraph(
-      'We received a request to reset the password for your CareCircle account. Click the button below to choose a new one.',
+      'We received a request to reset the password for your Kintwadi account. Click the button below to choose a new one.',
     ) +
     button(resetUrl, 'Reset password') +
     paragraph(
@@ -186,18 +186,18 @@ export function passwordResetEmail(params: { resetUrl: string }): EmailContent {
     fallbackLink(resetUrl);
 
   const text = [
-    'Reset your CareCircle password',
+    'Reset your Kintwadi password',
     '',
-    'We received a request to reset the password for your CareCircle account.',
+    'We received a request to reset the password for your Kintwadi account.',
     'Choose a new password here (the link expires in 1 hour):',
     resetUrl,
     '',
     "If you didn't request this, you can safely ignore this email — your password won't change.",
     '',
-    '— CareCircle',
+    '— Kintwadi',
   ].join('\n');
 
-  return { subject, html: baseLayout({ title: subject, preheader: 'Reset your CareCircle password — this link expires in 1 hour.', contentHtml: content }), text };
+  return { subject, html: baseLayout({ title: subject, preheader: 'Reset your Kintwadi password — this link expires in 1 hour.', contentHtml: content }), text };
 }
 
 /** "You're invited to a care circle" — the onboarding invitation. */
@@ -211,12 +211,12 @@ export function invitationEmail(params: {
 }): EmailContent {
   const { inviteUrl, inviterName, recipientName, role, personalNote, expiresInDays = 7 } = params;
   const roleLabel = ROLE_LABELS[role] ?? role;
-  const subject = `${inviterName} invited you to help care for ${recipientName} on CareCircle`;
+  const subject = `${inviterName} invited you to help care for ${recipientName} on Kintwadi`;
 
   const content =
     heading(`You're invited to ${recipientName}'s Care Circle`) +
     paragraph(
-      `<strong>${esc(inviterName)}</strong> invited you to join the care circle for <strong>${esc(recipientName)}</strong> on CareCircle, where families and caregivers coordinate medications, appointments, daily updates, and more — together, in one calm place.`,
+      `<strong>${esc(inviterName)}</strong> invited you to join the care circle for <strong>${esc(recipientName)}</strong> on Kintwadi, where families and caregivers coordinate medications, appointments, daily updates, and more — together, in one calm place.`,
     ) +
     paragraph(`Your role: ${pill(roleLabel)}`) +
     (personalNote ? noteBlock(personalNote, inviterName) : '') +
@@ -228,7 +228,7 @@ export function invitationEmail(params: {
 
   const noteText = personalNote ? `\n"${personalNote}"\n— ${inviterName}\n` : '';
   const text = [
-    `${inviterName} invited you to help care for ${recipientName} on CareCircle.`,
+    `${inviterName} invited you to help care for ${recipientName} on Kintwadi.`,
     `Your role: ${roleLabel}.`,
     noteText,
     'Accept your invitation here:',
@@ -236,14 +236,14 @@ export function invitationEmail(params: {
     '',
     `This invitation expires in ${expiresInDays} days. If you weren't expecting it, you can safely ignore this email.`,
     '',
-    '— CareCircle',
+    '— Kintwadi',
   ].join('\n');
 
   return {
     subject,
     html: baseLayout({
       title: subject,
-      preheader: `${inviterName} invited you to help care for ${recipientName} on CareCircle.`,
+      preheader: `${inviterName} invited you to help care for ${recipientName} on Kintwadi.`,
       contentHtml: content,
     }),
     text,
@@ -278,20 +278,20 @@ export function joinedCircleEmail(params: {
     'From your dashboard you can follow the timeline, see medications and appointments, read the AI digest, and help out:',
     dashboardUrl,
     '',
-    '— CareCircle',
+    '— Kintwadi',
   ].join('\n');
   return {
     subject,
     html: baseLayout({
       title: subject,
-      preheader: `You're now part of ${circleName} on CareCircle.`,
+      preheader: `You're now part of ${circleName} on Kintwadi.`,
       contentHtml: content,
     }),
     text,
   };
 }
 
-/** "Welcome to CareCircle" — sent to the owner after they finish onboarding (optional, ready to wire). */
+/** "Welcome to Kintwadi" — sent to the owner after they finish onboarding (optional, ready to wire). */
 export function welcomeEmail(params: { recipientName: string; dashboardUrl: string }): EmailContent {
   const { recipientName, dashboardUrl } = params;
   const subject = `${recipientName}'s Care Circle is ready`;
@@ -311,7 +311,7 @@ export function welcomeEmail(params: { recipientName: string; dashboardUrl: stri
     "You've taken the first step toward calmer, better-coordinated care. Log medications, track appointments, record vitals, post updates, and invite your circle from the dashboard:",
     dashboardUrl,
     '',
-    '— CareCircle',
+    '— Kintwadi',
   ].join('\n');
   return {
     subject,
@@ -364,7 +364,7 @@ export function incidentEscalationEmail(params: {
     '',
     `If ${recipientName} is in immediate danger, call your local emergency number first.`,
     '',
-    '— CareCircle',
+    '— Kintwadi',
   ].join('\n');
 
   return {
@@ -447,7 +447,7 @@ export function dailyDigestEmail(params: {
     statCards(digest.stats) +
     digest.paragraphs.map((p) => paragraph(esc(p))).join('') +
     sourceList(digest.sources) +
-    `<div style="margin-top:24px;">${button(digestUrl, 'Open in CareCircle')}</div>` +
+    `<div style="margin-top:24px;">${button(digestUrl, 'Open in Kintwadi')}</div>` +
     paragraph(
       `<span style="color:${BRAND.muted};font-size:13px;">You&rsquo;re receiving this nightly digest because you&rsquo;re part of ${esc(recipientName)}&rsquo;s circle. You can turn it off anytime in your circle settings.</span>`,
     );
@@ -462,12 +462,12 @@ export function dailyDigestEmail(params: {
       ? ['', 'Moments from the day:', ...digest.sources.map((m) => `  ${m.time}  ${m.label}`)]
       : []),
     '',
-    'Open the full digest in CareCircle:',
+    'Open the full digest in Kintwadi:',
     digestUrl,
     '',
     `You're receiving this nightly digest because you're part of ${recipientName}'s circle. You can turn it off anytime in your circle settings.`,
     '',
-    '— CareCircle',
+    '— Kintwadi',
   ].join('\n');
 
   return {
@@ -497,8 +497,8 @@ export function serviceStatusAlertEmail(params: {
   const names = changed.map((s) => s.name).join(', ');
   const subject =
     kind === 'down'
-      ? `🔴 CareCircle alert: ${changed.length === 1 ? 'service down' : `${changed.length} services down`} — ${names}`
-      : `✅ CareCircle: ${changed.length === 1 ? 'service recovered' : 'services recovered'} — ${names}`;
+      ? `🔴 Kintwadi alert: ${changed.length === 1 ? 'service down' : `${changed.length} services down`} — ${names}`
+      : `✅ Kintwadi: ${changed.length === 1 ? 'service recovered' : 'services recovered'} — ${names}`;
 
   const serviceRow = (s: { name: string; metric: string }, color: string) =>
     `<tr>
@@ -543,7 +543,7 @@ export function serviceStatusAlertEmail(params: {
     '',
     `Checked ${checkedAtLabel}. Live console: ${statusUrl}`,
     '',
-    '— CareCircle platform monitor',
+    '— Kintwadi platform monitor',
   ].join('\n');
 
   return {

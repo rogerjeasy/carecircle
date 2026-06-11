@@ -2,12 +2,12 @@
  * RLS integration test — proves Aurora Row-Level Security ENFORCES tenant isolation and the
  * sensitivity tiers, at the database layer, exactly as the app relies on.
  *
- * This is the real guarantee behind CareCircle's security story: not "the app checks a role" but
+ * This is the real guarantee behind Kintwadi's security story: not "the app checks a role" but
  * "the database refuses to return rows the caller may not see." It therefore needs a real Postgres
  * (with the `vector` extension). It self-SKIPS unless `TEST_DATABASE_URL` points at a THROWAWAY
  * database — the run will `DROP SCHEMA public CASCADE`, so never aim it at anything you value.
  *
- *   TEST_DATABASE_URL="postgresql://postgres:password@localhost:5432/carecircle_test" npm test
+ *   TEST_DATABASE_URL="postgresql://postgres:password@localhost:5432/kintwadi_test" npm test
  *
  * No AWS is used: embeddings are written as literal vectors, so nothing calls Bedrock.
  *
@@ -15,7 +15,7 @@
  * app uses, which is SUBJECT to the policies):
  *   1. No signed-in user  → 0 rows (fail-closed).
  *   2. Cross-tenant       → a member of circle A sees none of circle B's rows, and vice-versa.
- *   3. Sensitivity tiers  → for rag_chunk retrieval (the Ask CareCircle vector store):
+ *   3. Sensitivity tiers  → for rag_chunk retrieval (the Ask Kintwadi vector store):
  *        • read_only      sees only `standard`
  *        • caregiver      sees `standard` + `sensitive`, never `restricted`
  *        • family/owner   see all three

@@ -2,7 +2,7 @@ import { defineConfig } from 'vitest/config';
 import { fileURLToPath } from 'node:url';
 
 /**
- * Vitest config for CareCircle.
+ * Vitest config for Kintwadi.
  *
  * - `@/…` resolves to ./src (mirrors tsconfig paths).
  * - `server-only` is stubbed: the npm package throws when imported outside an RSC bundle, but our

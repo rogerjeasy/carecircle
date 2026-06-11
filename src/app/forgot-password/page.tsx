@@ -37,7 +37,7 @@ function BrandPanel() {
         <span className="grid h-10 w-10 place-items-center rounded-full bg-primary text-primary-foreground">
           <Heart className="h-5 w-5" />
         </span>
-        <span className="text-xl font-semibold">CareCircle</span>
+        <span className="text-xl font-semibold">Kintwadi</span>
       </div>
 
       {/* Main content */}
@@ -54,7 +54,7 @@ function BrandPanel() {
       <div className="relative z-10 rounded-2xl border border-border/50 bg-card/50 p-6 backdrop-blur-sm">
         <p className="text-sm text-muted-foreground">
           Having trouble accessing your account?{" "}
-          <a href="mailto:support@carecircle.app" className="text-primary hover:underline">
+          <a href="mailto:support@kintwadi.app" className="text-primary hover:underline">
             Contact our support team
           </a>
         </p>
@@ -78,7 +78,7 @@ function BrandBanner() {
         <span className="grid h-9 w-9 place-items-center rounded-full bg-primary text-primary-foreground">
           <Heart className="h-4 w-4" />
         </span>
-        <span className="text-lg font-semibold">CareCircle</span>
+        <span className="text-lg font-semibold">Kintwadi</span>
       </div>
 
       {/* Tagline */}
@@ -228,7 +228,7 @@ export default function ForgotPasswordPage() {
             <span className="grid h-8 w-8 place-items-center rounded-full bg-primary text-primary-foreground">
               <Heart className="h-4 w-4" />
             </span>
-            <span className="text-lg font-semibold">CareCircle</span>
+            <span className="text-lg font-semibold">Kintwadi</span>
           </div>
           <ThemeToggle />
         </div>

@@ -2,7 +2,7 @@ import 'server-only';
 
 /**
  * Read layer for the Emergency Card — a projection of the care recipient's profile + active
- * medications + emergency contacts + advance directive (CareCircle-Data-Model.md notes the emergency
+ * medications + emergency contacts + advance directive (Kintwadi-Data-Model.md notes the emergency
  * card is a projection of the recipient row + active meds). Read-only; no mutations.
  *
  * Security (see AGENTS.md): the signed-in path is RLS-scoped via `withAuthedDb()`, pinned to the

@@ -20,12 +20,12 @@ function verify(plain, stored) {
 }
 
 try {
-  const [u] = await sql`select password_hash from "user" where email = 'maria@carecircle.demo'`;
+  const [u] = await sql`select password_hash from "user" where email = 'maria@kintwadi.demo'`;
   if (!u) {
     console.log('maria not found');
   } else {
     console.log('hash format:', u.password_hash.split('$')[0], 'N =', u.password_hash.split('$')[1]);
-    console.log('CareCircle123 verifies:', await verify('CareCircle123', u.password_hash));
+    console.log('Kintwadi123 verifies:', await verify('Kintwadi123', u.password_hash));
   }
 } catch (e) {
   console.error('ERR', e.code ?? '', e.message);

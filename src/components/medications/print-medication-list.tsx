@@ -62,7 +62,7 @@ function buildPrintHtml(meds: Medication[], dateLabel: string): string {
              .join("")}</tbody></table>`
         : ""
     }
-    <footer>CareCircle — please verify against the original prescriptions. Not a substitute for medical advice.</footer>
+    <footer>Kintwadi — please verify against the original prescriptions. Not a substitute for medical advice.</footer>
   </body></html>`;
 }
 

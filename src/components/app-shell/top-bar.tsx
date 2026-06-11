@@ -30,7 +30,7 @@ const pageTitles: Record<string, string> = {
   "/documents": "Documents",
   "/people": "People",
   "/digest": "Digest",
-  "/ask": "Ask CareCircle",
+  "/ask": "Ask Kintwadi",
   "/settings": "Settings",
   "/notifications": "Notifications",
   "/incidents": "Incidents",
@@ -114,7 +114,7 @@ export function TopBar({ sidebarCollapsed, onMenuClick }: TopBarProps) {
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Ask CareCircle..."
+              placeholder="Ask Kintwadi..."
               className="w-48 pl-9 lg:w-64"
             />
             <div className="absolute right-2 top-1/2 -translate-y-1/2">
@@ -157,7 +157,7 @@ export function TopBar({ sidebarCollapsed, onMenuClick }: TopBarProps) {
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Ask CareCircle..."
+              placeholder="Ask Kintwadi..."
               className="w-full pl-9"
               autoFocus
             />

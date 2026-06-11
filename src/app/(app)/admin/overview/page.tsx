@@ -24,7 +24,7 @@ import {
   DemoFootnote,
 } from "@/components/admin/sections";
 
-export const metadata = { title: "Overview · CareCircle Admin" };
+export const metadata = { title: "Overview · Kintwadi Admin" };
 
 // Live values carry a neutral pill — we show the real number, not a fabricated delta.
 const LIVE: Trend = { value: "live", direction: "flat", good: true };
@@ -65,7 +65,7 @@ export default async function AdminOverviewPage() {
       <div className="space-y-8">
         <AdminPageHeader
           title="Platform overview"
-          description="Everything happening across CareCircle — usage, security, and system health in one place."
+          description="Everything happening across Kintwadi — usage, security, and system health in one place."
         />
         <EmptyState
           title="Platform data unavailable"
@@ -100,7 +100,7 @@ export default async function AdminOverviewPage() {
     <div className="space-y-8">
       <AdminPageHeader
         title="Platform overview"
-        description="Everything happening across CareCircle — usage, security, and system health in one place."
+        description="Everything happening across Kintwadi — usage, security, and system health in one place."
         badge={
           <Badge variant="outline" className="gap-1">
             <Info className="h-3 w-3" />

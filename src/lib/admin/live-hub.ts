@@ -5,7 +5,7 @@
  * each browser tab polling. That makes server cost O(1) in the number of viewers, and ZERO when
  * nobody is watching (both the LISTEN connection and the monitor tear down on the last disconnect).
  *
- *   • Safety alerts → pure push. A Postgres trigger NOTIFYs `carecircle_safety` the instant an
+ *   • Safety alerts → pure push. A Postgres trigger NOTIFYs `kintwadi_safety` the instant an
  *     urgent/incident row is inserted (see db/setup-notify.ts); the hub re-reads the feed once and
  *     broadcasts it. No timer, no polling — work happens only when an incident actually occurs.
  *   • System health → AWS gives no "service down" event, so health is the one thing that must be
@@ -28,7 +28,7 @@ export type Subscriber = {
   send: (event: 'health' | 'safety', data: SystemHealthData | SafetyData) => void;
 };
 
-const SAFETY_CHANNEL = 'carecircle_safety';
+const SAFETY_CHANNEL = 'kintwadi_safety';
 const HEALTH_INTERVAL_MS = Number(process.env.ADMIN_HEALTH_INTERVAL_MS ?? 60_000);
 
 const subscribers = new Set<Subscriber>();

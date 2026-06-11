@@ -26,7 +26,7 @@ export function AIDigestCard({ digest }: { digest: DashboardDigest | null }) {
       <CardContent>
         <p className="text-sm text-muted-foreground leading-relaxed">
           {digest?.paragraph ||
-            "No digest yet for today. Once the circle logs medications, vitals and updates, CareCircle summarises the day here."}
+            "No digest yet for today. Once the circle logs medications, vitals and updates, Kintwadi summarises the day here."}
         </p>
         {/* With a digest: invite questions about it. Without one: route whoever may generate it
             straight to the Digest screen's Generate button instead of a dead end. */}
@@ -34,14 +34,14 @@ export function AIDigestCard({ digest }: { digest: DashboardDigest | null }) {
           <Link href="/ask">
             <Button variant="ghost" size="sm" className="mt-3 -ml-2 text-primary">
               <Sparkles className="mr-1.5 h-3.5 w-3.5" />
-              Ask CareCircle
+              Ask Kintwadi
             </Button>
           </Link>
         ) : (
           <Link href={canGenerate ? "/digest" : "/ask"}>
             <Button variant="ghost" size="sm" className="mt-3 -ml-2 text-primary">
               <Sparkles className="mr-1.5 h-3.5 w-3.5" />
-              {canGenerate ? "Generate today's digest" : "Ask CareCircle"}
+              {canGenerate ? "Generate today's digest" : "Ask Kintwadi"}
             </Button>
           </Link>
         )}

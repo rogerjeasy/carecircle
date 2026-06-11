@@ -17,7 +17,7 @@ export function OnboardingWizard() {
             <span className="grid h-8 w-8 place-items-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
               <Heart className="h-4 w-4" />
             </span>
-            <span className="font-semibold">CareCircle</span>
+            <span className="font-semibold">Kintwadi</span>
           </Link>
           <ThemeToggle />
         </div>

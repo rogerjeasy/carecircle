@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# .githooks/pre-commit  —  CareCircle (single Next.js app)
+# .githooks/pre-commit  —  Kintwadi (single Next.js app)
 #
 # Runs before every commit. Blocks if any check fails.
 #   1. Secret & credential scanning (always)
@@ -64,7 +64,7 @@ if [ -n "$staged_web" ]; then
         if (cd "$ROOT" && printf '%s\n' "$staged_web" | xargs npx --no-install eslint); then
             ok "ESLint"
         else
-            err "ESLint  →  cd carecircle && npx eslint <file>  (or: npm run lint)"
+            err "ESLint  →  cd kintwadi && npx eslint <file>  (or: npm run lint)"
         fi
 
         # ── 3. TypeScript types (whole project) ──────────────────────────────
@@ -72,7 +72,7 @@ if [ -n "$staged_web" ]; then
         if (cd "$ROOT" && npm run type-check --silent); then
             ok "TypeScript"
         else
-            err "TypeScript  →  cd carecircle && npm run type-check"
+            err "TypeScript  →  cd kintwadi && npm run type-check"
         fi
     fi
 fi

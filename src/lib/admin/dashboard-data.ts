@@ -70,7 +70,7 @@ export type StatusRecipient = {
 /**
  * How an account exists on the platform:
  *  - `member`: a normal signed-up user;
- *  - `guest`:  an anonymous "Run demo" account (guest-…@guest.carecircle.demo);
+ *  - `guest`:  an anonymous "Run demo" account (guest-…@guest.kintwadi.demo);
  *  - `staff`:  a platform admin on the PLATFORM_ADMIN_EMAILS allowlist (managed via env, not here).
  */
 export type PlatformUserKind = "member" | "guest" | "staff";

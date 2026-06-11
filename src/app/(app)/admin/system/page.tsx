@@ -11,7 +11,7 @@ import { StatusRecipients } from "@/components/admin/status-recipients";
 import type { SafetyData } from "@/lib/admin/system-types";
 import type { StatusRecipient } from "@/lib/admin/dashboard-data";
 
-export const metadata = { title: "System · CareCircle Admin" };
+export const metadata = { title: "System · Kintwadi Admin" };
 
 // Health is live — render fresh on every request (no static caching).
 export const dynamic = "force-dynamic";
@@ -33,7 +33,7 @@ export default async function AdminSystemPage() {
       <AdminPageHeader
         icon="server"
         title="System health"
-        description="Live status of the AWS + Vercel services powering CareCircle, the operational metrics behind them, and the safety signals being surfaced to families right now."
+        description="Live status of the AWS + Vercel services powering Kintwadi, the operational metrics behind them, and the safety signals being surfaced to families right now."
         badge={
           <Badge variant="success" className="gap-1.5">
             <Activity className="h-3 w-3" />

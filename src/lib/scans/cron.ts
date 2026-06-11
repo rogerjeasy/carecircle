@@ -205,7 +205,7 @@ async function refillSweep(db: Db, circleId: string): Promise<number> {
     await db.insert(timelineEvent).values({
       circleId,
       eventType: 'task',
-      summary: `CareCircle flagged ${label} for refill — ${med.supplyCount} left.`,
+      summary: `Kintwadi flagged ${label} for refill — ${med.supplyCount} left.`,
       refType: 'medication',
       refId: med.id,
     });
@@ -360,8 +360,8 @@ async function declineSweep(
     // Best-effort SNS escalation — the urgent timeline event is already the durable alert.
     try {
       await sendEscalation({
-        subject: `CareCircle decline alert: ${METRIC_LABEL[metric]}`,
-        message: `${summary} Open CareCircle → Health for the trend.`,
+        subject: `Kintwadi decline alert: ${METRIC_LABEL[metric]}`,
+        message: `${summary} Open Kintwadi → Health for the trend.`,
         attributes: { kind: 'decline_alert', circleId, metric },
       });
     } catch {

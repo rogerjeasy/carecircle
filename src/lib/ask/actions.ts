@@ -1,7 +1,7 @@
 'use server';
 
 /**
- * "Ask CareCircle" server actions — grounded RAG over THIS circle's record, with saved conversations.
+ * "Ask Kintwadi" server actions — grounded RAG over THIS circle's record, with saved conversations.
  *
  * Pipeline: retrieve (vector chunks from Aurora pgvector, sensitivity-filtered by RLS + a structured
  * snapshot of meds/vitals/appointments/tasks) → generate (Claude on Bedrock, grounded, citing
@@ -70,7 +70,7 @@ function makeTitle(question: string): string {
 function systemPrompt(recipientName: string | null): string {
   const who = recipientName ?? 'the care recipient';
   return [
-    `You are CareCircle's assistant, helping a caregiver understand ${who}'s care.`,
+    `You are Kintwadi's assistant, helping a caregiver understand ${who}'s care.`,
     'Answer ONLY using the CONTEXT provided. Never invent facts, dates, doses, or names.',
     'If the context does not contain the answer, say so plainly and suggest what to check.',
     'Use CONVERSATION SO FAR only to resolve references (e.g. "he", "that medication"); never treat it as fact about the record.',
@@ -126,16 +126,16 @@ const askSchema = z.object({
 });
 
 /** Ask a grounded question about the active circle's record, persisting the turn. */
-export async function askCareCircle(question: string, conversationId?: string | null): Promise<AskResult> {
+export async function askKintwadi(question: string, conversationId?: string | null): Promise<AskResult> {
   const ctx = await getActorContext();
-  serverLog('ask', 'askCareCircle', 'start', { actor: ctx?.userId });
+  serverLog('ask', 'askKintwadi', 'start', { actor: ctx?.userId });
   if (!ctx) return { ok: false, error: 'No active care circle.' };
 
   const parsed = askSchema.safeParse({ question, conversationId: conversationId ?? undefined });
   if (!parsed.success) return { ok: false, error: 'Please type a question.' };
 
   if (!isBedrockConfigured()) {
-    serverLog('ask', 'askCareCircle', 'failure', { actor: ctx.userId, reason: 'bedrock_unconfigured' });
+    serverLog('ask', 'askKintwadi', 'failure', { actor: ctx.userId, reason: 'bedrock_unconfigured' });
     return { ok: false, error: 'The assistant isn’t available yet — Bedrock is not configured.' };
   }
 
@@ -209,7 +209,7 @@ export async function askCareCircle(question: string, conversationId?: string | 
       return id;
     });
 
-    serverLog('ask', 'askCareCircle', 'success', {
+    serverLog('ask', 'askKintwadi', 'success', {
       actor: ctx.userId,
       conversation: savedId,
       vectorSources: vector.sources.length,
@@ -217,7 +217,7 @@ export async function askCareCircle(question: string, conversationId?: string | 
     });
     return { ok: true, answer: answerText, sources, conversationId: savedId, title };
   } catch (err) {
-    serverLog('ask', 'askCareCircle', 'failure', { actor: ctx.userId, reason: (err as Error)?.name ?? 'error' });
+    serverLog('ask', 'askKintwadi', 'failure', { actor: ctx.userId, reason: (err as Error)?.name ?? 'error' });
     return { ok: false, error: GENERIC_ERROR };
   }
 }

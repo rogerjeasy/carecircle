@@ -1,5 +1,5 @@
 /**
- * Generate the PWA icon set (public/icons/*) from an inline brand SVG — the CareCircle heart on
+ * Generate the PWA icon set (public/icons/*) from an inline brand SVG — the Kintwadi heart on
  * the evergreen-teal brand color (--primary, #0F766E). Run once (or whenever the brand changes):
  *
  *   node scripts/generate-icons.mjs
