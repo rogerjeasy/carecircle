@@ -26,9 +26,10 @@ flowchart LR
     UI["Next.js App — built with v0<br/>Role-scoped UI · React/Tailwind"]
     API["Server Actions / API Routes<br/>App backend & business logic"]
     AUTH["Auth.js<br/>Login · sessions · role claims"]
-    CRON["Vercel Cron<br/>digest · reminders · refill · decline scan"]
     INGEST["Ingest worker (after / backfill)<br/>chunk → embed → upsert"]
   end
+
+  CRON["Scheduler — GitHub Actions cron<br/>pings CRON_SECRET-gated routes<br/>digest · refill · decline scan<br/><i>(vercel.json crons on Pro)</i>"]
 
   subgraph AWS["AWS Cloud — us-east-1"]
     AUR[("Amazon Aurora PostgreSQL — Serverless v2<br/>Primary DB · RLS (RBAC) · ACID txns<br/>append-only audit log · pgvector (rag_chunk)")]
@@ -66,8 +67,8 @@ flowchart LR
 
   class AUR,REP,S3,BR,SES,SNS,SEC aws;
   class DSQL planned;
-  class EDGE,UI,API,AUTH,CRON,INGEST vercel;
-  class MEDS ext;
+  class EDGE,UI,API,AUTH,INGEST vercel;
+  class MEDS,CRON ext;
 ```
 
 ---
@@ -81,14 +82,14 @@ flowchart LR
 | **Next.js App (v0)** | React/Next.js frontend, scaffolded with v0 | Renders the role-specific UI | Uses the hackathon's encouraged v0 → Vercel path |
 | **Server Actions / API Routes** | Next.js server-side backend | All business logic, validation, DB/AI/notify orchestration | Keeps secrets server-side; the single integration point |
 | **Auth.js** | Authentication & session layer | Login, sessions, issues role claims used for access control | Roles drive both UI and DB-level permissions |
-| **Vercel Cron** | Scheduled trigger | Fires Daily Digest, reminders, refill & decline scans | Powers the proactive features without a standing server |
+| **Scheduler (GitHub Actions cron)** | Scheduled trigger pinging the app's `CRON_SECRET`-gated cron routes | Fires Daily Digest, reminders, refill & decline scans | The routes are scheduler-agnostic; GitHub Actions drives them because Vercel Hobby caps crons at once/day — on Pro the same routes move into `vercel.json` unchanged |
 | **Ingest worker** | Server-side RAG pipeline (runs via Next.js `after()` on upload/post, plus an admin-gated `/api/ingest` backfill route) | Extracts text (PDF/text), chunks it (LangChain), embeds it (Titan), and upserts to the Aurora `rag_chunk` table | Keeps indexing off the request's critical path; backfill re-indexes historical data |
 | **Amazon Aurora PostgreSQL (Serverless v2)** | **The primary database — relational *and* vector** | Stores the relational care record; enforces **RLS (RBAC)**; runs **ACID** med transactions; keeps an **append-only audit log**; hosts the **`pgvector`** chunk index (`rag_chunk`) for Ask | The deliberate architectural choice — one access-controlled database does relational *and* AI retrieval, so vector search inherits the exact same RLS boundary |
 | **Aurora Read Replica** | Read-scaling replica | Serves read-heavy dashboards | Keeps the glanceable "Is she okay today?" view fast at scale |
 | **Amazon S3** | Object storage | Stores documents (insurance, directives, labs) and timeline photos; the ingest worker reads file bytes from here to extract text | Right tool for files; keeps blobs out of the relational DB |
 | **Amazon Bedrock — Claude Sonnet 4.5** | Managed LLM service (Converse API) | **Generates** the grounded "Ask CareCircle" answers and the Daily Digest from retrieved context | Keeps generation inside AWS; Claude for warm, accurate, well-grounded answers |
 | **Amazon Bedrock — Titan Text Embeddings v2** (1024-d) | Managed embedding model | Turns document/timeline/audit chunks **and** the user's question into vectors stored in pgvector | All-AWS embeddings (no external provider); same Bedrock credentials as generation |
-| **Amazon SES** | Email service | Sends digests and notifications | Reliable transactional email |
+| **Amazon SES** | Email service | Sends digests and notifications | Reliable transactional email (the email layer is provider-pluggable — SES first, SMTP/Resend fallbacks for local dev / SES-sandbox accounts) |
 | **Amazon SNS** | Pub/sub & push | Delivers push + urgent escalations (e.g., a logged fall) | Fan-out alerts to all coordinators instantly |
 | **AWS IAM + STS (Vercel OIDC)** | Keyless credential federation | Each Vercel invocation exchanges its OIDC token for short-lived STS credentials (`AWS_ROLE_ARN`, `src/lib/aws/credentials.ts`) used by Bedrock/S3/SES/SNS | No long-lived AWS keys in production; the public repo never holds secrets |
 | **External Meds / Drug-Interaction API** | Third-party clinical data | Checks new meds for interactions & allergy conflicts | Powers the medication-safety feature (mocked for the demo) |
@@ -99,7 +100,7 @@ flowchart LR
 ## Request flows (the ones that matter for the demo)
 
 1. **Log a medication (ACID + RLS).** Aide → UI → Server Action → Aurora: a single transaction logs the administration event, decrements supply, and appends a timeline entry. RLS guarantees the aide can only touch the patient they're assigned to. A low-supply threshold queues a refill task.
-2. **The Daily Digest (AI + scheduled).** Vercel Cron → Server Action → reads the day's events from Aurora → Bedrock (Claude) summarizes into a warm update → stored back in Aurora → SES/SNS notifies the remote sibling.
+2. **The Daily Digest (AI + scheduled).** Scheduler (GitHub Actions cron, hourly) → `CRON_SECRET`-gated route → reads the day's events from Aurora → Bedrock (Claude) summarizes into a warm update → stored back in Aurora → SES/SNS notifies the remote sibling.
 3. **Ingest (RAG indexing).** A document upload (to S3) or a timeline post triggers the ingest worker via `after()` (and an admin-gated `/api/ingest` backfills history). The worker extracts text → chunks it (LangChain) → embeds each chunk with **Bedrock Titan** → upserts into Aurora's **`rag_chunk`** table (circle_id, source, **sensitivity tier**, title, href, timestamps, content, `vector(1024)`). The chunk rows are written under the actor's RLS context, so they're tenant-correct by construction.
 4. **Ask CareCircle (RAG retrieval + generation).** Family member asks a natural-language question → Server Action embeds it with **Bedrock Titan** → a **pgvector** cosine query (`embedding <=> $q`) runs inside an RLS-scoped transaction, so the `rag_chunk` SELECT policy **filters to the sensitivity tiers the asker's role may read automatically** → the retrieved chunks (plus a structured snapshot of meds/vitals/appointments/tasks) become grounded context → **Claude on Bedrock (Converse)** composes the answer with citations. The read is written to the append-only audit log.
 
