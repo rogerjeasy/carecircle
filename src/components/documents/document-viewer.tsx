@@ -72,8 +72,12 @@ export function DocumentViewer({ doc, open, onOpenChange, onDownload }: Document
   );
 }
 
-/** A simple synthesized "document page" stand-in for PDF/doc previews in the demo. */
+/**
+ * Shown only when the browser can't render the file inline: Word/Excel-type documents (no native
+ * viewer) or a row whose stored file is unavailable. PDFs and images render for real above.
+ */
 function FauxPage({ doc }: { doc: DocumentItem }) {
+  const isOfficeDoc = doc.kind === "doc";
   return (
     <div className="mx-auto w-full max-w-2xl">
       <div className="rounded-lg border bg-card p-6 shadow-sm sm:p-8">
@@ -95,7 +99,9 @@ function FauxPage({ doc }: { doc: DocumentItem }) {
         </div>
       </div>
       <p className="mt-3 text-center text-xs text-muted-foreground">
-        Preview placeholder — the full file would render here.
+        {isOfficeDoc && doc.downloadUrl
+          ? "Browsers can't preview this file type — use Download to open it."
+          : "This file isn't available right now — use Download to request it."}
       </p>
     </div>
   );
