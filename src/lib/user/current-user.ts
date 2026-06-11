@@ -19,6 +19,7 @@ import { users } from '@/db/schema';
 import { serverLog, maskEmail } from '@/lib/log';
 import { resolveActiveMembership } from '@/lib/circle/active-circle';
 import { resolveStoredUrl } from '@/lib/storage/s3';
+import { isPlatformAdminEmail } from '@/lib/admin/access';
 import { dbRoleToUiRole, uiRoleLabel } from '@/lib/circle/roles';
 import type { UserRole } from '@/components/app-shell/app-shell-context';
 
@@ -36,6 +37,12 @@ export interface CurrentUser {
   /** The active circle (cookie-resolved), or null if the user has no circle yet. */
   circleId: string | null;
   circleName: string | null;
+  /**
+   * True when the session email is on the PLATFORM_ADMIN_EMAILS allowlist. Drives UI visibility
+   * only (the sidebar "Admin dashboard" entry) — every /admin route is still hard-gated
+   * server-side by `requirePlatformAdmin()`.
+   */
+  isPlatformAdmin: boolean;
 }
 
 /** Derive a two-letter monogram from a name (falling back to the email local-part). */
@@ -113,5 +120,6 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     roleLabel,
     circleId,
     circleName,
+    isPlatformAdmin: isPlatformAdminEmail(email),
   };
 }

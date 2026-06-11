@@ -480,3 +480,79 @@ export function dailyDigestEmail(params: {
     text,
   };
 }
+
+/**
+ * Platform status alert for the ops recipients on /admin/system — sent by the transition
+ * detector (src/lib/admin/status-alerts.ts) the moment a service goes DOWN, and again when it
+ * recovers. Leads with what changed, shows everything still down, and links to the live console.
+ */
+export function serviceStatusAlertEmail(params: {
+  kind: 'down' | 'recovered';
+  changed: { name: string; metric: string }[];
+  stillDown: { name: string; metric: string }[];
+  statusUrl: string;
+  checkedAtLabel: string;
+}): EmailContent {
+  const { kind, changed, stillDown, statusUrl, checkedAtLabel } = params;
+  const names = changed.map((s) => s.name).join(', ');
+  const subject =
+    kind === 'down'
+      ? `🔴 CareCircle alert: ${changed.length === 1 ? 'service down' : `${changed.length} services down`} — ${names}`
+      : `✅ CareCircle: ${changed.length === 1 ? 'service recovered' : 'services recovered'} — ${names}`;
+
+  const serviceRow = (s: { name: string; metric: string }, color: string) =>
+    `<tr>
+      <td style="padding:10px 14px;border-bottom:1px solid ${BRAND.line};font-family:${FONT};font-size:14px;color:${BRAND.ink};">
+        <span style="display:inline-block;width:8px;height:8px;border-radius:999px;background:${color};margin-right:8px;"></span>
+        <strong>${esc(s.name)}</strong>
+      </td>
+      <td align="right" style="padding:10px 14px;border-bottom:1px solid ${BRAND.line};font-family:${FONT};font-size:13px;color:${BRAND.muted};">${esc(s.metric)}</td>
+    </tr>`;
+  const serviceTable = (rows: { name: string; metric: string }[], color: string) =>
+    `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:8px 0 20px;border:1px solid ${BRAND.line};border-radius:12px;border-collapse:separate;overflow:hidden;">
+      ${rows.map((s) => serviceRow(s, color)).join('')}
+    </table>`;
+
+  const content =
+    `<div style="font-size:36px;line-height:1;margin:0 0 8px;">${kind === 'down' ? '🚨' : '✅'}</div>` +
+    heading(kind === 'down' ? 'Service outage detected' : 'Service recovered') +
+    paragraph(
+      kind === 'down'
+        ? `The platform health monitor detected that the following ${changed.length === 1 ? 'service is' : 'services are'} <strong>down</strong> (checked ${esc(checkedAtLabel)}):`
+        : `The following ${changed.length === 1 ? 'service is' : 'services are'} <strong>back to normal</strong> (checked ${esc(checkedAtLabel)}):`,
+    ) +
+    serviceTable(changed, kind === 'down' ? '#dc2626' : '#16a34a') +
+    (kind === 'recovered' && stillDown.length > 0
+      ? paragraph('Still down:') + serviceTable(stillDown, '#dc2626')
+      : '') +
+    paragraph(
+      kind === 'down'
+        ? 'Users are seeing an in-app notice that the affected features are temporarily unavailable and being fixed. Check the live console for current probes and latencies.'
+        : 'No action needed — this is the all-clear for the services above.',
+    ) +
+    button(statusUrl, 'Open live system console') +
+    fallbackLink(statusUrl);
+
+  const text = [
+    subject,
+    '',
+    ...changed.map((s) => `- ${s.name}: ${kind === 'down' ? 'DOWN' : 'recovered'} (${s.metric})`),
+    ...(kind === 'recovered' && stillDown.length > 0
+      ? ['', 'Still down:', ...stillDown.map((s) => `- ${s.name} (${s.metric})`)]
+      : []),
+    '',
+    `Checked ${checkedAtLabel}. Live console: ${statusUrl}`,
+    '',
+    '— CareCircle platform monitor',
+  ].join('\n');
+
+  return {
+    subject,
+    html: baseLayout({
+      title: subject,
+      preheader: kind === 'down' ? `Down: ${names}` : `Recovered: ${names}`,
+      contentHtml: content,
+    }),
+    text,
+  };
+}

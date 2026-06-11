@@ -20,6 +20,7 @@ import { signOutAction } from "@/lib/auth/actions";
 
 const NAV = [
   { href: "/admin/overview", label: "Overview" },
+  { href: "/admin/users", label: "Users" },
   { href: "/admin/audit", label: "Audit & logs" },
   { href: "/admin/system", label: "System" },
   { href: "/admin/tenants", label: "Tenants" },

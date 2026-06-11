@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ReportIncidentButton } from "@/components/incidents/report-incident-button";
 import { NotificationsBell } from "@/components/notifications";
+import { getOnCallNowAction } from "@/lib/rota/actions";
 import { useAppShell, dashboardLabelByRole } from "./app-shell-context";
 
 // Page titles mapping
@@ -44,11 +45,26 @@ interface TopBarProps {
 
 export function TopBar({ sidebarCollapsed, onMenuClick }: TopBarProps) {
   const pathname = usePathname();
-  const { role } = useAppShell();
+  const { role, activeCircleId } = useAppShell();
   const [searchOpen, setSearchOpen] = React.useState(false);
 
-  // Current on-call person (would come from API in real app)
-  const onCallPerson = { name: "Grace", href: "/rota" };
+  // Who's on call right now — the same rota-derived answer as the dashboard card and the rota
+  // screen (one source of truth, so the chip can never contradict them). Re-resolved when the
+  // active circle changes; hidden while loading or when no on-call shift covers this moment.
+  const [onCallPerson, setOnCallPerson] = React.useState<{ name: string; until: string } | null>(null);
+  React.useEffect(() => {
+    let active = true;
+    getOnCallNowAction()
+      .then((p) => {
+        if (active) setOnCallPerson(p);
+      })
+      .catch(() => {
+        /* chip is decorative — fail silent, the rota screen remains authoritative */
+      });
+    return () => {
+      active = false;
+    };
+  }, [activeCircleId]);
 
   // The home route's title follows the role-view (Today / Home / Summary / Dashboard).
   const pageTitle =
@@ -77,14 +93,17 @@ export function TopBar({ sidebarCollapsed, onMenuClick }: TopBarProps) {
       <div className="flex min-w-0 flex-1 items-center gap-3">
         <h1 className="truncate text-lg font-semibold sm:text-xl">{pageTitle}</h1>
         
-        {/* On call status chip */}
-        <Link
-          href={onCallPerson.href}
-          className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-success/10 px-2.5 py-1 text-xs font-medium text-success hover:bg-success/20 transition-colors"
-        >
-          <Phone className="h-3 w-3" />
-          <span>On call: {onCallPerson.name}</span>
-        </Link>
+        {/* On call status chip — only when someone is actually on call right now */}
+        {onCallPerson && (
+          <Link
+            href="/rota"
+            title={`On call until ${onCallPerson.until}`}
+            className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-success/10 px-2.5 py-1 text-xs font-medium text-success hover:bg-success/20 transition-colors"
+          >
+            <Phone className="h-3 w-3" />
+            <span>On call: {onCallPerson.name}</span>
+          </Link>
+        )}
       </div>
 
       {/* Right side actions */}

@@ -27,6 +27,7 @@ import {
   Check,
   CalendarClock,
   ShieldAlert,
+  ShieldCheck,
 } from "lucide-react";
 import { useAppShell, roleLabels, dashboardLabelByRole, UserRole } from "./app-shell-context";
 import { cn } from "@/lib/utils";
@@ -223,6 +224,51 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
 
             return <React.Fragment key={item.href}>{navLink}</React.Fragment>;
           })}
+
+          {/* Platform admin console — visible only to allowlisted staff (PLATFORM_ADMIN_EMAILS).
+              UI visibility only; every /admin route is hard-gated by requirePlatformAdmin(). */}
+          {user?.isPlatformAdmin && (
+            <div className="pt-2">
+              <div className={cn("mb-1 border-t", collapsed ? "mx-2" : "mx-1")} />
+              {!collapsed && (
+                <p className="px-3 pb-1 pt-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Platform
+                </p>
+              )}
+              {(() => {
+                const isActive = pathname === "/admin" || pathname.startsWith("/admin/");
+                const adminLink = (
+                  <Link
+                    href="/admin"
+                    className={cn(
+                      "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                      isActive
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:bg-secondary hover:text-foreground",
+                      collapsed && "justify-center px-0"
+                    )}
+                    aria-current={isActive ? "page" : undefined}
+                  >
+                    {isActive && (
+                      <span className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 rounded-r-full bg-primary" />
+                    )}
+                    <ShieldCheck className={cn("h-5 w-5 shrink-0", isActive && "text-primary")} />
+                    {!collapsed && <span className="truncate">Admin dashboard</span>}
+                  </Link>
+                );
+
+                if (collapsed) {
+                  return (
+                    <Tooltip delayDuration={0}>
+                      <TooltipTrigger asChild>{adminLink}</TooltipTrigger>
+                      <TooltipContent side="right">Admin dashboard</TooltipContent>
+                    </Tooltip>
+                  );
+                }
+                return adminLink;
+              })()}
+            </div>
+          )}
         </nav>
       </ScrollArea>
 

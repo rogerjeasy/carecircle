@@ -7,9 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { useAppShell } from "@/components/app-shell/app-shell-context";
 import type { DashboardDigest, DashboardFairShare, DashboardOnCall } from "./types";
 
 export function AIDigestCard({ digest }: { digest: DashboardDigest | null }) {
+  const { role } = useAppShell();
+  // Mirrors the server's canGenerateDigest(): anyone but a read-only relative may generate.
+  const canGenerate = role !== "readonly";
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -24,12 +28,23 @@ export function AIDigestCard({ digest }: { digest: DashboardDigest | null }) {
           {digest?.paragraph ||
             "No digest yet for today. Once the circle logs medications, vitals and updates, CareCircle summarises the day here."}
         </p>
-        <Link href="/ask">
-          <Button variant="ghost" size="sm" className="mt-3 -ml-2 text-primary">
-            <Sparkles className="mr-1.5 h-3.5 w-3.5" />
-            Ask CareCircle
-          </Button>
-        </Link>
+        {/* With a digest: invite questions about it. Without one: route whoever may generate it
+            straight to the Digest screen's Generate button instead of a dead end. */}
+        {digest ? (
+          <Link href="/ask">
+            <Button variant="ghost" size="sm" className="mt-3 -ml-2 text-primary">
+              <Sparkles className="mr-1.5 h-3.5 w-3.5" />
+              Ask CareCircle
+            </Button>
+          </Link>
+        ) : (
+          <Link href={canGenerate ? "/digest" : "/ask"}>
+            <Button variant="ghost" size="sm" className="mt-3 -ml-2 text-primary">
+              <Sparkles className="mr-1.5 h-3.5 w-3.5" />
+              {canGenerate ? "Generate today's digest" : "Ask CareCircle"}
+            </Button>
+          </Link>
+        )}
       </CardContent>
     </Card>
   );

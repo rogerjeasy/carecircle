@@ -3,10 +3,13 @@ import { Badge } from "@/components/ui/badge";
 import { requirePlatformAdmin } from "@/db/dal";
 import { isPlatformDbConfigured } from "@/db/admin-db";
 import { getSystemHealth } from "@/lib/admin/system-health";
+import { getStatusRecipients } from "@/lib/admin/status-alerts";
 import { getSafetyAlerts } from "@/db/admin-queries";
 import { AdminPageHeader, DemoFootnote } from "@/components/admin/sections";
 import { AdminSystemLive } from "@/components/admin/admin-system-live";
+import { StatusRecipients } from "@/components/admin/status-recipients";
 import type { SafetyData } from "@/lib/admin/system-types";
+import type { StatusRecipient } from "@/lib/admin/dashboard-data";
 
 export const metadata = { title: "System · CareCircle Admin" };
 
@@ -19,9 +22,10 @@ export default async function AdminSystemPage() {
   const admin = await requirePlatformAdmin();
 
   // First snapshot rendered server-side so there's no loading flash; the client then keeps polling.
-  const [initialHealth, initialSafety] = await Promise.all([
+  const [initialHealth, initialSafety, recipients] = await Promise.all([
     getSystemHealth(),
     loadSafety(admin.id, admin.email),
+    loadRecipients(admin.id, admin.email),
   ]);
 
   return (
@@ -40,6 +44,8 @@ export default async function AdminSystemPage() {
 
       <AdminSystemLive initialHealth={initialHealth} initialSafety={initialSafety} />
 
+      <StatusRecipients recipients={recipients} />
+
       <DemoFootnote>
         Streamed live over Server-Sent Events · safety signals push the instant they&apos;re logged
         (Postgres NOTIFY) · AWS rows are real SDK health probes · audited cross-tenant path
@@ -55,4 +61,14 @@ async function loadSafety(id: string, email?: string | null): Promise<SafetyData
   }
   const alerts = await getSafetyAlerts({ id, email });
   return { alerts, checkedAt: new Date().toISOString() };
+}
+
+/** Load the alert recipients, degrading to an empty list (e.g. before the 0042/0043 migrations). */
+async function loadRecipients(id: string, email?: string | null): Promise<StatusRecipient[]> {
+  if (!isPlatformDbConfigured()) return [];
+  try {
+    return await getStatusRecipients({ id, email });
+  } catch {
+    return [];
+  }
 }

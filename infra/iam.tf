@@ -45,6 +45,21 @@ resource "aws_iam_user_policy" "app" {
         Effect   = "Allow"
         Action   = ["sns:Publish"]
         Resource = aws_sns_topic.escalations.arn
+      },
+      {
+        # The /admin/system health monitor pings Bedrock with this unbilled metadata call
+        # (src/lib/admin/system-health.ts). It only supports Resource = "*".
+        Sid      = "BedrockHealthProbe"
+        Effect   = "Allow"
+        Action   = ["bedrock:ListFoundationModels"]
+        Resource = "*"
+      },
+      {
+        # Same monitor's SNS probe — read the escalations topic's attributes (unbilled).
+        Sid      = "SNSHealthProbe"
+        Effect   = "Allow"
+        Action   = ["sns:GetTopicAttributes"]
+        Resource = aws_sns_topic.escalations.arn
       }
     ]
   })

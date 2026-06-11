@@ -136,41 +136,44 @@ interface AppShellContextValue {
   /** Whether the "Create a new care circle" modal is open. */
   createCircleOpen: boolean;
   setCreateCircleOpen: (open: boolean) => void;
+  /** Display names of platform services currently down (server-seeded; drives the outage banner). */
+  serviceOutages: string[];
 }
 
 const AppShellContext = React.createContext<AppShellContextValue | undefined>(undefined);
 
-export function AppShellProvider({ children }: { children: React.ReactNode }) {
+export function AppShellProvider({
+  children,
+  initialUser = null,
+  initialOutages = [],
+}: {
+  children: React.ReactNode;
+  /**
+   * The server-resolved signed-in user (from the (app) layout). Seeding the provider with it means
+   * the FIRST paint already renders the correct role lens — no flash of the coordinator default
+   * (and its ungated buttons) for recipients/read-only members while a client fetch resolves.
+   */
+  initialUser?: CurrentUser | null;
+  /** Server-resolved list of platform services currently down (see lib/status/outages.ts). */
+  initialOutages?: string[];
+}) {
   const router = useRouter();
-  const [role, setRoleState] = React.useState<UserRole>("coordinator");
-  const [user, setUser] = React.useState<CurrentUser | null>(null);
-  const [userLoading, setUserLoading] = React.useState(true);
+  const [role, setRoleState] = React.useState<UserRole>(initialUser?.role ?? "coordinator");
+  const [user, setUser] = React.useState<CurrentUser | null>(initialUser);
+  const [userLoading, setUserLoading] = React.useState(initialUser === null);
   const [circles, setCircles] = React.useState<SidebarCircle[]>([]);
-  const [activeCircleId, setActiveCircleIdState] = React.useState<string | null>(null);
+  const [activeCircleId, setActiveCircleIdState] = React.useState<string | null>(
+    initialUser?.circleId ?? null,
+  );
   const [createCircleOpen, setCreateCircleOpen] = React.useState(false);
 
-  // Optimistic default from localStorage so the demo "Switch role view" feels instant; the
-  // real membership role (fetched below) is authoritative and overrides this once it arrives.
-  //
-  // This MUST be a post-mount effect, not a lazy useState initializer: the server can't read
-  // localStorage, so initializing from it on the client would diverge from the server-rendered
-  // default and trigger a hydration mismatch. Reading after mount is the SSR-safe pattern — so the
-  // `react-hooks/set-state-in-effect` warning is a false positive for this localStorage sync.
+  // Fallback when the server didn't seed us (shouldn't happen under the (app) layout): fetch the
+  // real signed-in user client-side. The membership role drives the role-aware UI.
+  // When `initialUser` IS provided, the first paint is already authoritative — same end state as
+  // the old fetch-then-override flow, minus the flash. (The demo "Switch role view" still works:
+  // it's plain context state for the session; a reload restores the real membership role.)
   React.useEffect(() => {
-    let stored: string | null = null;
-    try {
-      stored = localStorage.getItem("role-view");
-    } catch {
-      /* storage unavailable (private mode, etc.) — keep the default */
-    }
-    if (stored && stored in roleLabels) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- SSR-safe localStorage hydration; see above
-      setRoleState(stored as UserRole);
-    }
-  }, []);
-
-  // Fetch the real signed-in user. Their membership role drives the role-aware UI by default.
-  React.useEffect(() => {
+    if (initialUser) return;
     let active = true;
     getCurrentUser()
       .then((u) => {
@@ -192,6 +195,7 @@ export function AppShellProvider({ children }: { children: React.ReactNode }) {
     return () => {
       active = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once; initialUser only seeds state
   }, []);
 
   // Fetch the user's real care circles for the "Switch Circle" menu, assigning avatar colors
@@ -212,9 +216,11 @@ export function AppShellProvider({ children }: { children: React.ReactNode }) {
     void loadCircles();
   }, [loadCircles]);
 
+  // The demo "Switch role view" — session-scoped context state only. Deliberately NOT persisted:
+  // a reload restores the user's real membership role (server-seeded), so a borrowed lens can't
+  // stick around and confuse the next page load.
   const setRole = React.useCallback((newRole: UserRole) => {
     setRoleState(newRole);
-    localStorage.setItem("role-view", newRole);
   }, []);
 
   // Update just the avatar so the sidebar/nav reflect a new photo immediately, without a full
@@ -274,6 +280,7 @@ export function AppShellProvider({ children }: { children: React.ReactNode }) {
         refreshCircles: loadCircles,
         createCircleOpen,
         setCreateCircleOpen,
+        serviceOutages: initialOutages,
       }}
     >
       {children}

@@ -56,3 +56,43 @@ export type Tenant = {
 };
 
 export type Alert = { id: string; title: string; circle: string; level: "high" | "medium"; time: string };
+
+/** One row in the service-status alert recipient list (/admin/system → notifications card). */
+export type StatusRecipient = {
+  id: string;
+  email: string;
+  name: string | null;
+  active: boolean;
+};
+
+// ── platform user directory (/admin/users) ──────────────────────────────────
+
+/**
+ * How an account exists on the platform:
+ *  - `member`: a normal signed-up user;
+ *  - `guest`:  an anonymous "Run demo" account (guest-…@guest.carecircle.demo);
+ *  - `staff`:  a platform admin on the PLATFORM_ADMIN_EMAILS allowlist (managed via env, not here).
+ */
+export type PlatformUserKind = "member" | "guest" | "staff";
+
+export type PlatformUserMembership = {
+  id: string;
+  circleId: string;
+  circleName: string;
+  role: string; // DB role enum value ('owner' | 'family_admin' | …)
+  roleLabel: string;
+  status: "active" | "invited" | "suspended";
+};
+
+export type PlatformUser = {
+  id: string;
+  name: string | null;
+  email: string;
+  kind: PlatformUserKind;
+  emailVerified: boolean;
+  hasPassword: boolean;
+  oauthProviders: string[];
+  lastSignIn: string | null; // human, pre-formatted to avoid hydration drift
+  lastSignInAt: number | null; // epoch ms — for stats/sorting without re-parsing
+  memberships: PlatformUserMembership[];
+};

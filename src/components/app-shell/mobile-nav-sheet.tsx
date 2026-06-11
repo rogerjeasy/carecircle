@@ -23,6 +23,7 @@ import {
   ChevronDown,
   Check,
   CalendarClock,
+  ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -191,6 +192,34 @@ export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
                 </Link>
               );
             })}
+
+            {/* Platform admin console — visible only to allowlisted staff (PLATFORM_ADMIN_EMAILS).
+                UI visibility only; every /admin route is hard-gated by requirePlatformAdmin(). */}
+            {user?.isPlatformAdmin && (
+              <div className="pt-2">
+                <div className="mx-1 mb-1 border-t" />
+                <p className="px-3 pb-1 pt-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Platform
+                </p>
+                <Link
+                  href="/admin"
+                  onClick={() => onOpenChange(false)}
+                  className={cn(
+                    "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                    pathname.startsWith("/admin")
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                  )}
+                  aria-current={pathname.startsWith("/admin") ? "page" : undefined}
+                >
+                  {pathname.startsWith("/admin") && (
+                    <span className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 rounded-r-full bg-primary" />
+                  )}
+                  <ShieldCheck className={cn("h-5 w-5 shrink-0", pathname.startsWith("/admin") && "text-primary")} />
+                  <span className="truncate">Admin dashboard</span>
+                </Link>
+              </div>
+            )}
           </nav>
         </ScrollArea>
 

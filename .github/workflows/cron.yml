@@ -16,12 +16,13 @@ on:
   schedule:
     - cron: "0 * * * *"    # hourly  → /api/cron/digest
     - cron: "15 */6 * * *" # 4×/day  → /api/cron/scans
+    - cron: "*/5 * * * *"  # ~5 min  → /api/cron/health (service-status alerts; GitHub may fire late)
   workflow_dispatch:
     inputs:
       job:
         description: Which cron endpoint to ping
         type: choice
-        options: [digest, scans]
+        options: [digest, scans, health]
         default: digest
 
 jobs:
@@ -32,8 +33,8 @@ jobs:
         env:
           APP_URL: ${{ vars.APP_URL }}
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
-          # schedule is empty on manual runs; the digest schedule is the hourly one.
-          JOB: ${{ github.event_name == 'workflow_dispatch' && inputs.job || (github.event.schedule == '0 * * * *' && 'digest' || 'scans') }}
+          # schedule is empty on manual runs; map each schedule to its endpoint.
+          JOB: ${{ github.event_name == 'workflow_dispatch' && inputs.job || (github.event.schedule == '0 * * * *' && 'digest' || (github.event.schedule == '15 */6 * * *' && 'scans' || 'health')) }}
         run: |
           if [ -z "$APP_URL" ] || [ -z "$CRON_SECRET" ]; then
             echo "::error::Set the APP_URL repo variable and CRON_SECRET repo secret (Settings → Secrets and variables → Actions)."

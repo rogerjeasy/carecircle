@@ -16,6 +16,8 @@ import { recordAuditEvent } from '@/db/audit';
 import { serverLog } from '@/lib/log';
 import { careShift, membership } from '@/db/schema';
 import { canManageRota } from './access';
+import { getRotaData } from './queries';
+import { onCallNow, to12h, firstName } from '@/components/rota/utils';
 import type { Shift, ShiftType } from '@/components/rota/types';
 
 export type ActionError = { ok: false; error: string };
@@ -160,4 +162,16 @@ export async function deleteShift(shiftId: string): Promise<ActionResult> {
     serverLog('rota', 'deleteShift', 'failure', { actor: ctx.userId, reason: (err as Error)?.name ?? 'error' });
     return { ok: false, error: GENERIC_ERROR };
   }
+}
+
+/**
+ * Who is on call RIGHT NOW in the active circle — the single source of truth for the top-bar
+ * chip, computed from the same rota rows + `onCallNow()` helper the dashboard card and the
+ * rota screen use, so the three can never disagree. Read-only (RLS-scoped via getRotaData).
+ */
+export async function getOnCallNowAction(): Promise<{ name: string; until: string } | null> {
+  const rota = await getRotaData();
+  if (!rota) return null;
+  const hit = onCallNow(rota.shifts, new Date(), rota.members);
+  return hit ? { name: firstName(hit.member.name), until: to12h(hit.shift.end) } : null;
 }

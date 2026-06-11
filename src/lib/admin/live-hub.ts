@@ -18,6 +18,7 @@
 import 'server-only';
 import { getPlatformClient, isPlatformDbConfigured, logPlatformAccess, type PlatformActor } from '@/db/admin-db';
 import { getSystemHealth } from '@/lib/admin/system-health';
+import { runStatusCheck } from '@/lib/admin/status-alerts';
 import { querySafetyAlerts } from '@/db/admin-queries';
 import type { SystemHealthData, SafetyData } from './system-types';
 
@@ -50,6 +51,12 @@ function broadcastHealth(h: SystemHealthData) {
 async function refreshHealth(onlyOnChange: boolean) {
   const h = await getSystemHealth();
   lastHealth = h;
+  // Opportunistic transition detection: while an admin is watching, the same probe results feed
+  // the status-alert pipeline (snapshot + outage emails) so transitions are caught within ~a
+  // minute instead of waiting for the cron. Fire-and-forget; alerting must never block the push.
+  runStatusCheck(h).catch((err) =>
+    console.error('[live-hub] status check failed:', (err as Error)?.name),
+  );
   const key = healthKey(h);
   if (!onlyOnChange || key !== lastHealthKey) {
     lastHealthKey = key;

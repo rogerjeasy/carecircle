@@ -83,6 +83,9 @@ export function DigestScreen({
   // A day not yet in the cache is still loading (the effect below fetches it).
   const loading = current === undefined;
 
+  const yesterdayStr = format(addDays(parseISO(`${today}T00:00:00`), -1), "yyyy-MM-dd");
+  const yesterdayState = byDate[yesterdayStr];
+
   const stopSpeech = React.useCallback(() => {
     if (typeof window !== "undefined" && "speechSynthesis" in window) window.speechSynthesis.cancel();
     setSpeaking(false);
@@ -109,6 +112,25 @@ export function DigestScreen({
   }, [dateStr, current]);
 
   React.useEffect(() => () => stopSpeech(), [stopSpeech]);
+
+  // When today has no digest yet (the common first-visit case), quietly prefetch yesterday's so
+  // the empty state can offer a one-tap "Read yesterday's digest" path — and the back-step is
+  // instant. Failures cache as resolved-empty (no toast) so we don't refetch in a loop.
+  React.useEffect(() => {
+    if (offset !== 0 || loading || digest || yesterdayState !== undefined) return;
+    let cancelled = false;
+    void loadDigest(yesterdayStr).then((res) => {
+      if (cancelled) return;
+      setByDate((prev) =>
+        prev[yesterdayStr]
+          ? prev
+          : { ...prev, [yesterdayStr]: res.ok ? { digest: res.digest, feedback: res.feedback } : { digest: null, feedback: null } },
+      );
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [offset, loading, digest, yesterdayState, yesterdayStr]);
 
   // Fetch the translation for the visible digest (no-op for English readers; server caches per
   // language per day, so repeats are instant). `null` marks a failed attempt so we don't loop.
@@ -303,14 +325,30 @@ export function DigestScreen({
             <SourceChips sources={digest.sources} />
           </>
         ) : (
-          <EmptyState canGenerate={canGenerate} onGenerate={handleGenerate} label={dateLabel} />
+          <EmptyState
+            canGenerate={canGenerate}
+            onGenerate={handleGenerate}
+            label={dateLabel}
+            onShowYesterday={offset === 0 && yesterdayState?.digest ? () => setOffset(-1) : undefined}
+          />
         )}
       </div>
     </div>
   );
 }
 
-function EmptyState({ canGenerate, onGenerate, label }: { canGenerate: boolean; onGenerate: () => void; label: string }) {
+function EmptyState({
+  canGenerate,
+  onGenerate,
+  label,
+  onShowYesterday,
+}: {
+  canGenerate: boolean;
+  onGenerate: () => void;
+  label: string;
+  /** Present when yesterday has a saved digest — offers a one-tap path so the page is never a dead end. */
+  onShowYesterday?: () => void;
+}) {
   return (
     <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed px-6 py-16 text-center">
       <div className="flex h-14 w-14 items-center justify-center rounded-full bg-secondary text-primary">
@@ -324,11 +362,21 @@ function EmptyState({ canGenerate, onGenerate, label }: { canGenerate: boolean; 
             : "Digests are written each evening once the day's care is logged."}
         </p>
       </div>
-      {canGenerate && (
-        <Button onClick={onGenerate}>
-          <Sparkles className="h-4 w-4" />
-          <span className="ml-1">Generate digest</span>
-        </Button>
+      {(canGenerate || onShowYesterday) && (
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          {canGenerate && (
+            <Button onClick={onGenerate}>
+              <Sparkles className="h-4 w-4" />
+              <span className="ml-1">Generate digest</span>
+            </Button>
+          )}
+          {onShowYesterday && (
+            <Button variant="outline" onClick={onShowYesterday}>
+              <ChevronLeft className="h-4 w-4" />
+              <span className="ml-1">Read yesterday&apos;s digest</span>
+            </Button>
+          )}
+        </div>
       )}
     </div>
   );

@@ -6,7 +6,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Sidebar, MobileBottomNav } from "./sidebar";
 import { TopBar } from "./top-bar";
 import { MobileNavSheet } from "./mobile-nav-sheet";
-import { AppShellProvider, useAppShell } from "./app-shell-context";
+import { ServiceStatusBanner } from "./service-status-banner";
+import { useAppShell } from "./app-shell-context";
 import { CreateCircleDialog } from "@/components/onboarding";
 
 interface AppShellProps {
@@ -52,54 +53,58 @@ export function AppShell({ children }: AppShellProps) {
     localStorage.setItem("sidebar-collapsed", String(newValue));
   };
 
+  // The AppShellProvider is mounted ONCE in src/app/(app)/layout.tsx (server-seeded with the
+  // signed-in user), so every page under the group — including ones that don't render AppShell,
+  // like /admin — shares the same role/circle context without a client-side identity fetch.
   return (
-    <AppShellProvider>
-      <TooltipProvider>
-        <div className="min-h-screen bg-background">
-          {/* Desktop/Tablet Sidebar - hidden on mobile (and when printing) */}
-          <div className="hidden md:block print:hidden">
-            <Sidebar collapsed={sidebarCollapsed} onToggle={handleToggleSidebar} />
-          </div>
-
-          {/* Mobile Nav Sheet */}
-          <MobileNavSheet open={mobileNavOpen} onOpenChange={setMobileNavOpen} />
-
-          {/* Main content area */}
-          <div
-            className={cn(
-              "flex min-h-screen flex-col transition-all duration-300",
-              // Match the sidebar width at every breakpoint >= md so content
-              // never overlaps the sidebar (whether collapsed or expanded).
-              sidebarCollapsed ? "md:ml-[72px]" : "md:ml-[264px]",
-              // Full-bleed when printing (chrome is hidden)
-              "print:ml-0"
-            )}
-          >
-            {/* Top bar */}
-            <TopBar
-              sidebarCollapsed={sidebarCollapsed}
-              onMenuClick={() => setMobileNavOpen(true)}
-            />
-
-            {/* Page content */}
-            <main className="flex-1 pb-20 md:pb-0 print:pb-0">
-              <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 print:max-w-none print:p-0">
-                <div className="motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300">
-                  {children}
-                </div>
-              </div>
-            </main>
-          </div>
-
-          {/* Mobile bottom nav - only on mobile */}
-          <MobileBottomNav onMoreClick={() => setMobileNavOpen(true)} />
-
-          {/* "Create a new care circle" modal — reuses the onboarding wizard in-place so the
-              user never leaves the dashboard. Mounted once, opened from either nav switcher. */}
-          <CreateCircleHost />
+    <TooltipProvider>
+      <div className="min-h-screen bg-background">
+        {/* Desktop/Tablet Sidebar - hidden on mobile (and when printing) */}
+        <div className="hidden md:block print:hidden">
+          <Sidebar collapsed={sidebarCollapsed} onToggle={handleToggleSidebar} />
         </div>
-      </TooltipProvider>
-    </AppShellProvider>
+
+        {/* Mobile Nav Sheet */}
+        <MobileNavSheet open={mobileNavOpen} onOpenChange={setMobileNavOpen} />
+
+        {/* Main content area */}
+        <div
+          className={cn(
+            "flex min-h-screen flex-col transition-all duration-300",
+            // Match the sidebar width at every breakpoint >= md so content
+            // never overlaps the sidebar (whether collapsed or expanded).
+            sidebarCollapsed ? "md:ml-[72px]" : "md:ml-[264px]",
+            // Full-bleed when printing (chrome is hidden)
+            "print:ml-0"
+          )}
+        >
+          {/* Top bar */}
+          <TopBar
+            sidebarCollapsed={sidebarCollapsed}
+            onMenuClick={() => setMobileNavOpen(true)}
+          />
+
+          {/* Platform outage notice — only renders when a service is actually down */}
+          <ServiceStatusBanner />
+
+          {/* Page content */}
+          <main className="flex-1 pb-20 md:pb-0 print:pb-0">
+            <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 print:max-w-none print:p-0">
+              <div className="motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300">
+                {children}
+              </div>
+            </div>
+          </main>
+        </div>
+
+        {/* Mobile bottom nav - only on mobile */}
+        <MobileBottomNav onMoreClick={() => setMobileNavOpen(true)} />
+
+        {/* "Create a new care circle" modal — reuses the onboarding wizard in-place so the
+            user never leaves the dashboard. Mounted once, opened from either nav switcher. */}
+        <CreateCircleHost />
+      </div>
+    </TooltipProvider>
   );
 }
 

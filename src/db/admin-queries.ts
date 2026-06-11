@@ -12,6 +12,7 @@ import 'server-only';
 import { and, desc, eq, gte, isNull, or, sql } from 'drizzle-orm';
 import { getPlatformDb, logPlatformAccess, type PlatformActor } from './admin-db';
 import {
+  accounts,
   auditLog,
   platformAuthAudit,
   careCircle,
@@ -21,7 +22,14 @@ import {
   timelineEvent,
   users,
 } from './schema';
-import type { Alert, AuditEvent, Tenant } from '@/lib/admin/dashboard-data';
+import { isPlatformAdminEmail } from '@/lib/admin/access';
+import type {
+  Alert,
+  AuditEvent,
+  PlatformUser,
+  PlatformUserMembership,
+  Tenant,
+} from '@/lib/admin/dashboard-data';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -412,6 +420,109 @@ export async function getTenants(actor: PlatformActor): Promise<Tenant[]> {
     lastActive: lastMap.has(c.id) ? formatRelative(lastMap.get(c.id)!) : 'No activity yet',
     status: attnSet.has(c.id) ? 'attention' : 'healthy',
   }));
+}
+
+/**
+ * Anonymous "Run demo" guests get this email domain (see src/lib/auth/demo.ts). It is how the
+ * user directory tells a real sign-up from a throwaway reviewer account.
+ */
+const GUEST_EMAIL_SUFFIX = '@guest.carecircle.demo';
+
+/**
+ * The complete platform user directory for /admin/users: every account (normal sign-ups AND
+ * anonymous demo guests) with its circle memberships + roles, auth method, and last sign-in.
+ * Four flat queries stitched in memory (small N) on the privileged connection; the access is
+ * recorded against the requesting admin like every other cross-tenant read.
+ */
+export async function getPlatformUsers(actor: PlatformActor): Promise<PlatformUser[]> {
+  const db = getPlatformDb();
+
+  const [userRows, membershipRows, oauthRows, loginRows] = await Promise.all([
+    db
+      .select({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        emailVerified: users.emailVerified,
+        // Only ever reduced to a boolean below — the hash never leaves this function.
+        passwordHash: users.passwordHash,
+      })
+      .from(users),
+    db
+      .select({
+        id: membership.id,
+        userId: membership.userId,
+        circleId: membership.circleId,
+        circleName: careCircle.name,
+        role: membership.role,
+        status: membership.status,
+      })
+      .from(membership)
+      .innerJoin(careCircle, eq(careCircle.id, membership.circleId))
+      .where(and(isNull(membership.deletedAt), isNull(careCircle.deletedAt)))
+      .orderBy(careCircle.name),
+    db.select({ userId: accounts.userId, provider: accounts.provider }).from(accounts),
+    safeAuthAudit<{ userId: string; lastAt: string }[]>([], () =>
+      db
+        .select({
+          userId: platformAuthAudit.actorUserId,
+          lastAt: sql<string>`max(${platformAuthAudit.occurredAt})`,
+        })
+        .from(platformAuthAudit)
+        .where(eq(platformAuthAudit.action, 'login'))
+        .groupBy(platformAuthAudit.actorUserId),
+    ),
+  ]);
+
+  const membershipsByUser = new Map<string, PlatformUserMembership[]>();
+  for (const m of membershipRows) {
+    const list = membershipsByUser.get(m.userId) ?? [];
+    list.push({
+      id: m.id,
+      circleId: m.circleId,
+      circleName: m.circleName,
+      role: m.role,
+      roleLabel: ROLE_LABELS[m.role] ?? m.role,
+      status: m.status,
+    });
+    membershipsByUser.set(m.userId, list);
+  }
+
+  const providersByUser = new Map<string, string[]>();
+  for (const a of oauthRows) {
+    const list = providersByUser.get(a.userId) ?? [];
+    list.push(a.provider);
+    providersByUser.set(a.userId, list);
+  }
+
+  const lastLoginByUser = new Map(loginRows.map((r) => [r.userId, new Date(r.lastAt)]));
+
+  logPlatformAccess(actor, 'users', { count: userRows.length });
+
+  return userRows
+    .map((u): PlatformUser => {
+      const lastLogin = lastLoginByUser.get(u.id) ?? null;
+      return {
+        id: u.id,
+        name: u.name,
+        email: u.email,
+        kind: isPlatformAdminEmail(u.email)
+          ? 'staff'
+          : u.email.toLowerCase().endsWith(GUEST_EMAIL_SUFFIX)
+            ? 'guest'
+            : 'member',
+        emailVerified: Boolean(u.emailVerified),
+        hasPassword: Boolean(u.passwordHash),
+        oauthProviders: providersByUser.get(u.id) ?? [],
+        lastSignIn: lastLogin ? formatRelative(lastLogin) : null,
+        lastSignInAt: lastLogin ? lastLogin.getTime() : null,
+        memberships: membershipsByUser.get(u.id) ?? [],
+      };
+    })
+    .sort(
+      (a, b) =>
+        (b.lastSignInAt ?? 0) - (a.lastSignInAt ?? 0) || a.email.localeCompare(b.email),
+    );
 }
 
 /** Format a timestamp as HH:MM (24h, UTC-stable) — deterministic across server/client renders. */

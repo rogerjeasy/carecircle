@@ -201,68 +201,25 @@ export default function SignInPage() {
     window.location.assign(destination);
   };
 
+  // The form renders exactly ONCE; only the surrounding chrome (brand panel / banner / logo bar)
+  // swaps per breakpoint. Per-breakpoint form copies would duplicate id="email"/"password" in the
+  // DOM, breaking label association, screen readers, and password-manager autofill.
   return (
-    <div className="min-h-screen bg-background">
-      {/* Desktop/Tablet Landscape: Two-pane split */}
-      <div className="hidden lg:grid lg:min-h-screen lg:grid-cols-2">
-        {/* Left: Brand Panel */}
+    <div className="min-h-screen bg-background lg:grid lg:grid-cols-2">
+      {/* Left: Brand Panel — desktop only */}
+      <div className="hidden lg:block">
         <BrandPanel />
-
-        {/* Right: Form */}
-        <div className="flex flex-col">
-          {/* Top bar with theme toggle */}
-          <div className="flex justify-end p-4">
-            <ThemeToggle />
-          </div>
-
-          {/* Centered form */}
-          <div className="flex flex-1 items-center justify-center px-8 pb-8">
-            <SignInForm
-              formData={formData}
-              errors={errors}
-              touched={touched}
-              showPassword={showPassword}
-              setShowPassword={setShowPassword}
-              isSubmitting={isSubmitting}
-              rememberMe={rememberMe}
-              setRememberMe={setRememberMe}
-              credentialsError={credentialsError}
-              handleChange={handleChange}
-              handleBlur={handleBlur}
-              handleSubmit={handleSubmit}
-            />
-          </div>
-        </div>
       </div>
 
-      {/* Tablet Portrait (768-1023px): Banner + Form */}
-      <div className="hidden min-h-screen flex-col md:flex lg:hidden">
-        {/* Top: Slim Banner */}
-        <BrandBanner />
-
-        {/* Form */}
-        <div className="flex flex-1 items-center justify-center px-8 py-8">
-          <SignInForm
-            formData={formData}
-            errors={errors}
-            touched={touched}
-            showPassword={showPassword}
-            setShowPassword={setShowPassword}
-            isSubmitting={isSubmitting}
-            rememberMe={rememberMe}
-            setRememberMe={setRememberMe}
-            credentialsError={credentialsError}
-            handleChange={handleChange}
-            handleBlur={handleBlur}
-            handleSubmit={handleSubmit}
-          />
+      {/* Right column */}
+      <div className="flex min-h-screen flex-col">
+        {/* Tablet Portrait (768-1023px): slim brand banner */}
+        <div className="hidden md:block lg:hidden">
+          <BrandBanner />
         </div>
-      </div>
 
-      {/* Mobile: No brand panel, centered form */}
-      <div className="flex min-h-screen flex-col md:hidden">
-        {/* Top bar with logo and theme toggle */}
-        <div className="flex items-center justify-between p-4">
+        {/* Mobile: logo + theme toggle */}
+        <div className="flex items-center justify-between p-4 md:hidden">
           <div className="flex items-center gap-2">
             <span className="grid h-8 w-8 place-items-center rounded-full bg-primary text-primary-foreground">
               <Heart className="h-4 w-4" />
@@ -272,8 +229,13 @@ export default function SignInPage() {
           <ThemeToggle />
         </div>
 
-        {/* Centered form with padding (not edge-to-edge) */}
-        <div className="flex flex-1 items-center justify-center px-5 pb-8">
+        {/* Desktop: theme toggle row */}
+        <div className="hidden justify-end p-4 lg:flex">
+          <ThemeToggle />
+        </div>
+
+        {/* Centered form — the single instance */}
+        <div className="flex flex-1 items-center justify-center px-5 pb-8 md:px-8 md:py-8 lg:py-0 lg:pb-8">
           <SignInForm
             formData={formData}
             errors={errors}

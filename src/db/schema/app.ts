@@ -19,6 +19,7 @@ import {
   doublePrecision,
   index,
   unique,
+  uniqueIndex,
   check,
   vector,
 } from 'drizzle-orm/pg-core';
@@ -1070,4 +1071,45 @@ export const invoice = pgTable(
     ...audit,
   },
   (t) => [index('invoice_circle_time_idx').on(t.circleId, t.issuedAt)],
+);
+
+// ---- Platform service-status monitoring & alerting (staff-facing; NO tenant data) ----
+// Like `platform_auth_audit`, these tables belong to the platform layer: written and read through
+// the privileged admin connection only. The RLS migration enables row security with NO policies,
+// so the least-privilege app role can never read alert recipients or rewrite the status board —
+// the lone exception is the user-facing outage banner, which reads `service_status` via the
+// privileged client behind a fail-quiet helper (src/lib/status/outages.ts).
+
+/**
+ * Last known status of each monitored platform service (one row per service, keyed by the
+ * display name used on /admin/system). `since` marks when the CURRENT status began — the
+ * transition detector (src/lib/admin/status-alerts.ts) compares fresh probes against these rows
+ * and emails the alert recipients only on a change, never on every check.
+ */
+export const serviceStatus = pgTable('service_status', {
+  name: text('name').primaryKey(),
+  // "operational" | "degraded" | "down" (mirrors ServiceStatus in lib/admin/system-types).
+  status: text('status').notNull(),
+  metric: text('metric').notNull().default(''),
+  since: timestamp('since', { withTimezone: true }).defaultNow().notNull(),
+  checkedAt: timestamp('checked_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+/**
+ * Who gets the "service down / recovered" alert emails. Managed by platform admins on
+ * /admin/system; seeded with the primary admin address by the migration. `active` lets a
+ * recipient be paused without losing them. Hard-deleted on remove (no tenant data to retain).
+ */
+export const statusAlertRecipient = pgTable(
+  'status_alert_recipient',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    email: text('email').notNull(),
+    name: text('name'),
+    active: boolean('active').notNull().default(true),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  // One row per address regardless of casing — same rule as the user table.
+  (t) => [uniqueIndex('status_alert_recipient_email_uq').on(sql`lower(${t.email})`)],
 );

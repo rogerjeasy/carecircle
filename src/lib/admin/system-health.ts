@@ -63,8 +63,20 @@ const bedrock = async () =>
   (_bedrock ??= new BedrockClient({ region: REGION, maxAttempts: 1, credentials: await awsCredentials() }));
 
 /**
+ * An access-denied response is proof the SERVICE is up — it answered — but our IAM policy is
+ * missing the probe's action (see infra/iam.tf "HealthProbe" statements). Surfacing that as
+ * "degraded · check IAM" stops a permissions gap from masquerading as an AWS outage.
+ */
+function isAccessDenied(err: unknown): boolean {
+  const name = (err as { name?: string })?.name;
+  const status = (err as { $metadata?: { httpStatusCode?: number } })?.$metadata?.httpStatusCode;
+  return name === 'AccessDeniedException' || name === 'AuthorizationErrorException' || status === 403;
+}
+
+/**
  * Run an AWS SDK probe under a hard timeout. Any successful response = operational (latency shown);
- * an error or timeout = down. `onResult` may downgrade an otherwise-ok result (e.g. SES paused).
+ * access denied = degraded (the service answered; our IAM policy lacks the probe action); any other
+ * error or timeout = down. `run` may downgrade an otherwise-ok result (e.g. SES paused).
  */
 async function probe(
   configured: boolean,
@@ -77,7 +89,8 @@ async function probe(
   try {
     const override = await run(controller.signal);
     return override ?? { status: 'operational', metric: `${Math.round(performance.now() - started)}ms` };
-  } catch {
+  } catch (err) {
+    if (isAccessDenied(err)) return { status: 'degraded', metric: 'check IAM' };
     return { status: 'down', metric: 'unreachable' };
   } finally {
     clearTimeout(timer);

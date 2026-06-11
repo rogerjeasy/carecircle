@@ -21,6 +21,7 @@ import {
   joinedCircleEmail,
   dailyDigestEmail,
   incidentEscalationEmail,
+  serviceStatusAlertEmail,
 } from '@/lib/email-templates';
 import { serverLog, maskEmail } from '@/lib/log';
 import type { Digest } from '@/components/digest/types';
@@ -362,4 +363,22 @@ export async function sendEscalation(params: {
     serverLog('escalation', 'publish', 'failure', { reason: (err as Error)?.name ?? 'error' });
     return false;
   }
+}
+
+/**
+ * Email one ops recipient a platform service-status alert (outage or recovery). Best-effort at
+ * the call site: the status checker fans out with Promise.allSettled so one bad address never
+ * blocks the rest. `deliver()` logs success/failure with a masked address.
+ */
+export async function sendServiceStatusEmail(params: {
+  to: string;
+  kind: 'down' | 'recovered';
+  changed: { name: string; metric: string }[];
+  stillDown: { name: string; metric: string }[];
+  statusUrl: string;
+  checkedAtLabel: string;
+}): Promise<void> {
+  const { to, ...rest } = params;
+  const { subject, html, text } = serviceStatusAlertEmail(rest);
+  await deliver({ to, subject, html, text });
 }
