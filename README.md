@@ -5,6 +5,15 @@
 
 [![CI — lint, types, unit + RLS integration proof](https://github.com/rogerjeasy/carecircle/actions/workflows/ci.yml/badge.svg)](https://github.com/rogerjeasy/carecircle/actions/workflows/ci.yml)
 
+![Next.js](https://img.shields.io/badge/Next.js_16-000000?logo=nextdotjs&logoColor=white)
+![React](https://img.shields.io/badge/React_19-20232A?logo=react&logoColor=61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
+![Amazon Aurora PostgreSQL](https://img.shields.io/badge/Amazon_Aurora_PostgreSQL-527FFF?logo=amazonwebservices&logoColor=white)
+![pgvector](https://img.shields.io/badge/pgvector-4169E1?logo=postgresql&logoColor=white)
+![Amazon Bedrock](https://img.shields.io/badge/Amazon_Bedrock_(Claude_+_Titan)-FF9900?logo=amazonwebservices&logoColor=white)
+![Vercel](https://img.shields.io/badge/Vercel-000000?logo=vercel&logoColor=white)
+![Terraform](https://img.shields.io/badge/Terraform-844FBA?logo=terraform&logoColor=white)
+
 Built for the **H0: Hack the Zero Stack** hackathon (AWS Databases + Vercel/v0). <br>
 **Track:** Monetizable B2C (with a clear B2B expansion) · **Primary database:** **Amazon Aurora PostgreSQL (Serverless v2)** · **AI:** Amazon Bedrock (Claude + Titan) · **Frontend:** Next.js on **Vercel**.
 
@@ -67,9 +76,58 @@ See [`AGENTS.md`](./AGENTS.md) for the full, enforced invariants. In short:
 
 ---
 
-## Tech stack
+## Tech stack & tools
 
-Next.js 16 (App Router, Server Actions) · React 19 · TypeScript · Tailwind v4 + Radix UI · Drizzle ORM · `postgres.js` · Auth.js (NextAuth v5) · AWS SDK v3 (Bedrock Runtime, S3, SES, SNS) · `pgvector` · LangChain text splitters · Terraform.
+**Frontend**
+
+![Next.js](https://img.shields.io/badge/Next.js_16_(App_Router_+_Server_Actions)-000000?logo=nextdotjs&logoColor=white)
+![React](https://img.shields.io/badge/React_19-20232A?logo=react&logoColor=61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript_5-3178C6?logo=typescript&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS_v4-06B6D4?logo=tailwindcss&logoColor=white)
+![Radix UI](https://img.shields.io/badge/Radix_UI-161618?logo=radixui&logoColor=white)
+![Framer Motion](https://img.shields.io/badge/Framer_Motion-0055FF?logo=framer&logoColor=white)
+![Recharts](https://img.shields.io/badge/Recharts-FF7300?logo=chartdotjs&logoColor=white)
+![Lucide](https://img.shields.io/badge/Lucide_Icons-F56565?logo=lucide&logoColor=white)
+
+**Database & data layer**
+
+![Amazon Aurora PostgreSQL](https://img.shields.io/badge/Amazon_Aurora_PostgreSQL_(Serverless_v2)-527FFF?logo=amazonwebservices&logoColor=white)
+![pgvector](https://img.shields.io/badge/pgvector_(HNSW)-4169E1?logo=postgresql&logoColor=white)
+![Drizzle ORM](https://img.shields.io/badge/Drizzle_ORM-C5F74F?logo=drizzle&logoColor=black)
+![postgres.js](https://img.shields.io/badge/postgres.js-336791?logo=postgresql&logoColor=white)
+![Zod](https://img.shields.io/badge/Zod-3E67B1?logo=zod&logoColor=white)
+
+**AI (all on AWS)**
+
+![Amazon Bedrock — Claude](https://img.shields.io/badge/Amazon_Bedrock_·_Claude_(Converse_API)-FF9900?logo=amazonwebservices&logoColor=white)
+![Amazon Bedrock — Titan Embeddings](https://img.shields.io/badge/Amazon_Bedrock_·_Titan_Embeddings-FF9900?logo=amazonwebservices&logoColor=white)
+![LangChain](https://img.shields.io/badge/LangChain_text_splitters-1C3C3C?logo=langchain&logoColor=white)
+
+**Auth & security**
+
+![Auth.js](https://img.shields.io/badge/Auth.js_(NextAuth_v5)-7C3AED?logo=nextdotjs&logoColor=white)
+![Postgres RLS](https://img.shields.io/badge/Postgres_Row--Level_Security-336791?logo=postgresql&logoColor=white)
+![AWS STS / OIDC](https://img.shields.io/badge/Keyless_AWS_(Vercel_OIDC_→_STS)-DD344C?logo=amazonwebservices&logoColor=white)
+
+**Cloud, infra & messaging**
+
+![Vercel](https://img.shields.io/badge/Vercel-000000?logo=vercel&logoColor=white)
+![AWS SDK v3](https://img.shields.io/badge/AWS_SDK_for_JavaScript_v3-232F3E?logo=amazonwebservices&logoColor=white)
+![Amazon S3](https://img.shields.io/badge/Amazon_S3-569A31?logo=amazonwebservices&logoColor=white)
+![Amazon SES](https://img.shields.io/badge/Amazon_SES-DD344C?logo=amazonwebservices&logoColor=white)
+![Amazon SNS](https://img.shields.io/badge/Amazon_SNS-E7157B?logo=amazonwebservices&logoColor=white)
+![Terraform](https://img.shields.io/badge/Terraform-844FBA?logo=terraform&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js_20+-5FA04E?logo=nodedotjs&logoColor=white)
+
+**Quality & CI**
+
+![GitHub Actions](https://img.shields.io/badge/GitHub_Actions_(CI_+_cron)-2088FF?logo=githubactions&logoColor=white)
+![Vitest](https://img.shields.io/badge/Vitest-6E9F18?logo=vitest&logoColor=white)
+![ESLint](https://img.shields.io/badge/ESLint_9-4B32C3?logo=eslint&logoColor=white)
+![tsc](https://img.shields.io/badge/tsc_--noEmit-3178C6?logo=typescript&logoColor=white)
+![Playwright](https://img.shields.io/badge/Playwright-2EAD33?logo=playwright&logoColor=white)
+
+In one line: Next.js 16 (App Router, Server Actions) · React 19 · TypeScript · Tailwind v4 + Radix UI · Drizzle ORM · `postgres.js` · Auth.js (NextAuth v5) · AWS SDK v3 (Bedrock Runtime, S3, SES, SNS) · `pgvector` · LangChain text splitters · Terraform · Vitest + RLS integration suite in GitHub Actions CI.
 
 ---
 
