@@ -10,7 +10,8 @@ import { signInWithCredentials, resolveLandingPath } from "@/lib/auth/actions";
  * One-click demo sign-in for judges/reviewers — rendered ONLY when the deployment opts in via
  * NEXT_PUBLIC_DEMO_MODE=1 (the flag is inlined at build time, so production-for-real builds simply
  * don't contain this UI). Each button signs in as one seeded persona so a reviewer can experience
- * every role lens — coordinator, remote family, aide, the care recipient, read-only — in seconds.
+ * every role lens — coordinator, remote family, aide, the care recipient, read-only, clinician —
+ * in seconds.
  *
  * Security note: this is a convenience wrapper around the SAME credentials flow as the form above
  * it (server action → Auth.js → scrypt hash check). It grants nothing the form wouldn't.
@@ -23,6 +24,7 @@ const PERSONAS: { email: string; name: string; lens: string }[] = [
   { email: "grace@carecircle.demo", name: "Grace", lens: "Professional aide" },
   { email: "antonio@carecircle.demo", name: "Antonio", lens: "Care recipient" },
   { email: "rosa@carecircle.demo", name: "Rosa", lens: "Read-only" },
+  { email: "chen@carecircle.demo", name: "Dr. Chen", lens: "Clinician" },
 ];
 
 export function DemoAccountsPanel() {
@@ -54,7 +56,7 @@ export function DemoAccountsPanel() {
         <p className="text-sm font-semibold">Reviewing CareCircle? Try a role.</p>
       </div>
       <p className="mt-1 text-xs text-muted-foreground">
-        One shared record, five lenses — each enforced by the database, not the UI.
+        One shared record, six lenses — each enforced by the database, not the UI.
       </p>
       <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
         {PERSONAS.map((p) => (
