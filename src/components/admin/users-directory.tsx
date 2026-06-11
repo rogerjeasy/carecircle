@@ -331,8 +331,14 @@ export function UsersDirectory({ users }: { users: PlatformUser[] }) {
 function ManageUserDialog({ user, onClose }: { user: PlatformUser | null; onClose: () => void }) {
   const router = useRouter();
   const [pending, startTransition] = React.useTransition();
+  // Which button started the in-flight action — every control disables on `pending`, but only
+  // the initiating button shows the spinner.
+  const [pendingKey, setPendingKey] = React.useState<string | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const [notice, setNotice] = React.useState<string | null>(null);
+  // Controlled so the confirmation stays OPEN (with a spinner) while the delete runs, instead of
+  // Radix's default close-on-click; `run`'s onSettled closes it when the action finishes.
+  const [confirmDelete, setConfirmDelete] = React.useState(false);
 
   // Reset feedback whenever a different account is opened (adjust-state-during-render pattern).
   const userId = user?.id;
@@ -341,12 +347,19 @@ function ManageUserDialog({ user, onClose }: { user: PlatformUser | null; onClos
     setPrevUserId(userId);
     setError(null);
     setNotice(null);
+    setConfirmDelete(false);
   }
 
   /** Run a server action, surface its result, and re-read the directory on success. */
-  const run = (action: () => Promise<{ ok: true } | { ok: false; error: string }>, done: string) => {
+  const run = (
+    action: () => Promise<{ ok: true } | { ok: false; error: string }>,
+    done: string,
+    key: string,
+    onSettled?: () => void,
+  ) => {
     setError(null);
     setNotice(null);
+    setPendingKey(key);
     startTransition(async () => {
       const result = await action();
       if (result.ok) {
@@ -355,6 +368,7 @@ function ManageUserDialog({ user, onClose }: { user: PlatformUser | null; onClos
       } else {
         setError(result.error);
       }
+      onSettled?.();
     });
   };
 
@@ -413,7 +427,7 @@ function ManageUserDialog({ user, onClose }: { user: PlatformUser | null; onClos
                     e.preventDefault();
                     const fd = new FormData(e.currentTarget);
                     fd.set("userId", user.id);
-                    run(() => adminUpdateUser(fd), "Account info updated.");
+                    run(() => adminUpdateUser(fd), "Account info updated.", "save");
                   }}
                 >
                   <h3 className="flex items-center gap-2 text-sm font-semibold">
@@ -446,7 +460,9 @@ function ManageUserDialog({ user, onClose }: { user: PlatformUser | null; onClos
                     </div>
                   </div>
                   <Button type="submit" size="sm" disabled={pending}>
-                    {pending ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : null}
+                    {pending && pendingKey === "save" ? (
+                      <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                    ) : null}
                     Save changes
                   </Button>
                 </form>
@@ -464,7 +480,13 @@ function ManageUserDialog({ user, onClose }: { user: PlatformUser | null; onClos
                   ) : (
                     <ul className="space-y-2">
                       {user.memberships.map((m) => (
-                        <MembershipRow key={m.id} membership={m} pending={pending} run={run} />
+                        <MembershipRow
+                          key={m.id}
+                          membership={m}
+                          pending={pending}
+                          pendingKey={pendingKey}
+                          run={run}
+                        />
                       ))}
                     </ul>
                   )}
@@ -478,9 +500,16 @@ function ManageUserDialog({ user, onClose }: { user: PlatformUser | null; onClos
                   </h3>
                   <p className="text-sm text-muted-foreground">
                     Deleting the account removes the sign-in, all circle memberships, sessions and
-                    linked logins permanently. The audit trail of past actions is preserved.
+                    linked logins permanently. Circles where this user is the only remaining member
+                    are deleted too, including all their data and files. The audit trail of past
+                    actions is preserved.
                   </p>
-                  <AlertDialog>
+                  <AlertDialog
+                    open={confirmDelete}
+                    onOpenChange={(open) => {
+                      if (!pending) setConfirmDelete(open);
+                    }}
+                  >
                     <AlertDialogTrigger asChild>
                       <Button variant="destructive" size="sm" disabled={pending}>
                         <Trash2 className="h-4 w-4" />
@@ -492,20 +521,29 @@ function ManageUserDialog({ user, onClose }: { user: PlatformUser | null; onClos
                         <AlertDialogTitle>Delete this account?</AlertDialogTitle>
                         <AlertDialogDescription>
                           {user.email} will be permanently deleted, along with every circle
-                          membership, session and linked login. This cannot be undone.
+                          membership, session and linked login. Any circle where they are the only
+                          remaining member is deleted with all its data. This cannot be undone.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel disabled={pending}>Cancel</AlertDialogCancel>
                         <AlertDialogAction
                           className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                          onClick={() => {
+                          disabled={pending}
+                          onClick={(e) => {
+                            // Keep the dialog open (with the spinner) until the action settles.
+                            e.preventDefault();
                             const fd = new FormData();
                             fd.set("userId", user.id);
-                            run(() => adminDeleteUser(fd), "Account deleted.");
+                            run(() => adminDeleteUser(fd), "Account deleted.", "delete-account", () =>
+                              setConfirmDelete(false),
+                            );
                           }}
                         >
-                          Delete account
+                          {pending && pendingKey === "delete-account" ? (
+                            <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                          ) : null}
+                          {pending && pendingKey === "delete-account" ? "Deleting…" : "Delete account"}
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
@@ -523,13 +561,23 @@ function ManageUserDialog({ user, onClose }: { user: PlatformUser | null; onClos
 function MembershipRow({
   membership: m,
   pending,
+  pendingKey,
   run,
 }: {
   membership: PlatformUserMembership;
   pending: boolean;
-  run: (action: () => Promise<{ ok: true } | { ok: false; error: string }>, done: string) => void;
+  pendingKey: string | null;
+  run: (
+    action: () => Promise<{ ok: true } | { ok: false; error: string }>,
+    done: string,
+    key: string,
+    onSettled?: () => void,
+  ) => void;
 }) {
   const status = STATUS_META[m.status];
+  const spinnerFor = (key: string) => pending && pendingKey === key;
+  // Controlled for the same reason as the account-delete confirm: stay open + spin while running.
+  const [confirmRemove, setConfirmRemove] = React.useState(false);
   return (
     <li className="space-y-2 rounded-xl border border-border/70 p-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -545,7 +593,7 @@ function MembershipRow({
             const fd = new FormData();
             fd.set("membershipId", m.id);
             fd.set("role", role);
-            run(() => adminSetMembership(fd), "Role updated.");
+            run(() => adminSetMembership(fd), "Role updated.", `role:${m.id}`);
           }}
         >
           <SelectTrigger className="h-9 w-44 text-sm" aria-label={`Role in ${m.circleName}`}>
@@ -570,13 +618,23 @@ function MembershipRow({
             run(
               () => adminSetMembership(fd),
               m.status === "suspended" ? "Member reactivated." : "Member suspended.",
+              `suspend:${m.id}`,
             );
           }}
         >
-          <UserX className="h-4 w-4" />
+          {spinnerFor(`suspend:${m.id}`) ? (
+            <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+          ) : (
+            <UserX className="h-4 w-4" />
+          )}
           {m.status === "suspended" ? "Reactivate" : "Suspend"}
         </Button>
-        <AlertDialog>
+        <AlertDialog
+          open={confirmRemove}
+          onOpenChange={(open) => {
+            if (!pending) setConfirmRemove(open);
+          }}
+        >
           <AlertDialogTrigger asChild>
             <Button
               variant="ghost"
@@ -597,16 +655,27 @@ function MembershipRow({
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel disabled={pending}>Cancel</AlertDialogCancel>
               <AlertDialogAction
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                onClick={() => {
+                disabled={pending}
+                onClick={(e) => {
+                  // Keep the dialog open (with the spinner) until the action settles.
+                  e.preventDefault();
                   const fd = new FormData();
                   fd.set("membershipId", m.id);
-                  run(() => adminRemoveMembership(fd), "Member removed from the circle.");
+                  run(
+                    () => adminRemoveMembership(fd),
+                    "Member removed from the circle.",
+                    `remove:${m.id}`,
+                    () => setConfirmRemove(false),
+                  );
                 }}
               >
-                Remove member
+                {spinnerFor(`remove:${m.id}`) ? (
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                ) : null}
+                {spinnerFor(`remove:${m.id}`) ? "Removing…" : "Remove member"}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
