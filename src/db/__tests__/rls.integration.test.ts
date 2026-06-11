@@ -250,6 +250,48 @@ describe.skipIf(!RUN)('Aurora RLS — DB-enforced tenant isolation', () => {
     expect(updatedAsFamily.count).toBe(1);
   });
 
+  it('scopes emergency-card share links per circle and limits create/revoke to coordinators', async () => {
+    // Seed one live share link per circle (admin bypasses RLS).
+    await admin.unsafe(
+      `insert into emergency_card_share (circle_id, token, expires_at) values
+        ($1, 'token-circle-a-${ids.circleA}', now() + interval '72 hours'),
+        ($2, 'token-circle-b-${ids.circleB}', now() + interval '72 hours')`,
+      [ids.circleA, ids.circleB],
+    );
+
+    // Tenant isolation: a circle A member sees only circle A's link.
+    const aRows = await asUser(ids.userFamilyA, (tx) =>
+      tx<{ circle_id: string }[]>`select circle_id from emergency_card_share`,
+    );
+    expect(aRows).toHaveLength(1);
+    expect(aRows[0].circle_id).toBe(ids.circleA);
+
+    // No session → no rows (fail-closed), so an anonymous caller can never enumerate tokens
+    // through the app role; the public /e/<token> page goes through the privileged path instead.
+    const anon = await asUser(null, (tx) => tx`select count(*)::int as n from emergency_card_share`);
+    expect(anon[0].n).toBe(0);
+
+    // A caregiver may SEE the link but cannot create one (WITH CHECK rejects the insert)…
+    await expect(
+      asUser(ids.userCaregiverA, (tx) =>
+        tx`insert into emergency_card_share (circle_id, token, expires_at)
+           values (${ids.circleA}, 'token-caregiver-attempt', now() + interval '1 hour')`,
+      ),
+    ).rejects.toThrow();
+
+    // …nor revoke one (the manage policy hides every row from their UPDATE: 0 rows change).
+    const revokedAsCaregiver = await asUser(ids.userCaregiverA, (tx) =>
+      tx`update emergency_card_share set revoked_at = now() where circle_id = ${ids.circleA}`,
+    );
+    expect(revokedAsCaregiver.count).toBe(0);
+
+    // The owner CAN revoke (matches the emergency-card MANAGE_ROLES + drizzle/0041).
+    const revokedAsOwner = await asUser(ids.userOwnerA, (tx) =>
+      tx`update emergency_card_share set revoked_at = now() where circle_id = ${ids.circleA}`,
+    );
+    expect(revokedAsOwner.count).toBe(1);
+  });
+
   it('a read-only member cannot retrieve a restricted chunk even by similarity ordering', async () => {
     const rows = await asUser(ids.userReadonlyA, (tx) =>
       tx<{ sensitivity: string }[]>`

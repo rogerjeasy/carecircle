@@ -661,6 +661,35 @@ export const healthAlertSetting = pgTable(
   (t) => [unique('health_alert_setting_circle_metric_uq').on(t.circleId, t.metric)],
 );
 
+// ---- Emergency-card share links: tokenized public access for first responders ----
+/**
+ * A revocable, expiring capability link to the circle's Emergency Card, for EMS/ER staff who have
+ * no account. Like `invitation.token`, the high-entropy URL-safe token IS the authorization: the
+ * public `/e/<token>` page resolves it via the privileged connection (an anonymous visitor can't
+ * pass any RLS policy, by design), checks expiry + revocation, and every view bumps `view_count`
+ * AND writes a `read` row to the append-only audit log so the family always knows the card was
+ * opened. Members see/manage these rows under RLS; only coordinators create/revoke (0041 policy).
+ */
+export const emergencyCardShare = pgTable(
+  'emergency_card_share',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    circleId: uuid('circle_id')
+      .notNull()
+      .references(() => careCircle.id, { onDelete: 'cascade' }),
+    token: text('token').notNull().unique(),
+    createdByMembershipId: uuid('created_by_membership_id').references(() => membership.id, {
+      onDelete: 'set null',
+    }),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    revokedAt: timestamp('revoked_at', { withTimezone: true }),
+    lastViewedAt: timestamp('last_viewed_at', { withTimezone: true }),
+    viewCount: integer('view_count').notNull().default(0),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [index('emergency_card_share_circle_idx').on(t.circleId)],
+);
+
 // ============================================================================
 // Care rota — recurring weekly shifts (who's on, in person vs on call). The data-model's
 // deferred `care_shift`: a lightweight weekly pattern keyed by day-of-week + HH:mm times.

@@ -146,6 +146,7 @@ const DEMO_EMAILS = [
   'grace@carecircle.demo',
   'antonio@carecircle.demo',
   'rosa@carecircle.demo',
+  'chen@carecircle.demo',
   'admin@carecircle.demo',
 ];
 
@@ -284,10 +285,27 @@ async function main() {
     .insert(schema.membership)
     .values({ circleId: circle.id, userId: rosa.id, role: 'read_only', relationshipLabel: 'Sister-in-law' })
     .returning();
+  // The cardiologist — the sixth lens: a clinician's read-mostly summary view, and the
+  // "Primary doctor" block on the emergency card (which looks for an active clinician member).
+  const [chen] = await db
+    .insert(schema.users)
+    .values({ name: 'Dr. Lourdes Chen', email: 'chen@carecircle.demo', passwordHash })
+    .returning();
+  await db
+    .insert(schema.membership)
+    .values({
+      circleId: circle.id,
+      userId: chen.id,
+      role: 'clinician',
+      relationshipLabel: 'Cardiologist',
+      phone: '+63 2 8555 0123',
+    })
+    .returning();
 
+  // The Plus plan (see /pricing) — the monetizable-B2C story: AI digest + Ask live on this tier.
   await db
     .update(schema.careCircle)
-    .set({ ownerMembershipId: mariaM.id })
+    .set({ ownerMembershipId: mariaM.id, plan: 'plus' })
     .where(eq(schema.careCircle.id, circle.id));
 
   // A pending invite so the People screen shows the flow mid-flight.
@@ -1014,6 +1032,42 @@ async function main() {
   );
 
   // ---------------------------------------------------------------------------
+  // Billing: the Plus plan paid by card — Settings → Billing renders a real history.
+  // (Only brand/last4/expiry are ever stored — what a tokenizing processor returns.)
+  // ---------------------------------------------------------------------------
+  await db.insert(schema.paymentMethod).values({
+    circleId: circle.id,
+    brand: 'visa',
+    last4: '4242',
+    expMonth: 8,
+    expYear: 2028,
+    isDefault: true,
+    addedByMembershipId: mariaM.id,
+  });
+  await db.insert(schema.invoice).values(
+    [3, 2, 1].map((monthsAgo, i) => ({
+      circleId: circle.id,
+      number: `INV-2026-${String(4 + i).padStart(3, '0')}`,
+      amountCents: 1200,
+      currency: 'usd',
+      status: 'paid',
+      issuedAt: daysAgoAt(monthsAgo * 30, 9, 0),
+    })),
+  );
+
+  // ---------------------------------------------------------------------------
+  // Emergency-card share: a LIVE public /e/<token> link (72h, like the app creates)
+  // so every persona sees the printed QR immediately and judges can scan it.
+  // ---------------------------------------------------------------------------
+  const shareToken = randomBytes(32).toString('base64url');
+  await db.insert(schema.emergencyCardShare).values({
+    circleId: circle.id,
+    token: shareToken,
+    createdByMembershipId: mariaM.id,
+    expiresAt: daysAheadAt(3, 12, 0),
+  });
+
+  // ---------------------------------------------------------------------------
   // Audit trail: believable history in the append-only ledger.
   // ---------------------------------------------------------------------------
   await db.insert(schema.auditLog).values([
@@ -1033,12 +1087,14 @@ async function main() {
   console.log(`  Demo PDFs uploaded to S3: ${uploadedPdfs}/${docDefs.length}${uploadedPdfs === 0 ? '  (set S3_BUCKET + AWS creds to upload real files)' : ''}`);
   console.log('  Tip: set app.current_user_id to a user id to test RLS by hand.');
   console.log('  Tip: POST /api/ingest (as the platform admin) to embed the record for Ask CareCircle.');
+  console.log(`  Emergency-card public link (72h, what the printed QR encodes):  /e/${shareToken}`);
   console.log('\nDemo sign-in credentials (email / password):');
   console.log(`  Coordinator     maria@carecircle.demo    ${DEMO_PASSWORD}`);
   console.log(`  Remote family   paolo@carecircle.demo    ${DEMO_PASSWORD}`);
   console.log(`  Caregiver       grace@carecircle.demo    ${DEMO_PASSWORD}   (digest in Tagalog)`);
   console.log(`  Care recipient  antonio@carecircle.demo  ${DEMO_PASSWORD}`);
   console.log(`  Read-only       rosa@carecircle.demo     ${DEMO_PASSWORD}`);
+  console.log(`  Clinician       chen@carecircle.demo     ${DEMO_PASSWORD}   (read-mostly clinical view)`);
   console.log(`  Platform admin  admin@carecircle.demo    ${DEMO_PASSWORD}   (→ /admin)`);
 
   await client.end();
