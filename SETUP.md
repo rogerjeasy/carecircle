@@ -130,7 +130,8 @@ If counts are 0 without context and non-zero with it, **RLS is enforcing** — e
 ## 8. 👤 Deploy to Vercel
 
 - Add `DATABASE_URL`, `MIGRATION_DATABASE_URL`, `AUTH_SECRET`, `AUTH_URL` (your `*.vercel.app`), `CRON_SECRET`, and any Google keys under **Project → Settings → Environment Variables**.
-- Push to GitHub; Vercel builds and deploys (the two cron jobs in `vercel.json` — digest + care scans — start firing automatically with `Authorization: Bearer $CRON_SECRET`). Grab your **Vercel Team ID** (Settings → General) for the submission.
+- Push to GitHub; Vercel builds and deploys. Grab your **Vercel Team ID** (Settings → General) for the submission.
+- **Schedules:** the digest + care-scan crons fire from GitHub Actions (`.github/workflows/cron.yml`) because Vercel Hobby caps crons at once per day. Set the `CRON_SECRET` repo secret and the `APP_URL` repo variable (GitHub → Settings → Secrets and variables → Actions); the workflow pings the `CRON_SECRET`-gated routes hourly (digest) and every 6h (scans). On Vercel Pro, the same routes can move into `vercel.json` crons unchanged.
 
 ### 8a. 👤 Vercel OIDC → AWS (keyless production credentials — recommended)
 

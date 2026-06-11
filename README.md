@@ -30,7 +30,7 @@ The deliberate architectural choices Aurora makes possible:
 - **`pgvector` in the same database powers "Ask CareCircle".** Documents, timeline events, and audit entries are chunked, embedded with **Amazon Bedrock Titan**, and stored as vectors in Aurora's `rag_chunk` table (HNSW cosine). Retrieval runs **inside the same RLS-scoped transaction**, so the similarity search inherits the *exact same* permission and sensitivity boundary as the documents vault — there is no second vector-store ACL to keep in sync. **Claude on Amazon Bedrock** (Converse API) then writes a grounded, cited answer, and that read is audited. *One database, relational and vector.*
 - **Serverless v2** scales with load (and toward ~zero when idle); the roadmap notes a path to **Aurora DSQL** for multi-region strong consistency, because the families we serve are global.
 
-The rest of the stack: **Next.js on Vercel** (Vercel Cron drives the nightly digest **and the daily care scans** — refill sweep, missed-dose reconciliation, decline alerts), **Amazon S3** (documents & photos), **Amazon SES/SNS** (email + urgent escalation), and **keyless AWS access in production** — Vercel's OIDC token is exchanged for short-lived STS credentials (`AWS_ROLE_ARN`), so no long-lived AWS keys are stored anywhere. Infrastructure is defined in Terraform under [`infra/`](./infra).
+The rest of the stack: **Next.js on Vercel** (scheduler-agnostic, `CRON_SECRET`-gated cron routes drive the nightly digest **and the daily care scans** — refill sweep, missed-dose reconciliation, decline alerts; see "Scheduled jobs" below), **Amazon S3** (documents & photos), **Amazon SES/SNS** (email + urgent escalation — the email layer in `src/lib/email.ts` is provider-pluggable: SES first, with SMTP/Resend fallbacks for local dev and SES-sandbox accounts), and **keyless AWS access in production** — Vercel's OIDC token is exchanged for short-lived STS credentials (`AWS_ROLE_ARN`), so no long-lived AWS keys are stored anywhere. Infrastructure is defined in Terraform under [`infra/`](./infra).
 
 A full diagram + component legend lives in [`docs/architecture.md`](./docs/architecture.md) (editable source: [`docs/CareCircle-Architecture.drawio`](./docs/CareCircle-Architecture.drawio)); the data model is documented in [`docs/data-model.md`](./docs/data-model.md).
 
@@ -90,7 +90,8 @@ npm run dev                   # http://localhost:3000
 
 **Demo personas** (all password `CareCircle123`, printed by the seed): `maria@carecircle.demo` (coordinator) ·
 `paolo@carecircle.demo` (remote family) · `grace@carecircle.demo` (aide — reads the digest in Tagalog) ·
-`antonio@carecircle.demo` (care recipient) · `rosa@carecircle.demo` (read-only) · `admin@carecircle.demo` (platform admin → `/admin`).
+`antonio@carecircle.demo` (care recipient) · `rosa@carecircle.demo` (read-only) · `chen@carecircle.demo`
+(clinician — read-mostly clinical view) · `admin@carecircle.demo` (platform admin → `/admin`).
 Set `NEXT_PUBLIC_DEMO_MODE=1` to show one-click persona sign-in buttons on `/sign-in` **and** the homepage
 **"Run demo"** button, which creates an anonymous guest account (RLS-scoped to only the demo circle, `family`
 role, wiped on re-seed) and lands a reviewer on the live dashboard with zero sign-up — see `src/lib/auth/demo.ts`
@@ -114,7 +115,7 @@ Key environment variables (full list + guidance in [`.env.example`](./.env.examp
 
 1. Import the repo into Vercel and set the env vars above in **Project → Settings → Environment Variables** (including `CRON_SECRET`).
 2. Aurora must be reachable from Vercel functions (publicly accessible instance or a tunnel/VPC connector).
-3. Scheduled jobs live in [`vercel.json`](./vercel.json), both `CRON_SECRET`-gated: the **nightly Daily Digest** (`/api/cron/digest`, hourly — generates + emails each circle's digest at its local `digestHour`, idempotent per day) and the **daily care scans** (`/api/cron/scans`, every 6h — refill sweep, missed-dose reconciliation, decline alerts; every sweep idempotent).
+3. **Scheduled jobs.** Two `CRON_SECRET`-gated, scheduler-agnostic routes: the **Daily Digest** (`/api/cron/digest`, pinged hourly — generates + emails each circle's digest at its local `digestHour`, idempotent per day) and the **care scans** (`/api/cron/scans`, pinged every 6h — refill sweep, missed-dose reconciliation, decline alerts; every sweep idempotent). The schedules fire from **GitHub Actions** ([`.github/workflows/cron.yml`](./.github/workflows/cron.yml)) — a deliberate choice: Vercel's Hobby plan caps cron jobs at once per day, which can't drive an hourly, per-timezone digest. The routes accept any pinger holding the bearer secret, so on Vercel Pro the same endpoints move into `vercel.json` crons with zero code change.
 4. **Recommended — keyless AWS via OIDC:** trust Vercel's OIDC issuer in AWS IAM, set `AWS_ROLE_ARN`, and remove the static AWS keys (see [`SETUP.md`](./SETUP.md) § "Vercel OIDC → AWS"). All AWS clients (Bedrock, S3, SES, SNS) resolve credentials through `src/lib/aws/credentials.ts`.
 
 ---

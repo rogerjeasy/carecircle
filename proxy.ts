@@ -31,8 +31,11 @@ const PUBLIC_ROUTES = new Set([
   '/hipaa',
 ]);
 
-// Public path prefixes (e.g. dynamic invitation links accepted while logged out).
-const PUBLIC_PREFIXES = ['/invite'];
+// Public path prefixes (dynamic capability links opened while logged out):
+//  - /invite/<token> — invitation acceptance
+//  - /e/<token>      — the emergency-card share EMS opens from the printed QR (the unguessable,
+//                      expiring, revocable token is the authorization; see lib/emergency-card/share.ts)
+const PUBLIC_PREFIXES = ['/invite', '/e'];
 
 function isPublic(pathname: string): boolean {
   if (PUBLIC_ROUTES.has(pathname)) return true;
