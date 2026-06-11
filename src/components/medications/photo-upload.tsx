@@ -12,7 +12,10 @@ export interface PhotoUploadProps {
 
 const MAX_BYTES = 5 * 1024 * 1024; // 5 MB
 
-/** Pill-photo uploader with an inline preview. Reads the file to a data URL (demo / no backend). */
+/**
+ * Pill-photo uploader with an inline preview. Reads the file to a data URL; the medication server
+ * action uploads it to the private S3 bucket (`uploadImageDataUrl`) and stores only the object key.
+ */
 export function PhotoUpload({ value, onChange }: PhotoUploadProps) {
   const inputRef = React.useRef<HTMLInputElement>(null);
 
