@@ -52,7 +52,12 @@ export default function RootLayout({
       data-scroll-behavior="smooth"
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col font-sans bg-background text-foreground">
+      {/* suppressHydrationWarning: browser extensions (e.g. Grammarly) inject attributes into
+          <body> before hydration; suppression is attribute-only and does not hide child mismatches. */}
+      <body
+        className="min-h-full flex flex-col font-sans bg-background text-foreground"
+        suppressHydrationWarning
+      >
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

@@ -11,6 +11,7 @@ import {
   invitationEmail,
   welcomeEmail,
   joinedCircleEmail,
+  serviceStatusAlertEmail,
 } from './email-templates';
 
 const outDir = path.resolve(process.cwd(), 'email-previews');
@@ -36,6 +37,23 @@ const samples: Record<string, { subject: string; html: string }> = {
     circleName: "Antonio's Care",
     role: 'family',
     dashboardUrl: 'https://carecircle-one.vercel.app/dashboard',
+  }),
+  'service-status-down': serviceStatusAlertEmail({
+    kind: 'down',
+    changed: [{ name: 'Amazon SES', metric: 'timeout after 5000ms' }],
+    stillDown: [
+      { name: 'Amazon SES', metric: 'timeout after 5000ms' },
+      { name: 'Amazon SNS', metric: 'timeout after 5000ms' },
+    ],
+    statusUrl: 'https://carecircle-one.vercel.app/admin/system',
+    checkedAtLabel: '14:05 UTC',
+  }),
+  'service-status-recovered': serviceStatusAlertEmail({
+    kind: 'recovered',
+    changed: [{ name: 'Amazon SES', metric: '738ms' }],
+    stillDown: [],
+    statusUrl: 'https://carecircle-one.vercel.app/admin/system',
+    checkedAtLabel: '14:25 UTC',
   }),
 };
 
