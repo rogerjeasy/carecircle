@@ -281,6 +281,20 @@
       "when": 1781106433964,
       "tag": "0039_member_language",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1781162560695,
+      "tag": "0040_emergency_card_share",
+      "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1781162595182,
+      "tag": "0041_emergency_card_share_rls",
+      "breakpoints": true
     }
   ]
 }
