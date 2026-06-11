@@ -2,37 +2,46 @@
 
 import * as React from "react";
 import { toast } from "sonner";
-import {
-  Droplet,
-  FileCheck2,
-  Pencil,
-  Phone,
-  Printer,
-  Share2,
-  ShieldAlert,
-  Stethoscope,
-  TriangleAlert,
-} from "lucide-react";
+import { format } from "date-fns";
+import { Link2, Link2Off, Pencil, Printer, Share2, ShieldAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
+import QRCode from "react-qr-code";
 import { useAppShell } from "@/components/app-shell/app-shell-context";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { QrPlaceholder } from "./qr-placeholder";
-import { updateAdvanceDirective } from "@/lib/emergency-card/actions";
+import { EmergencyCardView } from "./emergency-card-view";
+import {
+  createEmergencyShare,
+  revokeEmergencyShare,
+  updateAdvanceDirective,
+} from "@/lib/emergency-card/actions";
 import { EC_LANGS, EC_STRINGS, type ECLang, type EmergencyCardData } from "./data";
+
+/** The circle's live public share link, projected by the server (null when none is active). */
+export interface EmergencyShareProps {
+  url: string;
+  /** ISO timestamp the link stops working. */
+  expiresAt: string;
+  viewCount: number;
+}
 
 export interface EmergencyCardScreenProps {
   /** Projected emergency-card data, or null when there's no recipient profile / circle yet. */
   data: EmergencyCardData | null;
+  /** Active public share link, if one exists. */
+  share: EmergencyShareProps | null;
 }
 
 /** The Emergency Card — high-contrast, scannable, shareable, and printable to one clean page. */
-export function EmergencyCardScreen({ data }: EmergencyCardScreenProps) {
+export function EmergencyCardScreen({ data, share: initialShare }: EmergencyCardScreenProps) {
   const { role } = useAppShell();
   const canManage = role === "coordinator"; // owner / family admin
   const [lang, setLang] = React.useState<ECLang>("en");
   const t = EC_STRINGS[lang];
+
+  // The live public link — seeded by the server, updated in place by create/revoke.
+  const [share, setShare] = React.useState<EmergencyShareProps | null>(initialShare);
+  const [shareBusy, setShareBusy] = React.useState(false);
 
   // Advance directive is editable in place by managers; seeded from the server projection.
   const [advanceDirective, setAdvanceDirective] = React.useState<string | null>(data?.advanceDirective ?? null);
@@ -53,15 +62,40 @@ export function EmergencyCardScreen({ data }: EmergencyCardScreenProps) {
     }
   };
 
-  const share = async () => {
-    const url = typeof window !== "undefined" ? window.location.href : "";
+  const createShare = async () => {
+    setShareBusy(true);
+    const res = await createEmergencyShare();
+    setShareBusy(false);
+    if (res.ok) {
+      setShare({ url: res.url, expiresAt: res.expiresAt, viewCount: 0 });
+      toast.success("Emergency link is live — the QR below opens it without an account");
+    } else {
+      toast.error(res.error);
+    }
+  };
+
+  const revokeShare = async () => {
+    setShareBusy(true);
+    const res = await revokeEmergencyShare();
+    setShareBusy(false);
+    if (res.ok) {
+      setShare(null);
+      toast.success("Emergency link revoked — the QR no longer works");
+    } else {
+      toast.error(res.error);
+    }
+  };
+
+  // Share the PUBLIC link when one is live (works for EMS with no account); else this page's URL.
+  const share2 = async () => {
+    const url = share?.url ?? (typeof window !== "undefined" ? window.location.href : "");
     try {
       if (navigator.share) {
         await navigator.share({ title: `${data?.fullName ?? "Care recipient"} — ${t.emergencyCard}`, url });
         return;
       }
       await navigator.clipboard.writeText(url);
-      toast.success("Link copied to clipboard");
+      toast.success(share ? "Public emergency link copied" : "Link copied to clipboard");
     } catch {
       toast("Sharing was cancelled");
     }
@@ -87,8 +121,94 @@ export function EmergencyCardScreen({ data }: EmergencyCardScreenProps) {
     );
   }
 
-  const doctor = data.doctor;
-  const telHref = (phone: string) => `tel:${phone.replace(/[^+\d]/g, "")}`;
+  const expiresLabel = share ? format(new Date(share.expiresAt), "EEE d MMM, h:mmaaa") : null;
+
+  const advanceDirectiveNode = editingAd ? (
+    <div className="space-y-2 print:hidden">
+      <Input
+        value={adDraft}
+        onChange={(e) => setAdDraft(e.target.value)}
+        placeholder='e.g. "DNR on file"'
+        aria-label="Advance directive"
+        autoFocus
+      />
+      <div className="flex gap-2">
+        <Button size="sm" onClick={saveAdvanceDirective} disabled={savingAd}>
+          {savingAd ? "Saving…" : "Save"}
+        </Button>
+        <Button size="sm" variant="outline" onClick={() => setEditingAd(false)} disabled={savingAd}>
+          Cancel
+        </Button>
+      </div>
+    </div>
+  ) : (
+    <div className="flex items-start justify-between gap-2">
+      <p className="text-base font-semibold">{advanceDirective ?? "Not recorded"}</p>
+      {canManage && (
+        <button
+          type="button"
+          onClick={() => {
+            setAdDraft(advanceDirective ?? "");
+            setEditingAd(true);
+          }}
+          className="shrink-0 rounded-md p-1 text-muted-foreground transition-colors hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring print:hidden"
+          aria-label="Edit advance directive"
+        >
+          <Pencil className="h-3.5 w-3.5" />
+        </button>
+      )}
+    </div>
+  );
+
+  // Footer: a REAL QR encoding the public /e/<token> link when one is live (printed on the card so
+  // EMS can scan it from the fridge door), plus the coordinator's create/rotate/revoke controls.
+  const footer = (
+    <footer className="space-y-3 border-t pt-4">
+      {share ? (
+        <div className="flex items-center gap-4">
+          <div className="w-24 shrink-0 rounded-md bg-white p-1.5" aria-label="Emergency card QR code">
+            <QRCode value={share.url} size={84} className="h-auto w-full" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium">{t.scanToOpen}</p>
+            <p className="text-xs text-muted-foreground">
+              Opens without an account — for EMS and ER staff. Expires {expiresLabel}
+              {share.viewCount > 0 ? ` · opened ${share.viewCount}× (audited)` : " · every open is audited"}.
+            </p>
+            {canManage && (
+              <div className="mt-2 flex flex-wrap gap-2 print:hidden">
+                <Button size="sm" variant="outline" onClick={createShare} disabled={shareBusy}>
+                  <Link2 className="h-3.5 w-3.5" />
+                  <span className="ml-1">{shareBusy ? "Working…" : "Rotate link"}</span>
+                </Button>
+                <Button size="sm" variant="outline" className="text-destructive" onClick={revokeShare} disabled={shareBusy}>
+                  <Link2Off className="h-3.5 w-3.5" />
+                  <span className="ml-1">Revoke</span>
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
+          <div className="min-w-0">
+            <p className="text-sm font-medium">No public emergency link</p>
+            <p className="text-xs text-muted-foreground">
+              {canManage
+                ? "Create one to print a scannable QR — EMS opens the card with no account. Expires in 72h, revocable, every open audited."
+                : "A coordinator can create a scannable public link for EMS."}
+            </p>
+          </div>
+          {canManage && (
+            <Button size="sm" onClick={createShare} disabled={shareBusy}>
+              <Link2 className="h-4 w-4" />
+              <span className="ml-1">{shareBusy ? "Creating…" : "Create emergency link"}</span>
+            </Button>
+          )}
+        </div>
+      )}
+    </footer>
+  );
 
   return (
     <div className="mx-auto w-full max-w-3xl space-y-4">
@@ -111,7 +231,7 @@ export function EmergencyCardScreen({ data }: EmergencyCardScreenProps) {
           ))}
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={share}>
+          <Button variant="outline" onClick={share2}>
             <Share2 className="h-4 w-4" />
             <span className="ml-1">Share</span>
           </Button>
@@ -122,206 +242,7 @@ export function EmergencyCardScreen({ data }: EmergencyCardScreenProps) {
         </div>
       </div>
 
-      {/* Printable card */}
-      <article className="space-y-4 rounded-2xl border-2 bg-card p-4 text-foreground print:border-0 print:p-0 sm:p-6 [print-color-adjust:exact]">
-        {/* Header */}
-        <header className="flex items-center gap-4 border-b pb-4">
-          <Avatar className="h-20 w-20 shrink-0 sm:h-24 sm:w-24">
-            {data.avatarUrl && <AvatarImage src={data.avatarUrl} alt={data.fullName} className="object-cover" />}
-            <AvatarFallback className="bg-secondary text-2xl font-bold text-primary">{data.initials}</AvatarFallback>
-          </Avatar>
-          <div className="min-w-0 flex-1">
-            <p className="text-xs font-bold uppercase tracking-widest text-primary">{t.emergencyCard}</p>
-            <h1 className="font-display text-3xl font-bold leading-tight tracking-tight sm:text-4xl">{data.fullName}</h1>
-            {(data.age != null || data.dob) && (
-              <p className="text-lg text-muted-foreground">
-                {data.age != null ? `${data.age} ${t.years}` : ""}
-                {data.age != null && data.dob ? " · " : ""}
-                {data.dob ? `DOB ${data.dob}` : ""}
-              </p>
-            )}
-          </div>
-          {data.bloodType && (
-            <div className="flex shrink-0 flex-col items-center rounded-xl border-2 border-foreground/15 px-4 py-2 text-center">
-              <Droplet className="h-5 w-5 text-primary" aria-hidden="true" />
-              <span className="text-2xl font-bold tabular-nums sm:text-3xl">{data.bloodType}</span>
-              <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">{t.bloodType}</span>
-            </div>
-          )}
-        </header>
-
-        {/* ALLERGIES — full width, top priority */}
-        <section
-          aria-label={t.allergies}
-          className="rounded-2xl border-2 border-destructive bg-destructive/10 p-4 [print-color-adjust:exact]"
-        >
-          <p className="flex items-center gap-2 text-base font-extrabold uppercase tracking-wide text-destructive">
-            <TriangleAlert className="h-5 w-5" aria-hidden="true" />
-            {t.allergies}
-          </p>
-          <ul className="mt-2 flex flex-wrap gap-2">
-            {data.allergies.length > 0 ? (
-              data.allergies.map((a) => (
-                <li key={a}>
-                  <span className="inline-flex rounded-lg bg-destructive px-3 py-1 text-base font-bold text-destructive-foreground [print-color-adjust:exact]">
-                    {a}
-                  </span>
-                </li>
-              ))
-            ) : (
-              <li className="text-base font-medium text-muted-foreground">{t.noAllergies}</li>
-            )}
-          </ul>
-        </section>
-
-        {/* Two columns: medications | conditions + advance directive + doctor */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Block icon={FileCheck2} title={t.medications}>
-            {data.meds.length > 0 ? (
-              <ul className="space-y-1.5">
-                {data.meds.map((m) => (
-                  <li key={`${m.name}-${m.strength}`} className="flex items-baseline justify-between gap-3 text-base">
-                    <span className="min-w-0 truncate font-semibold">{m.name}</span>
-                    <span className="shrink-0 tabular-nums text-muted-foreground">{m.strength}</span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-base text-muted-foreground">None recorded</p>
-            )}
-          </Block>
-
-          <div className="space-y-4">
-            <Block title={t.conditions}>
-              {data.conditions.length > 0 ? (
-                <ul className="flex flex-wrap gap-1.5">
-                  {data.conditions.map((c) => (
-                    <li key={c}>
-                      <span className="inline-flex rounded-lg bg-secondary px-2.5 py-1 text-sm font-medium">{c}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-base text-muted-foreground">None recorded</p>
-              )}
-            </Block>
-            <Block title={t.advanceDirective}>
-              {editingAd ? (
-                <div className="space-y-2 print:hidden">
-                  <Input
-                    value={adDraft}
-                    onChange={(e) => setAdDraft(e.target.value)}
-                    placeholder='e.g. "DNR on file"'
-                    aria-label="Advance directive"
-                    autoFocus
-                  />
-                  <div className="flex gap-2">
-                    <Button size="sm" onClick={saveAdvanceDirective} disabled={savingAd}>
-                      {savingAd ? "Saving…" : "Save"}
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => setEditingAd(false)} disabled={savingAd}>
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex items-start justify-between gap-2">
-                  <p className="text-base font-semibold">{advanceDirective ?? "Not recorded"}</p>
-                  {canManage && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setAdDraft(advanceDirective ?? "");
-                        setEditingAd(true);
-                      }}
-                      className="shrink-0 rounded-md p-1 text-muted-foreground transition-colors hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring print:hidden"
-                      aria-label="Edit advance directive"
-                    >
-                      <Pencil className="h-3.5 w-3.5" />
-                    </button>
-                  )}
-                </div>
-              )}
-            </Block>
-            <Block icon={Stethoscope} title={t.primaryDoctor}>
-              {doctor ? (
-                <>
-                  <p className="text-base font-semibold">{doctor.name}</p>
-                  <p className="text-sm text-muted-foreground">{doctor.role}</p>
-                  {doctor.phone && (
-                    <a href={telHref(doctor.phone)} className="text-sm font-medium text-primary hover:underline">
-                      {doctor.phone}
-                    </a>
-                  )}
-                </>
-              ) : (
-                <p className="text-base text-muted-foreground">Not recorded</p>
-              )}
-            </Block>
-          </div>
-        </div>
-
-        {/* Emergency contacts */}
-        <section aria-label={t.emergencyContacts}>
-          <p className="mb-2 text-sm font-bold uppercase tracking-wide text-muted-foreground">{t.emergencyContacts}</p>
-          {data.contacts.length > 0 ? (
-            <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              {data.contacts.map((c, i) => (
-                <li key={`${c.name}-${i}`} className="flex items-center gap-3 rounded-xl border-2 p-3">
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-base font-semibold">{c.name}</p>
-                    <p className="truncate text-sm text-muted-foreground">{c.role}</p>
-                    {c.phone && <p className="truncate text-sm tabular-nums text-muted-foreground">{c.phone}</p>}
-                  </div>
-                  {c.phone && (
-                    <Button asChild size="lg" className="h-12 shrink-0 px-4 print:hidden">
-                      <a href={telHref(c.phone)} aria-label={`${t.call} ${c.name}`}>
-                        <Phone className="h-5 w-5" />
-                        <span className="ml-1">{t.call}</span>
-                      </a>
-                    </Button>
-                  )}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="rounded-xl border border-dashed p-3 text-sm text-muted-foreground">
-              No emergency contacts recorded yet.
-            </p>
-          )}
-        </section>
-
-        {/* Share QR (decorative) */}
-        <footer className="flex items-center gap-4 border-t pt-4">
-          <div className="w-24 shrink-0">
-            <QrPlaceholder />
-          </div>
-          <div className="min-w-0">
-            <p className="text-sm font-medium">{t.scanToOpen}</p>
-            <p className="truncate text-xs text-muted-foreground">Open this page on a phone to share it.</p>
-          </div>
-        </footer>
-      </article>
+      <EmergencyCardView data={{ ...data, advanceDirective }} t={t} advanceDirectiveNode={advanceDirectiveNode} footer={footer} />
     </div>
-  );
-}
-
-function Block({
-  icon: Icon,
-  title,
-  children,
-}: {
-  icon?: typeof Phone;
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="rounded-xl border p-3">
-      <p className="mb-1.5 flex items-center gap-1.5 text-sm font-bold uppercase tracking-wide text-muted-foreground">
-        {Icon && <Icon className="h-3.5 w-3.5" aria-hidden="true" />}
-        {title}
-      </p>
-      {children}
-    </section>
   );
 }
