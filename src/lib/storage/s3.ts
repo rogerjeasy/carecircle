@@ -275,6 +275,41 @@ export async function deleteObject(key: string): Promise<void> {
 }
 
 /**
+ * Delete every object under a circle's `care-circles/{id}/` prefix — the storage half of deleting
+ * a circle (the DB rows cascade; the files do not). Best-effort like the other side-effects here:
+ * paginates, batch-deletes, logs success/failure, never throws into the caller.
+ */
+export async function deleteCirclePrefix(circleId: string): Promise<void> {
+  if (!BUCKET || !isS3Configured()) return;
+  try {
+    const { ListObjectsV2Command, DeleteObjectsCommand } = await import('@aws-sdk/client-s3');
+    const client = await s3Client();
+    const prefix = `care-circles/${circleId}/`;
+    let continuationToken: string | undefined;
+    let removed = 0;
+    do {
+      const page = await client.send(
+        new ListObjectsV2Command({ Bucket: BUCKET, Prefix: prefix, ContinuationToken: continuationToken }),
+      );
+      const objects = (page.Contents ?? []).flatMap((o) => (o.Key ? [{ Key: o.Key }] : []));
+      if (objects.length) {
+        await client.send(
+          new DeleteObjectsCommand({ Bucket: BUCKET, Delete: { Objects: objects, Quiet: true } }),
+        );
+        removed += objects.length;
+      }
+      continuationToken = page.IsTruncated ? page.NextContinuationToken : undefined;
+    } while (continuationToken);
+    serverLog('storage', 'deleteCirclePrefix', 'success', { circleId, removed });
+  } catch (err) {
+    serverLog('storage', 'deleteCirclePrefix', 'failure', {
+      circleId,
+      reason: (err as { name?: string })?.name ?? 'error',
+    });
+  }
+}
+
+/**
  * A storage key looks like `care-circles/...`; anything else stored in an avatar/url column is an
  * already-resolvable URL (legacy data URL, or an external https URL) and is returned unchanged.
  */

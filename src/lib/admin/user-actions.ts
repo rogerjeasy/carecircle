@@ -13,16 +13,20 @@
  *  - Staff accounts (PLATFORM_ADMIN_EMAILS) cannot be edited or deleted from the console — the
  *    allowlist in env is their single source of truth, so a compromised admin session can't mint
  *    or destroy other admins. Changing a user's email TO an allowlisted address is blocked too.
- *  - A circle's last active owner can't be demoted/suspended/removed/deleted — that would orphan
- *    the tenant with no one able to manage it.
+ *  - A circle's last active owner can't be demoted/suspended/removed while others remain — that
+ *    would orphan the tenant with no one able to manage it. Account deletion refines this: a
+ *    circle whose ONLY remaining member is the target is deleted with the account (DB cascade +
+ *    best-effort S3 prefix cleanup; the audit trail survives — audit_log has no FK to the circle),
+ *    while a circle that still has other members blocks the deletion until ownership moves.
  *  - Inputs ride in FormData and are zod-validated; logs use `maskEmail()`/ids only (no raw PII).
  */
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
-import { and, eq, isNull, ne, sql } from 'drizzle-orm';
+import { and, eq, inArray, isNull, ne, sql } from 'drizzle-orm';
 import { requirePlatformAdmin } from '@/db/dal';
 import { getPlatformDb } from '@/db/admin-db';
-import { auditLog, membership, roleEnum, users, type auditActionEnum } from '@/db/schema';
+import { auditLog, careCircle, membership, roleEnum, users, type auditActionEnum } from '@/db/schema';
+import { deleteCirclePrefix } from '@/lib/storage/s3';
 import { serverLog, maskEmail } from '@/lib/log';
 import { dbRoleLabel } from '@/lib/circle/roles';
 import { isPlatformAdminEmail } from './access';
@@ -319,6 +323,9 @@ export async function adminDeleteUser(formData: FormData): Promise<AdminActionRe
   const userId = parsed.data;
 
   try {
+    // Circles deleted alongside the account — collected in the transaction, S3-cleaned after commit.
+    const deletedCircleIds: string[] = [];
+
     await getPlatformDb().transaction(async (tx) => {
       const [target] = await tx
         .select({ id: users.id, email: users.email })
@@ -334,11 +341,30 @@ export async function adminDeleteUser(formData: FormData): Promise<AdminActionRe
         .from(membership)
         .where(and(eq(membership.userId, userId), eq(membership.status, 'active'), isNull(membership.deletedAt)));
       for (const m of circles) {
-        if (await isLastActiveOwner(tx, m)) throw new Error('last_owner');
+        if (!(await isLastActiveOwner(tx, m))) continue;
+        // The target is a circle's only active owner. If anyone else's membership (any status)
+        // still points at the circle, deleting would destroy data other people rely on — block,
+        // fail-closed, until ownership is transferred. If the target is the only remaining
+        // member, the circle is theirs alone: delete it WITH the account (cascade wipes the
+        // tenant rows; audit_log has no FK to the circle, so the trail survives by design).
+        const [other] = await tx
+          .select({ id: membership.id })
+          .from(membership)
+          .where(
+            and(
+              eq(membership.circleId, m.circleId),
+              ne(membership.userId, userId),
+              isNull(membership.deletedAt),
+            ),
+          )
+          .limit(1);
+        if (other) throw new Error('last_owner');
+        deletedCircleIds.push(m.circleId);
       }
 
-      // Audit rows first (they have no FK to the user), then the hard delete — `user` cascades
-      // to memberships, sessions, OAuth accounts, and password-reset tokens in one stroke.
+      // Audit rows first (they have no FK to the user or the circle), then the hard deletes —
+      // `care_circle` cascades to every tenant table, `user` cascades to memberships, sessions,
+      // OAuth accounts, and password-reset tokens in one stroke.
       for (const m of circles) {
         await recordAdminAudit(tx, admin.id, {
           circleId: m.circleId,
@@ -348,17 +374,43 @@ export async function adminDeleteUser(formData: FormData): Promise<AdminActionRe
           summary: 'Platform admin deleted a member’s account',
         });
       }
+      for (const circleId of deletedCircleIds) {
+        await recordAdminAudit(tx, admin.id, {
+          circleId,
+          action: 'delete',
+          entityType: 'care_circle',
+          entityId: circleId,
+          summary: 'Platform admin deleted the circle (sole member’s account was deleted)',
+        });
+      }
+      if (deletedCircleIds.length) {
+        await tx.delete(careCircle).where(inArray(careCircle.id, deletedCircleIds));
+      }
       await tx.delete(users).where(eq(users.id, userId));
     });
 
-    serverLog('admin', 'deleteUser', 'success', { actor: admin.id, target: userId });
+    // Storage cleanup AFTER commit: the DB rows are gone either way; files are best-effort
+    // (deleteCirclePrefix logs its own success/failure and never throws).
+    for (const circleId of deletedCircleIds) {
+      await deleteCirclePrefix(circleId);
+    }
+
+    serverLog('admin', 'deleteUser', 'success', {
+      actor: admin.id,
+      target: userId,
+      circlesDeleted: deletedCircleIds.length,
+    });
     revalidatePath('/admin/users');
     return { ok: true };
   } catch (err) {
     const reason = failureCode(err);
     serverLog('admin', 'deleteUser', 'failure', { actor: admin.id, reason });
     if (reason === 'last_owner')
-      return { ok: false, error: 'This user is the last active owner of a circle — transfer ownership (or delete the circle) first.' };
+      return {
+        ok: false,
+        error:
+          'This user is the last active owner of a circle that still has other members — transfer ownership (or remove those members) first.',
+      };
     if (reason === 'staff_target') return { ok: false, error: STAFF_LOCKED };
     if (reason === 'not_found') return { ok: false, error: 'User not found.' };
     return { ok: false, error: GENERIC_ERROR };
