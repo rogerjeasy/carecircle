@@ -101,7 +101,6 @@ export function AppointmentDetail({
   const saveAndPost = async () => {
     if (!summary.trim() || savingSummary) return;
     setSavingSummary(true);
-    await new Promise((r) => setTimeout(r, 600));
     onPatch({
       visitSummary: summary.trim(),
       postedToTimeline: true,
