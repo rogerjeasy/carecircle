@@ -18,6 +18,7 @@ import { withAuthedDb } from '@/db/dal';
 import { getActiveCircleId } from '@/lib/circle/active-circle';
 import { serverLog, maskEmail } from '@/lib/log';
 import {
+  careRecipientProfile,
   medication,
   medicationSchedule,
   medicationAdministration,
@@ -131,6 +132,14 @@ export async function getMedicationsData(): Promise<MedicationsData | null> {
     const todayDow = now.getDay();
 
     const data = await withAuthedDb(async (tx) => {
+      // 0) The recipient's profile — their real name (print/share header) and recorded allergies
+      //    (the medication form's allergy-conflict safety check).
+      const [recipient] = await tx
+        .select({ fullName: careRecipientProfile.fullName, allergies: careRecipientProfile.allergies })
+        .from(careRecipientProfile)
+        .where(eq(careRecipientProfile.circleId, circleId))
+        .limit(1);
+
       // 1) All of the circle's medications (active, paused, and discontinued — the UI splits them).
       const meds = await tx
         .select()
@@ -212,10 +221,10 @@ export async function getMedicationsData(): Promise<MedicationsData | null> {
           ),
         );
 
-      return { meds, schedules, todaysAdmins, weekAdmins, attachments };
+      return { recipient: recipient ?? null, meds, schedules, todaysAdmins, weekAdmins, attachments };
     });
 
-    const { meds, schedules, todaysAdmins, weekAdmins, attachments } = data;
+    const { recipient, meds, schedules, todaysAdmins, weekAdmins, attachments } = data;
 
     // Resolve S3 keys → short-lived presigned URLs (private bucket) for the pill photo + attachments.
     const photoByMed = new Map<string, string | null>();
@@ -379,7 +388,16 @@ export async function getMedicationsData(): Promise<MedicationsData | null> {
       prn: prn.length,
     });
 
-    return { circleId, meds: medications, doses, prn, adherence, adherenceByMed };
+    return {
+      circleId,
+      recipientName: recipient?.fullName ?? null,
+      recipientAllergies: recipient?.allergies ?? [],
+      meds: medications,
+      doses,
+      prn,
+      adherence,
+      adherenceByMed,
+    };
   } catch (err) {
     serverLog('medications', 'getMedicationsData', 'failure', {
       email: maskEmail(session.user?.email),
