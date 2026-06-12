@@ -42,6 +42,7 @@ export const invitationStatusEnum = pgEnum('invitation_status', [
   'accepted',
   'expired',
   'revoked',
+  'declined',
 ]);
 export const timelineEventTypeEnum = pgEnum('timeline_event_type', [
   'med',

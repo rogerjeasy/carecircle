@@ -1,6 +1,7 @@
 import 'server-only';
 import { sql } from 'drizzle-orm';
 import { db } from './index';
+import { hashToken } from '@/lib/auth/tokens';
 import { serverLog } from '@/lib/log';
 
 /**
@@ -11,6 +12,10 @@ import { serverLog } from '@/lib/log';
  * function that returns only safe display fields for a single token — possession of the token (the
  * capability secret in the link) is the authorization. We call it through the raw `db` client
  * WITHOUT an RLS context on purpose; the function — not the app role — governs access here.
+ *
+ * 🔒 Tokens are hashed at rest (drizzle/0045, same rule as password-reset tokens): the link
+ * carries the raw secret, the database stores only its SHA-256. Every lookup therefore hashes
+ * the URL token first — a leaked table/backup never yields working join links.
  */
 export type InvitationDetails = {
   circleId: string;
@@ -42,7 +47,7 @@ export async function getInvitationByToken(token: string): Promise<InvitationDet
   if (!token || token.length > 512) return null;
   try {
     const rows = (await db.execute(
-      sql`select * from invitation_details(${token})`,
+      sql`select * from invitation_details(${hashToken(token)})`,
     )) as unknown as DetailsRow[];
     const r = rows[0];
     serverLog('invitations', 'lookup', r ? 'success' : 'failure', r ? undefined : { reason: 'not_found' });
