@@ -32,10 +32,12 @@ export interface ComposerProps {
   onChange: (value: string) => void;
   onSubmit: () => void;
   disabled?: boolean;
+  /** The care recipient's real name (null = no profile yet). */
+  recipientName: string | null;
 }
 
 /** The persistent bottom input — send + a mic option, safe-area aware. */
-export function Composer({ value, onChange, onSubmit, disabled }: ComposerProps) {
+export function Composer({ value, onChange, onSubmit, disabled, recipientName }: ComposerProps) {
   const [listening, setListening] = React.useState(false);
   const recognitionRef = React.useRef<SpeechRecognitionLike | null>(null);
 
@@ -82,8 +84,8 @@ export function Composer({ value, onChange, onSubmit, disabled }: ComposerProps)
           <Input
             value={value}
             onChange={(e) => onChange(e.target.value)}
-            placeholder="Ask about Antonio's care…"
-            aria-label="Ask a question about Antonio's care"
+            placeholder={recipientName ? `Ask about ${recipientName}'s care…` : "Ask about this circle's care…"}
+            aria-label={recipientName ? `Ask a question about ${recipientName}'s care` : "Ask a question about this circle's care"}
             className="h-12 pr-12"
           />
           <Button
