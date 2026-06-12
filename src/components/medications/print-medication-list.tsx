@@ -30,7 +30,7 @@ function buildRows(meds: Medication[]): string {
     .join("");
 }
 
-function buildPrintHtml(meds: Medication[], dateLabel: string): string {
+function buildPrintHtml(meds: Medication[], recipientName: string | null, dateLabel: string): string {
   const active = meds.filter((m) => !m.discontinued);
   const discontinued = meds.filter((m) => m.discontinued);
   return `<!doctype html><html><head><meta charset="utf-8" />
@@ -50,7 +50,7 @@ function buildPrintHtml(meds: Medication[], dateLabel: string): string {
     @media print { body { margin: 12mm; } }
   </style></head><body>
     <h1>Medication list</h1>
-    <div class="meta">Antonio Santos · Generated ${escapeHtml(dateLabel)}</div>
+    <div class="meta">${recipientName ? `${escapeHtml(recipientName)} · ` : ""}Generated ${escapeHtml(dateLabel)}</div>
     <h2>Active medications (${active.length})</h2>
     <table><thead><tr><th>Medication</th><th>Schedule</th><th>Purpose</th><th>Prescriber</th><th>Supply</th></tr></thead>
       <tbody>${buildRows(active)}</tbody></table>
@@ -74,10 +74,12 @@ function buildShareText(meds: Medication[], dateLabel: string): string {
 
 export interface PrintMedicationListProps {
   meds: Medication[];
+  /** The care recipient's real name shown in the sheet header (null = no profile yet). */
+  recipientName: string | null;
 }
 
 /** A "Print / share" action that opens a clean, printable summary sheet of the medication list. */
-export function PrintMedicationList({ meds }: PrintMedicationListProps) {
+export function PrintMedicationList({ meds, recipientName }: PrintMedicationListProps) {
   const [open, setOpen] = React.useState(false);
   const dateLabel = format(new Date(), "EEEE, MMMM d, yyyy");
   const active = meds.filter((m) => !m.discontinued);
@@ -89,7 +91,7 @@ export function PrintMedicationList({ meds }: PrintMedicationListProps) {
       toast.error("Allow pop-ups to open the printable sheet");
       return;
     }
-    w.document.write(buildPrintHtml(meds, dateLabel));
+    w.document.write(buildPrintHtml(meds, recipientName, dateLabel));
     w.document.close();
     w.focus();
     // Give the new document a tick to lay out before printing.
@@ -143,7 +145,10 @@ export function PrintMedicationList({ meds }: PrintMedicationListProps) {
 
           {/* Scrollable preview */}
           <div className="min-h-0 flex-1 overflow-y-auto px-6 py-4">
-            <p className="text-xs text-muted-foreground">Antonio Santos · {dateLabel}</p>
+            <p className="text-xs text-muted-foreground">
+              {recipientName ? `${recipientName} · ` : ""}
+              {dateLabel}
+            </p>
 
             <h3 className="mt-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Active medications ({active.length})

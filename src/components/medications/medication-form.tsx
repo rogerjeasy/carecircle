@@ -19,7 +19,7 @@ import { PhotoUpload } from "./photo-upload";
 import { MedAttachments } from "./medication-attachments";
 import { ScheduleBuilder } from "./schedule-builder";
 import { SafetyCheckPanel } from "./safety-check-panel";
-import { checkMedicationSafety, RECIPIENT_ALLERGIES } from "./safety";
+import { checkMedicationSafety } from "./safety";
 import {
   EVERY_DAY,
   MED_FORMS,
@@ -35,6 +35,8 @@ export interface MedicationFormProps {
   initial?: Medication;
   /** Active medications used for the interaction check (already excludes the med being edited). */
   currentMedNames: string[];
+  /** The recipient's recorded allergies (real data from their profile) for the allergy check. */
+  allergies: string[];
   /** Saved attachments to show (edit mode). */
   existingAttachments?: MedAttachment[];
   /** Remove a saved attachment (edit mode). */
@@ -94,6 +96,7 @@ export function MedicationForm({
   mode,
   initial,
   currentMedNames,
+  allergies,
   existingAttachments = [],
   onRemoveAttachment,
   onSubmit,
@@ -121,8 +124,8 @@ export function MedicationForm({
 
   // Reactive safety check, recomputed as the name (or current meds) changes.
   const warnings = React.useMemo(
-    () => checkMedicationSafety(values.name, { currentMedNames, allergies: RECIPIENT_ALLERGIES }),
-    [values.name, currentMedNames]
+    () => checkMedicationSafety(values.name, { currentMedNames, allergies }),
+    [values.name, currentMedNames, allergies]
   );
   const warningSig = warnings.map((w) => w.id).join("|");
   const acknowledged = warnings.length > 0 && ackedSig === warningSig;
@@ -152,7 +155,6 @@ export function MedicationForm({
     }
 
     setSubmitting(true);
-    await delay(300);
     onSubmit(values, pendingFiles);
     setSubmitting(false);
     setSuccess(true);

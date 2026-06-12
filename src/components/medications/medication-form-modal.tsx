@@ -13,6 +13,8 @@ export interface MedicationFormModalProps {
   mode: "add" | "edit";
   initial?: Medication;
   currentMedNames: string[];
+  /** The recipient's recorded allergies (real data from their profile) for the safety check. */
+  allergies: string[];
   existingAttachments?: MedAttachment[];
   onRemoveAttachment?: (id: string) => void;
   onSubmit: (values: MedFormValues, pendingFiles: File[]) => void;
@@ -29,6 +31,7 @@ export function MedicationFormModal({
   mode,
   initial,
   currentMedNames,
+  allergies,
   existingAttachments,
   onRemoveAttachment,
   onSubmit,
@@ -45,6 +48,7 @@ export function MedicationFormModal({
       mode={mode}
       initial={initial}
       currentMedNames={currentMedNames}
+      allergies={allergies}
       existingAttachments={existingAttachments}
       onRemoveAttachment={onRemoveAttachment}
       onSubmit={onSubmit}

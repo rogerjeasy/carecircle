@@ -1,5 +1,7 @@
 // Lightweight, local drug-safety knowledge base for the "Safety check" panel.
-// NOTE: illustrative demo data only — a real system would call a clinical interactions service.
+// The recipient's allergies are REAL data (care_recipient_profile, passed in via SafetyContext).
+// The interaction rules below are a small curated reference list — a production clinical feature
+// would call a dedicated drug-interactions service for exhaustive coverage.
 
 export type SafetySeverity = "high" | "moderate";
 
@@ -47,9 +49,6 @@ const ALLERGEN_OF: Record<string, string> = {
   morphine: "opioid",
 };
 
-/** The care recipient's recorded allergies (demo). */
-export const RECIPIENT_ALLERGIES = ["penicillin", "sulfa"];
-
 function titleCase(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
@@ -93,7 +92,14 @@ export function checkMedicationSafety(name: string, ctx: SafetyContext): SafetyW
 
   const allergen =
     ALLERGEN_OF[n] ?? Object.entries(ALLERGEN_OF).find(([drug]) => n.includes(drug))?.[1];
-  if (allergen && ctx.allergies.map((a) => a.toLowerCase()).includes(allergen)) {
+  // Recorded allergies are free text ("Penicillin", "Sulfa drugs") — match on substring either way.
+  const hasRecordedAllergy =
+    !!allergen &&
+    ctx.allergies.some((a) => {
+      const recorded = a.trim().toLowerCase();
+      return recorded.length > 0 && (recorded.includes(allergen) || allergen.includes(recorded));
+    });
+  if (allergen && hasRecordedAllergy) {
     warnings.push({
       id: `allergy-${allergen}`,
       kind: "allergy",

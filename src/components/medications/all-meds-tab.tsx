@@ -16,6 +16,8 @@ import type { Medication } from "./types";
 export interface AllMedsTabProps {
   meds: Medication[];
   setMeds: React.Dispatch<React.SetStateAction<Medication[]>>;
+  /** The care recipient's real name for the print/share sheet header (null = no profile yet). */
+  recipientName: string | null;
   canManage: boolean;
   /** Open the (screen-owned) Add modal. */
   onAdd: () => void;
@@ -26,7 +28,7 @@ export interface AllMedsTabProps {
 }
 
 /** The "All medications" tab: search, the active grid, a collapsible Discontinued section. */
-export function AllMedsTab({ meds, setMeds, canManage, onAdd, onEdit, onMutated }: AllMedsTabProps) {
+export function AllMedsTab({ meds, setMeds, recipientName, canManage, onAdd, onEdit, onMutated }: AllMedsTabProps) {
   const [query, setQuery] = React.useState("");
   const [showDiscontinued, setShowDiscontinued] = React.useState(false);
 
@@ -93,7 +95,7 @@ export function AllMedsTab({ meds, setMeds, canManage, onAdd, onEdit, onMutated 
           />
         </div>
         <div className="flex shrink-0 gap-2">
-          <PrintMedicationList meds={meds} />
+          <PrintMedicationList meds={meds} recipientName={recipientName} />
           <GatedControl canManage={canManage}>
             <Button className="h-11 flex-1 sm:flex-none" onClick={onAdd}>
               <Plus className="h-4 w-4" />

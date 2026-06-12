@@ -51,6 +51,10 @@ export interface AdherenceSummary {
 export interface MedicationsData {
   /** The active circle this data belongs to — used to remount the screen on circle switch. */
   circleId: string;
+  /** The care recipient's real name (print/share header); null when no profile exists yet. */
+  recipientName: string | null;
+  /** The recipient's recorded allergies (care_recipient_profile) — drives the safety check. */
+  recipientAllergies: string[];
   meds: Medication[];
   doses: Dose[];
   prn: PrnMed[];

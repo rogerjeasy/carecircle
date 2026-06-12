@@ -183,6 +183,7 @@ export function MedicationsScreen({ initial }: MedicationsScreenProps) {
           <AllMedsTab
             meds={meds}
             setMeds={setMeds}
+            recipientName={initial?.recipientName ?? null}
             canManage={canManage}
             onAdd={() => setModal({ mode: "add" })}
             onEdit={(med) => setModal({ mode: "edit", med })}
@@ -198,6 +199,7 @@ export function MedicationsScreen({ initial }: MedicationsScreenProps) {
           mode={modal.mode}
           initial={modal.mode === "edit" ? modal.med : undefined}
           currentMedNames={currentMedNames(modal.mode === "edit" ? modal.med.id : undefined)}
+          allergies={initial?.recipientAllergies ?? []}
           existingAttachments={modal.mode === "edit" ? modal.med.attachments : undefined}
           onRemoveAttachment={
             modal.mode === "edit"
