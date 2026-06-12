@@ -17,7 +17,7 @@ import { getActiveCircleId } from '@/lib/circle/active-circle';
 import { recordAuditEvent } from '@/db/audit';
 import { serverLog, maskEmail } from '@/lib/log';
 import { membership, invitation, careRecipientProfile, roleEnum } from '@/db/schema';
-import { randomToken } from '@/lib/auth/tokens';
+import { randomToken, hashToken } from '@/lib/auth/tokens';
 import { sendInvitationEmail } from '@/lib/email';
 import { getAppOrigin } from '@/lib/url';
 import { canManagePeople, circleRoleToDbRole } from './access';
@@ -127,6 +127,8 @@ export async function invitePeople(formData: FormData): Promise<InvitePeopleResu
         .where(eq(careRecipientProfile.circleId, ctx.circleId))
         .limit(1);
 
+      // 🔒 Only the token's SHA-256 is stored (drizzle/0045) — the raw secret exists in the
+      // emailed link alone, so a DB leak never yields working join links.
       const rows = await tx
         .insert(invitation)
         .values(
@@ -134,7 +136,7 @@ export async function invitePeople(formData: FormData): Promise<InvitePeopleResu
             circleId: ctx.circleId,
             email: i.email,
             role: i.dbRole as (typeof roleEnum.enumValues)[number],
-            token: i.token,
+            token: hashToken(i.token),
             invitedByMembershipId: ctx.membershipId,
             personalNote: note,
             expiresAt: new Date(Date.now() + INVITE_TTL_MS),
@@ -312,20 +314,24 @@ export async function revokeInvite(inviteId: string): Promise<ActionResult> {
   }
 }
 
-/** Re-send a pending invitation email (extends its expiry). */
+/** Re-send a pending invitation email (extends its expiry and ROTATES the link). */
 export async function resendInvite(inviteId: string): Promise<ActionResult> {
   const ctx = await getActorContext();
   serverLog('people', 'resendInvite', 'start', { actor: ctx?.userId });
   if (!ctx) return { ok: false, error: 'No active care circle.' };
   if (!canManagePeople(ctx.role)) return { ok: false, error: FORBIDDEN };
   if (!z.string().uuid().safeParse(inviteId).success) return { ok: false, error: GENERIC_ERROR };
+  // 🔒 Tokens are hashed at rest, so the original secret can't be re-read — and shouldn't be:
+  // resending mints a FRESH token, which also invalidates the previously emailed link (the safe
+  // default when someone says "I never got it / I lost it").
+  const newToken = randomToken();
   try {
     const sent = await withAuthedDb(async (tx) => {
       const [row] = await tx
         .update(invitation)
-        .set({ expiresAt: new Date(Date.now() + INVITE_TTL_MS), updatedAt: new Date() })
+        .set({ token: hashToken(newToken), expiresAt: new Date(Date.now() + INVITE_TTL_MS), updatedAt: new Date() })
         .where(and(eq(invitation.id, inviteId), eq(invitation.circleId, ctx.circleId), eq(invitation.status, 'pending')))
-        .returning({ email: invitation.email, role: invitation.role, token: invitation.token });
+        .returning({ email: invitation.email, role: invitation.role });
       if (!row) throw new Error('not_found_or_forbidden');
       const [recipient] = await tx
         .select({ fullName: careRecipientProfile.fullName })
@@ -344,7 +350,7 @@ export async function resendInvite(inviteId: string): Promise<ActionResult> {
     try {
       await sendInvitationEmail({
         to: sent.email,
-        inviteUrl: `${origin}/invite/${sent.token}`,
+        inviteUrl: `${origin}/invite/${newToken}`,
         inviterName: ctx.name?.trim() || 'A family member',
         recipientName: sent.recipientName,
         role: sent.role,

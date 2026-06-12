@@ -19,7 +19,7 @@ import { requireSession, withAuthedDb } from '@/db/dal';
 import { careRecipientProfile, timelineEvent, invitation } from '@/db/schema';
 import { getAppOrigin } from '@/lib/url';
 import { recordAuditEvent } from '@/db/audit';
-import { randomToken } from '@/lib/auth/tokens';
+import { randomToken, hashToken } from '@/lib/auth/tokens';
 import { sendInvitationEmail, sendWelcomeEmail } from '@/lib/email';
 import { uploadImageDataUrl } from '@/lib/storage/s3';
 import { serverLog } from '@/lib/log';
@@ -179,13 +179,15 @@ export async function completeOnboarding(formData: FormData): Promise<Onboarding
       });
 
       // 4) Persist invitations (the /invite/<token> links the emails point at).
+      // 🔒 Only the token's SHA-256 is stored (drizzle/0045) — the raw secret exists in the
+      // emailed link alone, so a DB leak never yields working join links.
       if (issued.length > 0) {
         await tx.insert(invitation).values(
           issued.map((i) => ({
             circleId: cId,
             email: i.email,
             role: i.role,
-            token: i.token,
+            token: hashToken(i.token),
             invitedByMembershipId: ownerMembershipId,
             expiresAt: new Date(Date.now() + INVITE_TTL_MS),
           })),
