@@ -556,3 +556,45 @@ export function serviceStatusAlertEmail(params: {
     text,
   };
 }
+
+/**
+ * "New contact message" — routes a marketing-site contact-form submission to the team inbox.
+ * Reply-to behaviour is handled by the caller; the sender's address is shown prominently so the
+ * team can respond directly.
+ */
+export function contactMessageEmail(params: {
+  name: string;
+  email: string;
+  topicLabel: string;
+  message: string;
+}): EmailContent {
+  const { name, email, topicLabel, message } = params;
+  const subject = `Contact form: ${topicLabel} — ${name}`;
+
+  const content =
+    heading('New contact message') +
+    paragraph(`Topic: ${pill(topicLabel)}`) +
+    paragraph(
+      `<strong>${esc(name)}</strong> &lt;<a href="mailto:${esc(email)}" style="color:${BRAND.primary};">${esc(email)}</a>&gt; wrote:`,
+    ) +
+    noteBlock(message, name) +
+    paragraph(
+      `<span style="color:${BRAND.muted};font-size:13px;">Sent from the Kintwadi contact page. Reply to the address above to respond.</span>`,
+    );
+
+  const text = [
+    `New contact message (${topicLabel})`,
+    '',
+    `From: ${name} <${email}>`,
+    '',
+    message,
+    '',
+    '— Kintwadi contact form',
+  ].join('\n');
+
+  return {
+    subject,
+    html: baseLayout({ title: subject, preheader: `${name}: ${message.slice(0, 90)}`, contentHtml: content }),
+    text,
+  };
+}
