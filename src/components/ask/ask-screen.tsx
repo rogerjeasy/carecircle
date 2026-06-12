@@ -238,7 +238,7 @@ export function AskScreen({ recipientName, conversations: initialList, initialCo
         </div>
 
         {/* Composer */}
-        <Composer value={input} onChange={setInput} onSubmit={() => ask(input)} disabled={thinking} />
+        <Composer value={input} onChange={setInput} onSubmit={() => ask(input)} disabled={thinking} recipientName={recipientName} />
       </div>
 
       {/* History drawer (mobile / tablet portrait) */}
