@@ -37,10 +37,16 @@ function setEnv(env: Record<string, string>) {
 
 const CONFIGURED = { AWS_REGION: 'us-east-1', AWS_ACCESS_KEY_ID: 'AKIA_TEST' };
 
-beforeEach(() => {
+beforeEach(async () => {
   vi.resetModules(); // embeddings.ts caches its client at module scope
   sendMock.mockReset();
   clientCtor.mockClear();
+  // Pre-warm the mocked SDK in the fresh module registry. embedTexts fans out 4 concurrent
+  // workers that each dynamically import the SDK; racing FIRST imports of a vi.mock'ed module
+  // can let one worker resolve the real SDK (real client.send on a mocked command =>
+  // "command.resolveMiddleware is not a function"). One import here makes every later dynamic
+  // import a deterministic cache hit on the mock — guaranteeing no real AWS client/network.
+  await import('@aws-sdk/client-bedrock-runtime');
 });
 
 describe('embedTexts', () => {
