@@ -231,6 +231,7 @@ export function TimelineScreen({ initial }: TimelineScreenProps) {
           {contributor && (
             <Composer
               role={role}
+              recipientName={initial?.recipientName ?? null}
               authorInitials={currentUserInitials}
               authorColor={currentUserColor}
               onPost={handlePost}

@@ -32,6 +32,8 @@ export interface TimelineEvent {
 export interface TimelineData {
   /** The active circle this feed belongs to — used to remount the screen on circle switch. */
   circleId: string;
+  /** The care recipient's real first name (composer placeholder); null when no profile exists. */
+  recipientName: string | null;
   events: TimelineEvent[];
   /** Whether older events remain beyond the loaded page (drives "Load earlier updates"). */
   hasMore: boolean;

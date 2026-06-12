@@ -19,11 +19,14 @@ import type { Visibility } from "./types";
 
 export function Composer({
   role,
+  recipientName,
   authorInitials,
   authorColor,
   onPost,
 }: {
   role: UserRole;
+  /** The care recipient's real first name (null = no profile yet). */
+  recipientName: string | null;
   authorInitials: string;
   authorColor: string;
   onPost: (text: string, visibility: Visibility) => void;
@@ -45,7 +48,6 @@ export function Composer({
     if (!text.trim()) return;
 
     setIsPosting(true);
-    await new Promise((resolve) => setTimeout(resolve, 500));
     onPost(text, visibility);
     setText("");
     setIsExpanded(false);
@@ -63,7 +65,7 @@ export function Composer({
           <div className="flex-1 min-w-0">
             <textarea
               ref={textareaRef}
-              placeholder="Share an update about Antonio..."
+              placeholder={recipientName ? `Share an update about ${recipientName}...` : "Share an update with your circle..."}
               value={text}
               onChange={(e) => setText(e.target.value)}
               onFocus={() => setIsExpanded(true)}
