@@ -1,4 +1,5 @@
-// Display constants + demo data for the Settings area.
+// Display constants for the Settings area. The circle's actual plan, payment methods, and
+// invoices are real data loaded from the server (see src/lib/billing/actions.ts).
 
 import {
   Bell,
@@ -57,18 +58,59 @@ export const DEFAULT_MATRIX: NotifMatrix = {
 };
 
 // --- Billing ---
-export const CURRENT_PLAN = {
-  name: "Family",
-  price: "$12",
-  period: "/month",
-  features: ["Up to 10 members", "Unlimited documents", "Daily AI digest", "Priority support"],
-};
+// The plan catalog, keyed by the `care_circle.plan` value the server returns. Names, prices, and
+// features mirror the public pricing page (src/components/pricing/data.ts).
+export interface BillingPlan {
+  id: string;
+  name: string;
+  /** Display price, e.g. "$0" or "$12"; "Custom" for sales-led plans. */
+  price: string;
+  /** Suffix after the price, e.g. "/month"; empty for custom pricing. */
+  period: string;
+  note: string;
+  features: string[];
+}
 
-export const PLANS = [
-  { name: "Solo", price: "$0", note: "1–2 members" },
-  { name: "Family", price: "$12", note: "Up to 10 members" },
-  { name: "Care team", price: "$29", note: "Unlimited + clinicians" },
+export const BILLING_PLANS: BillingPlan[] = [
+  {
+    id: "free",
+    name: "Free",
+    price: "$0",
+    period: "/month",
+    note: "For families getting started",
+    features: ["One care circle", "Shared care timeline", "Medication tracking", "Task management"],
+  },
+  {
+    id: "plus",
+    name: "Plus",
+    price: "$12",
+    period: "/month",
+    note: "AI assistance for busy families",
+    features: ["Multiple care circles", "AI Daily Digest", "Ask Kintwadi AI", "Document vault (5GB)"],
+  },
+  {
+    id: "teams",
+    name: "Care Teams",
+    price: "Custom",
+    period: "",
+    note: "Agencies & organizations",
+    features: ["Unlimited care circles", "Audit trail & compliance", "Priority support", "HIPAA BAA available"],
+  },
 ];
+
+/** Resolve a circle's stored plan value to its catalog entry (unknown values render plainly). */
+export function billingPlanFor(planId: string): BillingPlan {
+  return (
+    BILLING_PLANS.find((p) => p.id === planId) ?? {
+      id: planId,
+      name: planId.charAt(0).toUpperCase() + planId.slice(1),
+      price: "",
+      period: "",
+      note: "",
+      features: [],
+    }
+  );
+}
 
 export const LANGUAGES = ["English", "Español", "Português", "Français", "Italiano"];
 export const TIMEZONES = ["Europe/Lisbon", "Europe/Madrid", "America/New_York", "America/Los_Angeles", "UTC"];

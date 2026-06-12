@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { useIsPhone } from "./use-is-phone";
 import { SettingsSection } from "./section";
-import { CURRENT_PLAN, PLANS } from "./data";
+import { BILLING_PLANS, billingPlanFor } from "./data";
 import {
   loadBilling,
   addPaymentMethod,
@@ -29,13 +29,6 @@ import {
   type BillingData,
   type PaymentMethodDTO,
 } from "@/lib/billing/actions";
-
-const PLAN_META: Record<string, { name: string; price: string }> = {
-  free: { name: "Solo", price: "$0" },
-  solo: { name: "Solo", price: "$0" },
-  family: { name: "Family", price: "$12" },
-  "care-team": { name: "Care team", price: "$29" },
-};
 
 function brandLabel(brand: string): string {
   if (brand === "amex") return "Amex";
@@ -76,10 +69,7 @@ export function BillingSection() {
     );
   }
 
-  const meta = PLAN_META[billing.plan] ?? {
-    name: billing.plan.charAt(0).toUpperCase() + billing.plan.slice(1),
-    price: "",
-  };
+  const plan = billingPlanFor(billing.plan);
 
   const removeCard = async (id: string) => {
     setBusyId(id);
@@ -110,22 +100,29 @@ export function BillingSection() {
                 <Badge variant="success">Active</Badge>
               </div>
               <p className="mt-1 text-2xl font-bold">
-                {meta.name}{" "}
-                {meta.price && <span className="text-base font-medium text-muted-foreground">{meta.price}/month</span>}
+                {plan.name}{" "}
+                {plan.price && (
+                  <span className="text-base font-medium text-muted-foreground">
+                    {plan.price}
+                    {plan.period}
+                  </span>
+                )}
               </p>
             </div>
           </div>
-          <ul className="grid grid-cols-1 gap-1.5 text-sm text-muted-foreground sm:grid-cols-2">
-            {CURRENT_PLAN.features.map((f) => (
-              <li key={f} className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary" aria-hidden="true" />
-                {f}
-              </li>
-            ))}
-          </ul>
+          {plan.features.length > 0 && (
+            <ul className="grid grid-cols-1 gap-1.5 text-sm text-muted-foreground sm:grid-cols-2">
+              {plan.features.map((f) => (
+                <li key={f} className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary" aria-hidden="true" />
+                  {f}
+                </li>
+              ))}
+            </ul>
+          )}
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-            {PLANS.map((p) => {
-              const isCurrent = meta.name === p.name;
+            {BILLING_PLANS.map((p) => {
+              const isCurrent = plan.id === p.id;
               return (
                 <button
                   key={p.name}
@@ -143,7 +140,7 @@ export function BillingSection() {
                   </div>
                   <p className="mt-1 text-lg font-bold">
                     {p.price}
-                    <span className="text-xs font-normal text-muted-foreground">/mo</span>
+                    {p.period && <span className="text-xs font-normal text-muted-foreground">/mo</span>}
                   </p>
                   <p className="text-xs text-muted-foreground">{p.note}</p>
                 </button>
