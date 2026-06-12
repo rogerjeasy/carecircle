@@ -1,6 +1,6 @@
 // Content for the Contact page.
 
-import { LifeBuoy, Mail, MessageSquare, Phone } from "lucide-react";
+import { LifeBuoy, Mail, MessageSquare } from "lucide-react";
 
 export const TOPICS = [
   { value: "general", label: "General enquiry" },
@@ -41,12 +41,5 @@ export const CONTACT_METHODS: ContactMethod[] = [
     value: "support@kintwadi.app",
     href: "mailto:support@kintwadi.app",
     note: "Help with your account or care circle.",
-  },
-  {
-    icon: Phone,
-    label: "Phone",
-    value: "+1 (555) 0100-CARE",
-    href: "tel:+15550100",
-    note: "Mon–Fri, 9am–6pm in your time zone.",
   },
 ];

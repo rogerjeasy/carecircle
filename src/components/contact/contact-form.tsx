@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { toast } from "sonner";
 import { Check, Loader2, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { TOPICS, type TopicValue } from "./data";
+import { submitContactMessage } from "@/lib/contact/actions";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -53,8 +55,17 @@ export function ContactForm() {
     setTouched(true);
     if (!valid || submitting) return;
     setSubmitting(true);
-    await new Promise((r) => setTimeout(r, 700));
+    const fd = new FormData();
+    fd.set("name", values.name);
+    fd.set("email", values.email);
+    fd.set("topic", values.topic);
+    fd.set("message", values.message);
+    const res = await submitContactMessage(fd);
     setSubmitting(false);
+    if (!res.ok) {
+      toast.error(res.error);
+      return;
+    }
     setDone(true);
   };
 
