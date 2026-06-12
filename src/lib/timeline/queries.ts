@@ -15,6 +15,7 @@ import { withAuthedDb } from '@/db/dal';
 import { getActiveCircleId } from '@/lib/circle/active-circle';
 import { serverLog, maskEmail } from '@/lib/log';
 import {
+  careRecipientProfile,
   timelineEvent,
   timelineComment,
   timelineReaction,
@@ -72,6 +73,13 @@ export async function getTimelineData(beforeISO?: string): Promise<TimelineData 
     const before = beforeISO ? new Date(beforeISO) : null;
 
     const data = await withAuthedDb(async (tx) => {
+      // The recipient's real first name personalises the composer ("Share an update about …").
+      const [recipient] = await tx
+        .select({ fullName: careRecipientProfile.fullName })
+        .from(careRecipientProfile)
+        .where(eq(careRecipientProfile.circleId, circleId))
+        .limit(1);
+
       // One extra row tells us whether an older page exists.
       const rows = await tx
         .select({
@@ -129,7 +137,7 @@ export async function getTimelineData(beforeISO?: string): Promise<TimelineData 
             .where(inArray(timelineReaction.timelineEventId, eventIds))
         : [];
 
-      return { pageRows, hasMore, comments, reactions };
+      return { recipient: recipient ?? null, pageRows, hasMore, comments, reactions };
     });
 
     const commentsByEvent = new Map<string, TimelineEvent['comments']>();
@@ -182,7 +190,9 @@ export async function getTimelineData(beforeISO?: string): Promise<TimelineData 
       more: data.hasMore,
     });
 
-    return { circleId, events, hasMore: data.hasMore };
+    const recipientName = data.recipient?.fullName?.trim().split(/\s+/)[0] ?? null;
+
+    return { circleId, recipientName, events, hasMore: data.hasMore };
   } catch (err) {
     serverLog('timeline', 'getTimelineData', 'failure', {
       email: maskEmail(session.user?.email),

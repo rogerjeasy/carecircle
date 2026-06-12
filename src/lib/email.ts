@@ -22,6 +22,7 @@ import {
   dailyDigestEmail,
   incidentEscalationEmail,
   serviceStatusAlertEmail,
+  contactMessageEmail,
 } from '@/lib/email-templates';
 import { serverLog, maskEmail } from '@/lib/log';
 import type { Digest } from '@/components/digest/types';
@@ -380,5 +381,31 @@ export async function sendServiceStatusEmail(params: {
 }): Promise<void> {
   const { to, ...rest } = params;
   const { subject, html, text } = serviceStatusAlertEmail(rest);
+  await deliver({ to, subject, html, text });
+}
+
+/**
+ * Where contact-form submissions land. `CONTACT_INBOX_EMAIL` wins; otherwise we fall back to the
+ * bare address inside `EMAIL_FROM` (e.g. `Kintwadi <team@x>` -> `team@x`) so the flow works with
+ * zero extra setup. Returns null only when neither yields an address.
+ */
+function contactInbox(): string | null {
+  const explicit = process.env.CONTACT_INBOX_EMAIL?.trim();
+  if (explicit) return explicit;
+  const match = FROM.match(/<([^>]+)>/);
+  const fallback = (match ? match[1] : FROM).trim();
+  return fallback.includes('@') ? fallback : null;
+}
+
+/** Email a contact-form submission to the team inbox. Throws when no inbox is configured. */
+export async function sendContactMessage(params: {
+  name: string;
+  email: string;
+  topicLabel: string;
+  message: string;
+}): Promise<void> {
+  const to = contactInbox();
+  if (!to) throw new Error('contact_inbox_not_configured');
+  const { subject, html, text } = contactMessageEmail(params);
   await deliver({ to, subject, html, text });
 }
