@@ -10,6 +10,7 @@ import * as React from "react";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { safeInternalPath } from "@/lib/utils";
 import { socialSignIn } from "@/lib/auth/actions";
 
 // Mirror the server-side provider config. Google shows unless explicitly disabled; Apple is
@@ -46,8 +47,11 @@ export function SocialAuthButtons() {
   const handle = async (provider: "google" | "apple") => {
     setPending(provider);
     // Carry any ?callbackUrl set by the proxy redirect (no hook → no Suspense requirement).
+    // 🔒 Sanitized to a same-origin path so a crafted link can't bounce a fresh sign-in to
+    // an attacker's site (open redirect).
     const callbackUrl =
-      new URLSearchParams(window.location.search).get("callbackUrl") || "/dashboard";
+      safeInternalPath(new URLSearchParams(window.location.search).get("callbackUrl")) ||
+      "/dashboard";
     try {
       // On success this redirects to the provider and never returns a value here.
       const res = await socialSignIn(provider, callbackUrl);

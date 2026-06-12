@@ -5,7 +5,7 @@ import Link from "next/link";
 import { z } from "zod";
 import { toast } from "sonner";
 import { Eye, EyeOff, Heart, Loader2, AlertCircle } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, safeInternalPath } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -191,7 +191,11 @@ export default function SignInPage() {
     });
     // Honor a ?callbackUrl set by the route proxy; otherwise let the server decide the landing
     // page from the verified session (platform admins → /admin, everyone else → /dashboard).
-    const callbackUrl = new URLSearchParams(window.location.search).get("callbackUrl");
+    // 🔒 Sanitized to a same-origin path — a crafted ?callbackUrl=https://evil.example must
+    // never turn a successful sign-in into an open redirect (phishing vector).
+    const callbackUrl = safeInternalPath(
+      new URLSearchParams(window.location.search).get("callbackUrl"),
+    );
     const destination = callbackUrl || (await resolveLandingPath());
     // Hard navigation (not router.push) on purpose: a full request guarantees the freshly
     // set session cookie is sent and the protected destination renders authenticated. A soft

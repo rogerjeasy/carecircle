@@ -27,7 +27,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { signUpWithCredentials } from "@/lib/auth/actions";
-import { acceptInvitation } from "@/lib/invitations/actions";
+import { acceptInvitation, declineInvitation } from "@/lib/invitations/actions";
 
 // The page's display roles (a friendlier projection of the schema's role enum).
 export type InviteRole =
@@ -150,6 +150,7 @@ export function AcceptInviteClient({
 }) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [isDeclining, setIsDeclining] = React.useState(false);
   const [showPassword, setShowPassword] = React.useState(false);
   const [formData, setFormData] = React.useState({
     fullName: "",
@@ -255,9 +256,18 @@ export function AcceptInviteClient({
     await join();
   };
 
-  const handleDecline = () => {
+  // Really decline on the server: the invitation flips to `declined` and the link is dead from
+  // then on (single-use either way) — not just a client-side toast.
+  const handleDecline = async () => {
+    setIsDeclining(true);
+    const result = await declineInvitation(invite.token);
+    if (!result.ok) {
+      setIsDeclining(false);
+      toast.error("Couldn't decline the invitation", { description: result.error });
+      return;
+    }
     toast.info("Invitation declined", {
-      description: "You can always ask to be invited again later.",
+      description: "The coordinator can send you a new invitation if you change your mind.",
     });
     router.push("/");
   };
@@ -451,7 +461,7 @@ export function AcceptInviteClient({
           <div className="mt-6 flex flex-col gap-3 sm:flex-row-reverse">
             <Button
               onClick={isSignedIn ? handleAcceptSignedIn : handleSignUpAndAccept}
-              disabled={isSubmitting}
+              disabled={isSubmitting || isDeclining}
               className="flex-1"
             >
               {isSubmitting ? (
@@ -466,8 +476,20 @@ export function AcceptInviteClient({
                 </>
               )}
             </Button>
-            <Button variant="outline" onClick={handleDecline} disabled={isSubmitting} className="flex-1">
-              Decline
+            <Button
+              variant="outline"
+              onClick={handleDecline}
+              disabled={isSubmitting || isDeclining}
+              className="flex-1"
+            >
+              {isDeclining ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Declining...
+                </>
+              ) : (
+                "Decline"
+              )}
             </Button>
           </div>
         </div>

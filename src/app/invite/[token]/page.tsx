@@ -43,9 +43,10 @@ export default async function AcceptInvitePage({
   const { token } = await params;
   const [invite, session] = await Promise.all([getInvitationByToken(token), auth()]);
 
-  // Not found, expired, already accepted, or revoked → friendly terminal state.
+  // Not found, expired, already accepted, declined, or revoked → friendly terminal state.
   if (!invite || !invite.isValid) {
     const accepted = invite?.status === "accepted";
+    const declined = invite?.status === "declined";
     const expired = invite?.status === "pending"; // pending but invalid ⇒ past expiry
     return (
       <InviteLayout>
@@ -63,16 +64,20 @@ export default async function AcceptInvitePage({
             <h1 className="font-serif text-2xl font-bold mb-2">
               {accepted
                 ? "Invitation already accepted"
-                : expired
-                  ? "Invitation expired"
-                  : "Invitation not found"}
+                : declined
+                  ? "Invitation declined"
+                  : expired
+                    ? "Invitation expired"
+                    : "Invitation not found"}
             </h1>
             <p className="text-muted-foreground mb-6">
               {accepted
                 ? "This invitation has already been used. Try signing in to reach the care circle."
-                : expired
-                  ? "This invitation has expired. Please contact the person who invited you to request a new link."
-                  : "This invitation link is invalid or has been revoked. Please ask the circle coordinator to send you a new invitation."}
+                : declined
+                  ? "This invitation was declined, so the link is no longer active. If you changed your mind, ask the circle coordinator to send a new one."
+                  : expired
+                    ? "This invitation has expired. Please contact the person who invited you to request a new link."
+                    : "This invitation link is invalid or has been revoked. Please ask the circle coordinator to send you a new invitation."}
             </p>
             <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
               <Button asChild>
@@ -116,7 +121,7 @@ function InviteLayout({ children }: { children: React.ReactNode }) {
             <span className="grid h-9 w-9 place-items-center rounded-full bg-primary text-primary-foreground">
               <Heart className="h-4 w-4" />
             </span>
-            <span className="text-lg font-semibold">CareCircle</span>
+            <span className="text-lg font-semibold">Kintwadi</span>
           </Link>
           <ThemeToggle />
         </header>
