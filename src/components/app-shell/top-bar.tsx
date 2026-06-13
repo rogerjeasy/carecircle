@@ -35,6 +35,7 @@ const pageTitles: Record<string, string> = {
   "/notifications": "Notifications",
   "/incidents": "Incidents",
   "/profile": "Profile",
+  "/account": "Your profile",
   "/emergency-card": "Emergency Card",
 };
 

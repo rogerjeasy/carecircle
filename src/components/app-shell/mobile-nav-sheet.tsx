@@ -269,9 +269,9 @@ export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link href="/profile" onClick={() => onOpenChange(false)}>
+                <Link href="/account" onClick={() => onOpenChange(false)}>
                   <User className="mr-2 h-4 w-4" />
-                  Profile
+                  Your profile
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>

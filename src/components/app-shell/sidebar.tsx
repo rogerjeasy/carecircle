@@ -344,9 +344,9 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link href="/profile">
+              <Link href="/account">
                 <User className="mr-2 h-4 w-4" />
-                Profile
+                Your profile
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
