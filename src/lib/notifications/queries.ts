@@ -8,6 +8,7 @@
  */
 import { getTimelineData } from '@/lib/timeline/queries';
 import { loadNotificationSettings } from '@/lib/notifications/settings';
+import { loadNotificationState } from '@/lib/notifications/state';
 import { channelEnabled, type NotifTypeKey } from '@/lib/notifications/prefs';
 import type { NotificationItem, NotificationType } from '@/components/notifications/types';
 
@@ -54,13 +55,19 @@ function toNotifType(eventType: string): NotificationType {
  * false here — read/dismissed state is layered on the client (the store persists it per-browser).
  */
 export async function getNotifications(): Promise<NotificationItem[]> {
-  const [data, prefsRes] = await Promise.all([getTimelineData(), loadNotificationSettings()]);
+  const data = await getTimelineData();
   if (!data) return [];
-  // Honor the member's "In-app" matrix toggles. If prefs can't load, fall back to showing all.
+  // Honor the member's "In-app" matrix toggles + overlay their per-event read/dismissed state.
+  const [prefsRes, stateMap] = await Promise.all([
+    loadNotificationSettings(),
+    loadNotificationState(data.events.map((e) => e.id)),
+  ]);
   const prefs = prefsRes.ok ? prefsRes.prefs : null;
 
   const items: NotificationItem[] = [];
   for (const e of data.events) {
+    const state = stateMap.get(e.id);
+    if (state?.dismissed) continue; // hidden everywhere once the member dismisses it
     const type = toNotifType(e.type);
     const urgent = Boolean(e.isUrgent);
     const matrixType = MATRIX_TYPE[type];
@@ -74,7 +81,7 @@ export async function getNotifications(): Promise<NotificationItem[]> {
       summary: e.summary,
       href: TYPE_HREF[type],
       at: e.timestamp,
-      read: false,
+      read: Boolean(state?.read),
     });
     if (items.length >= 25) break;
   }
