@@ -11,11 +11,13 @@
  *    FormData contents); logs carry ids/counts, not content.
  */
 import { z } from 'zod';
+import { after } from 'next/server';
 import { and, eq, isNull, sql } from 'drizzle-orm';
 import { requireSession, withAuthedDb } from '@/db/dal';
 import { getActiveCircleId } from '@/lib/circle/active-circle';
 import { recordAuditEvent } from '@/db/audit';
 import { serverLog } from '@/lib/log';
+import { dispatchNotification } from '@/lib/notifications/dispatch';
 import { tasks as taskTable, membership, timelineEvent } from '@/db/schema';
 import { canManageTasks } from './access';
 import type { Recurrence, Task, TaskCategory, TaskStatus } from '@/components/tasks/types';
@@ -181,6 +183,17 @@ export async function createTask(formData: FormData): Promise<ActionResult<Task>
     });
 
     serverLog('tasks', 'createTask', 'success', { actor: ctx.userId, id: row.id });
+    // Per-member Email/Push per their notification prefs — best-effort, runs after the response.
+    after(() =>
+      dispatchNotification({
+        circleId: ctx.circleId,
+        type: 'tasks',
+        title: 'New task',
+        body: `${firstName(ctx.name)} added a task: ${p.title}`,
+        path: '/tasks',
+        excludeUserId: ctx.userId,
+      }),
+    );
     return { ok: true, data: buildTaskDTO(row) };
   } catch (err) {
     serverLog('tasks', 'createTask', 'failure', { actor: ctx.userId, reason: (err as Error)?.name ?? 'error' });
