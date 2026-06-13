@@ -1,4 +1,5 @@
-import { Clock } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
@@ -27,58 +28,71 @@ export function BlogScreen() {
           </p>
         </section>
 
-        {/* Featured */}
+        {/* Featured — links to the full article */}
         <section className="mx-auto mt-12 max-w-5xl px-4 sm:px-6 lg:px-8">
-          <article className="group overflow-hidden rounded-2xl border bg-card motion-safe:animate-in motion-safe:fade-in">
-            <div className="grid grid-cols-1 md:grid-cols-2">
-              <RemoteImage
-                src={FEATURED.cover}
-                alt=""
-                className="h-56 w-full object-cover md:h-full"
-              />
-              <div className="flex flex-col justify-center gap-3 p-6 sm:p-8">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge variant="default">{FEATURED.category}</Badge>
-                  <span className="text-xs text-muted-foreground">Featured</span>
+          <Link href={`/blog/${FEATURED.slug}`} className="group block">
+            <article className="overflow-hidden rounded-2xl border bg-card transition-shadow hover:shadow-md motion-safe:animate-in motion-safe:fade-in">
+              <div className="grid grid-cols-1 md:grid-cols-2">
+                <RemoteImage
+                  src={FEATURED.cover}
+                  alt=""
+                  className="h-56 w-full object-cover md:h-full"
+                />
+                <div className="flex flex-col justify-center gap-3 p-6 sm:p-8">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge variant="default">{FEATURED.category}</Badge>
+                    <span className="text-xs text-muted-foreground">Featured</span>
+                  </div>
+                  <h2 className="text-balance font-serif text-2xl font-bold leading-tight">{FEATURED.title}</h2>
+                  <p className="text-pretty text-sm text-muted-foreground">{FEATURED.excerpt}</p>
+                  <PostMeta post={FEATURED} />
+                  <span className="mt-1 inline-flex items-center gap-1 text-sm font-medium text-primary">
+                    Read the story
+                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+                  </span>
                 </div>
-                <h2 className="text-balance font-serif text-2xl font-bold leading-tight">{FEATURED.title}</h2>
-                <p className="text-pretty text-sm text-muted-foreground">{FEATURED.excerpt}</p>
-                <PostMeta post={FEATURED} />
               </div>
-            </div>
-          </article>
+            </article>
+          </Link>
         </section>
 
-        {/* Grid */}
-        <section className="mx-auto mt-10 max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {POSTS.map((post, i) => (
-              <article
-                key={post.title}
-                className="group flex h-full flex-col overflow-hidden rounded-2xl border bg-card transition-shadow hover:shadow-md motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2"
-                style={{ animationDelay: `${Math.min(i, 6) * 60}ms`, animationFillMode: "backwards" }}
-              >
-                <div className="relative">
-                  <RemoteImage
-                    src={post.cover}
-                    alt=""
-                    className="h-44 w-full object-cover transition-transform duration-300 motion-safe:group-hover:scale-[1.03]"
-                  />
-                  <Badge className="absolute left-3 top-3 bg-background/90 text-foreground backdrop-blur">
-                    {post.category}
-                  </Badge>
-                </div>
-                <div className="flex flex-1 flex-col gap-2 p-5">
-                  <h3 className="text-balance font-semibold leading-snug">{post.title}</h3>
-                  <p className="line-clamp-2 text-pretty text-sm text-muted-foreground">{post.excerpt}</p>
-                  <div className="mt-auto pt-2">
-                    <PostMeta post={post} />
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
+        {/* More posts — only rendered once there are genuinely more to show. */}
+        {POSTS.length > 0 ? (
+          <section className="mx-auto mt-10 max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {POSTS.map((post, i) => (
+                <Link key={post.slug} href={`/blog/${post.slug}`} className="group block">
+                  <article
+                    className="flex h-full flex-col overflow-hidden rounded-2xl border bg-card transition-shadow hover:shadow-md motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2"
+                    style={{ animationDelay: `${Math.min(i, 6) * 60}ms`, animationFillMode: "backwards" }}
+                  >
+                    <div className="relative">
+                      <RemoteImage
+                        src={post.cover}
+                        alt=""
+                        className="h-44 w-full object-cover transition-transform duration-300 motion-safe:group-hover:scale-[1.03]"
+                      />
+                      <Badge className="absolute left-3 top-3 bg-background/90 text-foreground backdrop-blur">
+                        {post.category}
+                      </Badge>
+                    </div>
+                    <div className="flex flex-1 flex-col gap-2 p-5">
+                      <h3 className="text-balance font-semibold leading-snug">{post.title}</h3>
+                      <p className="line-clamp-2 text-pretty text-sm text-muted-foreground">{post.excerpt}</p>
+                      <div className="mt-auto pt-2">
+                        <PostMeta post={post} />
+                      </div>
+                    </div>
+                  </article>
+                </Link>
+              ))}
+            </div>
+          </section>
+        ) : (
+          <section className="mx-auto mt-10 max-w-2xl px-4 text-center sm:px-6 lg:px-8">
+            <p className="text-sm text-muted-foreground">More stories are on the way.</p>
+          </section>
+        )}
       </main>
 
       <MarketingFooter />
