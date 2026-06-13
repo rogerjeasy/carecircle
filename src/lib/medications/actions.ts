@@ -20,8 +20,10 @@ import { and, eq, isNull, sql } from 'drizzle-orm';
 import { format, startOfDay, endOfDay } from 'date-fns';
 import { requireSession, withAuthedDb } from '@/db/dal';
 import { getActiveCircleId } from '@/lib/circle/active-circle';
+import { after } from 'next/server';
 import { recordAuditEvent } from '@/db/audit';
 import { serverLog } from '@/lib/log';
+import { dispatchNotification } from '@/lib/notifications/dispatch';
 import {
   medication,
   medicationSchedule,
@@ -578,7 +580,7 @@ export async function recordDose(input: RecordDoseInput): Promise<ActionResult> 
   const now = new Date();
 
   try {
-    await withAuthedDb(async (tx) => {
+    const summary = await withAuthedDb(async (tx) => {
       // Validate the med belongs to the active circle (RLS also enforces this).
       const [med] = await tx
         .select({ id: medication.id, name: medication.name, strength: medication.strength })
@@ -638,9 +640,22 @@ export async function recordDose(input: RecordDoseInput): Promise<ActionResult> 
         { circleId: ctx.circleId, action: 'create', entityType: 'medication_administration', entityId: medId, summary: `Recorded a dose (${dbStatus})` },
         tx,
       );
+      return summary;
     });
 
     serverLog('medications', 'recordDose', 'success', { actor: ctx.userId, status: dbStatus });
+    // Notify the circle (Email/Push) per each member's prefs — best-effort, runs after the response.
+    after(() =>
+      dispatchNotification({
+        circleId: ctx.circleId,
+        type: 'meds',
+        urgent: outcome === 'refused',
+        title: outcome === 'refused' ? 'Medication refused' : isGiven ? 'Medication given' : 'Dose update',
+        body: summary,
+        path: '/medications',
+        excludeUserId: ctx.userId,
+      }),
+    );
     return { ok: true };
   } catch (err) {
     serverLog('medications', 'recordDose', 'failure', { actor: ctx.userId, reason: (err as { code?: string })?.code ?? (err as Error)?.name ?? 'error' });
