@@ -15,21 +15,12 @@ import { recordAuditEvent } from '@/db/audit';
 import { getActiveCircleId } from '@/lib/circle/active-circle';
 import { serverLog } from '@/lib/log';
 import { membership } from '@/db/schema';
-import { DEFAULT_MATRIX, type NotifMatrix } from '@/components/settings/data';
+import { withDefaults, type NotificationPrefs } from './prefs';
+
+// Canonical prefs types live in ./prefs (pure, no 'use server'); re-exported for existing importers.
+export type { NotificationPrefs, QuietHours } from './prefs';
 
 const GENERIC_ERROR = 'Something went wrong. Please try again.';
-
-export interface QuietHours {
-  enabled: boolean;
-  from: string;
-  to: string;
-}
-export interface NotificationPrefs {
-  matrix: NotifMatrix;
-  quiet: QuietHours;
-}
-
-const DEFAULT_QUIET: QuietHours = { enabled: true, from: '21:00', to: '07:00' };
 
 interface ActorContext {
   userId: string;
@@ -69,15 +60,8 @@ export async function loadNotificationSettings(): Promise<LoadPrefsResult> {
     const [row] = await withAuthedDb((tx) =>
       tx.select({ prefs: membership.notificationPrefs }).from(membership).where(eq(membership.id, ctx.membershipId)).limit(1),
     );
-    const stored = row?.prefs;
-    return {
-      ok: true,
-      prefs: {
-        // Merge over defaults so a newly-added type/channel always has a value.
-        matrix: { ...DEFAULT_MATRIX, ...(stored?.matrix as NotifMatrix | undefined) },
-        quiet: { ...DEFAULT_QUIET, ...(stored?.quiet ?? {}) },
-      },
-    };
+    // Merge over defaults so a newly-added type/channel always has a value.
+    return { ok: true, prefs: withDefaults(row?.prefs) };
   } catch (err) {
     serverLog('notifications', 'loadSettings', 'failure', { actor: ctx.userId, reason: (err as Error)?.name ?? 'error' });
     return { ok: false, error: GENERIC_ERROR };

@@ -7,7 +7,23 @@
  * serializable fields cross the boundary).
  */
 import { getTimelineData } from '@/lib/timeline/queries';
+import { loadNotificationSettings } from '@/lib/notifications/settings';
+import { channelEnabled, type NotifTypeKey } from '@/lib/notifications/prefs';
 import type { NotificationItem, NotificationType } from '@/components/notifications/types';
+
+/**
+ * Notification kind → the Settings matrix row it belongs to. Only mapped kinds are gated by the
+ * member's "In-app" toggle; un-mapped kinds (a note/mention, an appointment) have no matrix control
+ * and always show. Urgent items always show regardless. (Tasks currently surface on the timeline as
+ * notes, so they ride the un-gated 'mention' path until the timeline preserves their type.)
+ */
+const MATRIX_TYPE: Partial<Record<NotificationType, NotifTypeKey>> = {
+  med: 'meds',
+  vital: 'vitals',
+  task: 'tasks',
+  incident: 'incidents',
+  digest: 'digest',
+};
 
 /** Where tapping a notification of each type deep-links to. */
 const TYPE_HREF: Record<NotificationType, string> = {
@@ -38,19 +54,29 @@ function toNotifType(eventType: string): NotificationType {
  * false here — read/dismissed state is layered on the client (the store persists it per-browser).
  */
 export async function getNotifications(): Promise<NotificationItem[]> {
-  const data = await getTimelineData();
+  const [data, prefsRes] = await Promise.all([getTimelineData(), loadNotificationSettings()]);
   if (!data) return [];
-  return data.events.slice(0, 25).map((e) => {
+  // Honor the member's "In-app" matrix toggles. If prefs can't load, fall back to showing all.
+  const prefs = prefsRes.ok ? prefsRes.prefs : null;
+
+  const items: NotificationItem[] = [];
+  for (const e of data.events) {
     const type = toNotifType(e.type);
-    return {
+    const urgent = Boolean(e.isUrgent);
+    const matrixType = MATRIX_TYPE[type];
+    // Drop a non-urgent item whose type the member switched OFF for in-app. Urgent always shows.
+    if (prefs && matrixType && !urgent && !channelEnabled(prefs, matrixType, 'inApp')) continue;
+    items.push({
       id: e.id,
       type,
-      urgent: Boolean(e.isUrgent),
+      urgent,
       actor: { id: e.id, name: e.authorName, initials: e.authorInitials, color: e.authorColor },
       summary: e.summary,
       href: TYPE_HREF[type],
       at: e.timestamp,
       read: false,
-    };
-  });
+    });
+    if (items.length >= 25) break;
+  }
+  return items;
 }
