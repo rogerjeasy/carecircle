@@ -1,39 +1,26 @@
 "use client";
 
 import * as React from "react";
+import { toast } from "sonner";
 import { getNotifications } from "@/lib/notifications/queries";
+import {
+  markNotificationRead,
+  markAllNotificationsRead,
+  dismissNotification,
+} from "@/lib/notifications/state";
 import type { NotificationItem } from "./types";
 
 /**
- * Notifications store — hydrated once from the real timeline-derived feed (server), with read /
- * dismissed state layered on top and persisted per-browser in localStorage (there's no server-side
- * read-state table). A small shared store so the bell popover and the full page stay in sync.
+ * Notifications store — hydrated from the real timeline-derived feed, with read/dismissed state now
+ * persisted SERVER-SIDE per member (cross-device) via `notification_state`. Mutations apply
+ * optimistically for snappy UI, then re-sync from the server on failure. A small shared store so the
+ * bell popover and the full page stay in sync.
  */
 let items: NotificationItem[] | null = null;
 let loaded = false;
 let loading = false;
 const listeners = new Set<() => void>();
 const EMPTY: NotificationItem[] = [];
-
-const READ_KEY = "cc-notif-read";
-const DISMISS_KEY = "cc-notif-dismissed";
-
-function loadIdSet(key: string): Set<string> {
-  try {
-    const raw = JSON.parse(localStorage.getItem(key) ?? "[]");
-    return new Set(Array.isArray(raw) ? (raw as string[]) : []);
-  } catch {
-    return new Set();
-  }
-}
-
-function saveIdSet(key: string, set: Set<string>) {
-  try {
-    localStorage.setItem(key, JSON.stringify([...set]));
-  } catch {
-    /* storage unavailable (private mode) — read state just won't persist */
-  }
-}
 
 function emit() {
   listeners.forEach((l) => l());
@@ -44,17 +31,10 @@ function subscribe(listener: () => void): () => void {
   return () => listeners.delete(listener);
 }
 
-/** Fetch the real feed once and merge in persisted read/dismissed state. Idempotent. */
-async function loadOnce() {
-  if (loaded || loading) return;
-  loading = true;
+/** Pull the authoritative feed (server applies read state + drops dismissed). */
+async function fetchFeed() {
   try {
-    const fresh = await getNotifications();
-    const readIds = loadIdSet(READ_KEY);
-    const dismissed = loadIdSet(DISMISS_KEY);
-    items = fresh
-      .filter((n) => !dismissed.has(n.id))
-      .map((n) => ({ ...n, read: readIds.has(n.id) }));
+    items = await getNotifications();
   } catch {
     items = [];
   } finally {
@@ -62,6 +42,19 @@ async function loadOnce() {
     loading = false;
     emit();
   }
+}
+
+/** Fetch once on first mount. Idempotent. */
+async function loadOnce() {
+  if (loaded || loading) return;
+  loading = true;
+  await fetchFeed();
+}
+
+/** Re-sync from the server (used to roll back a failed optimistic mutation). */
+async function resync(message: string) {
+  toast.error(message);
+  await fetchFeed();
 }
 
 /** Hook that ensures the feed is loaded (call from the bell + page). */
@@ -72,27 +65,34 @@ export function useLoadNotifications() {
 }
 
 export function markRead(id: string) {
-  const readIds = loadIdSet(READ_KEY);
-  readIds.add(id);
-  saveIdSet(READ_KEY, readIds);
-  items = (items ?? []).map((n) => (n.id === id ? { ...n, read: true } : n));
+  if (!items) return;
+  const target = items.find((n) => n.id === id);
+  if (!target || target.read) return; // already read → no server round-trip
+  items = items.map((n) => (n.id === id ? { ...n, read: true } : n));
   emit();
+  void markNotificationRead(id).then((res) => {
+    if (!res.ok) void resync(res.error);
+  });
 }
 
 export function markAllRead() {
-  const readIds = loadIdSet(READ_KEY);
-  (items ?? []).forEach((n) => readIds.add(n.id));
-  saveIdSet(READ_KEY, readIds);
-  items = (items ?? []).map((n) => (n.read ? n : { ...n, read: true }));
+  if (!items) return;
+  const unreadIds = items.filter((n) => !n.read).map((n) => n.id);
+  if (unreadIds.length === 0) return;
+  items = items.map((n) => (n.read ? n : { ...n, read: true }));
   emit();
+  void markAllNotificationsRead(unreadIds).then((res) => {
+    if (!res.ok) void resync(res.error);
+  });
 }
 
 export function dismiss(id: string) {
-  const dismissed = loadIdSet(DISMISS_KEY);
-  dismissed.add(id);
-  saveIdSet(DISMISS_KEY, dismissed);
-  items = (items ?? []).filter((n) => n.id !== id);
+  if (!items) return;
+  items = items.filter((n) => n.id !== id);
   emit();
+  void dismissNotification(id).then((res) => {
+    if (!res.ok) void resync(res.error);
+  });
 }
 
 export function useNotifications(): NotificationItem[] {
