@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SettingsSection, Field, ToggleRow } from "./section";
 import { DailyDigestSettings } from "./daily-digest-settings";
+import { PushDeviceToggle } from "./push-device-toggle";
 import { useIsPhone } from "./use-is-phone";
 import {
   NOTIF_CHANNELS,
@@ -143,6 +144,9 @@ export function NotificationsSettingsSection() {
           )}
         </CardContent>
       </Card>
+
+      {/* Register THIS browser as a push destination (the matrix Push column is the preference). */}
+      <PushDeviceToggle />
 
       {/* Quiet hours */}
       <Card>
