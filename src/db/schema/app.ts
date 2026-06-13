@@ -1114,3 +1114,38 @@ export const statusAlertRecipient = pgTable(
   // One row per address regardless of casing — same rule as the user table.
   (t) => [uniqueIndex('status_alert_recipient_email_uq').on(sql`lower(${t.email})`)],
 );
+
+// ---- Web Push subscriptions: one row per browser/device a member has enabled push on ----
+// Stores the W3C PushSubscription (endpoint + p256dh/auth keys) so the notification dispatcher can
+// deliver to that device via the Web Push protocol (VAPID). Scoped to the member who owns it; a
+// dead endpoint (410/404 on send) is pruned. Keys are not secrets in the password sense, but they
+// are per-device tokens — never logged.
+export const pushSubscription = pgTable(
+  'push_subscription',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    circleId: uuid('circle_id')
+      .notNull()
+      .references(() => careCircle.id, { onDelete: 'cascade' }),
+    membershipId: uuid('membership_id')
+      .notNull()
+      .references(() => membership.id, { onDelete: 'cascade' }),
+    // The push service endpoint URL — unique per device subscription.
+    endpoint: text('endpoint').notNull(),
+    // Client public key + auth secret from the browser PushSubscription (base64url).
+    p256dh: text('p256dh').notNull(),
+    auth: text('auth').notNull(),
+    // Best-effort UA label so a member can recognise/revoke a device in settings.
+    userAgent: text('user_agent'),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [
+    // One row per device PER circle membership — a multi-circle member can enable push for each of
+    // their circles on the same browser (re-subscribing updates that row's keys).
+    unique('push_subscription_membership_endpoint_uq').on(t.membershipId, t.endpoint),
+    index('push_subscription_membership_idx').on(t.membershipId),
+    index('push_subscription_circle_idx').on(t.circleId),
+    index('push_subscription_endpoint_idx').on(t.endpoint),
+  ],
+);
