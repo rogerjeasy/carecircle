@@ -92,25 +92,17 @@ function BrandPanel() {
           Bring your family into the care.
         </h1>
         <p className="text-lg text-muted-foreground max-w-md">
-          Join thousands of families coordinating care for their loved ones — together, no matter the distance.
+          Coordinate care for your loved one with everyone involved — together, no matter the distance.
         </p>
       </div>
 
-      {/* Testimonial */}
+      {/* Mission note — what Kintwadi is for (no fabricated testimonials) */}
       <div className="relative z-10 rounded-2xl border border-border/50 bg-card/50 p-6 backdrop-blur-sm">
         <blockquote className="text-base italic text-foreground/90">
-          &ldquo;Kintwadi finally gave our family a way to stay connected around Dad&apos;s care. 
-          My brother in London and I in Toronto now feel like we&apos;re truly in this together.&rdquo;
+          One shared, permission-aware record for everyone caring for someone — so siblings across
+          cities and countries can stay truly in it together, not lost in scattered group chats.
         </blockquote>
-        <div className="mt-4 flex items-center gap-3">
-          <div className="h-10 w-10 rounded-full bg-accent/20 flex items-center justify-center text-sm font-semibold text-accent">
-            MR
-          </div>
-          <div>
-            <p className="text-sm font-medium">Maria Rodriguez</p>
-            <p className="text-xs text-muted-foreground">Family Coordinator, Toronto</p>
-          </div>
-        </div>
+        <p className="mt-4 text-xs text-muted-foreground">Why we built Kintwadi</p>
       </div>
     </div>
   );

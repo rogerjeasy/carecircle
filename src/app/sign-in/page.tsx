@@ -55,20 +55,20 @@ function BrandPanel() {
         </p>
       </div>
 
-      {/* Stats/Trust indicators */}
+      {/* Why it matters — real demographic context (UN World Population Ageing), not fabricated traction */}
       <div className="relative z-10 rounded-2xl border border-border/50 bg-card/50 p-6 backdrop-blur-sm">
         <div className="grid grid-cols-3 gap-4 text-center">
           <div>
-            <p className="text-2xl font-bold text-primary">10K+</p>
-            <p className="text-xs text-muted-foreground">Families</p>
+            <p className="text-2xl font-bold text-primary">2.1B</p>
+            <p className="text-xs text-muted-foreground">People 60+ by 2050</p>
           </div>
           <div>
-            <p className="text-2xl font-bold text-primary">40+</p>
-            <p className="text-xs text-muted-foreground">Countries</p>
+            <p className="text-2xl font-bold text-primary">1 in 6</p>
+            <p className="text-xs text-muted-foreground">Will be 60+ by 2030</p>
           </div>
           <div>
-            <p className="text-2xl font-bold text-primary">99.9%</p>
-            <p className="text-xs text-muted-foreground">Uptime</p>
+            <p className="text-2xl font-bold text-primary">2×</p>
+            <p className="text-xs text-muted-foreground">Older population by 2050</p>
           </div>
         </div>
       </div>
