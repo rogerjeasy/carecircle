@@ -12,6 +12,7 @@
  *    FormData contents); logs carry ids/counts, never content.
  */
 import { z } from 'zod';
+import { after } from 'next/server';
 import { and, eq, inArray, isNull } from 'drizzle-orm';
 import { requireSession, withAuthedDb } from '@/db/dal';
 import { getActiveCircleId } from '@/lib/circle/active-circle';
@@ -30,6 +31,7 @@ import {
 import { canReportIncidents, canResolveIncidents } from './access';
 import { getIncidentReportContext } from './queries';
 import { escalateHighSeverityIncident, type EscalationContact } from './notify';
+import { dispatchNotification } from '@/lib/notifications/dispatch';
 import type { IncidentReportContext } from '@/components/incidents/types';
 
 export type ActionError = { ok: false; error: string };
@@ -228,6 +230,21 @@ export async function reportIncident(formData: FormData): Promise<ActionResult<{
         contacts: result.contacts,
       });
     }
+
+    // Per-member Email/Push for the whole circle per their notification prefs (high → urgent, which
+    // bypasses quiet hours). This complements the escalation above (which targets the reporter's
+    // explicitly-chosen responders via SMS/SNS) so every member who wants incident alerts gets one.
+    after(() =>
+      dispatchNotification({
+        circleId: ctx.circleId,
+        type: 'incidents',
+        urgent: p.severity === 'high',
+        title: p.severity === 'high' ? 'Urgent: incident reported' : 'Incident reported',
+        body: `${firstName(ctx.name)} reported ${TYPE_LABEL[p.type] ?? 'an incident'}${result.recipientFirstName ? ` for ${result.recipientFirstName}` : ''} (${p.severity} severity).`,
+        path: `/incidents/${result.id}`,
+        excludeUserId: ctx.userId,
+      }),
+    );
 
     serverLog('incidents', 'reportIncident', 'success', {
       actor: ctx.userId,
