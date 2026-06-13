@@ -1149,3 +1149,32 @@ export const pushSubscription = pgTable(
     index('push_subscription_endpoint_idx').on(t.endpoint),
   ],
 );
+
+// ---- Per-member notification read / dismissed state (cross-device) ----
+// The notifications feed is derived from `timeline_event`; this overlays each member's own
+// read/dismissed state so the bell + page stay in sync across all their devices. One row per
+// (member, event); `read_at`/`dismissed_at` null = not-yet read/dismissed. Scoped to the member.
+export const notificationState = pgTable(
+  'notification_state',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    circleId: uuid('circle_id')
+      .notNull()
+      .references(() => careCircle.id, { onDelete: 'cascade' }),
+    membershipId: uuid('membership_id')
+      .notNull()
+      .references(() => membership.id, { onDelete: 'cascade' }),
+    timelineEventId: uuid('timeline_event_id')
+      .notNull()
+      .references(() => timelineEvent.id, { onDelete: 'cascade' }),
+    readAt: timestamp('read_at', { withTimezone: true }),
+    dismissedAt: timestamp('dismissed_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [
+    unique('notification_state_member_event_uq').on(t.membershipId, t.timelineEventId),
+    index('notification_state_membership_idx').on(t.membershipId),
+    index('notification_state_circle_idx').on(t.circleId),
+  ],
+);
