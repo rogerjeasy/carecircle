@@ -23,6 +23,7 @@ import {
   incidentEscalationEmail,
   serviceStatusAlertEmail,
   contactMessageEmail,
+  notificationEmail,
 } from '@/lib/email-templates';
 import { serverLog, maskEmail } from '@/lib/log';
 import type { Digest } from '@/components/digest/types';
@@ -172,6 +173,19 @@ async function deliver(email: Email): Promise<void> {
 /** Send the "reset your password" email containing the one-time link. */
 export async function sendPasswordResetEmail(to: string, resetUrl: string): Promise<void> {
   const { subject, html, text } = passwordResetEmail({ resetUrl });
+  await deliver({ to, subject, html, text });
+}
+
+/** Send a generic per-member activity notification email (the "Email" notification channel). */
+export async function sendNotificationEmail(params: {
+  to: string;
+  title: string;
+  body: string;
+  url: string;
+  ctaLabel?: string;
+}): Promise<void> {
+  const { to, ...rest } = params;
+  const { subject, html, text } = notificationEmail(rest);
   await deliver({ to, subject, html, text });
 }
 
