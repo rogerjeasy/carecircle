@@ -292,6 +292,27 @@ export function joinedCircleEmail(params: {
 }
 
 /** "Welcome to Kintwadi" — sent to the owner after they finish onboarding (optional, ready to wire). */
+/**
+ * Generic per-member notification email — the "Email" channel of Settings → Notifications. Used by
+ * the dispatcher for routine activity (a dose given, a vital logged, a task assigned, the digest).
+ * Plain and calm: a title, one line of context, and a single CTA to the relevant screen.
+ */
+export function notificationEmail(params: {
+  title: string;
+  body: string;
+  url: string;
+  ctaLabel?: string;
+}): EmailContent {
+  const { title, body, url, ctaLabel = 'Open Kintwadi' } = params;
+  const content = heading(title) + paragraph(esc(body)) + button(url, ctaLabel) + fallbackLink(url);
+  const text = [title, '', body, '', ctaLabel + ':', url, '', '— Kintwadi'].join('\n');
+  return {
+    subject: title,
+    html: baseLayout({ title, preheader: body.slice(0, 110), contentHtml: content }),
+    text,
+  };
+}
+
 export function welcomeEmail(params: { recipientName: string; dashboardUrl: string }): EmailContent {
   const { recipientName, dashboardUrl } = params;
   const subject = `${recipientName}'s Care Circle is ready`;
