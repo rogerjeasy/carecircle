@@ -241,17 +241,11 @@ export function TestimonialSection() {
         >
           <Quote className="h-10 w-10 text-primary/30 mx-auto mb-6" />
           <blockquote className="font-serif text-xl sm:text-2xl lg:text-3xl font-medium text-balance leading-relaxed">
-            &quot;I live in Toronto, my brother&apos;s in London, and Mom is back in Portugal. Kintwadi is the only reason we can coordinate her care without losing our minds. The daily digest keeps me sane.&quot;
+            One sibling in Toronto, another in London, a parent back home in Lisbon — and care
+            decisions scattered across group chats, sticky notes, and missed calls. Kintwadi exists
+            to put everyone caring for someone on the same page, wherever they are.
           </blockquote>
-          <div className="mt-8 flex items-center justify-center gap-4">
-            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-              <span className="font-semibold text-primary">MR</span>
-            </div>
-            <div className="text-left">
-              <p className="font-semibold">Maria Rodriguez</p>
-              <p className="text-sm text-muted-foreground">Daughter & primary caregiver</p>
-            </div>
-          </div>
+          <p className="mt-8 text-sm text-muted-foreground">Why we built Kintwadi</p>
         </Card>
       </div>
     </section>
@@ -276,7 +270,7 @@ export function CtaSection() {
             Start caring together, today
           </h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-xl mx-auto text-pretty">
-            Join thousands of families who&apos;ve found a better way to coordinate care. Free to start, no credit card required.
+            Bring your family and care team into one shared place to coordinate care. Free to start, no credit card required.
           </p>
           <div className="mt-8 flex flex-wrap gap-4 justify-center">
             <Link href="/sign-up">

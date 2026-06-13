@@ -188,10 +188,13 @@ function TimelineItem({
 export function SocialProofSection() {
   const { ref, isVisible } = useScrollAnimation();
 
+  // Real, citable demographic context (UN World Population Ageing) — the "why" behind
+  // Kintwadi. No fabricated traction numbers: the product is new and we don't claim
+  // adoption we can't back up.
   const stats = [
-    { value: "40+", label: "Countries" },
-    { value: "10K+", label: "Families" },
     { value: "2.1B", label: "People 60+ by 2050" },
+    { value: "1 in 6", label: "Will be 60+ by 2030" },
+    { value: "2×", label: "Older population, 2020 → 2050" },
   ];
 
   return (
@@ -205,7 +208,7 @@ export function SocialProofSection() {
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <p className="text-center text-sm text-muted-foreground mb-6">
-          Trusted by families in 40+ countries
+          Built for families caring for an aging loved one — across any distance
         </p>
         <div className="flex flex-wrap justify-center gap-8 sm:gap-12">
           {stats.map((stat) => (
