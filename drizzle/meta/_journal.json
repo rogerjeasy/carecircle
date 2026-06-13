@@ -337,6 +337,20 @@
 			"when": 1781345046274,
 			"tag": "0047_push_subscription_rls",
 			"breakpoints": true
+		},
+		{
+			"idx": 48,
+			"version": "7",
+			"when": 1781349342153,
+			"tag": "0048_notification_state",
+			"breakpoints": true
+		},
+		{
+			"idx": 49,
+			"version": "7",
+			"when": 1781349343153,
+			"tag": "0049_notification_state_rls",
+			"breakpoints": true
 		}
 	]
 }
