@@ -526,7 +526,7 @@ function ClosingCta() {
             Ready to bring your care circle together?
           </h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-xl mx-auto text-pretty">
-            Join thousands of families who&apos;ve found a better way to coordinate care. 
+            Bring everyone caring for your loved one into one shared place.
             Free to start, set up in under a minute.
           </p>
           <div className="mt-8 flex flex-wrap gap-4 justify-center">
