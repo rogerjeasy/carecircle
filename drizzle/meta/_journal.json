@@ -1,328 +1,342 @@
 {
-  "version": "7",
-  "dialect": "postgresql",
-  "entries": [
-    {
-      "idx": 0,
-      "version": "7",
-      "when": 1780664366651,
-      "tag": "0000_init",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1780664379629,
-      "tag": "0001_rls_policies",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1780685146724,
-      "tag": "0002_fancy_black_tom",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1780688031227,
-      "tag": "0003_lovely_bloodstrike",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1780735610016,
-      "tag": "0004_open_the_stranger",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1780735610017,
-      "tag": "0005_onboarding_rls",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1780735610018,
-      "tag": "0006_invitation_accept",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "7",
-      "when": 1780831305228,
-      "tag": "0007_mysterious_lizard",
-      "breakpoints": true
-    },
-    {
-      "idx": 8,
-      "version": "7",
-      "when": 1780854759406,
-      "tag": "0008_medications",
-      "breakpoints": true
-    },
-    {
-      "idx": 9,
-      "version": "7",
-      "when": 1780854784357,
-      "tag": "0009_medications_rls",
-      "breakpoints": true
-    },
-    {
-      "idx": 10,
-      "version": "7",
-      "when": 1780858286815,
-      "tag": "0010_timeline_interactions",
-      "breakpoints": true
-    },
-    {
-      "idx": 11,
-      "version": "7",
-      "when": 1780858301419,
-      "tag": "0011_timeline_rls",
-      "breakpoints": true
-    },
-    {
-      "idx": 12,
-      "version": "7",
-      "when": 1780860784946,
-      "tag": "0012_medication_attachments",
-      "breakpoints": true
-    },
-    {
-      "idx": 13,
-      "version": "7",
-      "when": 1780860788366,
-      "tag": "0013_medication_attachments_rls",
-      "breakpoints": true
-    },
-    {
-      "idx": 14,
-      "version": "7",
-      "when": 1780866903258,
-      "tag": "0014_documents",
-      "breakpoints": true
-    },
-    {
-      "idx": 15,
-      "version": "7",
-      "when": 1780866915544,
-      "tag": "0015_documents_rls",
-      "breakpoints": true
-    },
-    {
-      "idx": 16,
-      "version": "7",
-      "when": 1780868140923,
-      "tag": "0016_tasks",
-      "breakpoints": true
-    },
-    {
-      "idx": 17,
-      "version": "7",
-      "when": 1780868150599,
-      "tag": "0017_tasks_rls",
-      "breakpoints": true
-    },
-    {
-      "idx": 18,
-      "version": "7",
-      "when": 1780869151383,
-      "tag": "0018_appointments",
-      "breakpoints": true
-    },
-    {
-      "idx": 19,
-      "version": "7",
-      "when": 1780869166908,
-      "tag": "0019_appointments_rls",
-      "breakpoints": true
-    },
-    {
-      "idx": 20,
-      "version": "7",
-      "when": 1780870292478,
-      "tag": "0020_observations",
-      "breakpoints": true
-    },
-    {
-      "idx": 21,
-      "version": "7",
-      "when": 1780870332325,
-      "tag": "0021_observations_rls",
-      "breakpoints": true
-    },
-    {
-      "idx": 22,
-      "version": "7",
-      "when": 1780872052485,
-      "tag": "0022_care_shifts",
-      "breakpoints": true
-    },
-    {
-      "idx": 23,
-      "version": "7",
-      "when": 1780872070634,
-      "tag": "0023_care_shifts_rls",
-      "breakpoints": true
-    },
-    {
-      "idx": 24,
-      "version": "7",
-      "when": 1780873416423,
-      "tag": "0024_member_phone_advance_directive",
-      "breakpoints": true
-    },
-    {
-      "idx": 25,
-      "version": "7",
-      "when": 1780944814083,
-      "tag": "0025_living_aqueduct",
-      "breakpoints": true
-    },
-    {
-      "idx": 26,
-      "version": "7",
-      "when": 1780944967572,
-      "tag": "0026_rag_chunks_rls",
-      "breakpoints": true
-    },
-    {
-      "idx": 27,
-      "version": "7",
-      "when": 1780947072234,
-      "tag": "0027_wild_stick",
-      "breakpoints": true
-    },
-    {
-      "idx": 28,
-      "version": "7",
-      "when": 1780947109571,
-      "tag": "0028_ask_conversations_rls",
-      "breakpoints": true
-    },
-    {
-      "idx": 29,
-      "version": "7",
-      "when": 1780954702630,
-      "tag": "0029_special_leo",
-      "breakpoints": true
-    },
-    {
-      "idx": 30,
-      "version": "7",
-      "when": 1780954818615,
-      "tag": "0030_digest_rls",
-      "breakpoints": true
-    },
-    {
-      "idx": 31,
-      "version": "7",
-      "when": 1780955936440,
-      "tag": "0031_watery_wolf_cub",
-      "breakpoints": true
-    },
-    {
-      "idx": 32,
-      "version": "7",
-      "when": 1781030511658,
-      "tag": "0032_incidents",
-      "breakpoints": true
-    },
-    {
-      "idx": 33,
-      "version": "7",
-      "when": 1781030519898,
-      "tag": "0033_incidents_rls",
-      "breakpoints": true
-    },
-    {
-      "idx": 34,
-      "version": "7",
-      "when": 1781032802436,
-      "tag": "0034_settings_account_prefs",
-      "breakpoints": true
-    },
-    {
-      "idx": 35,
-      "version": "7",
-      "when": 1781044690331,
-      "tag": "0035_billing",
-      "breakpoints": true
-    },
-    {
-      "idx": 36,
-      "version": "7",
-      "when": 1781044693805,
-      "tag": "0036_billing_rls",
-      "breakpoints": true
-    },
-    {
-      "idx": 37,
-      "version": "7",
-      "when": 1781082958841,
-      "tag": "0037_health_alert_settings",
-      "breakpoints": true
-    },
-    {
-      "idx": 38,
-      "version": "7",
-      "when": 1781082978831,
-      "tag": "0038_health_alerts_rls",
-      "breakpoints": true
-    },
-    {
-      "idx": 39,
-      "version": "7",
-      "when": 1781106433964,
-      "tag": "0039_member_language",
-      "breakpoints": true
-    },
-    {
-      "idx": 40,
-      "version": "7",
-      "when": 1781162560695,
-      "tag": "0040_emergency_card_share",
-      "breakpoints": true
-    },
-    {
-      "idx": 41,
-      "version": "7",
-      "when": 1781162595182,
-      "tag": "0041_emergency_card_share_rls",
-      "breakpoints": true
-    },
-    {
-      "idx": 42,
-      "version": "7",
-      "when": 1781194322361,
-      "tag": "0042_nasty_luke_cage",
-      "breakpoints": true
-    },
-    {
-      "idx": 43,
-      "version": "7",
-      "when": 1781194328616,
-      "tag": "0043_service_status_rls",
-      "breakpoints": true
-    },
-    {
-      "idx": 44,
-      "version": "7",
-      "when": 1781284227620,
-      "tag": "0044_faithful_the_order",
-      "breakpoints": true
-    },
-    {
-      "idx": 45,
-      "version": "7",
-      "when": 1781285076258,
-      "tag": "0045_invitation_decline_and_token_hashing",
-      "breakpoints": true
-    }
-  ]
+	"version": "7",
+	"dialect": "postgresql",
+	"entries": [
+		{
+			"idx": 0,
+			"version": "7",
+			"when": 1780664366651,
+			"tag": "0000_init",
+			"breakpoints": true
+		},
+		{
+			"idx": 1,
+			"version": "7",
+			"when": 1780664379629,
+			"tag": "0001_rls_policies",
+			"breakpoints": true
+		},
+		{
+			"idx": 2,
+			"version": "7",
+			"when": 1780685146724,
+			"tag": "0002_fancy_black_tom",
+			"breakpoints": true
+		},
+		{
+			"idx": 3,
+			"version": "7",
+			"when": 1780688031227,
+			"tag": "0003_lovely_bloodstrike",
+			"breakpoints": true
+		},
+		{
+			"idx": 4,
+			"version": "7",
+			"when": 1780735610016,
+			"tag": "0004_open_the_stranger",
+			"breakpoints": true
+		},
+		{
+			"idx": 5,
+			"version": "7",
+			"when": 1780735610017,
+			"tag": "0005_onboarding_rls",
+			"breakpoints": true
+		},
+		{
+			"idx": 6,
+			"version": "7",
+			"when": 1780735610018,
+			"tag": "0006_invitation_accept",
+			"breakpoints": true
+		},
+		{
+			"idx": 7,
+			"version": "7",
+			"when": 1780831305228,
+			"tag": "0007_mysterious_lizard",
+			"breakpoints": true
+		},
+		{
+			"idx": 8,
+			"version": "7",
+			"when": 1780854759406,
+			"tag": "0008_medications",
+			"breakpoints": true
+		},
+		{
+			"idx": 9,
+			"version": "7",
+			"when": 1780854784357,
+			"tag": "0009_medications_rls",
+			"breakpoints": true
+		},
+		{
+			"idx": 10,
+			"version": "7",
+			"when": 1780858286815,
+			"tag": "0010_timeline_interactions",
+			"breakpoints": true
+		},
+		{
+			"idx": 11,
+			"version": "7",
+			"when": 1780858301419,
+			"tag": "0011_timeline_rls",
+			"breakpoints": true
+		},
+		{
+			"idx": 12,
+			"version": "7",
+			"when": 1780860784946,
+			"tag": "0012_medication_attachments",
+			"breakpoints": true
+		},
+		{
+			"idx": 13,
+			"version": "7",
+			"when": 1780860788366,
+			"tag": "0013_medication_attachments_rls",
+			"breakpoints": true
+		},
+		{
+			"idx": 14,
+			"version": "7",
+			"when": 1780866903258,
+			"tag": "0014_documents",
+			"breakpoints": true
+		},
+		{
+			"idx": 15,
+			"version": "7",
+			"when": 1780866915544,
+			"tag": "0015_documents_rls",
+			"breakpoints": true
+		},
+		{
+			"idx": 16,
+			"version": "7",
+			"when": 1780868140923,
+			"tag": "0016_tasks",
+			"breakpoints": true
+		},
+		{
+			"idx": 17,
+			"version": "7",
+			"when": 1780868150599,
+			"tag": "0017_tasks_rls",
+			"breakpoints": true
+		},
+		{
+			"idx": 18,
+			"version": "7",
+			"when": 1780869151383,
+			"tag": "0018_appointments",
+			"breakpoints": true
+		},
+		{
+			"idx": 19,
+			"version": "7",
+			"when": 1780869166908,
+			"tag": "0019_appointments_rls",
+			"breakpoints": true
+		},
+		{
+			"idx": 20,
+			"version": "7",
+			"when": 1780870292478,
+			"tag": "0020_observations",
+			"breakpoints": true
+		},
+		{
+			"idx": 21,
+			"version": "7",
+			"when": 1780870332325,
+			"tag": "0021_observations_rls",
+			"breakpoints": true
+		},
+		{
+			"idx": 22,
+			"version": "7",
+			"when": 1780872052485,
+			"tag": "0022_care_shifts",
+			"breakpoints": true
+		},
+		{
+			"idx": 23,
+			"version": "7",
+			"when": 1780872070634,
+			"tag": "0023_care_shifts_rls",
+			"breakpoints": true
+		},
+		{
+			"idx": 24,
+			"version": "7",
+			"when": 1780873416423,
+			"tag": "0024_member_phone_advance_directive",
+			"breakpoints": true
+		},
+		{
+			"idx": 25,
+			"version": "7",
+			"when": 1780944814083,
+			"tag": "0025_living_aqueduct",
+			"breakpoints": true
+		},
+		{
+			"idx": 26,
+			"version": "7",
+			"when": 1780944967572,
+			"tag": "0026_rag_chunks_rls",
+			"breakpoints": true
+		},
+		{
+			"idx": 27,
+			"version": "7",
+			"when": 1780947072234,
+			"tag": "0027_wild_stick",
+			"breakpoints": true
+		},
+		{
+			"idx": 28,
+			"version": "7",
+			"when": 1780947109571,
+			"tag": "0028_ask_conversations_rls",
+			"breakpoints": true
+		},
+		{
+			"idx": 29,
+			"version": "7",
+			"when": 1780954702630,
+			"tag": "0029_special_leo",
+			"breakpoints": true
+		},
+		{
+			"idx": 30,
+			"version": "7",
+			"when": 1780954818615,
+			"tag": "0030_digest_rls",
+			"breakpoints": true
+		},
+		{
+			"idx": 31,
+			"version": "7",
+			"when": 1780955936440,
+			"tag": "0031_watery_wolf_cub",
+			"breakpoints": true
+		},
+		{
+			"idx": 32,
+			"version": "7",
+			"when": 1781030511658,
+			"tag": "0032_incidents",
+			"breakpoints": true
+		},
+		{
+			"idx": 33,
+			"version": "7",
+			"when": 1781030519898,
+			"tag": "0033_incidents_rls",
+			"breakpoints": true
+		},
+		{
+			"idx": 34,
+			"version": "7",
+			"when": 1781032802436,
+			"tag": "0034_settings_account_prefs",
+			"breakpoints": true
+		},
+		{
+			"idx": 35,
+			"version": "7",
+			"when": 1781044690331,
+			"tag": "0035_billing",
+			"breakpoints": true
+		},
+		{
+			"idx": 36,
+			"version": "7",
+			"when": 1781044693805,
+			"tag": "0036_billing_rls",
+			"breakpoints": true
+		},
+		{
+			"idx": 37,
+			"version": "7",
+			"when": 1781082958841,
+			"tag": "0037_health_alert_settings",
+			"breakpoints": true
+		},
+		{
+			"idx": 38,
+			"version": "7",
+			"when": 1781082978831,
+			"tag": "0038_health_alerts_rls",
+			"breakpoints": true
+		},
+		{
+			"idx": 39,
+			"version": "7",
+			"when": 1781106433964,
+			"tag": "0039_member_language",
+			"breakpoints": true
+		},
+		{
+			"idx": 40,
+			"version": "7",
+			"when": 1781162560695,
+			"tag": "0040_emergency_card_share",
+			"breakpoints": true
+		},
+		{
+			"idx": 41,
+			"version": "7",
+			"when": 1781162595182,
+			"tag": "0041_emergency_card_share_rls",
+			"breakpoints": true
+		},
+		{
+			"idx": 42,
+			"version": "7",
+			"when": 1781194322361,
+			"tag": "0042_nasty_luke_cage",
+			"breakpoints": true
+		},
+		{
+			"idx": 43,
+			"version": "7",
+			"when": 1781194328616,
+			"tag": "0043_service_status_rls",
+			"breakpoints": true
+		},
+		{
+			"idx": 44,
+			"version": "7",
+			"when": 1781284227620,
+			"tag": "0044_faithful_the_order",
+			"breakpoints": true
+		},
+		{
+			"idx": 45,
+			"version": "7",
+			"when": 1781285076258,
+			"tag": "0045_invitation_decline_and_token_hashing",
+			"breakpoints": true
+		},
+		{
+			"idx": 46,
+			"version": "7",
+			"when": 1781345045274,
+			"tag": "0046_push_subscription",
+			"breakpoints": true
+		},
+		{
+			"idx": 47,
+			"version": "7",
+			"when": 1781345046274,
+			"tag": "0047_push_subscription_rls",
+			"breakpoints": true
+		}
+	]
 }
