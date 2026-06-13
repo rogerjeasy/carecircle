@@ -9,7 +9,7 @@ export function PricingCta() {
       <CardContent className="py-12 sm:py-12 text-center">
         <h2 className="font-serif text-2xl sm:text-3xl font-bold mb-4">Ready to simplify care coordination?</h2>
         <p className="text-muted-foreground max-w-xl mx-auto mb-8">
-          Join thousands of families who trust Kintwadi. Start free, no credit card required.
+          Bring everyone caring for your loved one onto one shared record. Start free, no credit card required.
         </p>
         <div className="flex flex-wrap justify-center gap-4">
           <Link href="/sign-up">
