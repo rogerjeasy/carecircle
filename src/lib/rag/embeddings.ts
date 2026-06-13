@@ -9,21 +9,39 @@ import 'server-only';
  */
 import { getEmbeddingConfig } from './config';
 
-let _client: import('@aws-sdk/client-bedrock-runtime').BedrockRuntimeClient | null = null;
-async function client() {
-  if (!_client) {
-    const { BedrockRuntimeClient } = await import('@aws-sdk/client-bedrock-runtime');
-    const { awsCredentials } = await import('@/lib/aws/credentials');
-    _client = new BedrockRuntimeClient({ region: process.env.AWS_REGION, credentials: await awsCredentials() });
+type BedrockSdk = typeof import('@aws-sdk/client-bedrock-runtime');
+interface Bedrock {
+  client: InstanceType<BedrockSdk['BedrockRuntimeClient']>;
+  InvokeModelCommand: BedrockSdk['InvokeModelCommand'];
+}
+
+// Memoize the SDK import + client as ONE promise. embedTexts fans out concurrent workers; sharing a
+// single in-flight import means the dynamic `import()` of the SDK happens exactly once, so the client
+// and InvokeModelCommand always come from the same module instance (no racing first-imports — which,
+// under a mocked SDK in tests, could otherwise resolve the real module and call real .send()).
+let _bedrock: Promise<Bedrock> | null = null;
+function bedrock(): Promise<Bedrock> {
+  if (!_bedrock) {
+    _bedrock = (async () => {
+      const mod = await import('@aws-sdk/client-bedrock-runtime');
+      const { awsCredentials } = await import('@/lib/aws/credentials');
+      const client = new mod.BedrockRuntimeClient({
+        region: process.env.AWS_REGION,
+        credentials: await awsCredentials(),
+      });
+      return { client, InvokeModelCommand: mod.InvokeModelCommand };
+    })().catch((err) => {
+      _bedrock = null; // don't cache a failed init — let the next call retry
+      throw err;
+    });
   }
-  return _client;
+  return _bedrock;
 }
 
 /** Embed one string with Titan. */
 async function embedOne(text: string, modelId: string, dimensions: number): Promise<number[]> {
-  const { InvokeModelCommand } = await import('@aws-sdk/client-bedrock-runtime');
-  const c = await client();
-  const res = await c.send(
+  const { client, InvokeModelCommand } = await bedrock();
+  const res = await client.send(
     new InvokeModelCommand({
       modelId,
       contentType: 'application/json',
