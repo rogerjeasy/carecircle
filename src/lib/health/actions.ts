@@ -14,8 +14,10 @@ import { z } from 'zod';
 import { and, eq, isNull } from 'drizzle-orm';
 import { requireSession, withAuthedDb } from '@/db/dal';
 import { getActiveCircleId } from '@/lib/circle/active-circle';
+import { after } from 'next/server';
 import { recordAuditEvent } from '@/db/audit';
 import { serverLog } from '@/lib/log';
+import { dispatchNotification } from '@/lib/notifications/dispatch';
 import { observation, membership, timelineEvent, healthAlertSetting, careRecipientProfile } from '@/db/schema';
 import { canLogReadings, canManageAlertSettings } from './access';
 import { evaluateReading, loadThresholds, notifyOutOfRange, rangeLabel, THRESHOLD_METRICS } from './alerts';
@@ -102,7 +104,7 @@ export async function logObservation(formData: FormData): Promise<LogObservation
   const recordedAt = new Date(p.atISO);
 
   try {
-    const { row, status, recipientName } = await withAuthedDb(async (tx) => {
+    const { row, status, recipientName, summary } = await withAuthedDb(async (tx) => {
       // Resolve the chosen recorder to a membership in this circle, else attribute to the actor.
       let recordedById = me.id;
       if (p.recordedBy) {
@@ -164,7 +166,7 @@ export async function logObservation(formData: FormData): Promise<LogObservation
         .where(eq(careRecipientProfile.circleId, circleId))
         .limit(1);
 
-      return { row: created, status, recipientName: recipient?.fullName?.trim().split(/\s+/)[0] ?? null };
+      return { row: created, status, recipientName: recipient?.fullName?.trim().split(/\s+/)[0] ?? null, summary };
     });
 
     // Best-effort urgent fan-out AFTER the commit — the reading + urgent event are already durable.
@@ -177,6 +179,19 @@ export async function logObservation(formData: FormData): Promise<LogObservation
         recipientName,
       });
     }
+
+    // Per-member Email/Push per their notification prefs (urgent when the reading is out of range).
+    after(() =>
+      dispatchNotification({
+        circleId,
+        type: 'vitals',
+        urgent: status !== 'normal',
+        title: status === 'normal' ? `${METRIC_LABEL[p.metric]} logged` : `${METRIC_LABEL[p.metric]} ${rangeLabel(status)}`,
+        body: summary,
+        path: '/health',
+        excludeUserId: user.id,
+      }),
+    );
 
     serverLog('health', 'logObservation', 'success', { actor: user.id, id: row.id, metric: p.metric, status });
     return {
