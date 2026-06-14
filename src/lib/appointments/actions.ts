@@ -17,6 +17,7 @@ import { requireSession, withAuthedDb } from '@/db/dal';
 import { getActiveCircleId } from '@/lib/circle/active-circle';
 import { recordAuditEvent } from '@/db/audit';
 import { serverLog } from '@/lib/log';
+import { revalidateCareViews } from '@/lib/revalidate';
 import { appointment, membership, timelineEvent } from '@/db/schema';
 import { canManageAppointments } from './access';
 import type {
@@ -178,6 +179,7 @@ export async function createAppointment(formData: FormData): Promise<ActionResul
       return created;
     });
     serverLog('appointments', 'createAppointment', 'success', { actor: ctx.userId, id: row.id });
+    revalidateCareViews();
     return { ok: true, data: buildDTO(row) };
   } catch (err) {
     serverLog('appointments', 'createAppointment', 'failure', { actor: ctx.userId, reason: (err as Error)?.name ?? 'error' });
@@ -225,6 +227,7 @@ export async function updateAppointment(formData: FormData): Promise<ActionResul
       return updated;
     });
     serverLog('appointments', 'updateAppointment', 'success', { actor: ctx.userId, id });
+    revalidateCareViews();
     return { ok: true, data: buildDTO(row) };
   } catch (err) {
     serverLog('appointments', 'updateAppointment', 'failure', { actor: ctx.userId, reason: (err as Error)?.name ?? 'error' });
@@ -303,6 +306,7 @@ export async function patchAppointment(formData: FormData): Promise<ActionResult
       );
     });
     serverLog('appointments', 'patchAppointment', 'success', { actor: ctx.userId, id });
+    revalidateCareViews();
     return { ok: true };
   } catch (err) {
     serverLog('appointments', 'patchAppointment', 'failure', { actor: ctx.userId, reason: (err as Error)?.name ?? 'error' });
