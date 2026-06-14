@@ -17,6 +17,7 @@ import { requireSession, withAuthedDb } from '@/db/dal';
 import { getActiveCircleId } from '@/lib/circle/active-circle';
 import { recordAuditEvent } from '@/db/audit';
 import { serverLog } from '@/lib/log';
+import { revalidateCareViews } from '@/lib/revalidate';
 import { dispatchNotification } from '@/lib/notifications/dispatch';
 import { tasks as taskTable, membership, timelineEvent } from '@/db/schema';
 import { canManageTasks } from './access';
@@ -183,6 +184,7 @@ export async function createTask(formData: FormData): Promise<ActionResult<Task>
     });
 
     serverLog('tasks', 'createTask', 'success', { actor: ctx.userId, id: row.id });
+    revalidateCareViews();
     // Per-member Email/Push per their notification prefs — best-effort, runs after the response.
     after(() =>
       dispatchNotification({
@@ -254,6 +256,7 @@ export async function updateTask(formData: FormData): Promise<ActionResult<Task>
     });
 
     serverLog('tasks', 'updateTask', 'success', { actor: ctx.userId, id });
+    revalidateCareViews();
     return { ok: true, data: buildTaskDTO(row) };
   } catch (err) {
     serverLog('tasks', 'updateTask', 'failure', { actor: ctx.userId, reason: (err as Error)?.name ?? 'error' });
@@ -307,6 +310,7 @@ export async function setTaskStatus(taskId: string, status: TaskStatus): Promise
       );
     });
     serverLog('tasks', 'setTaskStatus', 'success', { actor: ctx.userId, id: id.data, status: st.data });
+    revalidateCareViews();
     return { ok: true };
   } catch (err) {
     serverLog('tasks', 'setTaskStatus', 'failure', { actor: ctx.userId, reason: (err as Error)?.name ?? 'error' });
@@ -338,6 +342,7 @@ export async function deleteTask(taskId: string): Promise<ActionResult> {
       );
     });
     serverLog('tasks', 'deleteTask', 'success', { actor: ctx.userId, id: id.data });
+    revalidateCareViews();
     return { ok: true };
   } catch (err) {
     serverLog('tasks', 'deleteTask', 'failure', { actor: ctx.userId, reason: (err as Error)?.name ?? 'error' });
