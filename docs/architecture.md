@@ -23,7 +23,7 @@ flowchart LR
 
   subgraph VERCEL["Vercel — Frontend & App Runtime"]
     EDGE["Vercel Edge / CDN<br/>TLS · caching · global delivery"]
-    UI["Next.js App — built with v0<br/>Role-scoped UI · React/Tailwind"]
+    UI["Next.js App<br/>Role-scoped UI · React/Tailwind"]
     API["Server Actions / API Routes<br/>App backend & business logic"]
     AUTH["Auth.js<br/>Login · sessions · role claims"]
     INGEST["Ingest worker (after / backfill)<br/>chunk → embed → upsert"]
@@ -79,7 +79,7 @@ flowchart LR
 |---|---|---|---|
 | **Caregivers & Family** | The end users (4 personas) | Log meds, post updates, read the digest, manage tasks | Each sees a role-scoped view of one shared record |
 | **Vercel Edge / CDN** | Vercel's global edge network | TLS termination, caching, fast global delivery | Required: frontend on Vercel; gives low latency worldwide |
-| **Next.js App (v0)** | React/Next.js frontend, scaffolded with v0 | Renders the role-specific UI | Uses the hackathon's encouraged v0 → Vercel path |
+| **Next.js App** | Hand-built React/Next.js frontend (Radix + Tailwind) | Renders the role-specific UI | Deployed on Vercel — the hackathon's required frontend platform |
 | **Server Actions / API Routes** | Next.js server-side backend | All business logic, validation, DB/AI/notify orchestration | Keeps secrets server-side; the single integration point |
 | **Auth.js** | Authentication & session layer | Login, sessions, issues role claims used for access control | Roles drive both UI and DB-level permissions |
 | **Scheduler (GitHub Actions cron)** | Scheduled trigger pinging the app's `CRON_SECRET`-gated cron routes | Fires Daily Digest, reminders, refill & decline scans | The routes are scheduler-agnostic; GitHub Actions drives them because Vercel Hobby caps crons at once/day — on Pro the same routes move into `vercel.json` unchanged |
@@ -138,7 +138,7 @@ ASK     (user question)
 
 ## 40-second architecture narration (for the 3-min video)
 
-> "Kintwadi runs on the hackathon's Zero Stack. The frontend is a Next.js app scaffolded with v0 and deployed on Vercel's edge. Every request goes through our server actions, which talk to **Amazon Aurora PostgreSQL** — our primary database. Aurora isn't a default here, it's the whole thesis: caregiving is deeply relational and safety-critical, so we use **Row-Level Security** to enforce who-can-see-what *in the database itself*, **ACID transactions** so giving a medication updates the log, the supply, and the timeline atomically, and an **append-only audit log** for medical-grade trust. On top of that record we built **'Ask Kintwadi', a Retrieval-Augmented Generation assistant** — and we kept it entirely inside Aurora: documents, timeline notes, and audit entries are chunked, embedded with **Amazon Bedrock Titan**, and stored as vectors in the same database using **`pgvector`**. Because those vector rows live under the *same* Row-Level Security as everything else, the similarity search obeys the exact permission boundary automatically — a question is matched against only the chunks that asker is allowed to read, and **Claude Sonnet 4.5 on Amazon Bedrock** writes a grounded, cited answer — and even that read is audited. Files live in S3, alerts go out through SES and SNS, and production holds no AWS keys at all — each Vercel invocation exchanges its OIDC token for short-lived STS credentials. Nothing secret ever touches the repo. Aurora Serverless v2 scales with load, and our roadmap moves the record to **Aurora DSQL** for multi-region strong consistency, because the families we serve are spread across the world."
+> "Kintwadi runs on the hackathon's Zero Stack. The frontend is a Next.js app deployed on Vercel's edge. Every request goes through our server actions, which talk to **Amazon Aurora PostgreSQL** — our primary database. Aurora isn't a default here, it's the whole thesis: caregiving is deeply relational and safety-critical, so we use **Row-Level Security** to enforce who-can-see-what *in the database itself*, **ACID transactions** so giving a medication updates the log, the supply, and the timeline atomically, and an **append-only audit log** for medical-grade trust. On top of that record we built **'Ask Kintwadi', a Retrieval-Augmented Generation assistant** — and we kept it entirely inside Aurora: documents, timeline notes, and audit entries are chunked, embedded with **Amazon Bedrock Titan**, and stored as vectors in the same database using **`pgvector`**. Because those vector rows live under the *same* Row-Level Security as everything else, the similarity search obeys the exact permission boundary automatically — a question is matched against only the chunks that asker is allowed to read, and **Claude Sonnet 4.5 on Amazon Bedrock** writes a grounded, cited answer — and even that read is audited. Files live in S3, alerts go out through SES and SNS, and production holds no AWS keys at all — each Vercel invocation exchanges its OIDC token for short-lived STS credentials. Nothing secret ever touches the repo. Aurora Serverless v2 scales with load, and our roadmap moves the record to **Aurora DSQL** for multi-region strong consistency, because the families we serve are spread across the world."
 
 ---
 
