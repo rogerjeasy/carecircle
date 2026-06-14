@@ -16,7 +16,9 @@
  */
 import 'server-only';
 
-export type LogStatus = 'start' | 'success' | 'failure';
+// 'skipped' = the action was intentionally NOT performed (e.g. a send to an undeliverable demo
+// address). It's an info-level outcome, distinct from a 'failure' (something went wrong).
+export type LogStatus = 'start' | 'success' | 'failure' | 'skipped';
 type LogValue = string | number | boolean | null | undefined;
 export type LogMeta = Record<string, LogValue>;
 
