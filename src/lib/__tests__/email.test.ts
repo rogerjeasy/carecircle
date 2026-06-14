@@ -122,6 +122,48 @@ describe('email delivery', () => {
     expect(warnSpy).toHaveBeenCalled();
   });
 
+  it('skips an undeliverable .demo recipient WITHOUT sending — returns { delivered: false }', async () => {
+    sesSendMock.mockResolvedValue({});
+    const { sendNotificationEmail } = await loadEmail({
+      ...AWS_ENV,
+      EMAIL_PROVIDER: 'ses',
+      EMAIL_FROM: 'Kintwadi <no-reply@kintwadi.example>',
+    });
+
+    const res = await sendNotificationEmail({
+      to: 'maria@kintwadi.demo',
+      title: 'New task',
+      body: 'Pick up the prescription',
+      url: 'https://app.test/tasks',
+    });
+
+    expect(res).toEqual({ delivered: false, reason: 'demo_address' });
+    // The whole point: no provider was ever touched for a demo address.
+    expect(sesSendMock).not.toHaveBeenCalled();
+    expect(smtpSendMail).not.toHaveBeenCalled();
+    expect(resendSend).not.toHaveBeenCalled();
+    expect(warnSpy).not.toHaveBeenCalled(); // not even the console fallback
+  });
+
+  it('still delivers normally to a real address (the gate only blocks demo/invalid)', async () => {
+    sesSendMock.mockResolvedValue({});
+    const { sendNotificationEmail } = await loadEmail({
+      ...AWS_ENV,
+      EMAIL_PROVIDER: 'ses',
+      EMAIL_FROM: 'Kintwadi <no-reply@kintwadi.example>',
+    });
+
+    const res = await sendNotificationEmail({
+      to: 'real.person@gmail.com',
+      title: 'New task',
+      body: 'Pick up the prescription',
+      url: 'https://app.test/tasks',
+    });
+
+    expect(res).toEqual({ delivered: true, provider: 'ses' });
+    expect(sesSendMock).toHaveBeenCalledTimes(1);
+  });
+
   it('propagates a SES failure to the caller (callers decide whether a send is fatal)', async () => {
     sesSendMock.mockRejectedValue(Object.assign(new Error('rejected'), { name: 'MessageRejected' }));
     const { sendPasswordResetEmail } = await loadEmail({
