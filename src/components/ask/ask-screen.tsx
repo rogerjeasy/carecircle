@@ -42,10 +42,12 @@ export interface AskScreenProps {
   conversations: ConversationSummary[];
   /** The most recent conversation (restored on load), or null to start fresh. */
   initialConversation: ConversationDetail | null;
+  /** A question handed off from the top-bar search (`/ask?q=…`) — auto-asked once on load. */
+  initialQuery?: string | null;
 }
 
 /** "Ask Kintwadi" — a calm chat over THIS circle's record, with saved, resumable conversations. */
-export function AskScreen({ recipientName, conversations: initialList, initialConversation }: AskScreenProps) {
+export function AskScreen({ recipientName, conversations: initialList, initialConversation, initialQuery }: AskScreenProps) {
   const reduced = useReducedMotion();
   const [conversations, setConversations] = React.useState<ConversationSummary[]>(initialList);
   const [activeId, setActiveId] = React.useState<string | null>(initialConversation?.id ?? null);
@@ -102,6 +104,16 @@ export function AskScreen({ recipientName, conversations: initialList, initialCo
     },
     [thinking, activeId]
   );
+
+  // One-shot handoff from the top-bar search: auto-ask the `?q=` question in this fresh thread.
+  const handoffFired = React.useRef(false);
+  React.useEffect(() => {
+    if (handoffFired.current) return;
+    const q = initialQuery?.trim();
+    if (!q) return;
+    handoffFired.current = true;
+    void ask(q);
+  }, [initialQuery, ask]);
 
   const startNew = React.useCallback(() => {
     setActiveId(null);
