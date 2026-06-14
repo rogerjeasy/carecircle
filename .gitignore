@@ -45,3 +45,4 @@ email-previews/
 # local E2E audit artifacts (screenshots of seeded demo data)
 .e2e-audit/
 
+docs/*-script.md

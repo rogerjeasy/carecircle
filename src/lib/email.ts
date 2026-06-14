@@ -26,12 +26,23 @@ import {
   notificationEmail,
 } from '@/lib/email-templates';
 import { serverLog, maskEmail } from '@/lib/log';
+import { classifyEmailDeliverability, type UndeliverableReason } from '@/lib/email-address';
 import type { Digest } from '@/components/digest/types';
 
 const FROM = process.env.EMAIL_FROM ?? 'Kintwadi <onboarding@resend.dev>';
 
 type Email = { to: string; subject: string; html: string; text: string };
 type EmailProvider = 'ses' | 'smtp' | 'resend' | 'console';
+
+/**
+ * Outcome of a send. `delivered: false` is NOT an error — it means we deliberately skipped a send to
+ * an address that can't receive mail (a `.demo` seed address or a syntactically invalid one). The
+ * notification dispatcher uses `reason` to record an in-app notice instead. A genuine provider
+ * failure still throws (callers decide whether that's fatal).
+ */
+export type DeliveryResult =
+  | { delivered: true; provider: EmailProvider }
+  | { delivered: false; reason: UndeliverableReason };
 
 /** True when the SDK's default credential chain has something to work with (key, role, or profile). */
 function hasAwsCredentials(): boolean {
@@ -145,7 +156,19 @@ async function deliverViaResend(email: Email): Promise<void> {
   if (error) throw new Error(`Resend error: ${error.message}`);
 }
 
-async function deliver(email: Email): Promise<void> {
+async function deliver(email: Email): Promise<DeliveryResult> {
+  // Deliverability gate (FIRST, before any provider work): never attempt a send to a demo/placeholder
+  // or syntactically invalid address. Seed data is full of `@…​.demo` mailboxes that don't exist, so a
+  // real send would only bounce. We skip it and report the reason back so the caller can surface an
+  // in-app notice instead of silently dropping the message. Logged as 'skipped' (info), not a failure.
+  const verdict = classifyEmailDeliverability(email.to);
+  if (!verdict.deliverable) {
+    // Logging hygiene: mask the address + log the reason only — NEVER the subject (it can carry a
+    // recipient's name, e.g. the invitation / digest templates).
+    serverLog('email', 'deliver', 'skipped', { to: maskEmail(email.to), reason: verdict.reason });
+    return { delivered: false, reason: verdict.reason };
+  }
+
   const provider = resolveProvider();
   try {
     if (provider === 'ses') await deliverViaSes(email);
@@ -160,6 +183,7 @@ async function deliver(email: Email): Promise<void> {
     }
     // Recipient is masked to its domain — never log the full address (PII).
     serverLog('email', 'deliver', 'success', { provider, to: maskEmail(email.to) });
+    return { delivered: true, provider };
   } catch (err) {
     serverLog('email', 'deliver', 'failure', {
       provider,
@@ -171,9 +195,9 @@ async function deliver(email: Email): Promise<void> {
 }
 
 /** Send the "reset your password" email containing the one-time link. */
-export async function sendPasswordResetEmail(to: string, resetUrl: string): Promise<void> {
+export async function sendPasswordResetEmail(to: string, resetUrl: string): Promise<DeliveryResult> {
   const { subject, html, text } = passwordResetEmail({ resetUrl });
-  await deliver({ to, subject, html, text });
+  return deliver({ to, subject, html, text });
 }
 
 /** Send a generic per-member activity notification email (the "Email" notification channel). */
@@ -183,10 +207,10 @@ export async function sendNotificationEmail(params: {
   body: string;
   url: string;
   ctaLabel?: string;
-}): Promise<void> {
+}): Promise<DeliveryResult> {
   const { to, ...rest } = params;
   const { subject, html, text } = notificationEmail(rest);
-  await deliver({ to, subject, html, text });
+  return deliver({ to, subject, html, text });
 }
 
 /** Invite a new member into a care circle. `inviteUrl` is the /invite/<token> capability link. */
@@ -197,10 +221,10 @@ export async function sendInvitationEmail(params: {
   recipientName: string;
   role: string;
   personalNote?: string;
-}): Promise<void> {
+}): Promise<DeliveryResult> {
   const { to, ...rest } = params;
   const { subject, html, text } = invitationEmail(rest);
-  await deliver({ to, subject, html, text });
+  return deliver({ to, subject, html, text });
 }
 
 /** Welcome the circle owner once onboarding completes. Optional — call after a successful setup. */
@@ -208,10 +232,10 @@ export async function sendWelcomeEmail(params: {
   to: string;
   recipientName: string;
   dashboardUrl: string;
-}): Promise<void> {
+}): Promise<DeliveryResult> {
   const { to, recipientName, dashboardUrl } = params;
   const { subject, html, text } = welcomeEmail({ recipientName, dashboardUrl });
-  await deliver({ to, subject, html, text });
+  return deliver({ to, subject, html, text });
 }
 
 /** Welcome a new member the first time they accept an invitation and join a circle. */
@@ -221,10 +245,10 @@ export async function sendJoinedCircleEmail(params: {
   circleName: string;
   role: string;
   dashboardUrl: string;
-}): Promise<void> {
+}): Promise<DeliveryResult> {
   const { to, ...rest } = params;
   const { subject, html, text } = joinedCircleEmail(rest);
-  await deliver({ to, subject, html, text });
+  return deliver({ to, subject, html, text });
 }
 
 /**
@@ -238,10 +262,10 @@ export async function sendDigestEmail(params: {
   recipientName: string;
   dayLabel: string;
   digestUrl: string;
-}): Promise<void> {
+}): Promise<DeliveryResult> {
   const { to, ...rest } = params;
   const { subject, html, text } = dailyDigestEmail(rest);
-  await deliver({ to, subject, html, text });
+  return deliver({ to, subject, html, text });
 }
 
 /**
@@ -258,10 +282,10 @@ export async function sendIncidentEscalationEmail(params: {
   occurredAtLabel: string;
   description: string;
   incidentUrl: string;
-}): Promise<void> {
+}): Promise<DeliveryResult> {
   const { to, ...rest } = params;
   const { subject, html, text } = incidentEscalationEmail(rest);
-  await deliver({ to, subject, html, text });
+  return deliver({ to, subject, html, text });
 }
 
 // ============================================================================
@@ -392,10 +416,10 @@ export async function sendServiceStatusEmail(params: {
   stillDown: { name: string; metric: string }[];
   statusUrl: string;
   checkedAtLabel: string;
-}): Promise<void> {
+}): Promise<DeliveryResult> {
   const { to, ...rest } = params;
   const { subject, html, text } = serviceStatusAlertEmail(rest);
-  await deliver({ to, subject, html, text });
+  return deliver({ to, subject, html, text });
 }
 
 /**
@@ -417,9 +441,9 @@ export async function sendContactMessage(params: {
   email: string;
   topicLabel: string;
   message: string;
-}): Promise<void> {
+}): Promise<DeliveryResult> {
   const to = contactInbox();
   if (!to) throw new Error('contact_inbox_not_configured');
   const { subject, html, text } = contactMessageEmail(params);
-  await deliver({ to, subject, html, text });
+  return deliver({ to, subject, html, text });
 }

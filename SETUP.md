@@ -154,7 +154,7 @@ Local dev keeps using a static least-privilege key pair in `.env` (the SDK defau
 
 ## 9. Next build steps (Day 4+ of the plan)
 
-Wire the v0 screens (from `../prompts/`) to this data through `withAuthedDb()`, then add the medication tables + the **atomic give-a-med transaction**, documents + sensitivity RLS, and the Bedrock Daily Digest. Claude Code can do each of these with you.
+Wire the UI screens (design references in `../prompts/`) to this data through `withAuthedDb()`, then add the medication tables + the **atomic give-a-med transaction**, documents + sensitivity RLS, and the Bedrock Daily Digest. Claude Code can do each of these with you.
 
 ---
 
