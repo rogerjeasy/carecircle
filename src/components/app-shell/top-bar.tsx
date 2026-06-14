@@ -3,19 +3,13 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Menu,
-  Search,
-  Sparkles,
-  X,
-  Phone,
-} from "lucide-react";
+import { Menu, Search, X, Phone } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ReportIncidentButton } from "@/components/incidents/report-incident-button";
 import { NotificationsBell } from "@/components/notifications";
+import { GlobalSearch } from "./global-search";
 import { getOnCallNowAction } from "@/lib/rota/actions";
 import { useAppShell, dashboardLabelByRole } from "./app-shell-context";
 
@@ -110,19 +104,7 @@ export function TopBar({ sidebarCollapsed, onMenuClick }: TopBarProps) {
       {/* Right side actions */}
       <div className="flex items-center gap-2 sm:gap-3">
         {/* Search - Desktop */}
-        <div className="hidden sm:block">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Ask Kintwadi..."
-              className="w-48 pl-9 lg:w-64"
-            />
-            <div className="absolute right-2 top-1/2 -translate-y-1/2">
-              <Sparkles className="h-4 w-4 text-primary" />
-            </div>
-          </div>
-        </div>
+        <GlobalSearch className="hidden w-48 sm:block lg:w-72" />
 
         {/* Search - Mobile (icon button) */}
         <Button
@@ -154,18 +136,7 @@ export function TopBar({ sidebarCollapsed, onMenuClick }: TopBarProps) {
       {/* Mobile search overlay */}
       {searchOpen && (
         <div className="absolute inset-x-0 top-full border-b bg-background p-4 sm:hidden">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Ask Kintwadi..."
-              className="w-full pl-9"
-              autoFocus
-            />
-            <div className="absolute right-3 top-1/2 -translate-y-1/2">
-              <Sparkles className="h-4 w-4 text-primary" />
-            </div>
-          </div>
+          <GlobalSearch autoFocus onNavigate={() => setSearchOpen(false)} />
         </div>
       )}
     </header>
