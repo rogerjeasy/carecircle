@@ -16,11 +16,13 @@
  *    audit summaries/logs carry ids & counts, never the med name or instructions.
  */
 import { z } from 'zod';
-import { and, eq, isNull, sql } from 'drizzle-orm';
+import { and, eq, isNull, ne, sql } from 'drizzle-orm';
 import { format, startOfDay, endOfDay } from 'date-fns';
 import { requireSession, withAuthedDb } from '@/db/dal';
 import { getActiveCircleId } from '@/lib/circle/active-circle';
 import { after } from 'next/server';
+import { revalidatePath } from 'next/cache';
+import { revalidateCareViews } from '@/lib/revalidate';
 import { recordAuditEvent } from '@/db/audit';
 import { serverLog } from '@/lib/log';
 import { dispatchNotification } from '@/lib/notifications/dispatch';
@@ -31,6 +33,7 @@ import {
   medicationAttachment,
   membership,
   timelineEvent,
+  tasks as taskTable,
   medFormEnum,
   medRouteEnum,
 } from '@/db/schema';
@@ -296,6 +299,7 @@ export async function createMedication(formData: FormData): Promise<ActionResult
     const photoUrl = await resolveStoredUrl(row.photoS3Key);
     const dto = buildMedicationDTO(row, p, { photoUrl, attachments: [] });
     serverLog('medications', 'createMedication', 'success', { actor: ctx.userId, id: dto.id });
+    revalidateCareViews();
     return { ok: true, data: dto };
   } catch (err) {
     serverLog('medications', 'createMedication', 'failure', {
@@ -410,6 +414,7 @@ export async function updateMedication(formData: FormData): Promise<ActionResult
     const dto = buildMedicationDTO(result.row, p, { photoUrl, attachments });
 
     serverLog('medications', 'updateMedication', 'success', { actor: ctx.userId, id });
+    revalidateCareViews();
     return { ok: true, data: dto };
   } catch (err) {
     serverLog('medications', 'updateMedication', 'failure', {
@@ -454,6 +459,7 @@ export async function setMedicationActive(medId: string, active: boolean): Promi
       );
     });
     serverLog('medications', 'setMedicationActive', 'success', { actor: ctx.userId, id: id.data });
+    revalidateCareViews();
     return { ok: true };
   } catch (err) {
     serverLog('medications', 'setMedicationActive', 'failure', { actor: ctx.userId, reason: (err as Error)?.name ?? 'error' });
@@ -496,6 +502,7 @@ export async function discontinueMedication(medId: string, note?: string): Promi
       );
     });
     serverLog('medications', 'discontinueMedication', 'success', { actor: ctx.userId, id: id.data });
+    revalidateCareViews();
     return { ok: true };
   } catch (err) {
     serverLog('medications', 'discontinueMedication', 'failure', { actor: ctx.userId, reason: (err as Error)?.name ?? 'error' });
@@ -537,6 +544,7 @@ export async function reactivateMedication(medId: string): Promise<ActionResult>
       );
     });
     serverLog('medications', 'reactivateMedication', 'success', { actor: ctx.userId, id: id.data });
+    revalidateCareViews();
     return { ok: true };
   } catch (err) {
     serverLog('medications', 'reactivateMedication', 'failure', { actor: ctx.userId, reason: (err as Error)?.name ?? 'error' });
@@ -579,15 +587,24 @@ export async function recordDose(input: RecordDoseInput): Promise<ActionResult> 
   const dbStatus = isGiven ? (via === 'patient' ? 'taken' : 'given') : outcome;
   const now = new Date();
 
+  let refillCreated = false;
   try {
     const summary = await withAuthedDb(async (tx) => {
       // Validate the med belongs to the active circle (RLS also enforces this).
       const [med] = await tx
-        .select({ id: medication.id, name: medication.name, strength: medication.strength })
+        .select({
+          id: medication.id,
+          name: medication.name,
+          strength: medication.strength,
+          supplyCount: medication.supplyCount,
+          refillThreshold: medication.refillThreshold,
+        })
         .from(medication)
         .where(and(eq(medication.id, medId), eq(medication.circleId, ctx.circleId), isNull(medication.deletedAt)))
         .limit(1);
       if (!med) throw new Error('not_found_or_forbidden');
+
+      const label = `${med.name}${med.strength ? ` ${med.strength}` : ''}`;
 
       // One record per occurrence: insert, or update an earlier outcome for the same slot.
       await tx
@@ -616,9 +633,79 @@ export async function recordDose(input: RecordDoseInput): Promise<ActionResult> 
           .update(medication)
           .set({ supplyCount: sql`greatest(${medication.supplyCount} - 1, 0)`, updatedAt: now })
           .where(and(eq(medication.id, medId), eq(medication.circleId, ctx.circleId)));
+
+        // Low-supply safety net (Kintwadi-Data-Model.md §transactions): when this dose drops the
+        // remaining supply below the refill threshold, queue a refill task — in the SAME
+        // transaction, so the administration, the supply decrement, the timeline entry, the audit
+        // row, AND the refill all commit atomically or not at all. Idempotent: we never stack a
+        // second open refill for the same medication (one row from the desc index would suffice).
+        const remaining = Math.max(med.supplyCount - 1, 0);
+        if (med.refillThreshold > 0 && remaining < med.refillThreshold) {
+          const refillTitle = `Refill ${label}`;
+          const [existing] = await tx
+            .select({ id: taskTable.id })
+            .from(taskTable)
+            .where(
+              and(
+                eq(taskTable.circleId, ctx.circleId),
+                eq(taskTable.category, 'refill'),
+                eq(taskTable.title, refillTitle),
+                ne(taskTable.status, 'done'),
+                isNull(taskTable.deletedAt),
+              ),
+            )
+            .limit(1);
+
+          if (!existing) {
+            const [{ nextOrder }] = await tx
+              .select({ nextOrder: sql<number>`coalesce(max(${taskTable.sortOrder}), -1)::int + 1` })
+              .from(taskTable)
+              .where(
+                and(
+                  eq(taskTable.circleId, ctx.circleId),
+                  eq(taskTable.status, 'open'),
+                  isNull(taskTable.deletedAt),
+                ),
+              );
+
+            const [refill] = await tx
+              .insert(taskTable)
+              .values({
+                circleId: ctx.circleId,
+                title: refillTitle,
+                details: `Supply is running low (${remaining} left). Reorder and update the count.`,
+                category: 'refill',
+                status: 'open',
+                sortOrder: nextOrder,
+                createdByMembershipId: ctx.membershipId,
+              })
+              .returning({ id: taskTable.id });
+
+            await tx.insert(timelineEvent).values({
+              circleId: ctx.circleId,
+              actorMembershipId: ctx.membershipId,
+              eventType: 'task',
+              summary: `Supply is low for ${label} — a refill task was added automatically.`,
+              refType: 'task',
+              refId: refill.id,
+            });
+
+            await recordAuditEvent(
+              ctx.userId,
+              {
+                circleId: ctx.circleId,
+                action: 'create',
+                entityType: 'task',
+                entityId: refill.id,
+                summary: 'Auto-created a refill task (low supply)',
+              },
+              tx,
+            );
+            refillCreated = true;
+          }
+        }
       }
 
-      const label = `${med.name}${med.strength ? ` ${med.strength}` : ''}`;
       const summary = isGiven
         ? via === 'patient'
           ? `${med.name} taken by the patient.`
@@ -644,6 +731,9 @@ export async function recordDose(input: RecordDoseInput): Promise<ActionResult> 
     });
 
     serverLog('medications', 'recordDose', 'success', { actor: ctx.userId, status: dbStatus });
+    revalidateCareViews();
+    // A low-supply dose just queued a refill task → refresh the Tasks board so it shows up now.
+    if (refillCreated) revalidatePath('/tasks');
     // Notify the circle (Email/Push) per each member's prefs — best-effort, runs after the response.
     after(() =>
       dispatchNotification({
@@ -707,6 +797,7 @@ export async function undoDose(input: z.infer<typeof undoDoseSchema>): Promise<A
       );
     });
     serverLog('medications', 'undoDose', 'success', { actor: ctx.userId });
+    revalidateCareViews();
     return { ok: true };
   } catch (err) {
     serverLog('medications', 'undoDose', 'failure', { actor: ctx.userId, reason: (err as Error)?.name ?? 'error' });
@@ -785,6 +876,7 @@ export async function logPrn(medId: string): Promise<ActionResult> {
       return { ok: false, error: 'Daily limit reached for this medication.' };
     }
     serverLog('medications', 'logPrn', 'success', { actor: ctx.userId, id: id.data });
+    revalidateCareViews();
     return { ok: true };
   } catch (err) {
     serverLog('medications', 'logPrn', 'failure', { actor: ctx.userId, reason: (err as Error)?.name ?? 'error' });
@@ -826,6 +918,8 @@ export async function createRefillTask(medId: string): Promise<ActionResult> {
       );
     });
     serverLog('medications', 'createRefillTask', 'success', { actor: ctx.userId, id: id.data });
+    revalidateCareViews();
+    revalidatePath('/tasks');
     return { ok: true };
   } catch (err) {
     serverLog('medications', 'createRefillTask', 'failure', { actor: ctx.userId, reason: (err as Error)?.name ?? 'error' });
