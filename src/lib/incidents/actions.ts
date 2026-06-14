@@ -18,6 +18,7 @@ import { requireSession, withAuthedDb } from '@/db/dal';
 import { getActiveCircleId } from '@/lib/circle/active-circle';
 import { recordAuditEvent } from '@/db/audit';
 import { serverLog } from '@/lib/log';
+import { revalidateCareViews } from '@/lib/revalidate';
 import { uploadFile } from '@/lib/storage/s3';
 import {
   incident as incidentTable,
@@ -254,6 +255,7 @@ export async function reportIncident(formData: FormData): Promise<ActionResult<{
       photo: Boolean(photoS3Key),
       escalated: p.severity === 'high',
     });
+    revalidateCareViews();
     return { ok: true, data: { id: result.id } };
   } catch (err) {
     serverLog('incidents', 'reportIncident', 'failure', { actor: ctx.userId, reason: (err as Error)?.name ?? 'error' });
@@ -292,6 +294,7 @@ export async function acknowledgeIncident(incidentId: string): Promise<ActionRes
       }
     });
     serverLog('incidents', 'acknowledgeIncident', 'success', { actor: ctx.userId, id: id.data });
+    revalidateCareViews();
     return { ok: true };
   } catch (err) {
     serverLog('incidents', 'acknowledgeIncident', 'failure', { actor: ctx.userId, reason: (err as Error)?.name ?? 'error' });
@@ -383,6 +386,7 @@ export async function resolveIncident(formData: FormData): Promise<ActionResult>
       );
     });
     serverLog('incidents', 'resolveIncident', 'success', { actor: ctx.userId, id: parsed.data.id });
+    revalidateCareViews();
     return { ok: true };
   } catch (err) {
     serverLog('incidents', 'resolveIncident', 'failure', { actor: ctx.userId, reason: (err as Error)?.name ?? 'error' });
