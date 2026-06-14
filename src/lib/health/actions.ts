@@ -17,6 +17,7 @@ import { getActiveCircleId } from '@/lib/circle/active-circle';
 import { after } from 'next/server';
 import { recordAuditEvent } from '@/db/audit';
 import { serverLog } from '@/lib/log';
+import { revalidateCareViews } from '@/lib/revalidate';
 import { dispatchNotification } from '@/lib/notifications/dispatch';
 import { observation, membership, timelineEvent, healthAlertSetting, careRecipientProfile } from '@/db/schema';
 import { canLogReadings, canManageAlertSettings } from './access';
@@ -194,6 +195,7 @@ export async function logObservation(formData: FormData): Promise<LogObservation
     );
 
     serverLog('health', 'logObservation', 'success', { actor: user.id, id: row.id, metric: p.metric, status });
+    revalidateCareViews();
     return {
       ok: true,
       status,
