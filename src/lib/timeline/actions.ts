@@ -18,6 +18,7 @@ import { requireSession, withAuthedDb } from '@/db/dal';
 import { getActiveCircleId } from '@/lib/circle/active-circle';
 import { recordAuditEvent } from '@/db/audit';
 import { serverLog } from '@/lib/log';
+import { revalidateCareViews } from '@/lib/revalidate';
 import { timelineEvent, timelineComment, timelineReaction, membership } from '@/db/schema';
 import { ingestTimelineById } from '@/lib/rag/ingest';
 import { canContribute, canPostPrivate } from './access';
@@ -149,6 +150,7 @@ export async function postNote(formData: FormData): Promise<PostNoteResult> {
     };
 
     serverLog('timeline', 'postNote', 'success', { actor: ctx.userId, id: row.id });
+    revalidateCareViews();
     return { ok: true, data: dto };
   } catch (err) {
     serverLog('timeline', 'postNote', 'failure', { actor: ctx.userId, reason: (err as Error)?.name ?? 'error' });
