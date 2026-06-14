@@ -16,12 +16,13 @@ import 'server-only';
  */
 import { and, eq, isNull } from 'drizzle-orm';
 import { getPlatformDb, isPlatformDbConfigured } from '@/db/admin-db';
-import { membership, users, pushSubscription } from '@/db/schema';
+import { membership, users, pushSubscription, timelineEvent } from '@/db/schema';
 import { sendNotificationEmail } from '@/lib/email';
 import { sendWebPush, type StoredSubscription } from '@/lib/push/send';
 import { isPushConfigured } from '@/lib/push/config';
 import { getAppOrigin } from '@/lib/url';
 import { serverLog } from '@/lib/log';
+import type { UndeliverableReason } from '@/lib/email-address';
 import { shouldDeliver, withDefaults, type NotifTypeKey } from './prefs';
 
 export interface DispatchInput {
@@ -43,6 +44,38 @@ export interface DispatchInput {
 interface SubRow extends StoredSubscription {
   id: string;
   membershipId: string;
+}
+
+/** A member we could NOT email because their address can't receive mail (demo/invalid). */
+interface UndeliverableRecipient {
+  name: string | null;
+  reason: UndeliverableReason;
+}
+
+/**
+ * Phrase WHY a batch of notification emails went undelivered, for the in-app notice. When every
+ * skipped address failed for the same reason we say so specifically; a mixed batch gets a neutral
+ * catch-all. (Demo seed addresses are by far the common case.)
+ */
+function reasonPhrase(recipients: UndeliverableRecipient[]): string {
+  const reasons = new Set(recipients.map((r) => r.reason));
+  if (reasons.size === 1) {
+    const only = recipients[0].reason;
+    if (only === 'demo_address') return 'their address is a demo/placeholder that can’t receive email';
+    if (only === 'reserved_tld') return 'their address uses a reserved domain that can’t receive email';
+    return 'their email address isn’t valid';
+  }
+  return 'their email addresses can’t receive mail';
+}
+
+/** Human-join up to three member names, then "+N more" (so the summary stays scannable). */
+function joinNames(recipients: UndeliverableRecipient[]): string {
+  const names = recipients.map((r) => r.name?.trim() || 'a member');
+  if (names.length <= 3) {
+    if (names.length === 1) return names[0];
+    return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
+  }
+  return `${names.slice(0, 3).join(', ')} and ${names.length - 3} more`;
 }
 
 /**
@@ -69,6 +102,7 @@ export async function dispatchNotification(input: DispatchInput): Promise<void> 
       .select({
         membershipId: membership.id,
         userId: membership.userId,
+        name: users.name,
         email: users.email,
         timezone: users.timezone,
         prefs: membership.notificationPrefs,
@@ -101,6 +135,10 @@ export async function dispatchNotification(input: DispatchInput): Promise<void> 
     let emailed = 0;
     let pushed = 0;
     let pruned = 0;
+    // Members whose email we deliberately DIDN'T send because the address can't receive mail (a
+    // `.demo` seed address or an invalid one). We surface these in-app after the fan-out so the
+    // circle knows the email never went out — see the system timeline event below.
+    const undeliverable: UndeliverableRecipient[] = [];
 
     // Fan out in parallel — one slow push service must not serialize the whole circle.
     const sends: Promise<void>[] = [];
@@ -112,10 +150,13 @@ export async function dispatchNotification(input: DispatchInput): Promise<void> 
       // ── Email ──
       if (m.email && shouldDeliver({ prefs, type, channel: 'email', urgent, now, timeZone })) {
         const to = m.email;
+        const name = m.name;
         sends.push(
           sendNotificationEmail({ to, title, body, url })
-            .then(() => {
-              emailed += 1;
+            .then((res) => {
+              if (res.delivered) emailed += 1;
+              // Address can't receive mail → don't count it as emailed; log it for the in-app notice.
+              else undeliverable.push({ name, reason: res.reason });
             })
             .catch(() => {
               /* deliver() already logged the masked failure; one bad send must not stop the fan-out */
@@ -146,6 +187,31 @@ export async function dispatchNotification(input: DispatchInput): Promise<void> 
     }
     await Promise.allSettled(sends);
 
+    // In-app fallback: when an email couldn't be sent because the address can't receive mail, post a
+    // `system` event to the circle's timeline so the notice still reaches people (it's what powers the
+    // in-app notifications feed). The underlying update is already on the timeline; this records that
+    // the EMAIL copy didn't go out — and to whom — without ever attempting an undeliverable send.
+    if (undeliverable.length > 0) {
+      const summary =
+        `Couldn’t email ${joinNames(undeliverable)} about “${title}” — ${reasonPhrase(undeliverable)}. ` +
+        `No email was sent; the update is still here in the app.`;
+      await db.insert(timelineEvent).values({
+        circleId,
+        actorMembershipId: null, // system-generated, not a member action
+        eventType: 'system',
+        summary,
+        refType: 'email_undeliverable',
+        visibility: 'all',
+        isUrgent: false,
+        payload: {
+          kind: 'email_undeliverable',
+          title,
+          url,
+          recipients: undeliverable.map((r) => ({ name: r.name, reason: r.reason })),
+        },
+      });
+    }
+
     serverLog('notifications', 'dispatch', 'success', {
       circle: circleId,
       type,
@@ -154,6 +220,7 @@ export async function dispatchNotification(input: DispatchInput): Promise<void> 
       emailed,
       pushed,
       pruned,
+      undeliverable: undeliverable.length,
     });
   } catch (err) {
     serverLog('notifications', 'dispatch', 'failure', { circle: circleId, type, reason: (err as Error)?.name ?? 'error' });
