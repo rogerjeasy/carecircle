@@ -141,7 +141,7 @@ async function notifyRecipients(
     .filter((s) => s.status === 'down')
     .map((s) => ({ name: s.name, metric: s.metric }));
 
-  const sends: Promise<void>[] = [];
+  const sends: Promise<unknown>[] = [];
   for (const kind of ['down', 'recovered'] as const) {
     const changed = (kind === 'down' ? wentDown : recovered).map((s) => ({
       name: s.name,
