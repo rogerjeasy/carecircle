@@ -28,6 +28,8 @@ vi.mock('@/db/audit', () => ({ recordAuditEvent: (...a: unknown[]) => recordAudi
 vi.mock('@/lib/email', () => ({ sendJoinedCircleEmail: vi.fn() }));
 vi.mock('@/lib/url', () => ({ getAppOrigin: vi.fn(async () => 'https://app.test') }));
 vi.mock('@/lib/log', () => ({ serverLog: vi.fn() }));
+// Cross-cutting cache hint — a best-effort side-effect with no request scope in unit tests.
+vi.mock('@/lib/revalidate', () => ({ revalidateCareViews: vi.fn() }));
 
 import { acceptInvitation, declineInvitation } from '../actions';
 
