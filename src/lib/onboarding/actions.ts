@@ -23,6 +23,7 @@ import { randomToken, hashToken } from '@/lib/auth/tokens';
 import { sendInvitationEmail, sendWelcomeEmail } from '@/lib/email';
 import { uploadImageDataUrl } from '@/lib/storage/s3';
 import { serverLog } from '@/lib/log';
+import { revalidateCareViews } from '@/lib/revalidate';
 
 export type OnboardingResult =
   | { ok: true; circleId: string; invitesSent: number }
@@ -223,6 +224,7 @@ export async function completeOnboarding(formData: FormData): Promise<Onboarding
     circleId,
     invites: issued.length,
   });
+  revalidateCareViews();
 
   // Upload the recipient photo to S3 now that the circle exists, so the object key is partitioned
   // under its `circleId`, then backfill the key onto the profile. Best-effort, like the emails
