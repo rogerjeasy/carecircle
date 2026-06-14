@@ -26,6 +26,7 @@ import { recordAuditEvent } from '@/db/audit';
 import { hashToken } from '@/lib/auth/tokens';
 import { sendJoinedCircleEmail } from '@/lib/email';
 import { serverLog } from '@/lib/log';
+import { revalidateCareViews } from '@/lib/revalidate';
 import { getAppOrigin } from '@/lib/url';
 
 export type AcceptResult =
@@ -127,6 +128,7 @@ export async function acceptInvitation(token: string): Promise<AcceptResult> {
       circleId: result.circleId,
       alreadyMember: result.alreadyMember,
     });
+    revalidateCareViews();
     return { ok: true, circleId: result.circleId, alreadyMember: result.alreadyMember };
   } catch (err) {
     const message = (err as Error)?.message ?? '';
