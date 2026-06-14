@@ -351,6 +351,13 @@
 			"when": 1781349343153,
 			"tag": "0049_notification_state_rls",
 			"breakpoints": true
+		},
+		{
+			"idx": 50,
+			"version": "7",
+			"when": 1781349344153,
+			"tag": "0050_search_trgm",
+			"breakpoints": true
 		}
 	]
 }
