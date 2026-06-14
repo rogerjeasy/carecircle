@@ -33,7 +33,7 @@
         <mxCell id="edge" value="&lt;b&gt;Vercel Edge Network / CDN&lt;/b&gt;&lt;br&gt;TLS, caching &amp;amp; global delivery" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#232F3E;fontSize=11;align=center;verticalAlign=middle;" vertex="1" parent="1">
           <mxGeometry x="330" y="155" width="240" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="nextui" value="&lt;b&gt;Next.js App&lt;/b&gt; &lt;span style=&quot;color:#5A6C72&quot;&gt;(scaffolded with v0)&lt;/span&gt;&lt;br&gt;Role-scoped UI — React / Tailwind" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#232F3E;fontSize=11;align=center;verticalAlign=middle;" vertex="1" parent="1">
+        <mxCell id="nextui" value="&lt;b&gt;Next.js App&lt;/b&gt;&lt;br&gt;Role-scoped UI — React / Tailwind" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#232F3E;fontSize=11;align=center;verticalAlign=middle;" vertex="1" parent="1">
           <mxGeometry x="330" y="225" width="240" height="60" as="geometry" />
         </mxCell>
         <mxCell id="api" value="&lt;b&gt;Server Actions / API Routes&lt;/b&gt;&lt;br&gt;App backend &amp;amp; business logic" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#EAF2FF;strokeColor=#000000;fontColor=#232F3E;fontSize=11;align=center;verticalAlign=middle;fontStyle=0;" vertex="1" parent="1">
