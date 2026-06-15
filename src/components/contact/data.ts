@@ -1,45 +1,39 @@
-// Content for the Contact page.
+// Structure for the Contact page. Display text lives in messages/*.json (the `contact` namespace)
+// and is resolved at render via t(). Email addresses stay here as literal, non-translatable data.
 
 import { LifeBuoy, Mail, MessageSquare } from "lucide-react";
 
-export const TOPICS = [
-  { value: "general", label: "General enquiry" },
-  { value: "sales", label: "Sales & plans" },
-  { value: "support", label: "Help & support" },
-  { value: "partnerships", label: "Partnerships" },
-  { value: "press", label: "Press" },
-] as const;
+/** Topic option values; labels come from `contact.form.topics.<value>`. Must mirror the server
+ *  action's enum in src/lib/contact/actions.ts. */
+export const TOPIC_VALUES = ["general", "sales", "support", "partnerships", "press"] as const;
 
-export type TopicValue = (typeof TOPICS)[number]["value"];
+export type TopicValue = (typeof TOPIC_VALUES)[number];
 
 export interface ContactMethod {
   icon: typeof Mail;
-  label: string;
+  /** Key into `contact.methods.<key>` for the label and note. */
+  key: string;
   value: string;
   href: string;
-  note: string;
 }
 
-export const CONTACT_METHODS: ContactMethod[] = [
+export const CONTACT_METHODS = [
   {
     icon: Mail,
-    label: "General",
+    key: "general",
     value: "hello@kintwadi.app",
     href: "mailto:hello@kintwadi.app",
-    note: "Questions about Kintwadi and how it works.",
   },
   {
     icon: MessageSquare,
-    label: "Sales",
+    key: "sales",
     value: "sales@kintwadi.app",
     href: "mailto:sales@kintwadi.app",
-    note: "Plans, agencies, employers and custom quotes.",
   },
   {
     icon: LifeBuoy,
-    label: "Support",
+    key: "support",
     value: "support@kintwadi.app",
     href: "mailto:support@kintwadi.app",
-    note: "Help with your account or care circle.",
   },
-];
+] as const;

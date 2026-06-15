@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Check, Loader2, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -16,7 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
-import { TOPICS, type TopicValue } from "./data";
+import { TOPIC_VALUES, type TopicValue } from "./data";
 import { submitContactMessage } from "@/lib/contact/actions";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -28,18 +29,21 @@ interface Values {
   message: string;
 }
 
-type Errors = Partial<Record<keyof Values, string>>;
+// Errors hold a message KEY into `contact.form.errors`, resolved to text at render time.
+type ErrorKey = "name" | "emailRequired" | "emailInvalid" | "message";
+type Errors = Partial<Record<keyof Values, ErrorKey>>;
 
 function validate(v: Values): Errors {
   const e: Errors = {};
-  if (!v.name.trim()) e.name = "Please tell us your name";
-  if (!v.email.trim()) e.email = "Enter your email";
-  else if (!EMAIL_RE.test(v.email.trim())) e.email = "Enter a valid email";
-  if (v.message.trim().length < 10) e.message = "A little more detail helps (10+ characters)";
+  if (!v.name.trim()) e.name = "name";
+  if (!v.email.trim()) e.email = "emailRequired";
+  else if (!EMAIL_RE.test(v.email.trim())) e.email = "emailInvalid";
+  if (v.message.trim().length < 10) e.message = "message";
   return e;
 }
 
 export function ContactForm() {
+  const t = useTranslations("contact.form");
   const [values, setValues] = React.useState<Values>({ name: "", email: "", topic: "general", message: "" });
   const [touched, setTouched] = React.useState(false);
   const [submitting, setSubmitting] = React.useState(false);
@@ -48,7 +52,11 @@ export function ContactForm() {
   const errors = validate(values);
   const valid = Object.keys(errors).length === 0;
   const set = (patch: Partial<Values>) => setValues((v) => ({ ...v, ...patch }));
-  const err = (k: keyof Values) => (touched ? errors[k] : undefined);
+  const errKey = (k: keyof Values) => (touched ? errors[k] : undefined);
+  const errText = (k: keyof Values) => {
+    const key = errKey(k);
+    return key ? t(`errors.${key}`) : undefined;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,10 +85,13 @@ export function ContactForm() {
             <Check className="h-7 w-7" aria-hidden="true" />
           </div>
           <div>
-            <p className="text-lg font-semibold">Thanks, {values.name.split(" ")[0] || "there"}!</p>
+            <p className="text-lg font-semibold">
+              {t("success.title", { name: values.name.split(" ")[0] || t("success.fallbackName") })}
+            </p>
             <p className="mx-auto mt-1 max-w-sm text-sm text-muted-foreground">
-              We&apos;ve received your message and will reply to{" "}
-              <span className="font-medium text-foreground">{values.email}</span> within one business day.
+              {t.rich("success.body", {
+                email: () => <span className="font-medium text-foreground">{values.email}</span>,
+              })}
             </p>
           </div>
           <Button
@@ -91,7 +102,7 @@ export function ContactForm() {
               setDone(false);
             }}
           >
-            Send another message
+            {t("success.another")}
           </Button>
         </CardContent>
       </Card>
@@ -103,18 +114,18 @@ export function ContactForm() {
       <CardContent className="p-5 sm:p-6">
         <form onSubmit={handleSubmit} noValidate className="space-y-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field htmlFor="c-name" label="Name" error={err("name")} required>
+            <Field htmlFor="c-name" label={t("name")} error={errText("name")} required>
               <Input
                 id="c-name"
                 value={values.name}
                 onChange={(e) => set({ name: e.target.value })}
                 onBlur={() => setTouched(true)}
                 autoComplete="name"
-                aria-invalid={err("name") ? true : undefined}
-                className={cn(err("name") && "border-destructive focus-visible:ring-destructive")}
+                aria-invalid={errKey("name") ? true : undefined}
+                className={cn(errKey("name") && "border-destructive focus-visible:ring-destructive")}
               />
             </Field>
-            <Field htmlFor="c-email" label="Email" error={err("email")} required>
+            <Field htmlFor="c-email" label={t("email")} error={errText("email")} required>
               <Input
                 id="c-email"
                 type="email"
@@ -123,52 +134,52 @@ export function ContactForm() {
                 onChange={(e) => set({ email: e.target.value })}
                 onBlur={() => setTouched(true)}
                 autoComplete="email"
-                aria-invalid={err("email") ? true : undefined}
-                className={cn(err("email") && "border-destructive focus-visible:ring-destructive")}
+                aria-invalid={errKey("email") ? true : undefined}
+                className={cn(errKey("email") && "border-destructive focus-visible:ring-destructive")}
               />
             </Field>
           </div>
 
-          <Field htmlFor="c-topic" label="Topic">
+          <Field htmlFor="c-topic" label={t("topic")}>
             <Select value={values.topic} onValueChange={(v) => set({ topic: v as TopicValue })}>
               <SelectTrigger id="c-topic">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {TOPICS.map((t) => (
-                  <SelectItem key={t.value} value={t.value}>
-                    {t.label}
+                {TOPIC_VALUES.map((value) => (
+                  <SelectItem key={value} value={value}>
+                    {t(`topics.${value}`)}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </Field>
 
-          <Field htmlFor="c-message" label="Message" error={err("message")} required>
+          <Field htmlFor="c-message" label={t("message")} error={errText("message")} required>
             <Textarea
               id="c-message"
               value={values.message}
               onChange={(e) => set({ message: e.target.value })}
               onBlur={() => setTouched(true)}
               rows={5}
-              placeholder="How can we help?"
-              aria-invalid={err("message") ? true : undefined}
-              className={cn(err("message") && "border-destructive focus-visible:ring-destructive")}
+              placeholder={t("messagePlaceholder")}
+              aria-invalid={errKey("message") ? true : undefined}
+              className={cn(errKey("message") && "border-destructive focus-visible:ring-destructive")}
             />
           </Field>
 
           <div className="flex flex-col-reverse items-stretch gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-xs text-muted-foreground">We&apos;ll only use your email to reply.</p>
+            <p className="text-xs text-muted-foreground">{t("privacyNote")}</p>
             <Button type="submit" disabled={submitting || (touched && !valid)} className="min-w-[9.5rem]">
               {submitting ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" />
-                  <span className="ml-1">Sending…</span>
+                  <span className="ml-1">{t("sending")}</span>
                 </>
               ) : (
                 <>
                   <Send className="h-4 w-4" />
-                  <span className="ml-1">Send message</span>
+                  <span className="ml-1">{t("send")}</span>
                 </>
               )}
             </Button>

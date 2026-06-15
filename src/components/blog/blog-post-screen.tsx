@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { ArrowLeft, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -9,7 +10,8 @@ import { RemoteImage } from "@/components/marketing/remote-image";
 import type { Post } from "./data";
 
 /** A single, full blog article. Content comes from the post's real `body` blocks. */
-export function BlogPostScreen({ post }: { post: Post }) {
+export async function BlogPostScreen({ post }: { post: Post }) {
+  const t = await getTranslations("blog");
   return (
     <div className="min-h-screen bg-background">
       <MarketingHeader />
@@ -21,7 +23,7 @@ export function BlogPostScreen({ post }: { post: Post }) {
             className="inline-flex items-center gap-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-            All posts
+            {t("allPosts")}
           </Link>
 
           <div className="mt-6 flex flex-wrap items-center gap-2">

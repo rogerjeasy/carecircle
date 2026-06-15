@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,6 +9,8 @@ import { CONTACT_METHODS } from "./data";
 
 /** Public Contact page — wrapped in the marketing chrome. */
 export function ContactScreen() {
+  const t = useTranslations("contact");
+
   return (
     <div className="min-h-screen bg-background">
       <MarketingHeader />
@@ -17,14 +20,13 @@ export function ContactScreen() {
         <section className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
           <div className="motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-3 motion-safe:duration-500">
             <Badge variant="secondary" className="mb-4">
-              Contact us
+              {t("badge")}
             </Badge>
             <h1 className="text-balance font-serif text-4xl font-bold tracking-tight sm:text-5xl">
-              We&apos;d love to hear from you
+              {t("title")}
             </h1>
             <p className="mx-auto mt-4 max-w-2xl text-pretty text-lg text-muted-foreground">
-              Questions, feedback, or thinking about Kintwadi for your family or organization? Send a note and a real
-              person will reply.
+              {t("subtitle")}
             </p>
           </div>
         </section>
@@ -43,7 +45,7 @@ export function ContactScreen() {
                 {CONTACT_METHODS.map((m) => {
                   const Icon = m.icon;
                   return (
-                    <li key={m.label}>
+                    <li key={m.key}>
                       <a
                         href={m.href}
                         className="flex items-start gap-3 rounded-2xl border bg-card p-4 transition-colors hover:bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
@@ -52,9 +54,11 @@ export function ContactScreen() {
                           <Icon className="h-5 w-5" aria-hidden="true" />
                         </span>
                         <span className="min-w-0 flex-1">
-                          <span className="block text-sm font-semibold">{m.label}</span>
+                          <span className="block text-sm font-semibold">{t(`methods.${m.key}.label`)}</span>
                           <span className="block truncate text-sm text-primary">{m.value}</span>
-                          <span className="mt-0.5 block text-pretty text-xs text-muted-foreground">{m.note}</span>
+                          <span className="mt-0.5 block text-pretty text-xs text-muted-foreground">
+                            {t(`methods.${m.key}.note`)}
+                          </span>
                         </span>
                       </a>
                     </li>
@@ -66,7 +70,7 @@ export function ContactScreen() {
                 <CardContent className="flex items-start gap-3 p-4">
                   <Clock className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
                   <p className="text-sm text-muted-foreground">
-                    We typically reply within <span className="font-medium text-foreground">one business day</span>.
+                    {t.rich("replyTime", { b: (chunks) => <span className="font-medium text-foreground">{chunks}</span> })}
                   </p>
                 </CardContent>
               </Card>
