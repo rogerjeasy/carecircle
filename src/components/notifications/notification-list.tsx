@@ -1,12 +1,25 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { BellOff } from "lucide-react";
 import { NotificationRow } from "./notification-row";
 import { groupNotifications } from "./utils";
 import type { NotificationItem } from "./types";
 
-function Group({ label, items, onNavigate }: { label: string; items: NotificationItem[]; onNavigate?: () => void }) {
+type GroupKey = "pinned" | "today" | "earlier";
+
+function Group({
+  groupKey,
+  items,
+  onNavigate,
+}: {
+  groupKey: GroupKey;
+  items: NotificationItem[];
+  onNavigate?: () => void;
+}) {
+  const t = useTranslations("notifications");
   if (items.length === 0) return null;
+  const label = t(`groups.${groupKey}` as "groups.pinned");
   return (
     <section aria-label={label} className="space-y-2">
       <h3 className="px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{label}</h3>
@@ -46,22 +59,23 @@ export function NotificationList({
 
   return (
     <div className="space-y-6">
-      <Group label="Needs attention" items={pinned} onNavigate={onNavigate} />
-      <Group label="Today" items={today} onNavigate={onNavigate} />
-      <Group label="Earlier" items={earlier} onNavigate={onNavigate} />
+      <Group groupKey="pinned" items={pinned} onNavigate={onNavigate} />
+      <Group groupKey="today" items={today} onNavigate={onNavigate} />
+      <Group groupKey="earlier" items={earlier} onNavigate={onNavigate} />
     </div>
   );
 }
 
 export function EmptyState() {
+  const t = useTranslations("notifications");
   return (
     <div className="flex flex-col items-center justify-center gap-3 px-6 py-14 text-center">
       <div className="flex h-14 w-14 items-center justify-center rounded-full bg-success/10 text-success">
         <BellOff className="h-7 w-7" aria-hidden="true" />
       </div>
       <div>
-        <p className="text-base font-semibold">You&apos;re all caught up 💚</p>
-        <p className="mt-1 text-sm text-muted-foreground">No new notifications right now.</p>
+        <p className="text-base font-semibold">{t("empty.title")}</p>
+        <p className="mt-1 text-sm text-muted-foreground">{t("empty.body")}</p>
       </div>
     </div>
   );

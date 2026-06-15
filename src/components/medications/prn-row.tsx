@@ -1,6 +1,7 @@
 "use client";
 
 import { Pill, Plus } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import type { PrnMed } from "./types";
 
@@ -12,6 +13,7 @@ export interface PrnRowProps {
 
 /** A single "as needed" (PRN) medication with a per-day usage counter and a "Log dose" action. */
 export function PrnRow({ prn, canRecord, onLog }: PrnRowProps) {
+  const t = useTranslations("medications");
   const atLimit = prn.takenToday >= prn.maxPerDay;
   return (
     <li className="rounded-xl border bg-card p-3 sm:p-3.5">
@@ -27,12 +29,12 @@ export function PrnRow({ prn, canRecord, onLog }: PrnRowProps) {
               </p>
               <p className="truncate text-sm text-muted-foreground">
                 {prn.purpose}
-                {prn.lastTaken ? ` · last ${prn.lastTaken}` : ""}
+                {prn.lastTaken ? ` · ${t("prn.last", { time: prn.lastTaken })}` : ""}
               </p>
             </div>
             <div className="flex items-center justify-between gap-3 sm:justify-end">
               <span className="text-xs tabular-nums text-muted-foreground">
-                {prn.takenToday}/{prn.maxPerDay} today
+                {t("prn.todayCount", { taken: prn.takenToday, max: prn.maxPerDay })}
               </span>
               {canRecord && (
                 <Button
@@ -43,7 +45,7 @@ export function PrnRow({ prn, canRecord, onLog }: PrnRowProps) {
                   disabled={atLimit}
                 >
                   <Plus className="h-4 w-4" />
-                  <span className="ml-1 whitespace-nowrap">{atLimit ? "Max reached" : "Log dose"}</span>
+                  <span className="ml-1 whitespace-nowrap">{atLimit ? t("prn.maxReached") : t("prn.logDose")}</span>
                 </Button>
               )}
             </div>

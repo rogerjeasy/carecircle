@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { addDays, format, isToday, isTomorrow, isYesterday } from "date-fns";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { ChevronLeft, ChevronRight, Clock, Plus, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -44,6 +45,7 @@ export interface TodayTabProps {
 
 /** The "Today" tab: date stepper, progress header, doses grouped by time of day, and PRN meds. */
 export function TodayTab({ meds, canRecord, canManage, userName, initialDoses, initialPrn, adherence, onAddMedication }: TodayTabProps) {
+  const t = useTranslations("medications");
   const [doses, setDoses] = React.useState<Dose[]>(initialDoses);
   const [prn, setPrn] = React.useState<PrnMed[]>(initialPrn);
   const [dayOffset, setDayOffset] = React.useState(0);
@@ -66,11 +68,11 @@ export function TodayTab({ meds, canRecord, canManage, userName, initialDoses, i
 
   const viewedDate = addDays(new Date(), dayOffset);
   const dateLabel = isToday(viewedDate)
-    ? "Today"
+    ? t("today.today")
     : isYesterday(viewedDate)
-      ? "Yesterday"
+      ? t("today.yesterday")
       : isTomorrow(viewedDate)
-        ? "Tomorrow"
+        ? t("today.tomorrow")
         : format(viewedDate, "EEE, MMM d");
 
   const givenCount = doses.filter((d) => d.status === "given").length;
@@ -103,16 +105,16 @@ export function TodayTab({ meds, canRecord, canManage, userName, initialDoses, i
           setDoses(snapshot.doses);
           setPrn(snapshot.prn);
           onError?.();
-          toast.error(res.error ?? "Couldn't save — please try again");
+          toast.error(res.error ?? t("toasts.saveRetry"));
         }
       } catch {
         setDoses(snapshot.doses);
         setPrn(snapshot.prn);
         onError?.();
-        toast.error("Couldn't save — please try again");
+        toast.error(t("toasts.saveRetry"));
       }
     },
-    []
+    [t]
   );
 
   const markGiven = (dose: Dose, via: GivenBy) => {
@@ -131,8 +133,8 @@ export function TodayTab({ meds, canRecord, canManage, userName, initialDoses, i
       )
     );
     flashGiven(dose.id);
-    toast.success(`${dose.name} ${dose.strength} marked given`, {
-      description: via === "patient" ? "Recorded as taken by the patient" : `Recorded by ${userName}`,
+    toast.success(t("today.markedGiven", { name: dose.name, strength: dose.strength }), {
+      description: via === "patient" ? t("today.recordedPatient") : t("today.recordedBy", { name: userName }),
     });
     if (dose.scheduleId && dose.scheduledForISO) {
       void persist(
@@ -146,7 +148,8 @@ export function TodayTab({ meds, canRecord, canManage, userName, initialDoses, i
     const dose = doses.find((x) => x.id === doseId);
     const snapshot = { doses, prn };
     setDoses((prev) => prev.map((d) => (d.id === doseId ? { ...d, status: kind } : d)));
-    toast(`${dose?.name ?? "Dose"} marked ${kind}`);
+    const name = dose?.name ?? t("today.doseFallback");
+    toast(kind === "refused" ? t("today.markedRefused", { name }) : t("today.markedSkipped", { name }));
     if (dose?.scheduleId && dose.scheduledForISO) {
       void persist(
         () => recordDose({ medId: dose.medId, scheduleId: dose.scheduleId!, scheduledForISO: dose.scheduledForISO!, outcome: kind }),
@@ -170,7 +173,7 @@ export function TodayTab({ meds, canRecord, canManage, userName, initialDoses, i
     }
   };
 
-  const snooze = (dose: Dose) => toast(`${dose.name} snoozed 15 minutes`);
+  const snooze = (dose: Dose) => toast(t("today.snoozed", { name: dose.name }));
 
   const logLate = (dose: Dose) => {
     const snapshot = { doses, prn };
@@ -182,7 +185,7 @@ export function TodayTab({ meds, canRecord, canManage, userName, initialDoses, i
       )
     );
     flashGiven(dose.id);
-    toast.success(`${dose.name} logged as given (late)`);
+    toast.success(t("today.loggedLate", { name: dose.name }));
     if (dose.scheduleId && dose.scheduledForISO) {
       void persist(
         () => recordDose({ medId: dose.medId, scheduleId: dose.scheduleId!, scheduledForISO: dose.scheduledForISO!, outcome: "given", via: "caregiver" }),
@@ -198,14 +201,14 @@ export function TodayTab({ meds, canRecord, canManage, userName, initialDoses, i
     setPrn((prev) =>
       prev.map((x) => (x.id === prnId ? { ...x, takenToday: x.takenToday + 1, lastTaken: nowTimeLabel() } : x))
     );
-    toast.success(`${p.name} dose logged`);
+    toast.success(t("today.prnLogged", { name: p.name }));
     void persist(() => logPrnAction(prnId), snapshot);
   };
 
   const createRefill = (medId: string, medName: string) => {
-    toast.success("Refill task created", { description: `Reorder ${medName} added to Tasks` });
+    toast.success(t("refill.created"), { description: t("refill.createdDesc", { name: medName }) });
     void createRefillTask(medId).then((res) => {
-      if (!res.ok) toast.error(res.error ?? "Couldn't create the refill task");
+      if (!res.ok) toast.error(res.error ?? t("refill.failed"));
     });
   };
 
@@ -247,7 +250,7 @@ export function TodayTab({ meds, canRecord, canManage, userName, initialDoses, i
         <div className="flex justify-end">
           <Button size="sm" className="h-10" onClick={onAddMedication}>
             <Plus className="h-4 w-4" />
-            <span className="ml-1">Add medication</span>
+            <span className="ml-1">{t("addMedication")}</span>
           </Button>
         </div>
       )}
@@ -261,7 +264,7 @@ export function TodayTab({ meds, canRecord, canManage, userName, initialDoses, i
               size="icon"
               className="h-9 w-9 shrink-0"
               onClick={() => setDayOffset((o) => o - 1)}
-              aria-label="Previous day"
+              aria-label={t("today.prevDay")}
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
@@ -274,7 +277,7 @@ export function TodayTab({ meds, canRecord, canManage, userName, initialDoses, i
               size="icon"
               className="h-9 w-9 shrink-0"
               onClick={() => setDayOffset((o) => o + 1)}
-              aria-label="Next day"
+              aria-label={t("today.nextDay")}
             >
               <ChevronRight className="h-4 w-4" />
             </Button>
@@ -283,15 +286,14 @@ export function TodayTab({ meds, canRecord, canManage, userName, initialDoses, i
           {isViewingToday && hasDoses && (
             <div className="space-y-2">
               <div className="flex items-center justify-between gap-2">
-                <p className="text-sm font-medium">
-                  <span className="tabular-nums">{givenCount}</span> of{" "}
-                  <span className="tabular-nums">{totalCount}</span> doses given today
+                <p className="text-sm font-medium tabular-nums">
+                  {t("today.dosesGiven", { given: givenCount, total: totalCount })}
                 </p>
                 <Badge variant="secondary" className="shrink-0 text-xs tabular-nums">
                   {Math.round(progressPct)}%
                 </Badge>
               </div>
-              <Progress value={progressPct} aria-label={`${givenCount} of ${totalCount} doses given`} />
+              <Progress value={progressPct} aria-label={t("today.dosesGivenAria", { given: givenCount, total: totalCount })} />
             </div>
           )}
         </CardContent>
@@ -307,11 +309,11 @@ export function TodayTab({ meds, canRecord, canManage, userName, initialDoses, i
               <Clock className="h-6 w-6 text-muted-foreground" aria-hidden="true" />
             </div>
             <div>
-              <p className="font-medium">No schedule loaded for {dateLabel.toLowerCase()}</p>
-              <p className="mt-1 text-sm text-muted-foreground">Switch back to today to record doses.</p>
+              <p className="font-medium">{t("today.noScheduleForDay", { day: dateLabel })}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{t("today.switchBack")}</p>
             </div>
             <Button variant="outline" size="sm" onClick={() => setDayOffset(0)}>
-              Back to today
+              {t("today.backToToday")}
             </Button>
           </CardContent>
         </Card>
@@ -325,11 +327,12 @@ export function TodayTab({ meds, canRecord, canManage, userName, initialDoses, i
                 if (list.length === 0) return null;
                 const Icon = periodMeta[period].icon;
                 const periodGiven = list.filter((d) => d.status === "given").length;
+                const periodLabel = t(`periods.${period.toLowerCase()}` as "periods.morning");
                 return (
-                  <section key={period} aria-label={period}>
+                  <section key={period} aria-label={periodLabel}>
                     <div className="mb-2 flex items-center gap-2 px-1">
                       <Icon className={cn("h-4 w-4", periodMeta[period].tint)} aria-hidden="true" />
-                      <h3 className="text-sm font-semibold">{period}</h3>
+                      <h3 className="text-sm font-semibold">{periodLabel}</h3>
                       <span className="text-xs tabular-nums text-muted-foreground">
                         {periodGiven}/{list.length}
                       </span>
@@ -362,9 +365,9 @@ export function TodayTab({ meds, canRecord, canManage, userName, initialDoses, i
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-secondary text-primary">
                   <Clock className="h-6 w-6" aria-hidden="true" />
                 </div>
-                <p className="font-medium">No doses scheduled for today</p>
+                <p className="font-medium">{t("today.noDosesTitle")}</p>
                 <p className="text-sm text-muted-foreground">
-                  Scheduled medications will appear here when it&apos;s time for a dose.
+                  {t("today.noDosesBody")}
                 </p>
               </CardContent>
             </Card>
@@ -372,10 +375,10 @@ export function TodayTab({ meds, canRecord, canManage, userName, initialDoses, i
 
           {/* PRN */}
           {prn.length > 0 && (
-            <section aria-label="As needed">
+            <section aria-label={t("today.asNeeded")}>
               <div className="mb-2 flex items-center gap-2 px-1">
                 <Sparkles className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                <h3 className="text-sm font-semibold">As needed (PRN)</h3>
+                <h3 className="text-sm font-semibold">{t("today.asNeeded")}</h3>
               </div>
               <ul className="space-y-2">
                 {prn.map((p) => (
@@ -392,23 +395,23 @@ export function TodayTab({ meds, canRecord, canManage, userName, initialDoses, i
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {confirm?.kind === "refused" ? "Mark dose as refused?" : "Mark dose as skipped?"}
+              {confirm?.kind === "refused" ? t("today.confirmRefusedTitle") : t("today.confirmSkippedTitle")}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {confirm?.kind === "refused"
-                ? "This records that the patient declined the medication. It will be noted in the timeline."
-                : "This records that the dose was intentionally not given. It will be noted in the timeline."}
+                ? t("today.confirmRefusedDesc")
+                : t("today.confirmSkippedDesc")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setConfirm(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel onClick={() => setConfirm(null)}>{t("today.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 if (confirm) setOutcome(confirm.doseId, confirm.kind);
                 setConfirm(null);
               }}
             >
-              Confirm
+              {t("today.confirm")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

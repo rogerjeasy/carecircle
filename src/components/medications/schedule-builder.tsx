@@ -1,6 +1,7 @@
 "use client";
 
 import { Clock, Plus, Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,6 +36,7 @@ export function ScheduleBuilder({
   errors,
   makeId,
 }: ScheduleBuilderProps) {
+  const t = useTranslations("medications.form.schedule");
   const updateRow = (id: string, patch: Partial<ScheduleRow>) =>
     onChange(schedules.map((r) => (r.id === id ? { ...r, ...patch } : r)));
 
@@ -55,10 +57,10 @@ export function ScheduleBuilder({
       {/* PRN toggle */}
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-sm font-medium">Taken as needed (PRN)</p>
-          <p className="text-xs text-muted-foreground">No fixed schedule — given only when required.</p>
+          <p className="text-sm font-medium">{t("prnTitle")}</p>
+          <p className="text-xs text-muted-foreground">{t("prnDesc")}</p>
         </div>
-        <Switch checked={isPrn} onCheckedChange={onPrnChange} aria-label="Taken as needed" />
+        <Switch checked={isPrn} onCheckedChange={onPrnChange} aria-label={t("prnAria")} />
       </div>
 
       {!isPrn && (
@@ -83,7 +85,7 @@ export function ScheduleBuilder({
                     <Input
                       type="time"
                       value={row.time}
-                      aria-label={`Dose ${i + 1} time`}
+                      aria-label={t("doseTimeAria", { n: i + 1 })}
                       aria-invalid={timeError ? true : undefined}
                       onChange={(e) => updateRow(row.id, { time: e.target.value })}
                       className={cn("h-9 w-[8.5rem]", timeError && "border-destructive")}
@@ -99,8 +101,8 @@ export function ScheduleBuilder({
                           key={d.index}
                           type="button"
                           aria-pressed={on}
-                          aria-label={d.full}
-                          title={d.full}
+                          aria-label={t(`weekdayFull.${d.key}` as "weekdayFull.sun")}
+                          title={t(`weekdayFull.${d.key}` as "weekdayFull.sun")}
                           onClick={() => toggleDay(row.id, d.index)}
                           className={cn(
                             "h-8 w-8 shrink-0 rounded-full text-xs font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
@@ -109,7 +111,7 @@ export function ScheduleBuilder({
                               : "bg-secondary text-muted-foreground hover:bg-secondary/70"
                           )}
                         >
-                          {d.label}
+                          {t(`weekdayShort.${d.key}` as "weekdayShort.sun")}
                         </button>
                       );
                     })}
@@ -123,7 +125,7 @@ export function ScheduleBuilder({
                     className="h-9 w-9 shrink-0 self-end text-muted-foreground hover:text-destructive sm:self-auto"
                     onClick={() => removeRow(row.id)}
                     disabled={schedules.length === 1}
-                    aria-label={`Remove dose ${i + 1}`}
+                    aria-label={t("removeDoseAria", { n: i + 1 })}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -136,14 +138,14 @@ export function ScheduleBuilder({
                     onClick={() => updateRow(row.id, { days: [...EVERY_DAY] })}
                     className="text-xs font-medium text-primary hover:underline"
                   >
-                    Every day
+                    {t("everyDay")}
                   </button>
                   <button
                     type="button"
                     onClick={() => updateRow(row.id, { days: [...WEEKDAYS_ONLY] })}
                     className="text-xs font-medium text-primary hover:underline"
                   >
-                    Weekdays
+                    {t("weekdays")}
                   </button>
                   {daysError && (
                     <span className="text-xs font-medium text-destructive" role="alert">
@@ -157,7 +159,7 @@ export function ScheduleBuilder({
 
           <Button type="button" variant="outline" size="sm" onClick={addRow} className="w-full sm:w-auto">
             <Plus className="h-4 w-4" />
-            <span className="ml-1">Add another time</span>
+            <span className="ml-1">{t("addTime")}</span>
           </Button>
         </div>
       )}

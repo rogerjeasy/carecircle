@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { ImagePlus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -17,16 +18,17 @@ const MAX_BYTES = 5 * 1024 * 1024; // 5 MB
  * action uploads it to the private S3 bucket (`uploadImageDataUrl`) and stores only the object key.
  */
 export function PhotoUpload({ value, onChange }: PhotoUploadProps) {
+  const t = useTranslations("medications.form.photoUpload");
   const inputRef = React.useRef<HTMLInputElement>(null);
 
   const handleFile = (file?: File) => {
     if (!file) return;
     if (!file.type.startsWith("image/")) {
-      toast.error("Please choose an image file");
+      toast.error(t("chooseImageError"));
       return;
     }
     if (file.size > MAX_BYTES) {
-      toast.error("Image is too large (max 5 MB)");
+      toast.error(t("tooLarge"));
       return;
     }
     const reader = new FileReader();
@@ -39,7 +41,7 @@ export function PhotoUpload({ value, onChange }: PhotoUploadProps) {
       <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border bg-muted">
         {value ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={value} alt="Medication preview" className="h-full w-full object-cover" />
+          <img src={value} alt={t("previewAlt")} className="h-full w-full object-cover" />
         ) : (
           <ImagePlus className="h-6 w-6 text-muted-foreground" aria-hidden="true" />
         )}
@@ -54,7 +56,7 @@ export function PhotoUpload({ value, onChange }: PhotoUploadProps) {
         />
         <Button type="button" variant="outline" size="sm" onClick={() => inputRef.current?.click()}>
           <ImagePlus className="h-4 w-4" />
-          <span className="ml-1">{value ? "Replace photo" : "Upload photo"}</span>
+          <span className="ml-1">{value ? t("replace") : t("upload")}</span>
         </Button>
         {value && (
           <Button
@@ -68,7 +70,7 @@ export function PhotoUpload({ value, onChange }: PhotoUploadProps) {
             }}
           >
             <X className="h-4 w-4" />
-            <span className="ml-1">Remove</span>
+            <span className="ml-1">{t("remove")}</span>
           </Button>
         )}
       </div>

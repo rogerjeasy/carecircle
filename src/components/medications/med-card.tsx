@@ -1,6 +1,7 @@
 "use client";
 
 import { Clock, FileText, MoreHorizontal, Pencil, Pill, ShoppingCart } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -25,6 +26,7 @@ export interface MedCardProps {
 
 /** A card in the "All medications" grid: identity, schedule, prescriber, supply, active toggle. */
 export function MedCard({ med, canManage, onToggleActive, onEdit, onCreateRefill }: MedCardProps) {
+  const t = useTranslations("medications");
   const low = med.supplyDays <= LOW_SUPPLY_THRESHOLD;
   return (
     <Card className="flex h-full flex-col">
@@ -52,7 +54,7 @@ export function MedCard({ med, canManage, onToggleActive, onEdit, onCreateRefill
                 variant="ghost"
                 size="icon"
                 className="-mr-1 h-8 w-8 shrink-0"
-                aria-label={`Options for ${med.name}`}
+                aria-label={t("card.optionsFor", { name: med.name })}
               >
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
@@ -60,11 +62,11 @@ export function MedCard({ med, canManage, onToggleActive, onEdit, onCreateRefill
             <DropdownMenuContent align="end" className="w-48">
               <DropdownMenuItem onClick={canManage ? onEdit : undefined} disabled={!canManage}>
                 <Pencil className="mr-2 h-4 w-4" />
-                Edit details
+                {t("card.editDetails")}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={onCreateRefill}>
                 <ShoppingCart className="mr-2 h-4 w-4" />
-                Create refill task
+                {t("refill.create")}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -77,7 +79,7 @@ export function MedCard({ med, canManage, onToggleActive, onEdit, onCreateRefill
           </p>
           <p className="flex items-center gap-2 text-muted-foreground">
             <Pencil className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-            <span className="truncate">Prescribed by {med.prescriber}</span>
+            <span className="truncate">{t("card.prescribedBy", { name: med.prescriber })}</span>
           </p>
         </div>
 
@@ -125,15 +127,15 @@ export function MedCard({ med, canManage, onToggleActive, onEdit, onCreateRefill
                   className="h-7 px-2 text-xs text-warning"
                   onClick={onCreateRefill}
                 >
-                  Refill
+                  {t("refill.short")}
                 </Button>
               </GatedControl>
             )}
           </div>
           <div className="flex shrink-0 items-center gap-2">
-            <span className="text-xs text-muted-foreground">{med.active ? "Active" : "Paused"}</span>
+            <span className="text-xs text-muted-foreground">{med.active ? t("card.active") : t("card.paused")}</span>
             <GatedControl canManage={canManage}>
-              <Switch checked={med.active} onCheckedChange={onToggleActive} aria-label={`${med.name} active`} />
+              <Switch checked={med.active} onCheckedChange={onToggleActive} aria-label={t("card.activeToggleAria", { name: med.name })} />
             </GatedControl>
           </div>
         </div>

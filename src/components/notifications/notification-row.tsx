@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import { Check, MoreVertical, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -22,6 +23,8 @@ const SWIPE_THRESHOLD = 72;
 /** A notification row: typed icon + actor avatar, summary, time, unread dot. Swipe-to-dismiss on
  *  touch, with a menu fallback (Mark read / Dismiss) on every size. */
 export function NotificationRow({ item, onNavigate }: { item: NotificationItem; onNavigate?: () => void }) {
+  const t = useTranslations("notifications");
+  const locale = useLocale();
   const router = useRouter();
   const meta = typeMeta[item.type];
   const Icon = meta.icon;
@@ -59,7 +62,7 @@ export function NotificationRow({ item, onNavigate }: { item: NotificationItem; 
       {/* Revealed dismiss affordance behind the row */}
       <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center gap-1 bg-destructive/10 pr-4 pl-8 text-xs font-medium text-destructive">
         <X className="h-4 w-4" aria-hidden="true" />
-        Dismiss
+        {t("actions.dismiss")}
       </div>
 
       <div
@@ -100,19 +103,19 @@ export function NotificationRow({ item, onNavigate }: { item: NotificationItem; 
             {item.summary}
           </p>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            {meta.label} · {shortTime(item.at)}
+            {t(`types.${item.type}` as "types.med")} · {shortTime(item.at, locale, t("justNow"))}
           </p>
         </button>
 
         {/* Unread dot */}
         {!item.read && (
-          <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" aria-label="Unread" />
+          <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" aria-label={t("unread")} />
         )}
 
         {/* Non-gesture fallback menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="-mr-1 -mt-1 h-7 w-7 shrink-0" aria-label="Notification options">
+            <Button variant="ghost" size="icon" className="-mr-1 -mt-1 h-7 w-7 shrink-0" aria-label={t("actions.options")}>
               <MoreVertical className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
@@ -120,12 +123,12 @@ export function NotificationRow({ item, onNavigate }: { item: NotificationItem; 
             {!item.read && (
               <DropdownMenuItem onClick={() => markRead(item.id)}>
                 <Check className="mr-2 h-4 w-4" />
-                Mark read
+                {t("actions.markRead")}
               </DropdownMenuItem>
             )}
             <DropdownMenuItem onClick={() => dismiss(item.id)}>
               <X className="mr-2 h-4 w-4" />
-              Dismiss
+              {t("actions.dismiss")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

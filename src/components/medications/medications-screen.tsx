@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Lock } from "lucide-react";
 import { useAppShell } from "@/components/app-shell/app-shell-context";
@@ -56,6 +57,7 @@ function valuesToPayload(values: MedFormValues) {
  */
 export function MedicationsScreen({ initial }: MedicationsScreenProps) {
   const router = useRouter();
+  const t = useTranslations("medications");
   const { role, user } = useAppShell();
   const canManage = canManageMeds(role);
   const canRecord = canRecordDoses(role);
@@ -79,7 +81,7 @@ export function MedicationsScreen({ initial }: MedicationsScreenProps) {
       afd.set("file", file);
       const res = await uploadMedicationAttachment(afd);
       if (res.ok) uploaded.push(res.data);
-      else toast.error(res.error ?? `Couldn't upload ${file.name}`);
+      else toast.error(res.error ?? t("toasts.uploadFailed", { file: file.name }));
     }
     return uploaded;
   };
@@ -102,11 +104,11 @@ export function MedicationsScreen({ initial }: MedicationsScreenProps) {
           updated = { ...updated, attachments: [...(updated.attachments ?? []), ...uploaded] };
         }
         setMeds((prev) => prev.map((m) => (m.id === original.id ? updated : m)));
-        toast.success(`${updated.name} updated`);
+        toast.success(t("toasts.updated", { name: updated.name }));
         router.refresh(); // re-pull Today's doses (schedule may have changed)
       } else {
         setMeds((prev) => prev.map((m) => (m.id === original.id ? original : m)));
-        toast.error(res.error ?? "Couldn't save the medication");
+        toast.error(res.error ?? t("toasts.saveFailed"));
       }
     } else {
       const tempId = `temp-${Date.now()}`;
@@ -121,11 +123,11 @@ export function MedicationsScreen({ initial }: MedicationsScreenProps) {
           created = { ...created, attachments: [...(created.attachments ?? []), ...uploaded] };
         }
         setMeds((prev) => prev.map((m) => (m.id === tempId ? created : m)));
-        toast.success(`${created.name} added`);
+        toast.success(t("toasts.added", { name: created.name }));
         router.refresh(); // so the new med's doses appear in the Today tab without a manual refresh
       } else {
         setMeds((prev) => prev.filter((m) => m.id !== tempId));
-        toast.error(res.error ?? "Couldn't add the medication");
+        toast.error(res.error ?? t("toasts.addFailed"));
       }
     }
   };
@@ -139,7 +141,7 @@ export function MedicationsScreen({ initial }: MedicationsScreenProps) {
     );
     const res = await deleteMedicationAttachment(attachmentId);
     if (!res.ok) {
-      toast.error(res.error ?? "Couldn't remove the attachment");
+      toast.error(res.error ?? t("toasts.removeAttachmentFailed"));
       router.refresh();
     }
   };
@@ -149,21 +151,21 @@ export function MedicationsScreen({ initial }: MedicationsScreenProps) {
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
-          <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">Medications</h1>
-          <p className="mt-1 text-muted-foreground">Track today&apos;s doses and manage the full list.</p>
+          <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">{t("title")}</h1>
+          <p className="mt-1 text-muted-foreground">{t("subtitle")}</p>
         </div>
         {!canManage && (
           <Badge variant="secondary" className="w-fit gap-1.5">
             <Lock className="h-3 w-3" aria-hidden="true" />
-            View only — ask the coordinator to edit
+            {t("viewOnly")}
           </Badge>
         )}
       </div>
 
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList className="w-full max-w-sm">
-          <TabsTrigger value="today" className="flex-1">Today</TabsTrigger>
-          <TabsTrigger value="all" className="flex-1">All medications</TabsTrigger>
+          <TabsTrigger value="today" className="flex-1">{t("tabs.today")}</TabsTrigger>
+          <TabsTrigger value="all" className="flex-1">{t("tabs.all")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="today">

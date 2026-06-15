@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { MedicationForm } from "./medication-form";
@@ -36,12 +37,10 @@ export function MedicationFormModal({
   onRemoveAttachment,
   onSubmit,
 }: MedicationFormModalProps) {
+  const t = useTranslations("medications.form.modal");
   const isPhone = useIsPhone();
-  const title = mode === "edit" ? "Edit medication" : "Add medication";
-  const description =
-    mode === "edit"
-      ? "Update the details, schedule, and supply."
-      : "Fill in the details to add it to the medication list.";
+  const title = mode === "edit" ? t("editTitle") : t("addTitle");
+  const description = mode === "edit" ? t("editDesc") : t("addDesc");
 
   const form = (
     <MedicationForm

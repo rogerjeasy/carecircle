@@ -5,12 +5,21 @@
 
 export type SafetySeverity = "high" | "moderate";
 
+/**
+ * A flagged safety issue, returned as STRUCTURED data (no pre-rendered prose) so the panel can
+ * localize it: interactions carry the matched current-med name + a stable `noteKey` into the
+ * `medications.form.safety.notes` message map; allergy conflicts carry the allergen class token.
+ */
 export interface SafetyWarning {
   id: string;
   kind: "interaction" | "allergy";
   severity: SafetySeverity;
-  title: string;
-  detail: string;
+  /** Interaction only: the current medication (as typed by the user) this one may interact with. */
+  otherName?: string;
+  /** Interaction only: key into `medications.form.safety.notes` (the drug pair, e.g. "warfarin-aspirin"). */
+  noteKey?: string;
+  /** Allergy only: allergen class token (penicillin | sulfa | opioid). */
+  allergen?: string;
 }
 
 interface InteractionRule {
@@ -84,8 +93,8 @@ export function checkMedicationSafety(name: string, ctx: SafetyContext): SafetyW
         id: `interaction-${a}-${b}`,
         kind: "interaction",
         severity: rule.severity,
-        title: `May interact with ${titleCase(taken)}`,
-        detail: rule.note,
+        otherName: titleCase(taken),
+        noteKey: `${a}-${b}`,
       });
     }
   }
@@ -104,8 +113,7 @@ export function checkMedicationSafety(name: string, ctx: SafetyContext): SafetyW
       id: `allergy-${allergen}`,
       kind: "allergy",
       severity: "high",
-      title: `Possible ${allergen} allergy conflict`,
-      detail: `The care recipient has a recorded ${allergen} allergy. Confirm with the prescriber before giving.`,
+      allergen,
     });
   }
 

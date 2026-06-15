@@ -1,17 +1,31 @@
 // Pure helpers shared across the Notifications center.
 
-import { formatDistanceToNowStrict, isToday } from "date-fns";
+import { isToday } from "date-fns";
 import type { NotificationFilter, NotificationItem } from "./types";
 
-/** "5m" / "2h" / "3d" — compact timestamp. */
-export function shortTime(date: Date): string {
-  return formatDistanceToNowStrict(date, { roundingMethod: "floor" })
-    .replace(/ seconds?/, "s")
-    .replace(/ minutes?/, "m")
-    .replace(/ hours?/, "h")
-    .replace(/ days?/, "d")
-    .replace(/ months?/, "mo")
-    .replace(/ years?/, "y");
+/**
+ * Compact, localized relative timestamp, e.g. "2h ago" / "just now". Localized via native Intl
+ * (project convention). `justNow` is passed in from messages so this stays a pure helper.
+ */
+export function shortTime(date: Date, locale: string, justNow: string): string {
+  const diffMs = date.getTime() - Date.now();
+  const absSec = Math.abs(diffMs) / 1000;
+  if (absSec < 45) return justNow;
+  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: "always", style: "narrow" });
+  const units: [Intl.RelativeTimeFormatUnit, number][] = [
+    ["year", 60 * 60 * 24 * 365],
+    ["month", 60 * 60 * 24 * 30],
+    ["day", 60 * 60 * 24],
+    ["hour", 60 * 60],
+    ["minute", 60],
+  ];
+  for (const [unit, secs] of units) {
+    if (absSec >= secs) {
+      const value = Math.round(diffMs / 1000 / secs);
+      return rtf.format(value, unit);
+    }
+  }
+  return rtf.format(Math.round(diffMs / 1000 / 60), "minute");
 }
 
 export function matchesFilter(n: NotificationItem, filter: NotificationFilter): boolean {

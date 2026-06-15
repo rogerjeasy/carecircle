@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { FileText, ImageIcon, Paperclip, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -46,6 +47,7 @@ function PendingImageThumb({ file }: { file: File }) {
 
 /** Uploader for medication images + documents. Pending files upload after the medication saves. */
 export function MedAttachments({ pending, onPendingChange, existing = [], onRemoveExisting }: MedAttachmentsProps) {
+  const t = useTranslations("medications.form.attachments");
   const inputRef = React.useRef<HTMLInputElement>(null);
 
   const addFiles = (files: FileList | null) => {
@@ -53,7 +55,7 @@ export function MedAttachments({ pending, onPendingChange, existing = [], onRemo
     const next: File[] = [...pending];
     for (const file of Array.from(files)) {
       if (file.size > MAX_BYTES) {
-        toast.error(`${file.name} is too large (max 15 MB)`);
+        toast.error(t("tooLarge", { name: file.name }));
         continue;
       }
       next.push(file);
@@ -78,7 +80,7 @@ export function MedAttachments({ pending, onPendingChange, existing = [], onRemo
       />
       <Button type="button" variant="outline" size="sm" onClick={() => inputRef.current?.click()}>
         <Paperclip className="h-4 w-4" />
-        <span className="ml-1">Add images or documents</span>
+        <span className="ml-1">{t("add")}</span>
       </Button>
 
       {hasAny && (
@@ -104,7 +106,7 @@ export function MedAttachments({ pending, onPendingChange, existing = [], onRemo
                   size="icon"
                   className="h-7 w-7 shrink-0 text-muted-foreground"
                   onClick={() => onRemoveExisting(a.id)}
-                  aria-label={`Remove ${a.fileName}`}
+                  aria-label={t("removeAria", { name: a.fileName })}
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -123,14 +125,14 @@ export function MedAttachments({ pending, onPendingChange, existing = [], onRemo
                 </div>
               )}
               <span className="min-w-0 flex-1 truncate text-sm">{file.name}</span>
-              <span className="shrink-0 text-xs text-muted-foreground">Pending</span>
+              <span className="shrink-0 text-xs text-muted-foreground">{t("pending")}</span>
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
                 className="h-7 w-7 shrink-0 text-muted-foreground"
                 onClick={() => removePending(idx)}
-                aria-label={`Remove ${file.name}`}
+                aria-label={t("removeAria", { name: file.name })}
               >
                 <X className="h-4 w-4" />
               </Button>

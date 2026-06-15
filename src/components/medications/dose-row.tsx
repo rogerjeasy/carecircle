@@ -1,6 +1,7 @@
 "use client";
 
 import { AlertTriangle, Clock, Pill, ShoppingCart } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { GatedControl } from "./gated-control";
@@ -40,6 +41,7 @@ export function DoseRow({
   onLogLate,
   onCreateRefill,
 }: DoseRowProps) {
+  const t = useTranslations("medications");
   const isLow = med ? med.supplyDays <= LOW_SUPPLY_THRESHOLD : false;
   const given = dose.status === "given";
 
@@ -95,9 +97,7 @@ export function DoseRow({
             <div className="mt-2.5 flex flex-col gap-2 rounded-lg border border-warning/30 bg-warning/5 p-2.5 sm:flex-row sm:items-center sm:justify-between">
               <p className="flex min-w-0 items-center gap-2 text-xs text-warning">
                 <AlertTriangle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                <span className="min-w-0">
-                  <span className="font-semibold tabular-nums">{med.supplyDays} days left</span> — order a refill soon
-                </span>
+                <span className="min-w-0 tabular-nums">{t("doseRow.daysLeft", { days: med.supplyDays })}</span>
               </p>
               <GatedControl canManage={canManage}>
                 <Button
@@ -107,7 +107,7 @@ export function DoseRow({
                   onClick={onCreateRefill}
                 >
                   <ShoppingCart className="h-3.5 w-3.5" />
-                  <span className="ml-1">Create refill task</span>
+                  <span className="ml-1">{t("refill.create")}</span>
                 </Button>
               </GatedControl>
             </div>

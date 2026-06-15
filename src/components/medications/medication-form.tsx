@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { Check, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -24,8 +25,10 @@ import {
   EVERY_DAY,
   MED_FORMS,
   MED_ROUTES,
+  buildMedFormSchema,
   validateMedForm,
   type MedFormErrors,
+  type MedFormMessages,
   type MedFormValues,
 } from "./schema";
 import type { MedAttachment, Medication } from "./types";
@@ -102,6 +105,32 @@ export function MedicationForm({
   onSubmit,
   onCancel,
 }: MedicationFormProps) {
+  const t = useTranslations("medications.form");
+  const tErr = useTranslations("medications.form.errors");
+
+  // Localized validation schema — rebuilt only when the error messages change (i.e. on locale
+  // change). Each message is a literal `tErr("…")` call so the keys stay type-checked.
+  const schema = React.useMemo(() => {
+    const messages: MedFormMessages = {
+      nameRequired: tErr("nameRequired"),
+      strengthRequired: tErr("strengthRequired"),
+      selectForm: tErr("selectForm"),
+      selectRoute: tErr("selectRoute"),
+      purposeMax: tErr("purposeMax"),
+      prescriberMax: tErr("prescriberMax"),
+      instructionsMax: tErr("instructionsMax"),
+      enterNumber: tErr("enterNumber"),
+      wholeNumber: tErr("wholeNumber"),
+      cannotBeNegative: tErr("cannotBeNegative"),
+      supplyTooHigh: tErr("supplyTooHigh"),
+      refillTooHigh: tErr("refillTooHigh"),
+      pickTime: tErr("pickTime"),
+      pickDay: tErr("pickDay"),
+      addDoseTime: tErr("addDoseTime"),
+    };
+    return buildMedFormSchema(messages);
+  }, [tErr]);
+
   const [values, setValues] = React.useState<MedFormValues>(() => medicationToValues(initial));
   const [errors, setErrors] = React.useState<MedFormErrors>({});
   const [pendingFiles, setPendingFiles] = React.useState<File[]>([]);
@@ -137,7 +166,7 @@ export function MedicationForm({
     if (submitting || success) return;
     setTriedSave(true);
 
-    const { ok, errors: nextErrors } = validateMedForm(values);
+    const { ok, errors: nextErrors } = validateMedForm(values, schema);
     setErrors(nextErrors);
     if (!ok) {
       const firstKey = Object.keys(nextErrors)[0];
@@ -169,10 +198,11 @@ export function MedicationForm({
       <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4 sm:px-6">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {/* Name (autocomplete) */}
-          <FormField htmlFor="name" label="Medication name" required full error={setFieldError("name")}>
+          <FormField htmlFor="name" label={t("fields.name.label")} required full error={setFieldError("name")}>
             <NameAutocomplete
               id="name"
               value={values.name}
+              placeholder={t("nameInput.placeholder")}
               onChange={(name) => update({ name })}
               onSelectSuggestion={(s) =>
                 update({
@@ -189,18 +219,18 @@ export function MedicationForm({
           </FormField>
 
           {/* Strength */}
-          <FormField htmlFor="strength" label="Strength" required error={setFieldError("strength")}>
+          <FormField htmlFor="strength" label={t("fields.strength.label")} required error={setFieldError("strength")}>
             <Input
               {...fieldAria("strength", setFieldError("strength"))}
               value={values.strength}
               onChange={(e) => update({ strength: e.target.value })}
-              placeholder="e.g. 10mg"
+              placeholder={t("fields.strength.placeholder")}
               className={cn(setFieldError("strength") && "border-destructive focus-visible:ring-destructive")}
             />
           </FormField>
 
           {/* Form */}
-          <FormField htmlFor="form" label="Form" required error={setFieldError("form")}>
+          <FormField htmlFor="form" label={t("fields.form.label")} required error={setFieldError("form")}>
             <Select value={values.form} onValueChange={(v) => update({ form: v })}>
               <SelectTrigger
                 id="form"
@@ -208,12 +238,12 @@ export function MedicationForm({
                 aria-describedby={setFieldError("form") ? "form-error" : undefined}
                 className={cn(setFieldError("form") && "border-destructive focus:ring-destructive")}
               >
-                <SelectValue placeholder="Choose a form" />
+                <SelectValue placeholder={t("fields.form.placeholder")} />
               </SelectTrigger>
               <SelectContent>
                 {MED_FORMS.map((f) => (
                   <SelectItem key={f} value={f}>
-                    {f}
+                    {t(`forms.${f}` as "forms.Tablet")}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -221,7 +251,7 @@ export function MedicationForm({
           </FormField>
 
           {/* Route */}
-          <FormField htmlFor="route" label="Route" required error={setFieldError("route")}>
+          <FormField htmlFor="route" label={t("fields.route.label")} required error={setFieldError("route")}>
             <Select value={values.route} onValueChange={(v) => update({ route: v })}>
               <SelectTrigger
                 id="route"
@@ -229,12 +259,12 @@ export function MedicationForm({
                 aria-describedby={setFieldError("route") ? "route-error" : undefined}
                 className={cn(setFieldError("route") && "border-destructive focus:ring-destructive")}
               >
-                <SelectValue placeholder="Choose a route" />
+                <SelectValue placeholder={t("fields.route.placeholder")} />
               </SelectTrigger>
               <SelectContent>
                 {MED_ROUTES.map((r) => (
                   <SelectItem key={r} value={r}>
-                    {r}
+                    {t(`routes.${r}` as "routes.Oral")}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -242,23 +272,23 @@ export function MedicationForm({
           </FormField>
 
           {/* Purpose */}
-          <FormField htmlFor="purpose" label="Purpose" hint="What is it for?" error={setFieldError("purpose")}>
+          <FormField htmlFor="purpose" label={t("fields.purpose.label")} hint={t("fields.purpose.hint")} error={setFieldError("purpose")}>
             <Input
-              {...fieldAria("purpose", setFieldError("purpose"), "What is it for?")}
+              {...fieldAria("purpose", setFieldError("purpose"), t("fields.purpose.hint"))}
               value={values.purpose}
               onChange={(e) => update({ purpose: e.target.value })}
-              placeholder="e.g. Blood pressure"
+              placeholder={t("fields.purpose.placeholder")}
               className={cn(setFieldError("purpose") && "border-destructive focus-visible:ring-destructive")}
             />
           </FormField>
 
           {/* Prescriber */}
-          <FormField htmlFor="prescriber" label="Prescriber" error={setFieldError("prescriber")}>
+          <FormField htmlFor="prescriber" label={t("fields.prescriber.label")} error={setFieldError("prescriber")}>
             <Input
               {...fieldAria("prescriber", setFieldError("prescriber"))}
               value={values.prescriber}
               onChange={(e) => update({ prescriber: e.target.value })}
-              placeholder="e.g. Dr. Chen"
+              placeholder={t("fields.prescriber.placeholder")}
               className={cn(setFieldError("prescriber") && "border-destructive focus-visible:ring-destructive")}
             />
           </FormField>
@@ -266,23 +296,23 @@ export function MedicationForm({
           {/* Instructions */}
           <FormField
             htmlFor="instructions"
-            label="Instructions"
+            label={t("fields.instructions.label")}
             full
-            hint="Optional — e.g. take with food, avoid grapefruit"
+            hint={t("fields.instructions.hint")}
             error={setFieldError("instructions")}
           >
             <Textarea
-              {...fieldAria("instructions", setFieldError("instructions"), "Optional notes")}
+              {...fieldAria("instructions", setFieldError("instructions"), t("fields.instructions.ariaHint"))}
               value={values.instructions}
               onChange={(e) => update({ instructions: e.target.value })}
-              placeholder="Any special instructions for caregivers…"
+              placeholder={t("fields.instructions.placeholder")}
               className={cn(setFieldError("instructions") && "border-destructive focus-visible:ring-destructive")}
               rows={2}
             />
           </FormField>
 
           {/* Photo */}
-          <FormField htmlFor="photo" label="Pill photo" full hint="Helps caregivers recognise the medication">
+          <FormField htmlFor="photo" label={t("fields.photo.label")} full hint={t("fields.photo.hint")}>
             <div id="photo">
               <PhotoUpload value={values.photoUrl} onChange={(photoUrl) => update({ photoUrl })} />
             </div>
@@ -291,9 +321,9 @@ export function MedicationForm({
           {/* Attachments (extra images + documents) */}
           <FormField
             htmlFor="attachments"
-            label="Attachments"
+            label={t("fields.attachments.label")}
             full
-            hint="Optional — extra photos, leaflets, or documents (PDF, Word, images)"
+            hint={t("fields.attachments.hint")}
           >
             <div id="attachments">
               <MedAttachments
@@ -314,7 +344,7 @@ export function MedicationForm({
 
           {/* Schedule builder */}
           <div className="min-w-0 space-y-1.5 sm:col-span-2">
-            <p className="text-sm font-medium leading-none">Schedule</p>
+            <p className="text-sm font-medium leading-none">{t("fields.schedule.label")}</p>
             <ScheduleBuilder
               isPrn={values.isPrn}
               onPrnChange={(isPrn) => update({ isPrn })}
@@ -328,12 +358,12 @@ export function MedicationForm({
           {/* Supply + refill threshold */}
           <FormField
             htmlFor="supplyCount"
-            label="Supply count"
-            hint="Days (or doses) on hand"
+            label={t("fields.supplyCount.label")}
+            hint={t("fields.supplyCount.hint")}
             error={setFieldError("supplyCount")}
           >
             <Input
-              {...fieldAria("supplyCount", setFieldError("supplyCount"), "Days on hand")}
+              {...fieldAria("supplyCount", setFieldError("supplyCount"), t("fields.supplyCount.aria"))}
               type="number"
               inputMode="numeric"
               min={0}
@@ -345,12 +375,12 @@ export function MedicationForm({
 
           <FormField
             htmlFor="refillThreshold"
-            label="Refill threshold"
-            hint="Warn when this many left"
+            label={t("fields.refillThreshold.label")}
+            hint={t("fields.refillThreshold.hint")}
             error={setFieldError("refillThreshold")}
           >
             <Input
-              {...fieldAria("refillThreshold", setFieldError("refillThreshold"), "Warn when this many left")}
+              {...fieldAria("refillThreshold", setFieldError("refillThreshold"), t("fields.refillThreshold.aria"))}
               type="number"
               inputMode="numeric"
               min={0}
@@ -378,27 +408,25 @@ export function MedicationForm({
       <div className="shrink-0 border-t bg-background px-5 py-3 sm:px-6">
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs text-muted-foreground sm:max-w-[18rem]">
-            {needsAck
-              ? "Acknowledge the safety check above to continue."
-              : "Required fields are marked with *"}
+            {needsAck ? t("footer.ackToContinue") : t("footer.requiredHint")}
           </p>
           <div className="flex items-center justify-end gap-2">
             <Button type="button" variant="outline" onClick={onCancel} disabled={submitting || success}>
-              Cancel
+              {t("actions.cancel")}
             </Button>
             <Button type="submit" disabled={submitting || success} className="min-w-[9.5rem]">
               {success ? (
                 <>
                   <Check className="h-4 w-4" />
-                  <span className="ml-1">Saved</span>
+                  <span className="ml-1">{t("actions.saved")}</span>
                 </>
               ) : submitting ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" />
-                  <span className="ml-1">Saving…</span>
+                  <span className="ml-1">{t("actions.saving")}</span>
                 </>
               ) : (
-                <span>{mode === "edit" ? "Save changes" : "Save medication"}</span>
+                <span>{mode === "edit" ? t("actions.saveChanges") : t("actions.saveMedication")}</span>
               )}
             </Button>
           </div>

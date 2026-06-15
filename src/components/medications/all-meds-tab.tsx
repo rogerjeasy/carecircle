@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { ChevronRight, CircleSlash2, Pill, Plus, RotateCcw, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -29,6 +30,7 @@ export interface AllMedsTabProps {
 
 /** The "All medications" tab: search, the active grid, a collapsible Discontinued section. */
 export function AllMedsTab({ meds, setMeds, recipientName, canManage, onAdd, onEdit, onMutated }: AllMedsTabProps) {
+  const t = useTranslations("medications");
   const [query, setQuery] = React.useState("");
   const [showDiscontinued, setShowDiscontinued] = React.useState(false);
 
@@ -46,11 +48,11 @@ export function AllMedsTab({ meds, setMeds, recipientName, canManage, onAdd, onE
     const prevMeds = meds;
     setMeds((prev) => prev.map((m) => (m.id === id ? { ...m, active: next } : m)));
     const m = meds.find((x) => x.id === id);
-    toast(next ? `${m?.name} resumed` : `${m?.name} paused`);
+    toast(next ? t("allMeds.resumed", { name: m?.name ?? "" }) : t("allMeds.paused", { name: m?.name ?? "" }));
     void setMedicationActive(id, next).then((res) => {
       if (!res.ok) {
         setMeds(prevMeds);
-        toast.error(res.error ?? "Couldn't update — please try again");
+        toast.error(res.error ?? t("allMeds.updateFailed"));
       } else {
         onMutated(); // pausing/resuming changes which doses appear in Today
       }
@@ -58,20 +60,20 @@ export function AllMedsTab({ meds, setMeds, recipientName, canManage, onAdd, onE
   };
 
   const createRefill = (id: string, name: string) => {
-    toast.success("Refill task created", { description: `Reorder ${name} added to Tasks` });
+    toast.success(t("refill.created"), { description: t("refill.createdDesc", { name }) });
     void createRefillTask(id).then((res) => {
-      if (!res.ok) toast.error(res.error ?? "Couldn't create the refill task");
+      if (!res.ok) toast.error(res.error ?? t("refill.failed"));
     });
   };
 
   const reactivate = (med: Medication) => {
     const prevMeds = meds;
     setMeds((prev) => prev.map((m) => (m.id === med.id ? { ...m, discontinued: false, active: true } : m)));
-    toast.success(`${med.name} reactivated`);
+    toast.success(t("allMeds.reactivated", { name: med.name }));
     void reactivateMedication(med.id).then((res) => {
       if (!res.ok) {
         setMeds(prevMeds);
-        toast.error(res.error ?? "Couldn't reactivate — please try again");
+        toast.error(res.error ?? t("allMeds.reactivateFailed"));
       } else {
         onMutated(); // a reactivated scheduled med may have doses today
       }
@@ -89,9 +91,9 @@ export function AllMedsTab({ meds, setMeds, recipientName, canManage, onAdd, onE
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by name, purpose, or prescriber…"
+            placeholder={t("allMeds.searchPlaceholder")}
             className="h-11 pl-9"
-            aria-label="Search medications"
+            aria-label={t("allMeds.searchAria")}
           />
         </div>
         <div className="flex shrink-0 gap-2">
@@ -99,7 +101,7 @@ export function AllMedsTab({ meds, setMeds, recipientName, canManage, onAdd, onE
           <GatedControl canManage={canManage}>
             <Button className="h-11 flex-1 sm:flex-none" onClick={onAdd}>
               <Plus className="h-4 w-4" />
-              <span className="ml-1">Add medication</span>
+              <span className="ml-1">{t("addMedication")}</span>
             </Button>
           </GatedControl>
         </div>
@@ -135,7 +137,7 @@ export function AllMedsTab({ meds, setMeds, recipientName, canManage, onAdd, onE
           >
             <span className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
               <CircleSlash2 className="h-4 w-4" aria-hidden="true" />
-              Discontinued
+              {t("allMeds.discontinued")}
               <Badge variant="secondary" className="ml-1 tabular-nums">
                 {discontinuedMeds.length}
               </Badge>
@@ -159,13 +161,13 @@ export function AllMedsTab({ meds, setMeds, recipientName, canManage, onAdd, onE
                       {med.name} {med.strength}
                     </p>
                     <p className="truncate text-xs text-muted-foreground">
-                      {med.discontinuedNote ?? "Discontinued"}
+                      {med.discontinuedNote ?? t("allMeds.discontinuedDefault")}
                     </p>
                   </div>
                   <GatedControl canManage={canManage}>
                     <Button variant="ghost" size="sm" className="h-8 shrink-0 text-xs" onClick={() => reactivate(med)}>
                       <RotateCcw className="h-3.5 w-3.5" />
-                      <span className="ml-1">Reactivate</span>
+                      <span className="ml-1">{t("allMeds.reactivate")}</span>
                     </Button>
                   </GatedControl>
                 </li>
@@ -179,33 +181,33 @@ export function AllMedsTab({ meds, setMeds, recipientName, canManage, onAdd, onE
 }
 
 function NoSearchResults({ query }: { query: string }) {
+  const t = useTranslations("medications");
   return (
     <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed py-12 text-center">
       <Search className="h-6 w-6 text-muted-foreground" aria-hidden="true" />
-      <p className="font-medium">No medications match “{query}”</p>
-      <p className="text-sm text-muted-foreground">Try a different name, purpose, or prescriber.</p>
+      <p className="font-medium">{t("allMeds.noMatchTitle", { query })}</p>
+      <p className="text-sm text-muted-foreground">{t("allMeds.noMatchBody")}</p>
     </div>
   );
 }
 
 function EmptyMeds({ canManage, onAdd }: { canManage: boolean; onAdd: () => void }) {
+  const t = useTranslations("medications");
   return (
     <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed px-6 py-16 text-center">
       <div className="flex h-14 w-14 items-center justify-center rounded-full bg-secondary text-primary">
         <Pill className="h-7 w-7" aria-hidden="true" />
       </div>
       <div>
-        <p className="text-base font-semibold">No medications yet</p>
+        <p className="text-base font-semibold">{t("allMeds.emptyTitle")}</p>
         <p className="mt-1 text-sm text-muted-foreground">
-          {canManage
-            ? "Add the first medication to start tracking doses."
-            : "Once a coordinator adds medications, they’ll show up here."}
+          {canManage ? t("allMeds.emptyBodyManage") : t("allMeds.emptyBodyView")}
         </p>
       </div>
       <GatedControl canManage={canManage}>
         <Button onClick={onAdd}>
           <Plus className="h-4 w-4" />
-          <span className="ml-1">Add the first</span>
+          <span className="ml-1">{t("addFirst")}</span>
         </Button>
       </GatedControl>
     </div>

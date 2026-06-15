@@ -25,15 +25,19 @@ export const MED_ROUTES = [
   "Other",
 ] as const;
 
-/** Sun–Sat, indexed to match JS Date.getDay(). */
+/**
+ * Sun–Sat, indexed to match JS Date.getDay(). `key` indexes the
+ * `medications.form.schedule.weekdayShort` / `weekdayFull` message maps (labels are localized in
+ * the schedule builder; this array only holds the stable index + key).
+ */
 export const WEEKDAYS = [
-  { index: 0, label: "S", full: "Sunday" },
-  { index: 1, label: "M", full: "Monday" },
-  { index: 2, label: "T", full: "Tuesday" },
-  { index: 3, label: "W", full: "Wednesday" },
-  { index: 4, label: "T", full: "Thursday" },
-  { index: 5, label: "F", full: "Friday" },
-  { index: 6, label: "S", full: "Saturday" },
+  { index: 0, key: "sun" },
+  { index: 1, key: "mon" },
+  { index: 2, key: "tue" },
+  { index: 3, key: "wed" },
+  { index: 4, key: "thu" },
+  { index: 5, key: "fri" },
+  { index: 6, key: "sat" },
 ] as const;
 
 export const EVERY_DAY = [0, 1, 2, 3, 4, 5, 6];
@@ -60,56 +64,83 @@ export interface MedFormValues {
   refillThreshold: number;
 }
 
-const scheduleRowSchema = z.object({
-  id: z.string(),
-  time: z.string().min(1, "Pick a time"),
-  days: z.array(z.number()).min(1, "Pick at least one day"),
-});
+/**
+ * Localized validation messages, resolved by the caller from the `medications.form.errors`
+ * namespace. Passed as a plain object (not a translator) so the schema builder stays decoupled
+ * from next-intl and every message is a literal `t("…")` call at the component boundary.
+ */
+export interface MedFormMessages {
+  nameRequired: string;
+  strengthRequired: string;
+  selectForm: string;
+  selectRoute: string;
+  purposeMax: string;
+  prescriberMax: string;
+  instructionsMax: string;
+  enterNumber: string;
+  wholeNumber: string;
+  cannotBeNegative: string;
+  supplyTooHigh: string;
+  refillTooHigh: string;
+  pickTime: string;
+  pickDay: string;
+  addDoseTime: string;
+}
 
-export const medFormSchema = z
-  .object({
-    name: z.string().trim().min(1, "Medication name is required"),
-    strength: z.string().trim().min(1, "Strength is required (e.g. 10mg)"),
-    form: z.string().min(1, "Select a form"),
-    route: z.string().min(1, "Select a route"),
-    purpose: z.string().trim().max(120, "Keep this under 120 characters").optional().or(z.literal("")),
-    prescriber: z.string().trim().max(80, "Keep this under 80 characters").optional().or(z.literal("")),
-    instructions: z.string().trim().max(280, "Keep instructions under 280 characters").optional().or(z.literal("")),
-    photoUrl: z.string().nullable(),
-    isPrn: z.boolean(),
-    schedules: z.array(scheduleRowSchema),
-    supplyCount: z
-      .number({ message: "Enter a number" })
-      .int("Use a whole number")
-      .min(0, "Cannot be negative")
-      .max(3650, "That seems too high"),
-    refillThreshold: z
-      .number({ message: "Enter a number" })
-      .int("Use a whole number")
-      .min(0, "Cannot be negative")
-      .max(365, "That seems too high"),
-  })
-  .superRefine((val, ctx) => {
-    if (!val.isPrn) {
-      if (val.schedules.length === 0) {
-        ctx.addIssue({ code: "custom", path: ["schedules"], message: "Add at least one dose time" });
-      }
-      val.schedules.forEach((row, i) => {
-        if (!row.time) {
-          ctx.addIssue({ code: "custom", path: ["schedules", i, "time"], message: "Pick a time" });
-        }
-        if (row.days.length === 0) {
-          ctx.addIssue({ code: "custom", path: ["schedules", i, "days"], message: "Pick at least one day" });
-        }
-      });
-    }
+/** Build the medication-form zod schema with localized validation messages. */
+export function buildMedFormSchema(m: MedFormMessages) {
+  const scheduleRowSchema = z.object({
+    id: z.string(),
+    time: z.string().min(1, m.pickTime),
+    days: z.array(z.number()).min(1, m.pickDay),
   });
 
+  return z
+    .object({
+      name: z.string().trim().min(1, m.nameRequired),
+      strength: z.string().trim().min(1, m.strengthRequired),
+      form: z.string().min(1, m.selectForm),
+      route: z.string().min(1, m.selectRoute),
+      purpose: z.string().trim().max(120, m.purposeMax).optional().or(z.literal("")),
+      prescriber: z.string().trim().max(80, m.prescriberMax).optional().or(z.literal("")),
+      instructions: z.string().trim().max(280, m.instructionsMax).optional().or(z.literal("")),
+      photoUrl: z.string().nullable(),
+      isPrn: z.boolean(),
+      schedules: z.array(scheduleRowSchema),
+      supplyCount: z
+        .number({ message: m.enterNumber })
+        .int(m.wholeNumber)
+        .min(0, m.cannotBeNegative)
+        .max(3650, m.supplyTooHigh),
+      refillThreshold: z
+        .number({ message: m.enterNumber })
+        .int(m.wholeNumber)
+        .min(0, m.cannotBeNegative)
+        .max(365, m.refillTooHigh),
+    })
+    .superRefine((val, ctx) => {
+      if (!val.isPrn) {
+        if (val.schedules.length === 0) {
+          ctx.addIssue({ code: "custom", path: ["schedules"], message: m.addDoseTime });
+        }
+        val.schedules.forEach((row, i) => {
+          if (!row.time) {
+            ctx.addIssue({ code: "custom", path: ["schedules", i, "time"], message: m.pickTime });
+          }
+          if (row.days.length === 0) {
+            ctx.addIssue({ code: "custom", path: ["schedules", i, "days"], message: m.pickDay });
+          }
+        });
+      }
+    });
+}
+
+export type MedFormSchema = ReturnType<typeof buildMedFormSchema>;
 export type MedFormErrors = Record<string, string>;
 
-/** Validate form values, returning a flat `{ "path.to.field": message }` error map for inline display. */
-export function validateMedForm(values: MedFormValues): { ok: boolean; errors: MedFormErrors } {
-  const result = medFormSchema.safeParse(values);
+/** Validate form values against a (localized) schema, returning a flat `{ "path.to.field": message }` map. */
+export function validateMedForm(values: MedFormValues, schema: MedFormSchema): { ok: boolean; errors: MedFormErrors } {
+  const result = schema.safeParse(values);
   if (result.success) return { ok: true, errors: {} };
   const errors: MedFormErrors = {};
   for (const issue of result.error.issues) {

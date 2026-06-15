@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { Bell, CheckCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +16,7 @@ import { unreadCount } from "./utils";
 
 /** The top-bar bell + its compact, scrollable notifications panel (Popover tablet+, Sheet phone). */
 export function NotificationsBell() {
+  const t = useTranslations("notifications");
   useLoadNotifications();
   const items = useNotifications();
   const hydrated = useHydrated();
@@ -23,7 +25,7 @@ export function NotificationsBell() {
   const count = hydrated ? unreadCount(items) : 0;
 
   const trigger = (
-    <Button variant="ghost" size="icon" className="relative" aria-label={`Notifications, ${count} unread`}>
+    <Button variant="ghost" size="icon" className="relative" aria-label={t("bellAria", { count })}>
       <Bell className="h-5 w-5" />
       {count > 0 && (
         <Badge variant="destructive" className="absolute -right-0.5 -top-0.5 h-5 min-w-5 rounded-full px-1.5 text-[10px]">
@@ -35,11 +37,11 @@ export function NotificationsBell() {
 
   const header = (
     <div className="flex shrink-0 items-center justify-between gap-2 border-b px-4 py-3">
-      <p className="font-semibold">Notifications</p>
+      <p className="font-semibold">{t("title")}</p>
       {count > 0 && (
         <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={markAllRead}>
           <CheckCheck className="h-3.5 w-3.5" />
-          <span className="ml-1">Mark all read</span>
+          <span className="ml-1">{t("markAllRead")}</span>
         </Button>
       )}
     </div>
@@ -48,7 +50,7 @@ export function NotificationsBell() {
   const footer = (
     <div className="shrink-0 border-t p-2">
       <Button asChild variant="ghost" className="w-full justify-center" onClick={() => setOpen(false)}>
-        <Link href="/notifications">See all</Link>
+        <Link href="/notifications">{t("seeAll")}</Link>
       </Button>
     </div>
   );
@@ -64,7 +66,7 @@ export function NotificationsBell() {
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger asChild>{trigger}</SheetTrigger>
         <SheetContent side="right" className="flex w-[88vw] max-w-sm flex-col gap-0 p-0">
-          <SheetTitle className="sr-only">Notifications</SheetTitle>
+          <SheetTitle className="sr-only">{t("title")}</SheetTitle>
           {header}
           {body}
           {footer}

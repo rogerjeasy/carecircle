@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { format } from "date-fns";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Copy, Printer, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,25 +17,38 @@ function escapeHtml(s: string): string {
     .replace(/"/g, "&quot;");
 }
 
-function buildRows(meds: Medication[]): string {
-  return meds
-    .map(
-      (m) => `<tr>
+export interface PrintMedicationListProps {
+  meds: Medication[];
+  /** The care recipient's real name shown in the sheet header (null = no profile yet). */
+  recipientName: string | null;
+}
+
+/** A "Print / share" action that opens a clean, printable summary sheet of the medication list. */
+export function PrintMedicationList({ meds, recipientName }: PrintMedicationListProps) {
+  const t = useTranslations("medications");
+  const [open, setOpen] = React.useState(false);
+  const dateLabel = format(new Date(), "EEEE, MMMM d, yyyy");
+  const active = meds.filter((m) => !m.discontinued);
+  const discontinued = meds.filter((m) => m.discontinued);
+
+  // Translated builders live inside the component so they can resolve message strings via `t`.
+  const buildRows = (rows: Medication[]): string =>
+    rows
+      .map(
+        (m) => `<tr>
         <td><strong>${escapeHtml(m.name)}</strong> ${escapeHtml(m.strength)}</td>
         <td>${escapeHtml(m.schedule)}</td>
         <td>${escapeHtml(m.purpose)}</td>
         <td>${escapeHtml(m.prescriber)}</td>
-        <td>${m.supplyDays}d</td>
+        <td>${escapeHtml(t("supply.days", { days: m.supplyDays }))}</td>
       </tr>`
-    )
-    .join("");
-}
+      )
+      .join("");
 
-function buildPrintHtml(meds: Medication[], recipientName: string | null, dateLabel: string): string {
-  const active = meds.filter((m) => !m.discontinued);
-  const discontinued = meds.filter((m) => m.discontinued);
-  return `<!doctype html><html><head><meta charset="utf-8" />
-  <title>Medication list — ${dateLabel}</title>
+  const buildPrintHtml = (): string => {
+    const metaPrefix = recipientName ? `${escapeHtml(recipientName)} · ` : "";
+    return `<!doctype html><html><head><meta charset="utf-8" />
+  <title>${escapeHtml(t("print.shareHeader", { date: dateLabel }))}</title>
   <style>
     * { box-sizing: border-box; }
     body { font-family: -apple-system, system-ui, Segoe UI, Roboto, sans-serif; color: #1B231F; margin: 32px; }
@@ -49,49 +63,35 @@ function buildPrintHtml(meds: Medication[], recipientName: string | null, dateLa
     footer { margin-top: 28px; font-size: 11px; color: #9AA39C; }
     @media print { body { margin: 12mm; } }
   </style></head><body>
-    <h1>Medication list</h1>
-    <div class="meta">${recipientName ? `${escapeHtml(recipientName)} · ` : ""}Generated ${escapeHtml(dateLabel)}</div>
-    <h2>Active medications (${active.length})</h2>
-    <table><thead><tr><th>Medication</th><th>Schedule</th><th>Purpose</th><th>Prescriber</th><th>Supply</th></tr></thead>
+    <h1>${escapeHtml(t("print.title"))}</h1>
+    <div class="meta">${metaPrefix}${escapeHtml(t("print.generated", { date: dateLabel }))}</div>
+    <h2>${escapeHtml(t("print.activeHeading", { count: active.length }))}</h2>
+    <table><thead><tr><th>${escapeHtml(t("print.colMedication"))}</th><th>${escapeHtml(t("print.colSchedule"))}</th><th>${escapeHtml(t("print.colPurpose"))}</th><th>${escapeHtml(t("print.colPrescriber"))}</th><th>${escapeHtml(t("print.colSupply"))}</th></tr></thead>
       <tbody>${buildRows(active)}</tbody></table>
     ${
       discontinued.length
-        ? `<h2>Discontinued (${discontinued.length})</h2>
+        ? `<h2>${escapeHtml(t("print.discontinuedHeading", { count: discontinued.length }))}</h2>
            <table class="discont"><tbody>${discontinued
-             .map((m) => `<tr><td><strong>${escapeHtml(m.name)}</strong> ${escapeHtml(m.strength)}</td><td colspan="4">${escapeHtml(m.discontinuedNote ?? "Discontinued")}</td></tr>`)
+             .map((m) => `<tr><td><strong>${escapeHtml(m.name)}</strong> ${escapeHtml(m.strength)}</td><td colspan="4">${escapeHtml(m.discontinuedNote ?? t("allMeds.discontinuedDefault"))}</td></tr>`)
              .join("")}</tbody></table>`
         : ""
     }
-    <footer>Kintwadi — please verify against the original prescriptions. Not a substitute for medical advice.</footer>
+    <footer>${escapeHtml(t("print.footer"))}</footer>
   </body></html>`;
-}
+  };
 
-function buildShareText(meds: Medication[], dateLabel: string): string {
-  const active = meds.filter((m) => !m.discontinued);
-  const lines = active.map((m) => `• ${m.name} ${m.strength} — ${m.schedule} (${m.purpose})`);
-  return `Medication list — ${dateLabel}\n${lines.join("\n")}`;
-}
-
-export interface PrintMedicationListProps {
-  meds: Medication[];
-  /** The care recipient's real name shown in the sheet header (null = no profile yet). */
-  recipientName: string | null;
-}
-
-/** A "Print / share" action that opens a clean, printable summary sheet of the medication list. */
-export function PrintMedicationList({ meds, recipientName }: PrintMedicationListProps) {
-  const [open, setOpen] = React.useState(false);
-  const dateLabel = format(new Date(), "EEEE, MMMM d, yyyy");
-  const active = meds.filter((m) => !m.discontinued);
-  const discontinued = meds.filter((m) => m.discontinued);
+  const buildShareText = (): string => {
+    const lines = active.map((m) => `• ${m.name} ${m.strength} — ${m.schedule} (${m.purpose})`);
+    return `${t("print.shareHeader", { date: dateLabel })}\n${lines.join("\n")}`;
+  };
 
   const handlePrint = () => {
     const w = window.open("", "_blank", "width=820,height=920");
     if (!w) {
-      toast.error("Allow pop-ups to open the printable sheet");
+      toast.error(t("print.popupBlocked"));
       return;
     }
-    w.document.write(buildPrintHtml(meds, recipientName, dateLabel));
+    w.document.write(buildPrintHtml());
     w.document.close();
     w.focus();
     // Give the new document a tick to lay out before printing.
@@ -105,15 +105,15 @@ export function PrintMedicationList({ meds, recipientName }: PrintMedicationList
   };
 
   const handleShare = async () => {
-    const text = buildShareText(meds, dateLabel);
+    const text = buildShareText();
     try {
       if (typeof navigator !== "undefined" && navigator.share) {
-        await navigator.share({ title: "Medication list", text });
+        await navigator.share({ title: t("print.title"), text });
       } else if (navigator.clipboard) {
         await navigator.clipboard.writeText(text);
-        toast.success("Medication list copied to clipboard");
+        toast.success(t("print.copied"));
       } else {
-        toast.error("Sharing isn't supported on this device");
+        toast.error(t("print.shareUnsupported"));
       }
     } catch {
       /* user cancelled the share sheet — ignore */
@@ -122,10 +122,10 @@ export function PrintMedicationList({ meds, recipientName }: PrintMedicationList
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(buildShareText(meds, dateLabel));
-      toast.success("Medication list copied to clipboard");
+      await navigator.clipboard.writeText(buildShareText());
+      toast.success(t("print.copied"));
     } catch {
-      toast.error("Couldn't copy to clipboard");
+      toast.error(t("print.copyFailed"));
     }
   };
 
@@ -133,14 +133,14 @@ export function PrintMedicationList({ meds, recipientName }: PrintMedicationList
     <>
       <Button variant="outline" className="h-11 shrink-0" onClick={() => setOpen(true)}>
         <Printer className="h-4 w-4" />
-        <span className="ml-1">Print / share</span>
+        <span className="ml-1">{t("print.button")}</span>
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="flex max-h-[90vh] w-[calc(100%-2rem)] flex-col gap-0 overflow-hidden rounded-2xl p-0 sm:max-w-2xl">
           <DialogHeader className="shrink-0 space-y-1 border-b px-6 py-4 pr-12 text-left">
-            <DialogTitle>Medication list</DialogTitle>
-            <DialogDescription>A clean summary you can print or share with the care team.</DialogDescription>
+            <DialogTitle>{t("print.title")}</DialogTitle>
+            <DialogDescription>{t("print.dialogDesc")}</DialogDescription>
           </DialogHeader>
 
           {/* Scrollable preview */}
@@ -151,7 +151,7 @@ export function PrintMedicationList({ meds, recipientName }: PrintMedicationList
             </p>
 
             <h3 className="mt-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Active medications ({active.length})
+              {t("print.activeHeading", { count: active.length })}
             </h3>
             <ul className="mt-2 divide-y rounded-xl border">
               {active.map((m) => (
@@ -161,7 +161,7 @@ export function PrintMedicationList({ meds, recipientName }: PrintMedicationList
                   </span>
                   <span className="text-sm text-muted-foreground">{m.schedule}</span>
                   <span className="w-full text-xs text-muted-foreground">
-                    {m.purpose} · {m.prescriber} · {m.supplyDays}d supply
+                    {m.purpose} · {m.prescriber} · {t("print.supplyLabel", { days: m.supplyDays })}
                   </span>
                 </li>
               ))}
@@ -170,7 +170,7 @@ export function PrintMedicationList({ meds, recipientName }: PrintMedicationList
             {discontinued.length > 0 && (
               <>
                 <h3 className="mt-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Discontinued ({discontinued.length})
+                  {t("print.discontinuedHeading", { count: discontinued.length })}
                 </h3>
                 <ul className="mt-2 divide-y rounded-xl border">
                   {discontinued.map((m) => (
@@ -178,7 +178,7 @@ export function PrintMedicationList({ meds, recipientName }: PrintMedicationList
                       <span className="font-medium line-through decoration-muted-foreground/40">
                         {m.name} {m.strength}
                       </span>
-                      <span className="text-xs">{m.discontinuedNote ?? "Discontinued"}</span>
+                      <span className="text-xs">{m.discontinuedNote ?? t("allMeds.discontinuedDefault")}</span>
                     </li>
                   ))}
                 </ul>
@@ -191,15 +191,15 @@ export function PrintMedicationList({ meds, recipientName }: PrintMedicationList
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end">
               <Button variant="ghost" onClick={handleCopy} className="sm:mr-auto">
                 <Copy className="h-4 w-4" />
-                <span className="ml-1">Copy</span>
+                <span className="ml-1">{t("print.copy")}</span>
               </Button>
               <Button variant="outline" onClick={handleShare}>
                 <Share2 className="h-4 w-4" />
-                <span className="ml-1">Share</span>
+                <span className="ml-1">{t("print.share")}</span>
               </Button>
               <Button onClick={handlePrint}>
                 <Printer className="h-4 w-4" />
-                <span className="ml-1">Print</span>
+                <span className="ml-1">{t("print.print")}</span>
               </Button>
             </div>
           </div>
