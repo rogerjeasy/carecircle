@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TaskCard } from "./task-card";
 import { GatedControl } from "./gated-control";
 import { useIsPhone } from "./use-is-phone";
-import { STATUS_COLUMNS } from "./data";
+import { STATUS_COLUMN_IDS } from "./data";
 import { tasksInColumn } from "./utils";
 import type { Task, TaskStatus } from "./types";
 
@@ -49,8 +50,8 @@ export function BoardView(props: BoardViewProps) {
   return (
     <div className="overflow-x-auto pb-2 [scrollbar-width:thin]">
       <div className="grid grid-flow-col auto-cols-[minmax(17rem,1fr)] gap-4">
-        {STATUS_COLUMNS.map((col) => (
-          <Column key={col.id} status={col.id} {...props} dnd={dnd} />
+        {STATUS_COLUMN_IDS.map((id) => (
+          <Column key={id} status={id} {...props} dnd={dnd} />
         ))}
       </div>
     </div>
@@ -78,7 +79,9 @@ function Column({
   onAddInColumn,
   dnd,
 }: BoardViewProps & { status: TaskStatus; dnd: DndState }) {
-  const col = STATUS_COLUMNS.find((c) => c.id === status)!;
+  const t = useTranslations("tasks");
+  const label = t(`columns.${status}.label` as "columns.open.label");
+  const hint = t(`columns.${status}.hint` as "columns.open.hint");
   const items = tasksInColumn(tasks, status);
   const isOver = dnd.overCol === status && dnd.draggingId !== null;
 
@@ -92,7 +95,7 @@ function Column({
 
   return (
     <section
-      aria-label={`${col.label} tasks`}
+      aria-label={t("board.columnLabel", { label })}
       className={cn(
         "flex max-h-[72dvh] min-h-[14rem] flex-col rounded-2xl border bg-muted/30 transition-colors",
         isOver && dnd.canManage && "border-primary/60 bg-primary/5 ring-1 ring-primary/40"
@@ -105,7 +108,7 @@ function Column({
       onDrop={dnd.canManage ? handleDrop : undefined}
     >
       <header className="flex shrink-0 items-center gap-2 border-b px-3 py-2.5">
-        <span className="text-sm font-semibold">{col.label}</span>
+        <span className="text-sm font-semibold">{label}</span>
         <Badge variant="secondary" className="tabular-nums">
           {items.length}
         </Badge>
@@ -116,7 +119,7 @@ function Column({
             size="icon"
             className="h-7 w-7"
             onClick={() => onAddInColumn(status)}
-            aria-label={`Add task to ${col.label}`}
+            aria-label={t("board.addTaskTo", { label })}
           >
             <Plus className="h-4 w-4" />
           </Button>
@@ -126,9 +129,9 @@ function Column({
       <div className="min-h-0 flex-1 space-y-2 overflow-y-auto p-2">
         {items.length === 0 ? (
           <div className="flex h-full min-h-[8rem] flex-col items-center justify-center gap-1 rounded-xl border border-dashed px-3 py-6 text-center">
-            <p className="text-sm text-muted-foreground">{col.hint}</p>
+            <p className="text-sm text-muted-foreground">{hint}</p>
             <p className="text-xs text-muted-foreground/70">
-              {dnd.canManage ? "Drag a card here or add one." : "Nothing here yet."}
+              {dnd.canManage ? t("board.dragHint") : t("board.emptyHint")}
             </p>
           </div>
         ) : (
@@ -174,15 +177,16 @@ function PhoneBoard({
   onDeleteTask,
   onAddInColumn,
 }: BoardViewProps) {
+  const t = useTranslations("tasks");
   const [tab, setTab] = React.useState<TaskStatus>("open");
   return (
     <Tabs value={tab} onValueChange={(v) => setTab(v as TaskStatus)}>
       <TabsList className="w-full">
-        {STATUS_COLUMNS.map((col) => {
-          const count = tasksInColumn(tasks, col.id).length;
+        {STATUS_COLUMN_IDS.map((id) => {
+          const count = tasksInColumn(tasks, id).length;
           return (
-            <TabsTrigger key={col.id} value={col.id} className="flex-1 gap-1.5">
-              {col.label}
+            <TabsTrigger key={id} value={id} className="flex-1 gap-1.5">
+              {t(`columns.${id}.label` as "columns.open.label")}
               <Badge variant="secondary" className="tabular-nums">
                 {count}
               </Badge>
@@ -191,20 +195,21 @@ function PhoneBoard({
         })}
       </TabsList>
 
-      {STATUS_COLUMNS.map((col) => {
-        const items = tasksInColumn(tasks, col.id);
+      {STATUS_COLUMN_IDS.map((id) => {
+        const items = tasksInColumn(tasks, id);
+        const label = t(`columns.${id}.label` as "columns.open.label");
         return (
-          <TabsContent key={col.id} value={col.id} className="space-y-2">
+          <TabsContent key={id} value={id} className="space-y-2">
             {canManage && (
-              <Button variant="outline" className="w-full" onClick={() => onAddInColumn(col.id)}>
+              <Button variant="outline" className="w-full" onClick={() => onAddInColumn(id)}>
                 <Plus className="h-4 w-4" />
-                <span className="ml-1">Add to {col.label}</span>
+                <span className="ml-1">{t("board.addToColumn", { label })}</span>
               </Button>
             )}
             {items.length === 0 ? (
               <div className="flex flex-col items-center justify-center gap-1 rounded-xl border border-dashed px-4 py-10 text-center">
-                <p className="text-sm text-muted-foreground">{col.hint}</p>
-                <p className="text-xs text-muted-foreground/70">Nothing here yet.</p>
+                <p className="text-sm text-muted-foreground">{t(`columns.${id}.hint` as "columns.open.hint")}</p>
+                <p className="text-xs text-muted-foreground/70">{t("board.emptyHint")}</p>
               </div>
             ) : (
               items.map((task) => (

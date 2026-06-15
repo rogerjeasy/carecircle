@@ -1,9 +1,10 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { CheckSquare } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { TaskCard } from "./task-card";
-import { STATUS_COLUMNS } from "./data";
+import { STATUS_COLUMN_IDS } from "./data";
 import { tasksInColumn } from "./utils";
 import type { Task, TaskStatus } from "./types";
 
@@ -27,27 +28,29 @@ export function ListView({
   onEditTask,
   onDeleteTask,
 }: ListViewProps) {
+  const t = useTranslations("tasks");
   if (tasks.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed px-6 py-16 text-center">
         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-secondary text-primary">
           <CheckSquare className="h-7 w-7" aria-hidden="true" />
         </div>
-        <p className="text-base font-semibold">No tasks match these filters</p>
-        <p className="text-sm text-muted-foreground">Try clearing a filter, or add a new task.</p>
+        <p className="text-base font-semibold">{t("list.emptyTitle")}</p>
+        <p className="text-sm text-muted-foreground">{t("list.emptyBody")}</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-8">
-      {STATUS_COLUMNS.map((col) => {
-        const items = tasksInColumn(tasks, col.id);
+      {STATUS_COLUMN_IDS.map((id) => {
+        const items = tasksInColumn(tasks, id);
         if (items.length === 0) return null;
+        const label = t(`columns.${id}.label` as "columns.open.label");
         return (
-          <section key={col.id} aria-label={col.label}>
+          <section key={id} aria-label={label}>
             <div className="mb-3 flex items-center gap-2">
-              <h2 className="text-sm font-semibold">{col.label}</h2>
+              <h2 className="text-sm font-semibold">{label}</h2>
               <Badge variant="secondary" className="tabular-nums">
                 {items.length}
               </Badge>

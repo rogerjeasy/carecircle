@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { Search, Filter, ChevronDown, CalendarDays, CalendarRange } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -55,13 +56,14 @@ function Chip({
 }
 
 function JumpToDate({ onJump, className }: { onJump: (d: Date) => void; className?: string }) {
+  const t = useTranslations("timeline.controls");
   const [open, setOpen] = React.useState(false);
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button variant="outline" size="sm" className={cn("gap-1.5", className)}>
           <CalendarDays className="h-4 w-4" />
-          <span>Jump to date</span>
+          <span>{t("jumpToDate")}</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
@@ -89,16 +91,17 @@ function RangeSelect({
   onChange: (r: DateRange) => void;
   className?: string;
 }) {
+  const t = useTranslations("timeline");
   return (
     <Select value={value} onValueChange={(v) => onChange(v as DateRange)}>
-      <SelectTrigger className={cn("h-9 gap-1.5", className)} aria-label="Date range">
+      <SelectTrigger className={cn("h-9 gap-1.5", className)} aria-label={t("controls.dateRangeAria")}>
         <CalendarRange className="h-4 w-4 shrink-0 text-muted-foreground" />
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
         {dateRanges.map((r) => (
           <SelectItem key={r.value} value={r.value}>
-            {r.label}
+            {t(`ranges.${r.value}` as "ranges.all")}
           </SelectItem>
         ))}
       </SelectContent>
@@ -121,6 +124,7 @@ function Bar({
   onDateRangeChange,
   onJumpToDate,
 }: FilterControlsProps) {
+  const t = useTranslations("timeline");
   const [showMobileFilters, setShowMobileFilters] = React.useState(false);
 
   return (
@@ -132,7 +136,7 @@ function Bar({
             <Chip
               key={chip.id}
               id={chip.id}
-              label={chip.label}
+              label={t(`filters.${chip.id}` as "filters.all")}
               active={activeFilter === chip.id}
               onClick={() => onFilterChange(chip.id)}
             />
@@ -142,7 +146,7 @@ function Bar({
         {/* Mobile filter toggle */}
         <Button variant="outline" size="sm" className="sm:hidden" onClick={() => setShowMobileFilters((s) => !s)}>
           <Filter className="mr-1.5 h-4 w-4" />
-          {filterChips.find((c) => c.id === activeFilter)?.label}
+          {t(`filters.${activeFilter}` as "filters.all")}
           <ChevronDown className="ml-1 h-4 w-4" />
         </Button>
 
@@ -153,11 +157,11 @@ function Bar({
         <div className="relative ml-auto min-w-[140px] max-w-xs flex-1">
           <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search updates..."
+            placeholder={t("controls.search")}
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             className="h-9 pl-8"
-            aria-label="Search updates"
+            aria-label={t("controls.searchAria")}
           />
         </div>
       </div>
@@ -169,7 +173,7 @@ function Bar({
             <Chip
               key={chip.id}
               id={chip.id}
-              label={chip.label}
+              label={t(`filters.${chip.id}` as "filters.all")}
               active={activeFilter === chip.id}
               onClick={() => {
                 onFilterChange(chip.id);
@@ -193,27 +197,28 @@ function Rail({
   onDateRangeChange,
   onJumpToDate,
 }: FilterControlsProps) {
+  const t = useTranslations("timeline");
   return (
     <div className="space-y-5">
       <div className="relative">
         <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          placeholder="Search updates..."
+          placeholder={t("controls.search")}
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
           className="h-9 pl-8"
-          aria-label="Search updates"
+          aria-label={t("controls.searchAria")}
         />
       </div>
 
       <div className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Filter</p>
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("controls.filterLabel")}</p>
         <div className="flex flex-wrap gap-1.5">
           {filterChips.map((chip) => (
             <Chip
               key={chip.id}
               id={chip.id}
-              label={chip.label}
+              label={t(`filters.${chip.id}` as "filters.all")}
               active={activeFilter === chip.id}
               onClick={() => onFilterChange(chip.id)}
             />
@@ -222,7 +227,7 @@ function Rail({
       </div>
 
       <div className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Date range</p>
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("controls.dateRangeLabel")}</p>
         <RangeSelect value={dateRange} onChange={onDateRangeChange} className="w-full" />
       </div>
 

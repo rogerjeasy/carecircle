@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations, useLocale } from "next-intl";
 import { startOfDay } from "date-fns";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -32,11 +33,13 @@ export interface TimelineScreenProps {
 
 /** The Care Timeline: a chronological, filterable, role-aware activity feed backed by the server. */
 export function TimelineScreen({ initial }: TimelineScreenProps) {
+  const t = useTranslations("timeline");
+  const locale = useLocale();
   const { role, user } = useAppShell();
   const reducedMotion = useReducedMotion();
 
   const currentUserId = user?.id ?? "me";
-  const currentUserName = user?.name?.trim() || "You";
+  const currentUserName = user?.name?.trim() || t("you");
   const currentUserInitials = user?.initials ?? initialsFrom(currentUserName);
   const currentUserColor = authorColorFor(currentUserId);
   const contributor = canContribute(role);
@@ -102,7 +105,7 @@ export function TimelineScreen({ initial }: TimelineScreenProps) {
     const optimistic: TimelineEvent = {
       id: tempId,
       type: "note",
-      summary: `${currentUserName.split(/\s+/)[0]} added a note`,
+      summary: t("addedNote", { name: currentUserName.split(/\s+/)[0] }),
       details: text,
       authorName: currentUserName,
       authorInitials: currentUserInitials,
@@ -126,7 +129,7 @@ export function TimelineScreen({ initial }: TimelineScreenProps) {
       window.setTimeout(() => setHighlightedEventId(null), 2000);
     } else {
       setEvents((prev) => prev.filter((e) => e.id !== tempId));
-      toast.error(res.error ?? "Couldn't post your note");
+      toast.error(res.error ?? t("errPost"));
     }
   };
 
@@ -146,13 +149,13 @@ export function TimelineScreen({ initial }: TimelineScreenProps) {
     const res = await toggleReaction(eventId);
     if (!res.ok) {
       setEvents(snapshot);
-      toast.error(res.error ?? "Couldn't update your reaction");
+      toast.error(res.error ?? t("errReaction"));
     }
   };
 
   const handleComment = async (eventId: string, text: string) => {
     if (eventId.startsWith("temp-")) {
-      toast.error("Please wait for the post to finish saving");
+      toast.error(t("errWaitSaving"));
       return;
     }
     const tempId = `temp-c-${Date.now()}`;
@@ -181,7 +184,7 @@ export function TimelineScreen({ initial }: TimelineScreenProps) {
         return { ...e, comments: e.comments.filter((c) => c.id !== tempId) };
       })
     );
-    if (!res.ok) toast.error(res.error ?? "Couldn't add your comment");
+    if (!res.ok) toast.error(res.error ?? t("errComment"));
   };
 
   const handleLoadMore = async () => {
@@ -196,7 +199,7 @@ export function TimelineScreen({ initial }: TimelineScreenProps) {
       });
       setHasMore(res.hasMore);
     } else {
-      toast.error(res.error ?? "Couldn't load earlier updates");
+      toast.error(res.error ?? t("errLoadMore"));
     }
     setIsLoading(false);
   };
@@ -241,7 +244,7 @@ export function TimelineScreen({ initial }: TimelineScreenProps) {
           {filteredEvents.length === 0 ? (
             <EmptyState hasFilters={hasActiveFilters} />
           ) : (
-            <div className="space-y-6" role="feed" aria-busy={isLoading} aria-label="Care timeline">
+            <div className="space-y-6" role="feed" aria-busy={isLoading} aria-label={t("ariaFeed")}>
               {sortedDays.map((dayKey) => {
                 const dayDate = new Date(dayKey);
                 const dayEvents = groupedEvents.get(dayKey)!;
@@ -263,7 +266,7 @@ export function TimelineScreen({ initial }: TimelineScreenProps) {
                           highlightedDay === dayKey && "bg-primary/10 text-primary"
                         )}
                       >
-                        {formatDayLabel(dayDate)}
+                        {formatDayLabel(dayDate, locale, { today: t("day.today"), yesterday: t("day.yesterday") })}
                       </h3>
                     </div>
 
@@ -300,7 +303,7 @@ export function TimelineScreen({ initial }: TimelineScreenProps) {
               {hasMore && (
                 <div className="pt-2 text-center">
                   <Button variant="outline" onClick={handleLoadMore} disabled={isLoading}>
-                    {isLoading ? "Loading..." : "Load earlier updates"}
+                    {isLoading ? t("loading") : t("loadMore")}
                   </Button>
                 </div>
               )}

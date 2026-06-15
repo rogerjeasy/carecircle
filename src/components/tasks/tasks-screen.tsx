@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { LayoutGrid, List as ListIcon, Lock, Plus } from "lucide-react";
 import { useAppShell } from "@/components/app-shell/app-shell-context";
@@ -44,6 +45,7 @@ function valuesToPayload(values: TaskFormValues) {
 
 /** The Tasks screen: Board / List toggle, filters, fair-share, and a new-task form — server-backed. */
 export function TasksScreen({ initial }: TasksScreenProps) {
+  const t = useTranslations("tasks");
   const { role } = useAppShell();
   const canManage = canManageTasks(role);
 
@@ -84,7 +86,7 @@ export function TasksScreen({ initial }: TasksScreenProps) {
     void setTaskStatus(id, status).then((res) => {
       if (!res.ok) {
         setTasks(prev);
-        toast.error(res.error ?? "Couldn't move the task");
+        toast.error(res.error ?? t("toasts.moveFailed"));
       }
     });
   };
@@ -100,12 +102,12 @@ export function TasksScreen({ initial }: TasksScreenProps) {
   const deleteTask = (id: string) => {
     const task = tasks.find((t) => t.id === id);
     const prev = tasks;
-    setTasks((p) => p.filter((t) => t.id !== id));
-    toast(`${task?.title ?? "Task"} deleted`);
+    setTasks((p) => p.filter((x) => x.id !== id));
+    toast(task?.title ? t("toasts.deleted", { title: task.title }) : t("toasts.deletedFallback"));
     void deleteTaskAction(id).then((res) => {
       if (!res.ok) {
         setTasks(prev);
-        toast.error(res.error ?? "Couldn't delete the task");
+        toast.error(res.error ?? t("toasts.deleteFailed"));
       }
     });
   };
@@ -122,11 +124,11 @@ export function TasksScreen({ initial }: TasksScreenProps) {
       fd.set("id", original.id);
       const res = await updateTask(fd);
       if (res.ok) {
-        setTasks((p) => p.map((t) => (t.id === original.id ? res.data : t)));
-        toast.success(`${res.data.title} updated`);
+        setTasks((p) => p.map((x) => (x.id === original.id ? res.data : x)));
+        toast.success(t("toasts.updated", { title: res.data.title }));
       } else {
-        setTasks((p) => p.map((t) => (t.id === original.id ? original : t)));
-        toast.error(res.error ?? "Couldn't save the task");
+        setTasks((p) => p.map((x) => (x.id === original.id ? original : x)));
+        toast.error(res.error ?? t("toasts.saveFailed"));
       }
     } else {
       const tempId = `task-temp-${Date.now()}`;
@@ -135,11 +137,11 @@ export function TasksScreen({ initial }: TasksScreenProps) {
       setModal(null);
       const res = await createTask(fd);
       if (res.ok) {
-        setTasks((p) => p.map((t) => (t.id === tempId ? res.data : t)));
-        toast.success(`${res.data.title} added`);
+        setTasks((p) => p.map((x) => (x.id === tempId ? res.data : x)));
+        toast.success(t("toasts.added", { title: res.data.title }));
       } else {
-        setTasks((p) => p.filter((t) => t.id !== tempId));
-        toast.error(res.error ?? "Couldn't add the task");
+        setTasks((p) => p.filter((x) => x.id !== tempId));
+        toast.error(res.error ?? t("toasts.addFailed"));
       }
     }
   };
@@ -152,32 +154,32 @@ export function TasksScreen({ initial }: TasksScreenProps) {
         {/* Header + view toggle + new task */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
-            <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">Tasks</h1>
-            <p className="mt-1 text-muted-foreground">Share the caregiving load and keep things moving.</p>
+            <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">{t("title")}</h1>
+            <p className="mt-1 text-muted-foreground">{t("subtitle")}</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {!canManage && (
               <Badge variant="secondary" className="gap-1.5">
                 <Lock className="h-3 w-3" aria-hidden="true" />
-                View only
+                {t("viewOnly")}
               </Badge>
             )}
             <Tabs value={view} onValueChange={(v) => setView(v as "board" | "list")}>
               <TabsList>
                 <TabsTrigger value="board">
                   <LayoutGrid className="h-4 w-4" aria-hidden="true" />
-                  Board
+                  {t("tabs.board")}
                 </TabsTrigger>
                 <TabsTrigger value="list">
                   <ListIcon className="h-4 w-4" aria-hidden="true" />
-                  List
+                  {t("tabs.list")}
                 </TabsTrigger>
               </TabsList>
             </Tabs>
             <GatedControl canManage={canManage}>
               <Button onClick={() => openAdd("open")}>
                 <Plus className="h-4 w-4" />
-                <span className="ml-1">New task</span>
+                <span className="ml-1">{t("newTask")}</span>
               </Button>
             </GatedControl>
           </div>

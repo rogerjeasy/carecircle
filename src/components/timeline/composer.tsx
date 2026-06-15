@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { Camera, Activity, ChevronDown, Globe, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { UserRole } from "@/components/app-shell/app-shell-context";
@@ -31,6 +32,7 @@ export function Composer({
   authorColor: string;
   onPost: (text: string, visibility: Visibility) => void;
 }) {
+  const t = useTranslations("timeline");
   const [text, setText] = React.useState("");
   const [visibility, setVisibility] = React.useState<Visibility>("everyone");
   const [isExpanded, setIsExpanded] = React.useState(false);
@@ -65,7 +67,7 @@ export function Composer({
           <div className="flex-1 min-w-0">
             <textarea
               ref={textareaRef}
-              placeholder={recipientName ? `Share an update about ${recipientName}...` : "Share an update with your circle..."}
+              placeholder={recipientName ? t("composer.placeholderNamed", { name: recipientName }) : t("composer.placeholder")}
               value={text}
               onChange={(e) => setText(e.target.value)}
               onFocus={() => setIsExpanded(true)}
@@ -80,11 +82,11 @@ export function Composer({
                 <div className="flex items-center gap-1">
                   <Button variant="ghost" size="sm" className="h-8 px-2">
                     <Camera className="h-4 w-4" />
-                    <span className="sr-only">Attach photo</span>
+                    <span className="sr-only">{t("composer.attachPhoto")}</span>
                   </Button>
                   <Button variant="ghost" size="sm" className="h-8 px-2">
                     <Activity className="h-4 w-4" />
-                    <span className="sr-only">Add vital</span>
+                    <span className="sr-only">{t("composer.addVital")}</span>
                   </Button>
 
                   {/* Visibility selector */}
@@ -96,7 +98,7 @@ export function Composer({
                           { className: "h-4 w-4" }
                         )}
                         <span className="hidden sm:inline text-xs">
-                          {availableVisibilityOptions.find((o) => o.value === visibility)?.label}
+                          {t(`visibility.${visibility}.label` as "visibility.everyone.label")}
                         </span>
                         <ChevronDown className="h-3 w-3" />
                       </Button>
@@ -110,8 +112,8 @@ export function Composer({
                         >
                           <opt.icon className="h-4 w-4 mt-0.5 shrink-0" />
                           <div className="min-w-0">
-                            <div className="font-medium">{opt.label}</div>
-                            <div className="text-xs text-muted-foreground">{opt.description}</div>
+                            <div className="font-medium">{t(`visibility.${opt.value}.label` as "visibility.everyone.label")}</div>
+                            <div className="text-xs text-muted-foreground">{t(`visibility.${opt.value}.description` as "visibility.everyone.description")}</div>
                           </div>
                           {visibility === opt.value && <Check className="h-4 w-4 ml-auto shrink-0 text-primary" />}
                         </DropdownMenuItem>
@@ -129,10 +131,10 @@ export function Composer({
                       setIsExpanded(false);
                     }}
                   >
-                    Cancel
+                    {t("composer.cancel")}
                   </Button>
                   <Button size="sm" onClick={handlePost} disabled={!text.trim() || isPosting}>
-                    {isPosting ? "Posting..." : "Post"}
+                    {isPosting ? t("composer.posting") : t("composer.post")}
                   </Button>
                 </div>
               </div>

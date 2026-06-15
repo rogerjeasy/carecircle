@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { firstName } from "./utils";
@@ -17,6 +18,7 @@ export function MemberAvatar({
   size?: "xs" | "sm";
   className?: string;
 }) {
+  const t = useTranslations("tasks");
   const dim = size === "xs" ? "h-6 w-6" : "h-7 w-7";
   const text = size === "xs" ? "text-[10px]" : "text-xs";
 
@@ -33,7 +35,7 @@ export function MemberAvatar({
         >
           ?
         </span>
-        {withName && <span className="truncate text-xs text-muted-foreground">Unassigned</span>}
+        {withName && <span className="truncate text-xs text-muted-foreground">{t("unassigned")}</span>}
       </div>
     );
   }

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations, useLocale } from "next-intl";
 import {
   ChevronDown,
   ChevronUp,
@@ -37,6 +38,8 @@ export function EventCard({
   onReact: (eventId: string) => void;
   onComment: (eventId: string, text: string) => void;
 }) {
+  const t = useTranslations("timeline");
+  const locale = useLocale();
   const [isExpanded, setIsExpanded] = React.useState(false);
   const [showLightbox, setShowLightbox] = React.useState(false);
   const [commentText, setCommentText] = React.useState("");
@@ -97,7 +100,7 @@ export function EventCard({
                       )}
                     >
                       <Icon className="h-3 w-3" />
-                      {config.label}
+                      {t(`types.${event.type}` as "types.med")}
                     </span>
 
                     {/* Visibility badge for non-public */}
@@ -108,13 +111,13 @@ export function EventCard({
                         ) : (
                           <Lock className="h-3 w-3" />
                         )}
-                        {event.visibility === "family" ? "Family" : "Private"}
+                        {event.visibility === "family" ? t("badge.family") : t("badge.private")}
                       </span>
                     )}
 
                     {event.isUrgent && (
                       <Badge variant="destructive" className="text-xs">
-                        Urgent
+                        {t("badge.urgent")}
                       </Badge>
                     )}
                   </div>
@@ -142,7 +145,7 @@ export function EventCard({
                     className="shrink-0 w-14 h-14 rounded-lg overflow-hidden bg-muted cursor-pointer hover:opacity-90 transition-opacity"
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={event.photoUrl} alt="Event attachment" className="w-full h-full object-cover" />
+                    <img src={event.photoUrl} alt={t("card.attachmentAlt")} className="w-full h-full object-cover" />
                   </div>
                 )}
               </div>
@@ -158,20 +161,20 @@ export function EventCard({
               <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
                 <span>{event.authorName}</span>
                 <span>·</span>
-                <span>{formatTime(event.timestamp)}</span>
+                <span>{formatTime(event.timestamp, locale)}</span>
 
                 {event.comments.length > 0 && (
                   <>
                     <span>·</span>
                     <span className="inline-flex items-center gap-1">
                       <MessageCircle className="h-3 w-3" />
-                      {event.comments.length} {event.comments.length === 1 ? "comment" : "comments"}
+                      {t("card.commentCount", { count: event.comments.length })}
                     </span>
                   </>
                 )}
 
                 {isTextClamped && !isExpanded && (
-                  <span className="text-primary font-medium">Read more</span>
+                  <span className="text-primary font-medium">{t("card.readMore")}</span>
                 )}
               </div>
             </div>
@@ -201,7 +204,7 @@ export function EventCard({
                   ? "bg-destructive/10 text-destructive"
                   : "bg-muted hover:bg-muted/80 text-muted-foreground"
               )}
-              aria-label={hasReacted ? "Remove reaction" : "React with heart"}
+              aria-label={hasReacted ? t("card.removeReaction") : t("card.react")}
             >
               <Heart className={cn("h-3 w-3", hasReacted && "fill-current")} />
               {reactionCount > 0 && <span>{reactionCount}</span>}
@@ -239,14 +242,14 @@ export function EventCard({
                 className="mt-3 rounded-lg overflow-hidden bg-muted cursor-pointer max-w-md"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={event.photoUrl} alt="Event attachment" className="w-full h-auto max-h-64 object-cover" />
+                <img src={event.photoUrl} alt={t("card.attachmentAlt")} className="w-full h-auto max-h-64 object-cover" />
               </div>
             )}
 
             {/* Comments */}
             {event.comments.length > 0 && (
               <div className="mt-4 space-y-3">
-                <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Comments</h4>
+                <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t("card.comments")}</h4>
                 <div className="space-y-3 pl-2 border-l-2 border-muted">
                   {event.comments.map((comment) => (
                     <div key={comment.id} className="flex gap-2">
@@ -258,7 +261,7 @@ export function EventCard({
                       <div className="flex-1 min-w-0">
                         <div className="flex items-baseline gap-2 flex-wrap">
                           <span className="text-sm font-medium">{comment.authorName}</span>
-                          <span className="text-xs text-muted-foreground">{formatTime(comment.timestamp)}</span>
+                          <span className="text-xs text-muted-foreground">{formatTime(comment.timestamp, locale)}</span>
                         </div>
                         <p className="text-sm text-muted-foreground mt-0.5 break-words">{comment.text}</p>
                       </div>
@@ -278,7 +281,7 @@ export function EventCard({
                 </Avatar>
                 <div className="flex-1 flex gap-2">
                   <Input
-                    placeholder="Add a comment..."
+                    placeholder={t("card.addComment")}
                     value={commentText}
                     onChange={(e) => setCommentText(e.target.value)}
                     onKeyDown={(e) => {
@@ -302,10 +305,10 @@ export function EventCard({
       {/* Lightbox */}
       <Dialog open={showLightbox} onOpenChange={setShowLightbox}>
         <DialogContent className="max-w-3xl p-0 overflow-hidden bg-black/95">
-          <DialogTitle className="sr-only">Image preview</DialogTitle>
+          <DialogTitle className="sr-only">{t("card.imagePreview")}</DialogTitle>
           {event.photoUrl && (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={event.photoUrl} alt="Full size attachment" className="w-full h-auto max-h-[80vh] object-contain" />
+            <img src={event.photoUrl} alt={t("card.attachmentFullAlt")} className="w-full h-auto max-h-[80vh] object-contain" />
           )}
         </DialogContent>
       </Dialog>

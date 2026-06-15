@@ -4,30 +4,18 @@
 import { Car, ClipboardList, FileText, Pill, Stethoscope } from "lucide-react";
 import type { Task, TaskCategory, TaskStatus } from "./types";
 
-export const STATUS_COLUMNS: { id: TaskStatus; label: string; hint: string }[] = [
-  { id: "open", label: "Open", hint: "Not started" },
-  { id: "doing", label: "Doing", hint: "In progress" },
-  { id: "done", label: "Done", hint: "Completed" },
-];
+// Labels/hints live in messages (`tasks.columns.*`, `tasks.categories.*`, `tasks.recurrence.*`),
+// keyed by these stable ids/values.
+export const STATUS_COLUMN_IDS: TaskStatus[] = ["open", "doing", "done"];
 
-export const categoryMeta: Record<
-  TaskCategory,
-  { label: string; icon: typeof Car; tint: string }
-> = {
-  errand: { label: "Errand", icon: Car, tint: "bg-info/10 text-info" },
-  medical: { label: "Medical", icon: Stethoscope, tint: "bg-accent/10 text-accent" },
-  admin: { label: "Admin", icon: FileText, tint: "bg-muted text-muted-foreground" },
-  refill: { label: "Refill", icon: Pill, tint: "bg-primary/10 text-primary" },
-  visit: { label: "Visit", icon: ClipboardList, tint: "bg-success/10 text-success" },
+export const categoryMeta: Record<TaskCategory, { icon: typeof Car; tint: string }> = {
+  errand: { icon: Car, tint: "bg-info/10 text-info" },
+  medical: { icon: Stethoscope, tint: "bg-accent/10 text-accent" },
+  admin: { icon: FileText, tint: "bg-muted text-muted-foreground" },
+  refill: { icon: Pill, tint: "bg-primary/10 text-primary" },
+  visit: { icon: ClipboardList, tint: "bg-success/10 text-success" },
 };
 
-export const CATEGORY_OPTIONS: { value: TaskCategory; label: string }[] = (
-  Object.keys(categoryMeta) as TaskCategory[]
-).map((value) => ({ value, label: categoryMeta[value].label }));
+export const CATEGORY_VALUES: TaskCategory[] = Object.keys(categoryMeta) as TaskCategory[];
 
-export const RECURRENCE_OPTIONS: { value: Task["recurrence"]; label: string }[] = [
-  { value: "none", label: "Does not repeat" },
-  { value: "daily", label: "Daily" },
-  { value: "weekly", label: "Weekly" },
-  { value: "custom", label: "Custom…" },
-];
+export const RECURRENCE_VALUES: Task["recurrence"][] = ["none", "daily", "weekly", "custom"];

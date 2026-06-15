@@ -1,8 +1,15 @@
 // Pure helpers shared across the Tasks screen.
 
-import { format, isToday, isTomorrow, isYesterday, startOfDay } from "date-fns";
+import { isToday, isTomorrow, isYesterday, startOfDay } from "date-fns";
 import type { UserRole } from "@/components/app-shell/app-shell-context";
 import type { Member, Task, TaskStatus } from "./types";
+
+/** Localized relative-day labels, supplied by the component from messages. */
+export interface RelativeLabels {
+  today: string;
+  tomorrow: string;
+  yesterday: string;
+}
 
 /** Managing tasks is open to active caregiving roles; recipients/read-only view. */
 export function canManageTasks(role: UserRole): boolean {
@@ -19,12 +26,12 @@ export function isOverdue(task: Task, now: Date): boolean {
   return startOfDay(task.due).getTime() < startOfDay(now).getTime();
 }
 
-/** "Today" / "Tomorrow" / "Yesterday" / "Jun 9" — a short due-date label. */
-export function dueLabel(due: Date): string {
-  if (isToday(due)) return "Today";
-  if (isTomorrow(due)) return "Tomorrow";
-  if (isYesterday(due)) return "Yesterday";
-  return format(due, "MMM d");
+/** "Today" / "Tomorrow" / "Yesterday" / "Jun 9" — a short, locale-aware due-date label. */
+export function dueLabel(locale: string, due: Date, labels: RelativeLabels): string {
+  if (isToday(due)) return labels.today;
+  if (isTomorrow(due)) return labels.tomorrow;
+  if (isYesterday(due)) return labels.yesterday;
+  return due.toLocaleDateString(locale, { month: "short", day: "numeric" });
 }
 
 export interface FairShareRow {
@@ -44,31 +51,31 @@ export function fairShare(tasks: Task[], members: Member[]): FairShareRow[] {
 }
 
 /**
- * A gentle, non-judgmental read on how balanced the week is. Returns the headline + whether it's
- * the "balanced" (positive) or "imbalanced" (ask-for-help) tone, for colour treatment.
+ * A gentle, non-judgmental read on how balanced the week is. Returns a stable message KEY (resolved
+ * to localized copy by the panel), the relevant person's first name, and the tone for colour.
  */
-export function fairShareMessage(rows: FairShareRow[]): { text: string; tone: "balanced" | "uneven" } {
+export type FairShareKey = "freshStart" | "carryingALot" | "handledEverything" | "balanced";
+
+export function fairShareMessage(rows: FairShareRow[]): {
+  key: FairShareKey;
+  name?: string;
+  tone: "balanced" | "uneven";
+} {
   const active = rows.filter((r) => r.count > 0);
   const total = rows.reduce((sum, r) => sum + r.count, 0);
   if (total === 0 || active.length === 0) {
-    return { text: "No tasks completed yet this week — a fresh start.", tone: "balanced" };
+    return { key: "freshStart", tone: "balanced" };
   }
   const top = rows[0];
   const share = top.count / total;
   // One person doing well over half the work (and more than one contributor expected) → nudge.
   if (active.length > 1 && share >= 0.5) {
-    return {
-      text: `${firstName(top.member.name)}'s carrying a lot — anyone able to help?`,
-      tone: "uneven",
-    };
+    return { key: "carryingALot", name: firstName(top.member.name), tone: "uneven" };
   }
   if (active.length === 1 && total >= 3) {
-    return {
-      text: `${firstName(top.member.name)}'s handled everything so far — share the load?`,
-      tone: "uneven",
-    };
+    return { key: "handledEverything", name: firstName(top.member.name), tone: "uneven" };
   }
-  return { text: "Nicely balanced this week 💚", tone: "balanced" };
+  return { key: "balanced", tone: "balanced" };
 }
 
 /** Tasks in a column, sorted by their manual order. */

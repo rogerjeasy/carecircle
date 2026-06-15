@@ -1,19 +1,21 @@
 // Pure helpers shared across the Timeline.
 
-import { format, isToday, isYesterday, startOfDay } from "date-fns";
+import { isToday, isYesterday, startOfDay } from "date-fns";
 import type { UserRole } from "@/components/app-shell/app-shell-context";
 import type { TimelineEvent } from "./types";
 
 export type DateRange = "all" | "7d" | "30d";
 
-export function formatDayLabel(date: Date): string {
-  if (isToday(date)) return "Today";
-  if (isYesterday(date)) return "Yesterday";
-  return format(date, "EEE, MMM d");
+// Dates localized via native Intl (project convention). Today/Yesterday come from messages,
+// passed in by the caller so this stays a pure helper.
+export function formatDayLabel(date: Date, locale: string, labels: { today: string; yesterday: string }): string {
+  if (isToday(date)) return labels.today;
+  if (isYesterday(date)) return labels.yesterday;
+  return date.toLocaleDateString(locale, { weekday: "short", month: "short", day: "numeric" });
 }
 
-export function formatTime(date: Date): string {
-  return format(date, "h:mm a");
+export function formatTime(date: Date, locale: string): string {
+  return date.toLocaleTimeString(locale, { hour: "numeric", minute: "2-digit" });
 }
 
 export function groupEventsByDay(events: TimelineEvent[]): Map<string, TimelineEvent[]> {

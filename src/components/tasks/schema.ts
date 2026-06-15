@@ -13,13 +13,15 @@ export interface TaskFormValues {
   recurrence: Recurrence;
 }
 
-export type TaskFormErrors = Partial<Record<keyof TaskFormValues, string>>;
+// Validation produces stable error KEYS (resolved to localized copy by the form via `errors.*`).
+export type TaskErrorKey = "titleRequired" | "titleMax" | "detailsMax";
+export type TaskFormErrors = Partial<Record<keyof TaskFormValues, TaskErrorKey>>;
 
 export function validateTaskForm(values: TaskFormValues): { ok: boolean; errors: TaskFormErrors } {
   const errors: TaskFormErrors = {};
-  if (!values.title.trim()) errors.title = "Give the task a title";
-  if (values.title.trim().length > 140) errors.title = "Keep the title under 140 characters";
-  if (values.details.length > 500) errors.details = "Keep details under 500 characters";
+  if (!values.title.trim()) errors.title = "titleRequired";
+  else if (values.title.trim().length > 140) errors.title = "titleMax";
+  if (values.details.length > 500) errors.details = "detailsMax";
   return { ok: Object.keys(errors).length === 0, errors };
 }
 

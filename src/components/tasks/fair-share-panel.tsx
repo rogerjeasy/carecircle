@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { Bar, BarChart, Cell, LabelList, ResponsiveContainer, XAxis, YAxis } from "recharts";
 import { HandHeart, HeartHandshake } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -33,6 +34,7 @@ function AvatarTick(props: {
 }
 
 export function FairSharePanel({ tasks, className }: { tasks: Task[]; className?: string }) {
+  const t = useTranslations("tasks");
   const { members } = useTaskMembers();
   const membersById = React.useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
   const rows = React.useMemo(() => fairShare(tasks, members), [tasks, members]);
@@ -40,13 +42,17 @@ export function FairSharePanel({ tasks, className }: { tasks: Task[]; className?
   const maxCount = Math.max(1, ...rows.map((r) => r.count));
   const data = rows.map((r) => ({ id: r.member.id, count: r.count, fill: r.member.bar }));
   const Tone = message.tone === "balanced" ? HeartHandshake : HandHeart;
+  const messageText = t(
+    `fairShare.${message.key}` as "fairShare.balanced",
+    message.name ? { name: message.name } : undefined
+  );
 
   return (
     <Card className={cn("h-full", className)}>
       <CardContent className="flex h-full flex-col gap-3 p-4 sm:p-5">
         <div>
-          <h2 className="font-display text-base font-semibold tracking-tight">Fair share this week</h2>
-          <p className="mt-0.5 text-xs text-muted-foreground">Completed tasks by each person.</p>
+          <h2 className="font-display text-base font-semibold tracking-tight">{t("fairShare.title")}</h2>
+          <p className="mt-0.5 text-xs text-muted-foreground">{t("fairShare.subtitle")}</p>
         </div>
 
         <div className="min-h-0 flex-1" aria-hidden="true">
@@ -87,7 +93,7 @@ export function FairSharePanel({ tasks, className }: { tasks: Task[]; className?
         <ul className="sr-only">
           {rows.map((r) => (
             <li key={r.member.id}>
-              {firstName(r.member.name)}: {r.count} completed
+              {t("fairShare.srCompleted", { name: firstName(r.member.name), count: r.count })}
             </li>
           ))}
         </ul>
@@ -99,7 +105,7 @@ export function FairSharePanel({ tasks, className }: { tasks: Task[]; className?
           )}
         >
           <Tone className="h-4 w-4 shrink-0" aria-hidden="true" />
-          <span className="font-medium">{message.text}</span>
+          <span className="font-medium">{messageText}</span>
         </div>
       </CardContent>
     </Card>

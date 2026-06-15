@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { AlertCircle, CalendarDays, GripVertical, MoreVertical, Pencil, Repeat2, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MemberAvatar } from "./member-avatar";
-import { categoryMeta, STATUS_COLUMNS } from "./data";
+import { categoryMeta, STATUS_COLUMN_IDS } from "./data";
 import { useTaskMembers } from "./members-context";
 import { dueLabel, isOverdue } from "./utils";
 import type { Task, TaskStatus } from "./types";
@@ -45,12 +46,20 @@ export function TaskCard({
   draggableProps,
   dragging,
 }: TaskCardProps) {
+  const t = useTranslations("tasks");
+  const locale = useLocale();
   const { byId } = useTaskMembers();
   const cat = categoryMeta[task.category];
   const CatIcon = cat.icon;
   const assignee = byId(task.assigneeId);
   const done = task.status === "done";
   const overdue = isOverdue(task, now);
+  const relLabels = {
+    today: t("relative.today"),
+    tomorrow: t("relative.tomorrow"),
+    yesterday: t("relative.yesterday"),
+  };
+  const recurrenceLabel = t(`recurrence.${task.recurrence}` as "recurrence.none");
 
   return (
     <div
@@ -67,7 +76,7 @@ export function TaskCard({
           checked={done}
           onCheckedChange={onToggleDone}
           disabled={!canManage}
-          aria-label={done ? `Mark "${task.title}" not done` : `Mark "${task.title}" done`}
+          aria-label={done ? t("card.markNotDone", { title: task.title }) : t("card.markDone", { title: task.title })}
           className="mt-0.5"
         />
         <button
@@ -94,25 +103,25 @@ export function TaskCard({
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="-mr-1 -mt-1 h-7 w-7 shrink-0" aria-label={`Options for ${task.title}`}>
+            <Button variant="ghost" size="icon" className="-mr-1 -mt-1 h-7 w-7 shrink-0" aria-label={t("card.options", { title: task.title })}>
               <MoreVertical className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-44">
-            <DropdownMenuLabel>Move to</DropdownMenuLabel>
-            {STATUS_COLUMNS.map((col) => (
+            <DropdownMenuLabel>{t("card.moveTo")}</DropdownMenuLabel>
+            {STATUS_COLUMN_IDS.map((id) => (
               <DropdownMenuItem
-                key={col.id}
-                disabled={!canManage || col.id === task.status}
-                onClick={() => onMove(col.id)}
+                key={id}
+                disabled={!canManage || id === task.status}
+                onClick={() => onMove(id)}
               >
-                {col.label}
+                {t(`columns.${id}.label` as "columns.open.label")}
               </DropdownMenuItem>
             ))}
             <DropdownMenuSeparator />
             <DropdownMenuItem disabled={!canManage} onClick={onEdit}>
               <Pencil className="mr-2 h-4 w-4" />
-              Edit
+              {t("card.edit")}
             </DropdownMenuItem>
             <DropdownMenuItem
               disabled={!canManage}
@@ -120,7 +129,7 @@ export function TaskCard({
               className="text-destructive focus:text-destructive"
             >
               <Trash2 className="mr-2 h-4 w-4" />
-              Delete
+              {t("card.delete")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -130,7 +139,7 @@ export function TaskCard({
       <div className="mt-2.5 flex flex-wrap items-center gap-x-2 gap-y-1.5 pl-7">
         <Badge variant="outline" className={cn("gap-1 border-transparent", cat.tint)}>
           <CatIcon className="h-3 w-3" aria-hidden="true" />
-          {cat.label}
+          {t(`categories.${task.category}` as "categories.errand")}
         </Badge>
 
         {task.due && (
@@ -145,17 +154,19 @@ export function TaskCard({
             ) : (
               <CalendarDays className="h-3 w-3" aria-hidden="true" />
             )}
-            {overdue ? `Overdue · ${dueLabel(task.due)}` : dueLabel(task.due)}
+            {overdue
+              ? t("card.overdue", { date: dueLabel(locale, task.due, relLabels) })
+              : dueLabel(locale, task.due, relLabels)}
           </span>
         )}
 
         {task.recurrence !== "none" && (
           <span
             className="inline-flex items-center gap-1 text-xs text-muted-foreground"
-            title={`Repeats ${task.recurrence}`}
+            title={t("card.repeats", { recurrence: recurrenceLabel })}
           >
             <Repeat2 className="h-3 w-3" aria-hidden="true" />
-            <span className="capitalize">{task.recurrence}</span>
+            <span>{recurrenceLabel}</span>
           </span>
         )}
 

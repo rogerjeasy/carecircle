@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { ListFilter, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CATEGORY_OPTIONS, STATUS_COLUMNS } from "./data";
+import { CATEGORY_VALUES, STATUS_COLUMN_IDS } from "./data";
 import { useTaskMembers } from "./members-context";
 import { firstName } from "./utils";
 import type { TaskCategory, TaskStatus } from "./types";
@@ -34,6 +35,7 @@ export function FiltersBar({
   filters: TaskFilters;
   onChange: (next: TaskFilters) => void;
 }) {
+  const t = useTranslations("tasks");
   const { members } = useTaskMembers();
   const set = (patch: Partial<TaskFilters>) => onChange({ ...filters, ...patch });
 
@@ -41,16 +43,16 @@ export function FiltersBar({
     <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
       <span className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
         <ListFilter className="h-4 w-4" aria-hidden="true" />
-        Filter
+        {t("filters.filter")}
       </span>
 
       <Select value={filters.assignee} onValueChange={(v) => set({ assignee: v })}>
-        <SelectTrigger className="h-9 w-full sm:w-44" aria-label="Filter by assignee">
+        <SelectTrigger className="h-9 w-full sm:w-44" aria-label={t("filters.assignee")}>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all">Everyone</SelectItem>
-          <SelectItem value="unassigned">Unassigned</SelectItem>
+          <SelectItem value="all">{t("filters.everyone")}</SelectItem>
+          <SelectItem value="unassigned">{t("filters.unassigned")}</SelectItem>
           {members.map((m) => (
             <SelectItem key={m.id} value={m.id}>
               {firstName(m.name)}
@@ -60,28 +62,28 @@ export function FiltersBar({
       </Select>
 
       <Select value={filters.category} onValueChange={(v) => set({ category: v as TaskFilters["category"] })}>
-        <SelectTrigger className="h-9 w-full sm:w-40" aria-label="Filter by category">
+        <SelectTrigger className="h-9 w-full sm:w-40" aria-label={t("filters.category")}>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all">All categories</SelectItem>
-          {CATEGORY_OPTIONS.map((c) => (
-            <SelectItem key={c.value} value={c.value}>
-              {c.label}
+          <SelectItem value="all">{t("filters.allCategories")}</SelectItem>
+          {CATEGORY_VALUES.map((c) => (
+            <SelectItem key={c} value={c}>
+              {t(`categories.${c}` as "categories.errand")}
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
 
       <Select value={filters.status} onValueChange={(v) => set({ status: v as TaskFilters["status"] })}>
-        <SelectTrigger className="h-9 w-full sm:w-36" aria-label="Filter by status">
+        <SelectTrigger className="h-9 w-full sm:w-36" aria-label={t("filters.status")}>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all">Any status</SelectItem>
-          {STATUS_COLUMNS.map((s) => (
-            <SelectItem key={s.id} value={s.id}>
-              {s.label}
+          <SelectItem value="all">{t("filters.anyStatus")}</SelectItem>
+          {STATUS_COLUMN_IDS.map((id) => (
+            <SelectItem key={id} value={id}>
+              {t(`columns.${id}.label` as "columns.open.label")}
             </SelectItem>
           ))}
         </SelectContent>
@@ -95,7 +97,7 @@ export function FiltersBar({
           onClick={() => onChange(DEFAULT_FILTERS)}
         >
           <X className="h-4 w-4" />
-          <span className="ml-1">Clear</span>
+          <span className="ml-1">{t("filters.clear")}</span>
         </Button>
       )}
     </div>

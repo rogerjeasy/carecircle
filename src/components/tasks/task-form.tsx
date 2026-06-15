@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { Check, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -14,11 +15,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { FormField, fieldAria } from "./form-field";
-import { CATEGORY_OPTIONS, RECURRENCE_OPTIONS, STATUS_COLUMNS } from "./data";
+import { CATEGORY_VALUES, RECURRENCE_VALUES, STATUS_COLUMN_IDS } from "./data";
 import { useTaskMembers } from "./members-context";
 import { firstName } from "./utils";
 import {
   validateTaskForm,
+  type TaskErrorKey,
   type TaskFormErrors,
   type TaskFormValues,
 } from "./schema";
@@ -38,6 +40,7 @@ const delay = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
 /** The New / Edit task form. Scrolls internally with a sticky footer; hosted in a modal. */
 export function TaskForm({ mode, initial, initialValues, onSubmit, onCancel }: TaskFormProps) {
+  const t = useTranslations("tasks");
   const { members } = useTaskMembers();
   const [values, setValues] = React.useState<TaskFormValues>(() =>
     initial ? taskToValues(initial) : initialValues
@@ -45,6 +48,13 @@ export function TaskForm({ mode, initial, initialValues, onSubmit, onCancel }: T
   const [errors, setErrors] = React.useState<TaskFormErrors>({});
   const [submitting, setSubmitting] = React.useState(false);
   const [success, setSuccess] = React.useState(false);
+
+  // Resolve validation error keys to localized copy (literal calls keep next-intl's typing happy).
+  const errorText: Record<TaskErrorKey, string> = {
+    titleRequired: t("form.errors.titleRequired"),
+    titleMax: t("form.errors.titleMax"),
+    detailsMax: t("form.errors.detailsMax"),
+  };
 
   const update = (patch: Partial<TaskFormValues>) => setValues((v) => ({ ...v, ...patch }));
 
@@ -73,38 +83,38 @@ export function TaskForm({ mode, initial, initialValues, onSubmit, onCancel }: T
       <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4 sm:px-6">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {/* Title */}
-          <FormField htmlFor="title" label="Title" required full error={errors.title}>
+          <FormField htmlFor="title" label={t("form.title")} required full error={errors.title && errorText[errors.title]}>
             <Input
-              {...fieldAria("title", errors.title)}
+              {...fieldAria("title", errors.title && errorText[errors.title])}
               value={values.title}
               onChange={(e) => update({ title: e.target.value })}
-              placeholder="e.g. Pick up prescription refill"
+              placeholder={t("form.titlePlaceholder")}
               className={cn(errors.title && "border-destructive focus-visible:ring-destructive")}
             />
           </FormField>
 
           {/* Details */}
-          <FormField htmlFor="details" label="Details" full hint="Optional" error={errors.details}>
+          <FormField htmlFor="details" label={t("form.details")} full hint={t("form.optional")} error={errors.details && errorText[errors.details]}>
             <Textarea
-              {...fieldAria("details", errors.details, "Optional")}
+              {...fieldAria("details", errors.details && errorText[errors.details], t("form.optional"))}
               value={values.details}
               onChange={(e) => update({ details: e.target.value })}
-              placeholder="Anything helpful for whoever picks this up…"
+              placeholder={t("form.detailsPlaceholder")}
               rows={2}
               className={cn(errors.details && "border-destructive focus-visible:ring-destructive")}
             />
           </FormField>
 
           {/* Category */}
-          <FormField htmlFor="category" label="Category">
+          <FormField htmlFor="category" label={t("form.category")}>
             <Select value={values.category} onValueChange={(v) => update({ category: v as TaskCategory })}>
               <SelectTrigger id="category">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {CATEGORY_OPTIONS.map((c) => (
-                  <SelectItem key={c.value} value={c.value}>
-                    {c.label}
+                {CATEGORY_VALUES.map((c) => (
+                  <SelectItem key={c} value={c}>
+                    {t(`categories.${c}` as "categories.errand")}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -112,7 +122,7 @@ export function TaskForm({ mode, initial, initialValues, onSubmit, onCancel }: T
           </FormField>
 
           {/* Assignee */}
-          <FormField htmlFor="assigneeId" label="Assignee">
+          <FormField htmlFor="assigneeId" label={t("form.assignee")}>
             <Select
               value={values.assigneeId || "unassigned"}
               onValueChange={(v) => update({ assigneeId: v === "unassigned" ? "" : v })}
@@ -121,7 +131,7 @@ export function TaskForm({ mode, initial, initialValues, onSubmit, onCancel }: T
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="unassigned">Unassigned</SelectItem>
+                <SelectItem value="unassigned">{t("form.unassigned")}</SelectItem>
                 {members.map((m) => (
                   <SelectItem key={m.id} value={m.id}>
                     {firstName(m.name)}
@@ -132,7 +142,7 @@ export function TaskForm({ mode, initial, initialValues, onSubmit, onCancel }: T
           </FormField>
 
           {/* Due date */}
-          <FormField htmlFor="due" label="Due date" hint="Optional">
+          <FormField htmlFor="due" label={t("form.dueDate")} hint={t("form.optional")}>
             <Input
               id="due"
               type="date"
@@ -142,15 +152,15 @@ export function TaskForm({ mode, initial, initialValues, onSubmit, onCancel }: T
           </FormField>
 
           {/* Status */}
-          <FormField htmlFor="status" label="Status">
+          <FormField htmlFor="status" label={t("form.status")}>
             <Select value={values.status} onValueChange={(v) => update({ status: v as TaskStatus })}>
               <SelectTrigger id="status">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {STATUS_COLUMNS.map((s) => (
-                  <SelectItem key={s.id} value={s.id}>
-                    {s.label}
+                {STATUS_COLUMN_IDS.map((id) => (
+                  <SelectItem key={id} value={id}>
+                    {t(`columns.${id}.label` as "columns.open.label")}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -158,15 +168,15 @@ export function TaskForm({ mode, initial, initialValues, onSubmit, onCancel }: T
           </FormField>
 
           {/* Recurrence */}
-          <FormField htmlFor="recurrence" label="Repeat" full>
+          <FormField htmlFor="recurrence" label={t("form.repeat")} full>
             <Select value={values.recurrence} onValueChange={(v) => update({ recurrence: v as Recurrence })}>
               <SelectTrigger id="recurrence">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {RECURRENCE_OPTIONS.map((r) => (
-                  <SelectItem key={r.value} value={r.value}>
-                    {r.label}
+                {RECURRENCE_VALUES.map((r) => (
+                  <SelectItem key={r} value={r}>
+                    {t(`recurrence.${r}` as "recurrence.none")}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -179,21 +189,21 @@ export function TaskForm({ mode, initial, initialValues, onSubmit, onCancel }: T
       <div className="shrink-0 border-t bg-background px-5 py-3 sm:px-6">
         <div className="flex items-center justify-end gap-2">
           <Button type="button" variant="outline" onClick={onCancel} disabled={submitting || success}>
-            Cancel
+            {t("form.cancel")}
           </Button>
           <Button type="submit" disabled={submitting || success} className="min-w-[9rem]">
             {success ? (
               <>
                 <Check className="h-4 w-4" />
-                <span className="ml-1">Saved</span>
+                <span className="ml-1">{t("form.saved")}</span>
               </>
             ) : submitting ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" />
-                <span className="ml-1">Saving…</span>
+                <span className="ml-1">{t("form.saving")}</span>
               </>
             ) : (
-              <span>{mode === "edit" ? "Save changes" : "Create task"}</span>
+              <span>{mode === "edit" ? t("form.saveChanges") : t("form.createTask")}</span>
             )}
           </Button>
         </div>
