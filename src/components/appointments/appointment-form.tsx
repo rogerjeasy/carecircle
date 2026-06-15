@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { Check, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -13,10 +14,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { FormField, fieldAria } from "./form-field";
-import { APPOINTMENT_KINDS, statusMeta } from "./data";
+import { APPOINTMENT_KIND_VALUES } from "./data";
 import { useApptMembers } from "./members-context";
 import { firstName } from "./utils";
 import {
+  buildAppointmentFormSchema,
   emptyValues,
   validateAppointmentForm,
   type AppointmentFormErrors,
@@ -40,6 +42,7 @@ const delay = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
 /** The Add / Edit appointment form. Scrolls internally with a sticky footer; hosted in a modal. */
 export function AppointmentForm({ mode, initial, defaultDate, onSubmit, onCancel }: AppointmentFormProps) {
+  const t = useTranslations("appointments");
   const { members } = useApptMembers();
   const [values, setValues] = React.useState<AppointmentFormValues>(() =>
     initial ? appointmentToValues(initial) : emptyValues(defaultDate)
@@ -47,6 +50,24 @@ export function AppointmentForm({ mode, initial, defaultDate, onSubmit, onCancel
   const [errors, setErrors] = React.useState<AppointmentFormErrors>({});
   const [submitting, setSubmitting] = React.useState(false);
   const [success, setSuccess] = React.useState(false);
+
+  // Build the zod schema with localized messages (rebuilt only when the language changes).
+  const schema = React.useMemo(
+    () =>
+      buildAppointmentFormSchema({
+        title: t("form.errors.title"),
+        kind: t("form.errors.kind"),
+        provider: t("form.errors.provider"),
+        location: t("form.errors.location"),
+        date: t("form.errors.date"),
+        time: t("form.errors.time"),
+        durationNumber: t("form.errors.durationNumber"),
+        durationInt: t("form.errors.durationInt"),
+        durationMin: t("form.errors.durationMin"),
+        durationMax: t("form.errors.durationMax"),
+      }),
+    [t]
+  );
 
   const update = React.useCallback((patch: Partial<AppointmentFormValues>) => {
     setValues((v) => ({ ...v, ...patch }));
@@ -58,7 +79,7 @@ export function AppointmentForm({ mode, initial, defaultDate, onSubmit, onCancel
     e.preventDefault();
     if (submitting || success) return;
 
-    const { ok, errors: nextErrors } = validateAppointmentForm(values);
+    const { ok, errors: nextErrors } = validateAppointmentForm(values, schema);
     setErrors(nextErrors);
     if (!ok) {
       const firstKey = Object.keys(nextErrors)[0];
@@ -82,26 +103,26 @@ export function AppointmentForm({ mode, initial, defaultDate, onSubmit, onCancel
       <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4 sm:px-6">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {/* Title */}
-          <FormField htmlFor="title" label="Title" required full error={err("title")}>
+          <FormField htmlFor="title" label={t("form.title")} required full error={err("title")}>
             <Input
               {...fieldAria("title", err("title"))}
               value={values.title}
               onChange={(e) => update({ title: e.target.value })}
-              placeholder="e.g. Cardiology follow-up"
+              placeholder={t("form.titlePlaceholder")}
               className={cn(err("title") && "border-destructive focus-visible:ring-destructive")}
             />
           </FormField>
 
           {/* Type */}
-          <FormField htmlFor="kind" label="Type" required error={err("kind")}>
+          <FormField htmlFor="kind" label={t("form.type")} required error={err("kind")}>
             <Select value={values.kind} onValueChange={(v) => update({ kind: v as AppointmentKind })}>
               <SelectTrigger id="kind">
-                <SelectValue placeholder="Choose a type" />
+                <SelectValue placeholder={t("form.typePlaceholder")} />
               </SelectTrigger>
               <SelectContent>
-                {APPOINTMENT_KINDS.map((k) => (
-                  <SelectItem key={k.value} value={k.value}>
-                    {k.label}
+                {APPOINTMENT_KIND_VALUES.map((k) => (
+                  <SelectItem key={k} value={k}>
+                    {t(`kinds.${k}` as "kinds.checkup")}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -109,7 +130,7 @@ export function AppointmentForm({ mode, initial, defaultDate, onSubmit, onCancel
           </FormField>
 
           {/* Status */}
-          <FormField htmlFor="status" label="Status" error={err("status")}>
+          <FormField htmlFor="status" label={t("form.status")} error={err("status")}>
             <Select value={values.status} onValueChange={(v) => update({ status: v as AppointmentStatus })}>
               <SelectTrigger id="status">
                 <SelectValue />
@@ -117,7 +138,7 @@ export function AppointmentForm({ mode, initial, defaultDate, onSubmit, onCancel
               <SelectContent>
                 {STATUS_OPTIONS.map((s) => (
                   <SelectItem key={s} value={s}>
-                    {statusMeta[s].label}
+                    {t(`status.${s}` as "status.scheduled")}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -125,29 +146,29 @@ export function AppointmentForm({ mode, initial, defaultDate, onSubmit, onCancel
           </FormField>
 
           {/* Provider */}
-          <FormField htmlFor="provider" label="Provider" required error={err("provider")}>
+          <FormField htmlFor="provider" label={t("form.provider")} required error={err("provider")}>
             <Input
               {...fieldAria("provider", err("provider"))}
               value={values.provider}
               onChange={(e) => update({ provider: e.target.value })}
-              placeholder="e.g. Dr. Chen"
+              placeholder={t("form.providerPlaceholder")}
               className={cn(err("provider") && "border-destructive focus-visible:ring-destructive")}
             />
           </FormField>
 
           {/* Location */}
-          <FormField htmlFor="location" label="Location" error={err("location")}>
+          <FormField htmlFor="location" label={t("form.location")} error={err("location")}>
             <Input
               {...fieldAria("location", err("location"))}
               value={values.location}
               onChange={(e) => update({ location: e.target.value })}
-              placeholder="e.g. City Heart Clinic · Suite 4"
+              placeholder={t("form.locationPlaceholder")}
               className={cn(err("location") && "border-destructive focus-visible:ring-destructive")}
             />
           </FormField>
 
           {/* Date */}
-          <FormField htmlFor="date" label="Date" required error={err("date")}>
+          <FormField htmlFor="date" label={t("form.date")} required error={err("date")}>
             <Input
               {...fieldAria("date", err("date"))}
               type="date"
@@ -158,7 +179,7 @@ export function AppointmentForm({ mode, initial, defaultDate, onSubmit, onCancel
           </FormField>
 
           {/* Time */}
-          <FormField htmlFor="time" label="Time" required error={err("time")}>
+          <FormField htmlFor="time" label={t("form.time")} required error={err("time")}>
             <Input
               {...fieldAria("time", err("time"))}
               type="time"
@@ -169,9 +190,9 @@ export function AppointmentForm({ mode, initial, defaultDate, onSubmit, onCancel
           </FormField>
 
           {/* Duration */}
-          <FormField htmlFor="durationMin" label="Duration" hint="Minutes" error={err("durationMin")}>
+          <FormField htmlFor="durationMin" label={t("form.duration")} hint={t("form.durationHint")} error={err("durationMin")}>
             <Input
-              {...fieldAria("durationMin", err("durationMin"), "Minutes")}
+              {...fieldAria("durationMin", err("durationMin"), t("form.durationHint"))}
               type="number"
               inputMode="numeric"
               min={5}
@@ -185,7 +206,7 @@ export function AppointmentForm({ mode, initial, defaultDate, onSubmit, onCancel
           </FormField>
 
           {/* Assigned to */}
-          <FormField htmlFor="assignedMemberId" label="Assigned to" full hint="Who is taking them?">
+          <FormField htmlFor="assignedMemberId" label={t("form.assignedTo")} full hint={t("form.assignedHint")}>
             <Select
               value={values.assignedMemberId || "unassigned"}
               onValueChange={(v) => update({ assignedMemberId: v === "unassigned" ? "" : v })}
@@ -194,7 +215,7 @@ export function AppointmentForm({ mode, initial, defaultDate, onSubmit, onCancel
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="unassigned">Unassigned</SelectItem>
+                <SelectItem value="unassigned">{t("form.unassigned")}</SelectItem>
                 {members.map((m) => (
                   <SelectItem key={m.id} value={m.id}>
                     {m.name} ({firstName(m.name)})
@@ -209,24 +230,24 @@ export function AppointmentForm({ mode, initial, defaultDate, onSubmit, onCancel
       {/* Sticky footer */}
       <div className="shrink-0 border-t bg-background px-5 py-3 sm:px-6">
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs text-muted-foreground">Required fields are marked with *</p>
+          <p className="text-xs text-muted-foreground">{t("form.requiredNote")}</p>
           <div className="flex items-center justify-end gap-2">
             <Button type="button" variant="outline" onClick={onCancel} disabled={submitting || success}>
-              Cancel
+              {t("form.cancel")}
             </Button>
             <Button type="submit" disabled={submitting || success} className="min-w-[10rem]">
               {success ? (
                 <>
                   <Check className="h-4 w-4" />
-                  <span className="ml-1">Saved</span>
+                  <span className="ml-1">{t("form.saved")}</span>
                 </>
               ) : submitting ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" />
-                  <span className="ml-1">Saving…</span>
+                  <span className="ml-1">{t("form.saving")}</span>
                 </>
               ) : (
-                <span>{mode === "edit" ? "Save changes" : "Save appointment"}</span>
+                <span>{mode === "edit" ? t("form.saveChanges") : t("form.saveAppointment")}</span>
               )}
             </Button>
           </div>

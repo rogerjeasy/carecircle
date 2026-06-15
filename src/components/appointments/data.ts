@@ -12,33 +12,34 @@ import {
 } from "lucide-react";
 import type { AppointmentKind, AppointmentStatus } from "./types";
 
-export const APPOINTMENT_KINDS: { value: AppointmentKind; label: string }[] = [
-  { value: "checkup", label: "Check-up" },
-  { value: "specialist", label: "Specialist" },
-  { value: "lab", label: "Lab / bloods" },
-  { value: "imaging", label: "Imaging / scan" },
-  { value: "therapy", label: "Therapy" },
-  { value: "dental", label: "Dental" },
-  { value: "other", label: "Other" },
+// Labels live in messages (`appointments.kinds.*` / `appointments.status.*`), keyed by these values.
+export const APPOINTMENT_KIND_VALUES: AppointmentKind[] = [
+  "checkup",
+  "specialist",
+  "lab",
+  "imaging",
+  "therapy",
+  "dental",
+  "other",
 ];
 
-export const kindMeta: Record<AppointmentKind, { icon: typeof Stethoscope; tint: string; label: string }> = {
-  checkup: { icon: Stethoscope, tint: "bg-primary/10 text-primary", label: "Check-up" },
-  specialist: { icon: HeartPulse, tint: "bg-accent/10 text-accent", label: "Specialist" },
-  lab: { icon: FlaskConical, tint: "bg-info/10 text-info", label: "Lab / bloods" },
-  imaging: { icon: ScanLine, tint: "bg-info/10 text-info", label: "Imaging / scan" },
-  therapy: { icon: Activity, tint: "bg-success/10 text-success", label: "Therapy" },
-  dental: { icon: Smile, tint: "bg-warning/10 text-warning", label: "Dental" },
-  other: { icon: CalendarClock, tint: "bg-muted text-muted-foreground", label: "Other" },
+export const kindMeta: Record<AppointmentKind, { icon: typeof Stethoscope; tint: string }> = {
+  checkup: { icon: Stethoscope, tint: "bg-primary/10 text-primary" },
+  specialist: { icon: HeartPulse, tint: "bg-accent/10 text-accent" },
+  lab: { icon: FlaskConical, tint: "bg-info/10 text-info" },
+  imaging: { icon: ScanLine, tint: "bg-info/10 text-info" },
+  therapy: { icon: Activity, tint: "bg-success/10 text-success" },
+  dental: { icon: Smile, tint: "bg-warning/10 text-warning" },
+  other: { icon: CalendarClock, tint: "bg-muted text-muted-foreground" },
 };
 
 export const statusMeta: Record<
   AppointmentStatus,
-  { label: string; variant: "secondary" | "info" | "warning" | "success" | "outline"; dot: string }
+  { variant: "secondary" | "info" | "warning" | "success" | "outline"; dot: string }
 > = {
-  scheduled: { label: "Scheduled", variant: "secondary", dot: "bg-muted-foreground" },
-  confirmed: { label: "Confirmed", variant: "info", dot: "bg-info" },
-  "needs-prep": { label: "Needs prep", variant: "warning", dot: "bg-warning" },
-  completed: { label: "Completed", variant: "success", dot: "bg-success" },
-  cancelled: { label: "Cancelled", variant: "outline", dot: "bg-muted-foreground" },
+  scheduled: { variant: "secondary", dot: "bg-muted-foreground" },
+  confirmed: { variant: "info", dot: "bg-info" },
+  "needs-prep": { variant: "warning", dot: "bg-warning" },
+  completed: { variant: "success", dot: "bg-success" },
+  cancelled: { variant: "outline", dot: "bg-muted-foreground" },
 };

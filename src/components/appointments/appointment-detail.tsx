@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import {
   Ban,
   CalendarClock,
@@ -45,7 +46,7 @@ import { AssignedMember } from "./member-avatar";
 import { StatusBadge } from "./status-badge";
 import { kindMeta } from "./data";
 import { useApptMembers } from "./members-context";
-import { dateTimeLabel, firstName, prepProgress } from "./utils";
+import { firstName, prepProgress, useApptDates } from "./utils";
 import type { Appointment, PrepQuestion } from "./types";
 
 export interface AppointmentDetailProps {
@@ -69,6 +70,8 @@ export function AppointmentDetail({
   onEdit,
   onPostToTimeline,
 }: AppointmentDetailProps) {
+  const t = useTranslations("appointments");
+  const { dateTimeLabel } = useApptDates();
   const { members, byId } = useApptMembers();
   const Icon = kindMeta[appt.kind].icon;
   const member = byId(appt.assignedMemberId);
@@ -124,14 +127,14 @@ export function AppointmentDetail({
           <span className="min-w-0 truncate">{appt.title}</span>
         </span>
       }
-      description={kindMeta[appt.kind].label}
+      description={t(`kinds.${appt.kind}` as "kinds.checkup")}
       headerAccessory={
         <div className="flex flex-wrap items-center gap-2 pt-1">
           <StatusBadge status={appt.status} />
           {appt.postedToTimeline && (
             <span className="inline-flex items-center gap-1 text-xs text-success">
               <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
-              On timeline
+              {t("detail.onTimeline")}
             </span>
           )}
         </div>
@@ -141,15 +144,15 @@ export function AppointmentDetail({
       <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-5 py-4 sm:px-6">
         {/* Key info */}
         <div className="space-y-2.5 text-sm">
-          <InfoRow icon={Stethoscope} label="Provider">
+          <InfoRow icon={Stethoscope} label={t("detail.provider")}>
             {appt.provider}
           </InfoRow>
-          <InfoRow icon={CalendarClock} label="When">
+          <InfoRow icon={CalendarClock} label={t("detail.when")}>
             <span className="font-medium text-foreground">{dateTimeLabel(appt.start)}</span>
-            <span className="text-muted-foreground"> · {appt.durationMin} min</span>
+            <span className="text-muted-foreground"> · {t("detail.durationMin", { min: appt.durationMin })}</span>
           </InfoRow>
           {appt.location && (
-            <InfoRow icon={MapPin} label="Location">
+            <InfoRow icon={MapPin} label={t("detail.location")}>
               {appt.location}
             </InfoRow>
           )}
@@ -158,7 +161,7 @@ export function AppointmentDetail({
         {/* Assigned-to selector */}
         <div className="space-y-2">
           <Label htmlFor="assign" className="text-sm font-semibold">
-            Assigned to
+            {t("detail.assignedTo")}
           </Label>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <AssignedMember member={member} />
@@ -171,7 +174,7 @@ export function AppointmentDetail({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="unassigned">Unassigned</SelectItem>
+                  <SelectItem value="unassigned">{t("detail.unassigned")}</SelectItem>
                   {members.map((m) => (
                     <SelectItem key={m.id} value={m.id}>
                       {firstName(m.name)}
@@ -185,7 +188,7 @@ export function AppointmentDetail({
 
         {appt.notes && (
           <div className="rounded-xl bg-muted/50 p-3 text-sm">
-            <p className="mb-1 text-xs font-medium text-muted-foreground">Notes</p>
+            <p className="mb-1 text-xs font-medium text-muted-foreground">{t("detail.notes")}</p>
             <p className="whitespace-pre-wrap text-foreground">{appt.notes}</p>
           </div>
         )}
@@ -193,17 +196,17 @@ export function AppointmentDetail({
         <Separator />
 
         {/* Prep questions */}
-        <section className="space-y-3" aria-label="Prep questions">
+        <section className="space-y-3" aria-label={t("detail.prep")}>
           <div className="flex items-center gap-2">
             <ListChecks className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-            <h3 className="text-sm font-semibold">Prep questions</h3>
+            <h3 className="text-sm font-semibold">{t("detail.prep")}</h3>
             {prep.total > 0 && (
               <span className="text-xs tabular-nums text-muted-foreground">
-                {prep.done}/{prep.total} ready
+                {t("detail.prepReady", { done: prep.done, total: prep.total })}
               </span>
             )}
           </div>
-          <p className="text-xs text-muted-foreground">Things to ask the doctor at this visit.</p>
+          <p className="text-xs text-muted-foreground">{t("detail.prepHint")}</p>
 
           {appt.prep.length > 0 ? (
             <ul className="space-y-1.5">
@@ -232,7 +235,7 @@ export function AppointmentDetail({
                     <button
                       type="button"
                       onClick={() => removePrep(q.id)}
-                      aria-label={`Remove "${q.text}"`}
+                      aria-label={t("detail.removeQuestion", { text: q.text })}
                       className="shrink-0 rounded-md p-0.5 text-muted-foreground transition-colors hover:text-destructive focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
@@ -243,7 +246,7 @@ export function AppointmentDetail({
             </ul>
           ) : (
             <p className="rounded-lg border border-dashed px-3 py-3 text-sm text-muted-foreground">
-              No questions yet{canManage ? " — add one below." : "."}
+              {canManage ? t("detail.noQuestionsManage") : t("detail.noQuestions")}
             </p>
           )}
 
@@ -258,13 +261,13 @@ export function AppointmentDetail({
                     addPrep();
                   }
                 }}
-                placeholder="Add a question to ask…"
-                aria-label="Add a prep question"
+                placeholder={t("detail.addQuestionPlaceholder")}
+                aria-label={t("detail.addQuestionAria")}
                 className="h-10"
               />
               <Button type="button" variant="outline" onClick={addPrep} disabled={!newPrep.trim()}>
                 <Plus className="h-4 w-4" />
-                <span className="ml-1 hidden sm:inline">Add</span>
+                <span className="ml-1 hidden sm:inline">{t("detail.add")}</span>
               </Button>
             </div>
           )}
@@ -273,26 +276,24 @@ export function AppointmentDetail({
         <Separator />
 
         {/* Visit summary */}
-        <section className="space-y-3" aria-label="Visit summary">
+        <section className="space-y-3" aria-label={t("detail.visitSummary")}>
           <div className="flex items-center gap-2">
             <NotebookPen className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-            <h3 className="text-sm font-semibold">Visit summary</h3>
+            <h3 className="text-sm font-semibold">{t("detail.visitSummary")}</h3>
           </div>
           <p className="text-xs text-muted-foreground">
-            Fill this in after the visit, then share it with the family on the timeline.
+            {t("detail.visitSummaryHint")}
           </p>
           <Textarea
             value={summary}
             onChange={(e) => setSummary(e.target.value)}
             disabled={!canManage}
-            placeholder="What happened at the visit? Outcomes, changes, next steps…"
+            placeholder={t("detail.summaryPlaceholder")}
             rows={4}
           />
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs text-muted-foreground">
-              {appt.postedToTimeline
-                ? "Shared with the family timeline."
-                : "Posting adds a note to the shared timeline."}
+              {appt.postedToTimeline ? t("detail.sharedNote") : t("detail.postingNote")}
             </p>
             <GatedControl canManage={canManage}>
               <Button
@@ -305,17 +306,17 @@ export function AppointmentDetail({
                 {savingSummary ? (
                   <>
                     <Check className="h-4 w-4 animate-pulse motion-reduce:animate-none" />
-                    <span className="ml-1">Saving…</span>
+                    <span className="ml-1">{t("detail.saving")}</span>
                   </>
                 ) : appt.postedToTimeline ? (
                   <>
                     <Send className="h-4 w-4" />
-                    <span className="ml-1">Update &amp; re-post</span>
+                    <span className="ml-1">{t("detail.updateRepost")}</span>
                   </>
                 ) : (
                   <>
                     <Send className="h-4 w-4" />
-                    <span className="ml-1">Save &amp; post to timeline</span>
+                    <span className="ml-1">{t("detail.saveAndPost")}</span>
                   </>
                 )}
               </Button>
@@ -335,19 +336,19 @@ export function AppointmentDetail({
               onClick={() => setConfirmCancel(true)}
             >
               <Ban className="h-4 w-4" />
-              <span className="ml-1">Cancel appointment</span>
+              <span className="ml-1">{t("detail.cancelAppointment")}</span>
             </Button>
           ) : (
             <span />
           )}
           <div className="flex items-center gap-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Close
+              {t("detail.close")}
             </Button>
             <GatedControl canManage={canManage}>
               <Button type="button" onClick={onEdit}>
                 <Pencil className="h-4 w-4" />
-                <span className="ml-1">Edit</span>
+                <span className="ml-1">{t("detail.edit")}</span>
               </Button>
             </GatedControl>
           </div>
@@ -358,20 +359,20 @@ export function AppointmentDetail({
       <AlertDialog open={confirmCancel} onOpenChange={setConfirmCancel}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Cancel this appointment?</AlertDialogTitle>
+            <AlertDialogTitle>{t("detail.confirmCancelTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              “{appt.title}” will be marked cancelled. You can still see it in the Past list.
+              {t("detail.confirmCancelBody", { title: appt.title })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Keep it</AlertDialogCancel>
+            <AlertDialogCancel>{t("detail.keepIt")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 onPatch({ status: "cancelled" });
                 setConfirmCancel(false);
               }}
             >
-              Cancel appointment
+              {t("detail.confirmCancel")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

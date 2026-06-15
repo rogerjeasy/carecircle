@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { statusMeta } from "./data";
@@ -13,6 +14,7 @@ export function StatusBadge({
   status: AppointmentStatus;
   className?: string;
 }) {
+  const t = useTranslations("appointments");
   const meta = statusMeta[status];
   return (
     <Badge
@@ -20,7 +22,7 @@ export function StatusBadge({
       className={cn("gap-1.5", status === "cancelled" && "text-muted-foreground", className)}
     >
       <span className={cn("h-1.5 w-1.5 rounded-full", meta.dot)} aria-hidden="true" />
-      {meta.label}
+      {t(`status.${status}` as "status.scheduled")}
     </Badge>
   );
 }

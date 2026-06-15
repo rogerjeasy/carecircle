@@ -1,5 +1,6 @@
 "use client";
 
+import { useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
 import { kindMeta } from "./data";
 import { timeLabel } from "./utils";
@@ -18,6 +19,7 @@ export function AppointmentChip({
   onClick?: () => void;
   className?: string;
 }) {
+  const locale = useLocale();
   const cancelled = appt.status === "cancelled";
   return (
     <button
@@ -26,7 +28,7 @@ export function AppointmentChip({
         e.stopPropagation();
         onClick?.();
       }}
-      title={`${timeLabel(appt.start)} · ${appt.title}`}
+      title={`${timeLabel(locale, appt.start)} · ${appt.title}`}
       className={cn(
         "flex w-full items-center gap-1 rounded-md bg-muted/70 px-1.5 py-0.5 text-left text-[11px] leading-tight transition-colors hover:bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         cancelled && "opacity-60",
@@ -37,7 +39,7 @@ export function AppointmentChip({
         className={cn("h-1.5 w-1.5 shrink-0 rounded-full", kindMeta[appt.kind].tint.split(" ")[0])}
         aria-hidden="true"
       />
-      <span className="shrink-0 tabular-nums text-muted-foreground">{timeLabel(appt.start)}</span>
+      <span className="shrink-0 tabular-nums text-muted-foreground">{timeLabel(locale, appt.start)}</span>
       <span className={cn("min-w-0 flex-1 truncate font-medium", cancelled && "line-through")}>
         {appt.title}
       </span>

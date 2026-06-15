@@ -19,30 +19,48 @@ export interface AppointmentFormValues {
   status: AppointmentStatus;
 }
 
-export const appointmentFormSchema = z.object({
-  title: z.string().trim().min(1, "Give the appointment a title"),
-  kind: z.string().min(1, "Choose a type"),
-  provider: z.string().trim().min(1, "Who is the provider?"),
-  location: z.string().trim().max(120, "Keep this under 120 characters").optional().or(z.literal("")),
-  date: z.string().min(1, "Pick a date"),
-  time: z.string().min(1, "Pick a time"),
-  durationMin: z
-    .number({ message: "Enter a number" })
-    .int("Use whole minutes")
-    .min(5, "At least 5 minutes")
-    .max(480, "That seems too long"),
-  assignedMemberId: z.string(),
-  status: z.string().min(1),
-});
+/** Localized validation messages — passed in as plain strings (see `form.errors.*`). */
+export interface AppointmentFormMessages {
+  title: string;
+  kind: string;
+  provider: string;
+  location: string;
+  date: string;
+  time: string;
+  durationNumber: string;
+  durationInt: string;
+  durationMin: string;
+  durationMax: string;
+}
 
+/** Build the zod schema with localized messages (the medications-form pattern). */
+export function buildAppointmentFormSchema(m: AppointmentFormMessages) {
+  return z.object({
+    title: z.string().trim().min(1, m.title),
+    kind: z.string().min(1, m.kind),
+    provider: z.string().trim().min(1, m.provider),
+    location: z.string().trim().max(120, m.location).optional().or(z.literal("")),
+    date: z.string().min(1, m.date),
+    time: z.string().min(1, m.time),
+    durationMin: z
+      .number({ message: m.durationNumber })
+      .int(m.durationInt)
+      .min(5, m.durationMin)
+      .max(480, m.durationMax),
+    assignedMemberId: z.string(),
+    status: z.string().min(1),
+  });
+}
+
+export type AppointmentFormSchema = ReturnType<typeof buildAppointmentFormSchema>;
 export type AppointmentFormErrors = Record<string, string>;
 
-/** Validate, returning a flat `{ field: message }` map for inline display. */
-export function validateAppointmentForm(values: AppointmentFormValues): {
-  ok: boolean;
-  errors: AppointmentFormErrors;
-} {
-  const result = appointmentFormSchema.safeParse(values);
+/** Validate against a prebuilt schema, returning a flat `{ field: message }` map for inline display. */
+export function validateAppointmentForm(
+  values: AppointmentFormValues,
+  schema: AppointmentFormSchema
+): { ok: boolean; errors: AppointmentFormErrors } {
+  const result = schema.safeParse(values);
   if (result.success) return { ok: true, errors: {} };
   const errors: AppointmentFormErrors = {};
   for (const issue of result.error.issues) {

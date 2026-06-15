@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { ResponsiveModal } from "./responsive-modal";
 import { AppointmentForm } from "./appointment-form";
 import type { AppointmentFormValues } from "./schema";
@@ -23,16 +24,13 @@ export function AppointmentFormModal({
   defaultDate,
   onSubmit,
 }: AppointmentFormModalProps) {
+  const t = useTranslations("appointments");
   return (
     <ResponsiveModal
       open={open}
       onOpenChange={onOpenChange}
-      title={mode === "edit" ? "Edit appointment" : "Add appointment"}
-      description={
-        mode === "edit"
-          ? "Update the details, time, and who's taking them."
-          : "Schedule a visit and assign who's taking them."
-      }
+      title={mode === "edit" ? t("form.modalEditTitle") : t("form.modalAddTitle")}
+      description={mode === "edit" ? t("form.modalEditDesc") : t("form.modalAddDesc")}
     >
       <AppointmentForm
         mode={mode}

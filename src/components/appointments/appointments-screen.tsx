@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { CalendarDays, List, Lock, Plus } from "lucide-react";
 import { useAppShell } from "@/components/app-shell/app-shell-context";
@@ -42,6 +43,7 @@ function valuesToPayload(values: AppointmentFormValues) {
 
 /** The Appointments screen: Calendar / List toggle over the active circle's real appointments. */
 export function AppointmentsScreen({ initial }: AppointmentsScreenProps) {
+  const t = useTranslations("appointments");
   const { role } = useAppShell();
   const canManage = canManageAppointments(role);
 
@@ -67,11 +69,11 @@ export function AppointmentsScreen({ initial }: AppointmentsScreenProps) {
       void patchAppointment(fd).then((res) => {
         if (!res.ok) {
           setAppointments(prev);
-          toast.error(res.error ?? "Couldn't save the change");
+          toast.error(res.error ?? t("toasts.saveChangeFailed"));
         }
       });
     },
-    [appointments]
+    [appointments, t]
   );
 
   const handleSubmit = async (values: AppointmentFormValues) => {
@@ -88,10 +90,10 @@ export function AppointmentsScreen({ initial }: AppointmentsScreenProps) {
       const res = await updateAppointment(fd);
       if (res.ok) {
         setAppointments((p) => p.map((a) => (a.id === original.id ? res.data : a)));
-        toast.success(`${res.data.title} updated`);
+        toast.success(t("toasts.updated", { title: res.data.title }));
       } else {
         setAppointments((p) => p.map((a) => (a.id === original.id ? original : a)));
-        toast.error(res.error ?? "Couldn't save the appointment");
+        toast.error(res.error ?? t("toasts.saveFailed"));
       }
     } else {
       const tempId = `appt-temp-${Date.now()}`;
@@ -102,10 +104,10 @@ export function AppointmentsScreen({ initial }: AppointmentsScreenProps) {
       const res = await createAppointment(fd);
       if (res.ok) {
         setAppointments((p) => p.map((a) => (a.id === tempId ? res.data : a)));
-        toast.success(`${res.data.title} added`, { description: "Scheduled and added to the calendar." });
+        toast.success(t("toasts.added", { title: res.data.title }), { description: t("toasts.addedDescription") });
       } else {
         setAppointments((p) => p.filter((a) => a.id !== tempId));
-        toast.error(res.error ?? "Couldn't add the appointment");
+        toast.error(res.error ?? t("toasts.addFailed"));
       }
     }
   };
@@ -116,22 +118,22 @@ export function AppointmentsScreen({ initial }: AppointmentsScreenProps) {
         {/* Header */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
-            <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">Appointments</h1>
+            <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">{t("title")}</h1>
             <p className="mt-1 text-muted-foreground">
-              Plan {recipientName ? `${recipientName}'s` : "upcoming"} visits, prep questions, and who&apos;s taking them.
+              {recipientName ? t("subtitleNamed", { name: recipientName }) : t("subtitleGeneric")}
             </p>
           </div>
           <div className="flex items-center gap-2">
             {!canManage && (
               <Badge variant="secondary" className="gap-1.5">
                 <Lock className="h-3 w-3" aria-hidden="true" />
-                View only
+                {t("viewOnly")}
               </Badge>
             )}
             <GatedControl canManage={canManage}>
               <Button onClick={() => setModal({ mode: "add" })}>
                 <Plus className="h-4 w-4" />
-                <span className="ml-1">Add appointment</span>
+                <span className="ml-1">{t("addAppointment")}</span>
               </Button>
             </GatedControl>
           </div>
@@ -142,11 +144,11 @@ export function AppointmentsScreen({ initial }: AppointmentsScreenProps) {
           <TabsList className="w-full max-w-xs">
             <TabsTrigger value="calendar" className="flex-1">
               <CalendarDays className="h-4 w-4" aria-hidden="true" />
-              Calendar
+              {t("tabs.calendar")}
             </TabsTrigger>
             <TabsTrigger value="list" className="flex-1">
               <List className="h-4 w-4" aria-hidden="true" />
-              List
+              {t("tabs.list")}
             </TabsTrigger>
           </TabsList>
 
@@ -187,8 +189,8 @@ export function AppointmentsScreen({ initial }: AppointmentsScreenProps) {
               setModal({ mode: "edit", appt });
             }}
             onPostToTimeline={() =>
-              toast.success("Posted to timeline", {
-                description: `${openAppt.title} summary shared with the family.`,
+              toast.success(t("toasts.postedToTimeline"), {
+                description: t("toasts.postedDescription", { title: openAppt.title }),
               })
             }
           />

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Clock, ListChecks, MapPin, Stethoscope } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
@@ -7,7 +8,7 @@ import { AssignedMember } from "./member-avatar";
 import { StatusBadge } from "./status-badge";
 import { kindMeta } from "./data";
 import { useApptMembers } from "./members-context";
-import { dateTimeLabel, prepProgress } from "./utils";
+import { prepProgress, useApptDates } from "./utils";
 import type { Appointment } from "./types";
 
 /**
@@ -15,6 +16,8 @@ import type { Appointment } from "./types";
  * member ("Paolo is taking him"), and a prep-readiness hint. The whole card opens the detail view.
  */
 export function AppointmentCard({ appt, onOpen }: { appt: Appointment; onOpen: () => void }) {
+  const t = useTranslations("appointments");
+  const { dateTimeLabel } = useApptDates();
   const { byId } = useApptMembers();
   const Icon = kindMeta[appt.kind].icon;
   const member = byId(appt.assignedMemberId);
@@ -68,7 +71,7 @@ export function AppointmentCard({ appt, onOpen }: { appt: Appointment; onOpen: (
                 "flex shrink-0 items-center gap-1 text-xs tabular-nums",
                 prep.done === prep.total ? "text-success" : "text-muted-foreground"
               )}
-              title={`${prep.done} of ${prep.total} prep questions ready`}
+              title={t("card.prepReadyTitle", { done: prep.done, total: prep.total })}
             >
               <ListChecks className="h-3.5 w-3.5" aria-hidden="true" />
               {prep.done}/{prep.total}

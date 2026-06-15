@@ -7,13 +7,13 @@ import {
   eachDayOfInterval,
   endOfMonth,
   endOfWeek,
-  format,
   isSameDay,
   isSameMonth,
   isToday,
   startOfMonth,
   startOfWeek,
 } from "date-fns";
+import { useLocale, useTranslations } from "next-intl";
 import { CalendarDays, ChevronLeft, ChevronRight, MapPin, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -24,10 +24,15 @@ import { StatusBadge } from "./status-badge";
 import { useIsPhone } from "./use-is-phone";
 import { kindMeta } from "./data";
 import { useApptMembers } from "./members-context";
-import { appointmentsOnDay, friendlyDay, timeLabel } from "./utils";
+import { appointmentsOnDay, useApptDates } from "./utils";
 import type { Appointment } from "./types";
 
-const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+/** Localized weekday name; dayIndex 0=Sunday..6=Saturday. */
+function weekdayName(locale: string, dayIndex: number, style: "narrow" | "short"): string {
+  return new Intl.DateTimeFormat(locale, { weekday: style, timeZone: "UTC" }).format(
+    new Date(Date.UTC(2023, 0, 1 + dayIndex))
+  );
+}
 
 export interface CalendarViewProps {
   appointments: Appointment[];
@@ -54,6 +59,8 @@ export function CalendarView(props: CalendarViewProps) {
 /* ------------------------------------------------------------------ */
 
 function MonthCalendar({ appointments, selectedDay, onSelectDay, onOpenAppt, onAdd, canManage, now }: CalendarViewProps) {
+  const t = useTranslations("appointments");
+  const locale = useLocale();
   const [cursor, setCursor] = React.useState(() => startOfMonth(selectedDay));
 
   const days = React.useMemo(() => {
@@ -62,24 +69,26 @@ function MonthCalendar({ appointments, selectedDay, onSelectDay, onOpenAppt, onA
     return eachDayOfInterval({ start, end });
   }, [cursor]);
 
+  const monthYear = cursor.toLocaleDateString(locale, { month: "long", year: "numeric" });
+
   return (
     <div className="flex flex-col gap-5 xl:flex-row">
       {/* Month grid — flexes to fill, never shrinks below its content */}
       <div className="min-w-0 flex-1">
         <div className="mb-3 flex items-center justify-between gap-2">
           <h2 className="font-display text-lg font-semibold tracking-tight sm:text-xl">
-            {format(cursor, "MMMM yyyy")}
+            {monthYear}
           </h2>
           <div className="flex items-center gap-1.5">
             <Button variant="outline" size="sm" onClick={() => setCursor(startOfMonth(now))}>
-              Today
+              {t("calendar.today")}
             </Button>
             <Button
               variant="outline"
               size="icon"
               className="h-9 w-9"
               onClick={() => setCursor((c) => addMonths(c, -1))}
-              aria-label="Previous month"
+              aria-label={t("calendar.prevMonth")}
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
@@ -88,7 +97,7 @@ function MonthCalendar({ appointments, selectedDay, onSelectDay, onOpenAppt, onA
               size="icon"
               className="h-9 w-9"
               onClick={() => setCursor((c) => addMonths(c, 1))}
-              aria-label="Next month"
+              aria-label={t("calendar.nextMonth")}
             >
               <ChevronRight className="h-4 w-4" />
             </Button>
@@ -97,10 +106,10 @@ function MonthCalendar({ appointments, selectedDay, onSelectDay, onOpenAppt, onA
 
         {/* Weekday header */}
         <div className="grid grid-cols-7 px-px">
-          {WEEKDAYS.map((d) => (
-            <div key={d} className="pb-2 text-center text-xs font-medium text-muted-foreground">
-              <span className="sm:hidden">{d[0]}</span>
-              <span className="hidden sm:inline">{d}</span>
+          {Array.from({ length: 7 }).map((_, i) => (
+            <div key={i} className="pb-2 text-center text-xs font-medium text-muted-foreground">
+              <span className="sm:hidden">{weekdayName(locale, i, "narrow")}</span>
+              <span className="hidden sm:inline">{weekdayName(locale, i, "short")}</span>
             </div>
           ))}
         </div>
@@ -108,7 +117,7 @@ function MonthCalendar({ appointments, selectedDay, onSelectDay, onOpenAppt, onA
         {/* Day cells */}
         <div
           role="grid"
-          aria-label={`${format(cursor, "MMMM yyyy")} calendar`}
+          aria-label={t("calendar.gridLabel", { month: monthYear })}
           className="grid grid-cols-7 overflow-hidden rounded-xl border-l border-t bg-card"
         >
           {days.map((day) => {
@@ -132,7 +141,10 @@ function MonthCalendar({ appointments, selectedDay, onSelectDay, onOpenAppt, onA
                 <button
                   type="button"
                   onClick={() => onSelectDay(day)}
-                  aria-label={`${format(day, "EEEE, MMMM d")} — ${dayAppts.length} appointment${dayAppts.length === 1 ? "" : "s"}`}
+                  aria-label={t("calendar.dayLabel", {
+                    date: day.toLocaleDateString(locale, { weekday: "long", month: "long", day: "numeric" }),
+                    count: dayAppts.length,
+                  })}
                   className="absolute inset-0 z-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
                 />
                 {/* Content sits above the select button but ignores pointer events, so empty space
@@ -146,7 +158,7 @@ function MonthCalendar({ appointments, selectedDay, onSelectDay, onOpenAppt, onA
                       selected && !today && "ring-1 ring-accent"
                     )}
                   >
-                    {format(day, "d")}
+                    {day.toLocaleDateString(locale, { day: "numeric" })}
                   </span>
                   <DayChips appts={dayAppts} onOpen={onOpenAppt} />
                 </div>
@@ -172,6 +184,7 @@ function MonthCalendar({ appointments, selectedDay, onSelectDay, onOpenAppt, onA
 
 /** Up to two chips on small cells, a third only where there's vertical room (lg+), then "+N more". */
 function DayChips({ appts, onOpen }: { appts: Appointment[]; onOpen: (id: string) => void }) {
+  const t = useTranslations("appointments");
   if (appts.length === 0) return null;
   const overflowBase = appts.length - 2;
   const overflowLg = appts.length - 3;
@@ -187,12 +200,12 @@ function DayChips({ appts, onOpen }: { appts: Appointment[]; onOpen: (id: string
       )}
       {overflowBase > 0 && (
         <span className="px-1.5 text-[10px] font-medium text-muted-foreground lg:hidden">
-          +{overflowBase} more
+          {t("calendar.moreCount", { count: overflowBase })}
         </span>
       )}
       {overflowLg > 0 && (
         <span className="hidden px-1.5 text-[10px] font-medium text-muted-foreground lg:block">
-          +{overflowLg} more
+          {t("calendar.moreCount", { count: overflowLg })}
         </span>
       )}
     </div>
@@ -213,27 +226,32 @@ function DayPanel({
   onAdd: () => void;
   canManage: boolean;
 }) {
+  const t = useTranslations("appointments");
+  const locale = useLocale();
+  const { friendlyDay } = useApptDates();
   return (
     <Card className="h-full">
       <CardContent className="flex h-full flex-col gap-3 p-4 sm:p-5">
         <div className="flex items-baseline justify-between gap-2">
           <div className="min-w-0">
             <p className="font-semibold">{friendlyDay(day)}</p>
-            <p className="truncate text-xs text-muted-foreground">{format(day, "EEEE, MMMM d, yyyy")}</p>
+            <p className="truncate text-xs text-muted-foreground">
+              {day.toLocaleDateString(locale, { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+            </p>
           </div>
           <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
-            {appts.length} appt{appts.length === 1 ? "" : "s"}
+            {t("calendar.apptCount", { count: appts.length })}
           </span>
         </div>
 
         {appts.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-2 rounded-lg border border-dashed py-8 text-center">
             <CalendarDays className="h-6 w-6 text-muted-foreground" aria-hidden="true" />
-            <p className="text-sm text-muted-foreground">Nothing scheduled.</p>
+            <p className="text-sm text-muted-foreground">{t("calendar.nothingScheduled")}</p>
             {canManage && (
               <Button variant="outline" size="sm" onClick={onAdd}>
                 <Plus className="h-4 w-4" />
-                <span className="ml-1">Add appointment</span>
+                <span className="ml-1">{t("calendar.addAppointment")}</span>
               </Button>
             )}
           </div>
@@ -256,11 +274,15 @@ function DayPanel({
 /* ------------------------------------------------------------------ */
 
 function PhoneAgenda({ appointments, selectedDay, onSelectDay, onOpenAppt, onAdd, canManage, now }: CalendarViewProps) {
+  const t = useTranslations("appointments");
+  const locale = useLocale();
+  const { friendlyDay } = useApptDates();
   // The visible week is derived straight from the selected day — no separate cursor to keep in sync.
   // The week chevrons move the selection a week at a time, which scrolls the strip with it.
   const weekStart = startOfWeek(selectedDay);
   const weekDays = eachDayOfInterval({ start: weekStart, end: endOfWeek(weekStart) });
   const dayAppts = appointmentsOnDay(appointments, selectedDay);
+  const monthDay = (d: Date) => d.toLocaleDateString(locale, { month: "short", day: "numeric" });
 
   return (
     <div className="space-y-4">
@@ -268,18 +290,18 @@ function PhoneAgenda({ appointments, selectedDay, onSelectDay, onOpenAppt, onAdd
         <CardContent className="space-y-3 p-3">
           <div className="flex items-center justify-between gap-2">
             <span className="text-sm font-semibold">
-              {format(weekStart, "MMM d")} – {format(endOfWeek(weekStart), "MMM d")}
+              {monthDay(weekStart)} – {monthDay(endOfWeek(weekStart))}
             </span>
             <div className="flex items-center gap-1.5">
               <Button variant="outline" size="sm" className="h-8" onClick={() => onSelectDay(now)}>
-                Today
+                {t("calendar.today")}
               </Button>
               <Button
                 variant="outline"
                 size="icon"
                 className="h-8 w-8"
                 onClick={() => onSelectDay(addWeeks(selectedDay, -1))}
-                aria-label="Previous week"
+                aria-label={t("calendar.prevWeek")}
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
@@ -288,7 +310,7 @@ function PhoneAgenda({ appointments, selectedDay, onSelectDay, onOpenAppt, onAdd
                 size="icon"
                 className="h-8 w-8"
                 onClick={() => onSelectDay(addWeeks(selectedDay, 1))}
-                aria-label="Next week"
+                aria-label={t("calendar.nextWeek")}
               >
                 <ChevronRight className="h-4 w-4" />
               </Button>
@@ -306,14 +328,17 @@ function PhoneAgenda({ appointments, selectedDay, onSelectDay, onOpenAppt, onAdd
                   type="button"
                   onClick={() => onSelectDay(day)}
                   aria-pressed={selected}
-                  aria-label={`${format(day, "EEEE, MMMM d")} — ${count} appointment${count === 1 ? "" : "s"}`}
+                  aria-label={t("calendar.dayLabel", {
+                    date: day.toLocaleDateString(locale, { weekday: "long", month: "long", day: "numeric" }),
+                    count,
+                  })}
                   className={cn(
                     "flex min-w-0 flex-col items-center gap-1 rounded-lg py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                     selected ? "bg-primary text-primary-foreground" : "hover:bg-muted"
                   )}
                 >
                   <span className={cn("text-[10px] font-medium", !selected && "text-muted-foreground")}>
-                    {WEEKDAYS[day.getDay()][0]}
+                    {weekdayName(locale, day.getDay(), "narrow")}
                   </span>
                   <span
                     className={cn(
@@ -321,7 +346,7 @@ function PhoneAgenda({ appointments, selectedDay, onSelectDay, onOpenAppt, onAdd
                       today && !selected && "bg-accent/15 font-semibold text-accent"
                     )}
                   >
-                    {format(day, "d")}
+                    {day.toLocaleDateString(locale, { day: "numeric" })}
                   </span>
                   <span
                     className={cn(
@@ -339,17 +364,19 @@ function PhoneAgenda({ appointments, selectedDay, onSelectDay, onOpenAppt, onAdd
 
       <div className="flex items-baseline justify-between gap-2 px-1">
         <h3 className="text-sm font-semibold">{friendlyDay(selectedDay)}</h3>
-        <span className="text-xs text-muted-foreground">{format(selectedDay, "EEEE, MMMM d")}</span>
+        <span className="text-xs text-muted-foreground">
+          {selectedDay.toLocaleDateString(locale, { weekday: "long", month: "long", day: "numeric" })}
+        </span>
       </div>
 
       {dayAppts.length === 0 ? (
         <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed py-12 text-center">
           <CalendarDays className="h-6 w-6 text-muted-foreground" aria-hidden="true" />
-          <p className="text-sm text-muted-foreground">Nothing scheduled for this day.</p>
+          <p className="text-sm text-muted-foreground">{t("calendar.nothingScheduledDay")}</p>
           {canManage && (
             <Button variant="outline" size="sm" onClick={onAdd}>
               <Plus className="h-4 w-4" />
-              <span className="ml-1">Add appointment</span>
+              <span className="ml-1">{t("calendar.addAppointment")}</span>
             </Button>
           )}
         </div>
@@ -371,6 +398,7 @@ function PhoneAgenda({ appointments, selectedDay, onSelectDay, onOpenAppt, onAdd
 /* ------------------------------------------------------------------ */
 
 function AgendaRow({ appt, onOpen }: { appt: Appointment; onOpen: () => void }) {
+  const { timeLabel } = useApptDates();
   const { byId } = useApptMembers();
   const Icon = kindMeta[appt.kind].icon;
   const member = byId(appt.assignedMemberId);
