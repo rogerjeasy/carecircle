@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { ShieldAlert } from "lucide-react";
 import { format } from "date-fns";
 import { getSharedEmergencyCard } from "@/lib/emergency-card/share";
@@ -16,7 +17,7 @@ import { PublicEmergencyCard } from "@/components/profile/public-emergency-card"
 
 // Never index a link that exposes health data; the token in the URL is the only way in.
 export const metadata: Metadata = {
-  title: "Emergency Card — CareCircle",
+  title: "Emergency Card — Kintwadi",
   robots: { index: false, follow: false },
 };
 
@@ -32,6 +33,7 @@ export default async function SharedEmergencyCardPage({
   const result = await getSharedEmergencyCard(token);
 
   if (result.status !== "ok") {
+    const t = await getTranslations("profile.public");
     return (
       <main className="flex min-h-screen items-center justify-center px-4">
         <div className="mx-auto flex w-full max-w-md flex-col items-center gap-3 rounded-2xl border border-dashed px-6 py-16 text-center">
@@ -39,11 +41,8 @@ export default async function SharedEmergencyCardPage({
             <ShieldAlert className="h-7 w-7" aria-hidden="true" />
           </div>
           <div>
-            <p className="text-base font-semibold">This emergency link isn&apos;t active</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              It may have expired or been revoked by the family. Ask a family member to share a
-              fresh link from their CareCircle emergency card.
-            </p>
+            <p className="text-base font-semibold">{t("inactiveTitle")}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{t("inactiveBody")}</p>
           </div>
         </div>
       </main>

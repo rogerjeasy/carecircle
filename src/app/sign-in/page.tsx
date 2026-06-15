@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { z } from "zod";
 import { toast } from "sonner";
 import { Eye, EyeOff, Heart, Loader2, AlertCircle } from "lucide-react";
@@ -15,19 +16,14 @@ import { SocialAuthButtons } from "@/components/auth/social-auth-buttons";
 import { DemoAccountsPanel } from "@/components/auth/demo-accounts";
 import { signInWithCredentials, resolveLandingPath } from "@/lib/auth/actions";
 
-// Validation schema
-const signInSchema = z.object({
-  email: z
-    .string()
-    .min(1, "Email is required")
-    .email("Please enter a valid email address"),
-  password: z.string().min(1, "Password is required"),
-});
+type SignInForm = { email: string; password: string };
 
-type SignInForm = z.infer<typeof signInSchema>;
+// Stat strip — values + labels from messages.
+const STAT_KEYS = ["people", "age", "growth"] as const;
 
 // Brand Panel Component (same as sign-up but with different headline)
 function BrandPanel() {
+  const t = useTranslations("auth.signIn");
   return (
     <div className="relative flex h-full flex-col justify-between overflow-hidden bg-primary/5 p-8 lg:p-12">
       {/* Decorative background */}
@@ -48,28 +44,22 @@ function BrandPanel() {
       {/* Main content */}
       <div className="relative z-10 space-y-6">
         <h1 className="font-serif text-3xl font-bold leading-tight tracking-tight lg:text-4xl xl:text-5xl text-balance">
-          Welcome back to your care circle.
+          {t("brandHeadline")}
         </h1>
         <p className="text-lg text-muted-foreground max-w-md">
-          Your family is waiting. Sign in to see the latest updates and keep the care going.
+          {t("brandSubtitle")}
         </p>
       </div>
 
       {/* Why it matters — real demographic context (UN World Population Ageing), not fabricated traction */}
       <div className="relative z-10 rounded-2xl border border-border/50 bg-card/50 p-6 backdrop-blur-sm">
         <div className="grid grid-cols-3 gap-4 text-center">
-          <div>
-            <p className="text-2xl font-bold text-primary">2.1B</p>
-            <p className="text-xs text-muted-foreground">People 60+ by 2050</p>
-          </div>
-          <div>
-            <p className="text-2xl font-bold text-primary">1 in 6</p>
-            <p className="text-xs text-muted-foreground">Will be 60+ by 2030</p>
-          </div>
-          <div>
-            <p className="text-2xl font-bold text-primary">2×</p>
-            <p className="text-xs text-muted-foreground">Older population by 2050</p>
-          </div>
+          {STAT_KEYS.map((k) => (
+            <div key={k}>
+              <p className="text-2xl font-bold text-primary">{t(`stats.${k}.value`)}</p>
+              <p className="text-xs text-muted-foreground">{t(`stats.${k}.label`)}</p>
+            </div>
+          ))}
         </div>
       </div>
     </div>
@@ -78,6 +68,7 @@ function BrandPanel() {
 
 // Slim Brand Banner for iPad Portrait
 function BrandBanner() {
+  const t = useTranslations("auth.signIn");
   return (
     <div className="relative flex items-center justify-between gap-4 overflow-hidden bg-primary/5 px-6 py-4">
       {/* Decorative background */}
@@ -96,7 +87,7 @@ function BrandBanner() {
 
       {/* Tagline */}
       <p className="relative z-10 hidden text-sm text-muted-foreground sm:block">
-        Welcome back
+        {t("bannerTagline")}
       </p>
 
       {/* Theme toggle */}
@@ -108,6 +99,18 @@ function BrandBanner() {
 }
 
 export default function SignInPage() {
+  const tErr = useTranslations("auth.signIn.errors");
+  const tToast = useTranslations("auth.signIn");
+  // Validation schema — messages localized via the `auth.signIn.errors` namespace.
+  const signInSchema = React.useMemo(
+    () =>
+      z.object({
+        email: z.string().min(1, tErr("emailRequired")).email(tErr("emailInvalid")),
+        password: z.string().min(1, tErr("passwordRequired")),
+      }),
+    [tErr],
+  );
+
   const [showPassword, setShowPassword] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [rememberMe, setRememberMe] = React.useState(false);
@@ -186,8 +189,8 @@ export default function SignInPage() {
       return;
     }
 
-    toast.success("Welcome back!", {
-      description: "You have been signed in successfully.",
+    toast.success(tToast("toastTitle"), {
+      description: tToast("toastDesc"),
     });
     // Honor a ?callbackUrl set by the route proxy; otherwise let the server decide the landing
     // page from the verified session (platform admins → /admin, everyone else → /dashboard).
@@ -290,14 +293,14 @@ function SignInForm({
   handleBlur,
   handleSubmit,
 }: SignInFormProps) {
+  const t = useTranslations("auth.signIn");
+  const tc = useTranslations("auth.common");
   return (
     <div className="w-full max-w-md">
       {/* Header */}
       <div className="mb-8 text-center">
-        <h2 className="font-serif text-2xl font-bold sm:text-3xl">Sign in to your account</h2>
-        <p className="mt-2 text-muted-foreground">
-          Welcome back! Please enter your details.
-        </p>
+        <h2 className="font-serif text-2xl font-bold sm:text-3xl">{t("title")}</h2>
+        <p className="mt-2 text-muted-foreground">{t("subtitle")}</p>
       </div>
 
       {/* Credentials error alert */}
@@ -318,11 +321,11 @@ function SignInForm({
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Email */}
         <div className="space-y-2">
-          <Label htmlFor="email">Email address</Label>
+          <Label htmlFor="email">{tc("emailLabel")}</Label>
           <Input
             id="email"
             type="email"
-            placeholder="maria@example.com"
+            placeholder={tc("emailPlaceholder")}
             value={formData.email}
             onChange={(e) => handleChange("email", e.target.value)}
             onBlur={() => handleBlur("email")}
@@ -342,19 +345,19 @@ function SignInForm({
         {/* Password */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">{tc("passwordLabel")}</Label>
             <Link
               href="/forgot-password"
               className="text-sm font-medium text-primary hover:text-primary/90 focus:outline-none focus-visible:underline"
             >
-              Forgot password?
+              {t("forgotPassword")}
             </Link>
           </div>
           <div className="relative">
             <Input
               id="password"
               type={showPassword ? "text" : "password"}
-              placeholder="Enter your password"
+              placeholder={t("passwordPlaceholder")}
               value={formData.password}
               onChange={(e) => handleChange("password", e.target.value)}
               onBlur={() => handleBlur("password")}
@@ -369,7 +372,7 @@ function SignInForm({
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
-              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-label={showPassword ? tc("hidePassword") : tc("showPassword")}
             >
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
@@ -392,7 +395,7 @@ function SignInForm({
             htmlFor="remember"
             className="text-sm font-normal text-muted-foreground cursor-pointer"
           >
-            Remember me for 30 days
+            {t("rememberMe")}
           </Label>
         </div>
 
@@ -405,22 +408,22 @@ function SignInForm({
           {isSubmitting ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />
-              Signing in...
+              {t("submitting")}
             </>
           ) : (
-            "Sign in"
+            t("submit")
           )}
         </Button>
       </form>
 
       {/* Sign up link */}
       <p className="mt-6 text-center text-sm text-muted-foreground">
-        {"Don't have an account? "}
+        {t("noAccount")}{" "}
         <Link
           href="/sign-up"
           className="font-medium text-primary hover:text-primary/90 focus:outline-none focus-visible:underline"
         >
-          Sign up
+          {t("signUpLink")}
         </Link>
       </p>
 

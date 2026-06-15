@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { z } from "zod";
 import { toast } from "sonner";
 import { Eye, EyeOff, Heart, Loader2, Check, X } from "lucide-react";
@@ -14,33 +15,12 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { SocialAuthButtons } from "@/components/auth/social-auth-buttons";
 import { signUpWithCredentials } from "@/lib/auth/actions";
 
-// Validation schema
-const signUpSchema = z.object({
-  fullName: z
-    .string()
-    .min(2, "Please enter your full name")
-    .max(100, "Name is too long"),
-  email: z
-    .string()
-    .min(1, "Email is required")
-    .email("Please enter a valid email address"),
-  password: z
-    .string()
-    .min(8, "Password must be at least 8 characters")
-    .regex(/[A-Z]/, "Include at least one uppercase letter")
-    .regex(/[a-z]/, "Include at least one lowercase letter")
-    .regex(/[0-9]/, "Include at least one number"),
-  terms: z.literal(true, {
-    message: "You must accept the terms to continue",
-  }),
-});
+type SignUpForm = { fullName: string; email: string; password: string; terms: boolean };
 
-type SignUpForm = z.infer<typeof signUpSchema>;
-
-// Password strength calculation
+// Password strength calculation — `key` indexes `auth.common.strength`.
 function getPasswordStrength(password: string): {
   score: number;
-  label: string;
+  key: "weak" | "fair" | "good" | "strong";
   color: string;
 } {
   let score = 0;
@@ -51,24 +31,25 @@ function getPasswordStrength(password: string): {
   if (/[0-9]/.test(password)) score++;
   if (/[^A-Za-z0-9]/.test(password)) score++;
 
-  if (score <= 2) return { score: 1, label: "Weak", color: "bg-destructive" };
-  if (score <= 4) return { score: 2, label: "Fair", color: "bg-warning" };
-  if (score <= 5) return { score: 3, label: "Good", color: "bg-info" };
-  return { score: 4, label: "Strong", color: "bg-success" };
+  if (score <= 2) return { score: 1, key: "weak", color: "bg-destructive" };
+  if (score <= 4) return { score: 2, key: "fair", color: "bg-warning" };
+  if (score <= 5) return { score: 3, key: "good", color: "bg-info" };
+  return { score: 4, key: "strong", color: "bg-success" };
 }
 
-// Password requirements check
+// Password requirements check — `key` indexes `auth.common.requirements`.
 function getPasswordRequirements(password: string) {
   return [
-    { label: "At least 8 characters", met: password.length >= 8 },
-    { label: "One uppercase letter", met: /[A-Z]/.test(password) },
-    { label: "One lowercase letter", met: /[a-z]/.test(password) },
-    { label: "One number", met: /[0-9]/.test(password) },
-  ];
+    { key: "min8", met: password.length >= 8 },
+    { key: "upper", met: /[A-Z]/.test(password) },
+    { key: "lower", met: /[a-z]/.test(password) },
+    { key: "number", met: /[0-9]/.test(password) },
+  ] as const;
 }
 
 // Brand Panel Component
 function BrandPanel() {
+  const t = useTranslations("auth.signUp");
   return (
     <div className="relative flex h-full flex-col justify-between overflow-hidden bg-primary/5 p-8 lg:p-12">
       {/* Decorative background */}
@@ -89,20 +70,19 @@ function BrandPanel() {
       {/* Main content */}
       <div className="relative z-10 space-y-6">
         <h1 className="font-serif text-3xl font-bold leading-tight tracking-tight lg:text-4xl xl:text-5xl text-balance">
-          Bring your family into the care.
+          {t("brandHeadline")}
         </h1>
         <p className="text-lg text-muted-foreground max-w-md">
-          Coordinate care for your loved one with everyone involved — together, no matter the distance.
+          {t("brandSubtitle")}
         </p>
       </div>
 
       {/* Mission note — what Kintwadi is for (no fabricated testimonials) */}
       <div className="relative z-10 rounded-2xl border border-border/50 bg-card/50 p-6 backdrop-blur-sm">
         <blockquote className="text-base italic text-foreground/90">
-          One shared, permission-aware record for everyone caring for someone — so siblings across
-          cities and countries can stay truly in it together, not lost in scattered group chats.
+          {t("brandQuote")}
         </blockquote>
-        <p className="mt-4 text-xs text-muted-foreground">Why we built Kintwadi</p>
+        <p className="mt-4 text-xs text-muted-foreground">{t("brandQuoteAttribution")}</p>
       </div>
     </div>
   );
@@ -110,6 +90,7 @@ function BrandPanel() {
 
 // Slim Brand Banner for iPad Portrait
 function BrandBanner() {
+  const t = useTranslations("auth.signUp");
   return (
     <div className="relative flex items-center justify-between gap-4 overflow-hidden bg-primary/5 px-6 py-4">
       {/* Decorative background */}
@@ -128,7 +109,7 @@ function BrandBanner() {
 
       {/* Tagline */}
       <p className="relative z-10 hidden text-sm text-muted-foreground sm:block">
-        Coordinate care together
+        {t("bannerTagline")}
       </p>
 
       {/* Theme toggle */}
@@ -140,6 +121,25 @@ function BrandBanner() {
 }
 
 export default function SignUpPage() {
+  const tErr = useTranslations("auth.signUp.errors");
+  const tToast = useTranslations("auth.signUp");
+  // Validation schema — messages localized via the `auth.signUp.errors` namespace.
+  const signUpSchema = React.useMemo(
+    () =>
+      z.object({
+        fullName: z.string().min(2, tErr("fullNameMin")).max(100, tErr("fullNameMax")),
+        email: z.string().min(1, tErr("emailRequired")).email(tErr("emailInvalid")),
+        password: z
+          .string()
+          .min(8, tErr("passwordMin"))
+          .regex(/[A-Z]/, tErr("passwordUpper"))
+          .regex(/[a-z]/, tErr("passwordLower"))
+          .regex(/[0-9]/, tErr("passwordNumber")),
+        terms: z.literal(true, { message: tErr("terms") }),
+      }),
+    [tErr],
+  );
+
   const [showPassword, setShowPassword] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [formData, setFormData] = React.useState({
@@ -184,7 +184,7 @@ export default function SignUpPage() {
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Mark all fields as touched
     setTouched({
       fullName: true,
@@ -195,7 +195,7 @@ export default function SignUpPage() {
 
     // Validate all fields
     const result = signUpSchema.safeParse(formData);
-    
+
     if (!result.success) {
       const fieldErrors: Partial<Record<keyof SignUpForm, string>> = {};
       result.error.issues.forEach((err) => {
@@ -223,12 +223,12 @@ export default function SignUpPage() {
         setErrors((prev) => ({ ...prev, email: res.error }));
         setTouched((prev) => ({ ...prev, email: true }));
       }
-      toast.error("Couldn't create your account", { description: res.error });
+      toast.error(tToast("toastErrorTitle"), { description: res.error });
       return;
     }
 
-    toast.success("Welcome to Kintwadi!", {
-      description: "Your account has been created successfully.",
+    toast.success(tToast("toastSuccessTitle"), {
+      description: tToast("toastSuccessDesc"),
     });
     // Hard navigation (not router.push) on purpose: a full request guarantees the freshly
     // set session cookie is sent so /onboarding renders authenticated. A soft push followed
@@ -300,8 +300,8 @@ interface SignUpFormProps {
   showPassword: boolean;
   setShowPassword: (show: boolean) => void;
   isSubmitting: boolean;
-  passwordStrength: { score: number; label: string; color: string };
-  passwordRequirements: { label: string; met: boolean }[];
+  passwordStrength: { score: number; key: "weak" | "fair" | "good" | "strong"; color: string };
+  passwordRequirements: ReadonlyArray<{ key: "min8" | "upper" | "lower" | "number"; met: boolean }>;
   handleChange: (field: keyof SignUpForm, value: string | boolean) => void;
   handleBlur: (field: keyof SignUpForm) => void;
   handleSubmit: (e: React.FormEvent) => void;
@@ -320,14 +320,14 @@ function SignUpForm({
   handleBlur,
   handleSubmit,
 }: SignUpFormProps) {
+  const t = useTranslations("auth.signUp");
+  const tc = useTranslations("auth.common");
   return (
     <div className="w-full max-w-md">
       {/* Header */}
       <div className="mb-8 text-center">
-        <h2 className="font-serif text-2xl font-bold sm:text-3xl">Create your account</h2>
-        <p className="mt-2 text-muted-foreground">
-          Start coordinating care with your family today
-        </p>
+        <h2 className="font-serif text-2xl font-bold sm:text-3xl">{t("title")}</h2>
+        <p className="mt-2 text-muted-foreground">{t("subtitle")}</p>
       </div>
 
       {/* Social login buttons + divider (env-gated) */}
@@ -337,11 +337,11 @@ function SignUpForm({
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Full Name */}
         <div className="space-y-2">
-          <Label htmlFor="fullName">Full name</Label>
+          <Label htmlFor="fullName">{t("fullNameLabel")}</Label>
           <Input
             id="fullName"
             type="text"
-            placeholder="Maria Rodriguez"
+            placeholder={t("fullNamePlaceholder")}
             value={formData.fullName}
             onChange={(e) => handleChange("fullName", e.target.value)}
             onBlur={() => handleBlur("fullName")}
@@ -360,11 +360,11 @@ function SignUpForm({
 
         {/* Email */}
         <div className="space-y-2">
-          <Label htmlFor="email">Email address</Label>
+          <Label htmlFor="email">{tc("emailLabel")}</Label>
           <Input
             id="email"
             type="email"
-            placeholder="maria@example.com"
+            placeholder={tc("emailPlaceholder")}
             value={formData.email}
             onChange={(e) => handleChange("email", e.target.value)}
             onBlur={() => handleBlur("email")}
@@ -383,12 +383,12 @@ function SignUpForm({
 
         {/* Password */}
         <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password">{tc("passwordLabel")}</Label>
           <div className="relative">
             <Input
               id="password"
               type={showPassword ? "text" : "password"}
-              placeholder="Create a strong password"
+              placeholder={t("passwordPlaceholder")}
               value={formData.password}
               onChange={(e) => handleChange("password", e.target.value)}
               onBlur={() => handleBlur("password")}
@@ -403,7 +403,7 @@ function SignUpForm({
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
-              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-label={showPassword ? tc("hidePassword") : tc("showPassword")}
             >
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
@@ -427,15 +427,15 @@ function SignUpForm({
                   ))}
                 </div>
                 <span className="text-xs font-medium text-muted-foreground">
-                  {passwordStrength.label}
+                  {tc(`strength.${passwordStrength.key}`)}
                 </span>
               </div>
 
               {/* Password requirements */}
               <ul id="password-requirements" className="space-y-1 text-xs">
-                {passwordRequirements.map((req, i) => (
+                {passwordRequirements.map((req) => (
                   <li
-                    key={i}
+                    key={req.key}
                     className={cn(
                       "flex items-center gap-1.5 transition-colors",
                       req.met ? "text-success" : "text-muted-foreground"
@@ -446,7 +446,7 @@ function SignUpForm({
                     ) : (
                       <X className="h-3 w-3" />
                     )}
-                    {req.label}
+                    {tc(`requirements.${req.key}`)}
                   </li>
                 ))}
               </ul>
@@ -474,14 +474,18 @@ function SignUpForm({
               htmlFor="terms"
               className="text-sm font-normal leading-relaxed cursor-pointer"
             >
-              I agree to the{" "}
-              <Link href="/terms" className="text-primary hover:underline">
-                Terms of Service
-              </Link>{" "}
-              and{" "}
-              <Link href="/privacy" className="text-primary hover:underline">
-                Privacy Policy
-              </Link>
+              {t.rich("terms", {
+                terms: (chunks) => (
+                  <Link href="/terms" className="text-primary hover:underline">
+                    {chunks}
+                  </Link>
+                ),
+                privacy: (chunks) => (
+                  <Link href="/privacy" className="text-primary hover:underline">
+                    {chunks}
+                  </Link>
+                ),
+              })}
             </Label>
           </div>
           {touched.terms && errors.terms && (
@@ -501,19 +505,19 @@ function SignUpForm({
           {isSubmitting ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />
-              Creating account...
+              {t("submitting")}
             </>
           ) : (
-            "Create account"
+            t("submit")
           )}
         </Button>
       </form>
 
       {/* Sign in link */}
       <p className="mt-6 text-center text-sm text-muted-foreground">
-        Already have an account?{" "}
+        {t("haveAccount")}{" "}
         <Link href="/sign-in" className="font-medium text-primary hover:underline">
-          Sign in
+          {t("signInLink")}
         </Link>
       </p>
     </div>

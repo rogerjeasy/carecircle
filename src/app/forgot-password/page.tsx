@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { z } from "zod";
 import { Heart, Loader2, ArrowLeft, Mail, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -11,18 +12,9 @@ import { Label } from "@/components/ui/label";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { requestPasswordReset } from "@/lib/auth/actions";
 
-// Validation schema
-const forgotPasswordSchema = z.object({
-  email: z
-    .string()
-    .min(1, "Email is required")
-    .email("Please enter a valid email address"),
-});
-
-type ForgotPasswordForm = z.infer<typeof forgotPasswordSchema>;
-
 // Brand Panel Component
 function BrandPanel() {
+  const t = useTranslations("auth.forgot");
   return (
     <div className="relative flex h-full flex-col justify-between overflow-hidden bg-primary/5 p-8 lg:p-12">
       {/* Decorative background */}
@@ -43,20 +35,23 @@ function BrandPanel() {
       {/* Main content */}
       <div className="relative z-10 space-y-6">
         <h1 className="font-serif text-3xl font-bold leading-tight tracking-tight lg:text-4xl xl:text-5xl text-balance">
-          We all forget sometimes.
+          {t("brandHeadline")}
         </h1>
         <p className="text-lg text-muted-foreground max-w-md">
-          No worries — we will send you a secure link to reset your password and get you back to your care circle.
+          {t("brandSubtitle")}
         </p>
       </div>
 
       {/* Support info */}
       <div className="relative z-10 rounded-2xl border border-border/50 bg-card/50 p-6 backdrop-blur-sm">
         <p className="text-sm text-muted-foreground">
-          Having trouble accessing your account?{" "}
-          <a href="mailto:support@kintwadi.app" className="text-primary hover:underline">
-            Contact our support team
-          </a>
+          {t.rich("support", {
+            link: (chunks) => (
+              <a href="mailto:support@kintwadi.app" className="text-primary hover:underline">
+                {chunks}
+              </a>
+            ),
+          })}
         </p>
       </div>
     </div>
@@ -65,6 +60,7 @@ function BrandPanel() {
 
 // Slim Brand Banner for iPad Portrait
 function BrandBanner() {
+  const t = useTranslations("auth.forgot");
   return (
     <div className="relative flex items-center justify-between gap-4 overflow-hidden bg-primary/5 px-6 py-4">
       {/* Decorative background */}
@@ -83,7 +79,7 @@ function BrandBanner() {
 
       {/* Tagline */}
       <p className="relative z-10 hidden text-sm text-muted-foreground sm:block">
-        Password recovery
+        {t("bannerTagline")}
       </p>
 
       {/* Theme toggle */}
@@ -95,6 +91,12 @@ function BrandBanner() {
 }
 
 export default function ForgotPasswordPage() {
+  const tErr = useTranslations("auth.forgot.errors");
+  const emailSchema = React.useMemo(
+    () => z.string().min(1, tErr("emailRequired")).email(tErr("emailInvalid")),
+    [tErr],
+  );
+
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [isEmailSent, setIsEmailSent] = React.useState(false);
   const [email, setEmail] = React.useState("");
@@ -104,11 +106,11 @@ export default function ForgotPasswordPage() {
   // Validate email
   const validateEmail = (value: string) => {
     try {
-      forgotPasswordSchema.shape.email.parse(value);
+      emailSchema.parse(value);
       setError(null);
     } catch (err) {
       if (err instanceof z.ZodError) {
-        setError(err.issues[0]?.message || "Invalid email");
+        setError(err.issues[0]?.message || tErr("emailInvalid"));
       }
     }
   };
@@ -132,10 +134,10 @@ export default function ForgotPasswordPage() {
     e.preventDefault();
     setTouched(true);
 
-    const result = forgotPasswordSchema.safeParse({ email });
+    const result = emailSchema.safeParse(email);
 
     if (!result.success) {
-      setError(result.error.issues[0]?.message || "Invalid email");
+      setError(result.error.issues[0]?.message || tErr("emailInvalid"));
       return;
     }
 
@@ -274,6 +276,8 @@ function ForgotPasswordForm({
   handleBlur,
   handleSubmit,
 }: ForgotPasswordFormProps) {
+  const t = useTranslations("auth.forgot");
+  const tc = useTranslations("auth.common");
   return (
     <div className="w-full max-w-md">
       {/* Back link */}
@@ -282,26 +286,24 @@ function ForgotPasswordForm({
         className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus-visible:underline"
       >
         <ArrowLeft className="h-4 w-4" />
-        Back to sign in
+        {tc("backToSignIn")}
       </Link>
 
       {/* Header */}
       <div className="mb-8">
-        <h2 className="font-serif text-2xl font-bold sm:text-3xl">Forgot your password?</h2>
-        <p className="mt-2 text-muted-foreground">
-          No problem. Enter your email address and we will send you a link to reset it.
-        </p>
+        <h2 className="font-serif text-2xl font-bold sm:text-3xl">{t("title")}</h2>
+        <p className="mt-2 text-muted-foreground">{t("subtitle")}</p>
       </div>
 
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Email */}
         <div className="space-y-2">
-          <Label htmlFor="email">Email address</Label>
+          <Label htmlFor="email">{tc("emailLabel")}</Label>
           <Input
             id="email"
             type="email"
-            placeholder="maria@example.com"
+            placeholder={tc("emailPlaceholder")}
             value={email}
             onChange={(e) => handleChange(e.target.value)}
             onBlur={handleBlur}
@@ -323,12 +325,12 @@ function ForgotPasswordForm({
           {isSubmitting ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />
-              Sending...
+              {t("submitting")}
             </>
           ) : (
             <>
               <Mail className="h-4 w-4" />
-              Send reset link
+              {t("submit")}
             </>
           )}
         </Button>
@@ -336,12 +338,12 @@ function ForgotPasswordForm({
 
       {/* Sign up link */}
       <p className="mt-6 text-center text-sm text-muted-foreground">
-        {"Remember your password? "}
+        {t("rememberPassword")}{" "}
         <Link
           href="/sign-in"
           className="font-medium text-primary hover:text-primary/90 focus:outline-none focus-visible:underline"
         >
-          Sign in
+          {tc("signIn")}
         </Link>
       </p>
     </div>
@@ -356,6 +358,8 @@ interface EmailSentStateProps {
 }
 
 function EmailSentState({ email, onResend, isResending }: EmailSentStateProps) {
+  const t = useTranslations("auth.forgot");
+  const tc = useTranslations("auth.common");
   return (
     <div className="w-full max-w-md text-center motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-4 motion-safe:duration-500">
       {/* Success icon */}
@@ -364,24 +368,21 @@ function EmailSentState({ email, onResend, isResending }: EmailSentStateProps) {
       </div>
 
       {/* Header */}
-      <h2 className="font-serif text-2xl font-bold sm:text-3xl">Check your inbox</h2>
+      <h2 className="font-serif text-2xl font-bold sm:text-3xl">{t("sent.title")}</h2>
       <p className="mt-3 text-muted-foreground">
-        We sent a password reset link to{" "}
-        <span className="font-medium text-foreground">{email}</span>
+        {t.rich("sent.desc", {
+          email: () => <span className="font-medium text-foreground">{email}</span>,
+        })}
       </p>
 
       {/* Instructions */}
       <div className="mt-6 rounded-xl border border-border bg-muted/30 p-4 text-left text-sm">
-        <p className="text-muted-foreground">
-          Click the link in the email to create a new password. The link will expire in 1 hour.
-        </p>
+        <p className="text-muted-foreground">{t("sent.instructions")}</p>
       </div>
 
       {/* Resend button */}
       <div className="mt-6 space-y-3">
-        <p className="text-sm text-muted-foreground">
-          {"Didn't receive the email? Check your spam folder or"}
-        </p>
+        <p className="text-sm text-muted-foreground">{t("sent.didntReceive")}</p>
         <Button
           variant="outline"
           onClick={onResend}
@@ -391,10 +392,10 @@ function EmailSentState({ email, onResend, isResending }: EmailSentStateProps) {
           {isResending ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />
-              Resending...
+              {t("sent.resending")}
             </>
           ) : (
-            "Resend email"
+            t("sent.resend")
           )}
         </Button>
       </div>
@@ -405,7 +406,7 @@ function EmailSentState({ email, onResend, isResending }: EmailSentStateProps) {
         className="mt-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus-visible:underline"
       >
         <ArrowLeft className="h-4 w-4" />
-        Back to sign in
+        {tc("backToSignIn")}
       </Link>
     </div>
   );
