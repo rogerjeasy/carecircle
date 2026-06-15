@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import {
   Users,
   UserPlus,
@@ -52,131 +53,31 @@ function useScrollAnimation() {
   return { ref, isVisible };
 }
 
-// Timeline step data
+// Timeline step structure — text resolved from messages via the `key`.
 const timelineSteps = [
-  {
-    number: 1,
-    title: "Create a circle",
-    description: "In under a minute, create a care circle for your loved one. Add their name, photo, and basic care information. This becomes the central hub where everything care-related lives.",
-    icon: Users,
-    color: "primary",
-    details: [
-      "Add care recipient profile and photo",
-      "Set up primary conditions and allergies",
-      "Configure medication schedules",
-      "Choose your primary timezone",
-    ],
-  },
-  {
-    number: 2,
-    title: "Invite your people",
-    description: "Send invites to everyone who helps — siblings across the country, the professional caregiver, even the visiting nurse. Each person gets a role that matches what they need to see and do.",
-    icon: UserPlus,
-    color: "accent",
-    details: [
-      "Invite via email or shareable link",
-      "Assign appropriate roles",
-      "Set notification preferences",
-      "Control what each person can access",
-    ],
-  },
-  {
-    number: 3,
-    title: "Coordinate care",
-    description: "Log medications, appointments, daily observations. Create and assign tasks. Everyone sees updates in real-time. No more \"Did anyone give Mom her pills?\" confusion.",
-    icon: HeartHandshake,
-    color: "success",
-    details: [
-      "Track medications with confirmations",
-      "Schedule and manage appointments",
-      "Assign and complete care tasks",
-      "Log health observations and vitals",
-    ],
-  },
-  {
-    number: 4,
-    title: "Stay connected from anywhere",
-    description: "Whether you're across town or across the world, stay informed. Get AI-powered daily digests, real-time notifications, and the peace of mind that comes from knowing what's happening.",
-    icon: Globe,
-    color: "info",
-    details: [
-      "Daily AI-generated care summaries",
-      "Real-time push notifications",
-      "Secure messaging within the circle",
-      "Access from any device, anywhere",
-    ],
-  },
-];
+  { number: 1, key: "create", icon: Users, color: "primary" },
+  { number: 2, key: "invite", icon: UserPlus, color: "accent" },
+  { number: 3, key: "coordinate", icon: HeartHandshake, color: "success" },
+  { number: 4, key: "connect", icon: Globe, color: "info" },
+] as const;
 
-// Role data
+// Role structure — text resolved from messages via the `key`.
 const roles = [
-  {
-    title: "Coordinator",
-    icon: UserCog,
-    color: "primary",
-    description: "Full access to manage the circle, invite members, and configure all settings.",
-    sees: ["Everything", "Admin settings", "Billing", "Audit logs"],
-  },
-  {
-    title: "Family Member",
-    icon: Home,
-    color: "accent",
-    description: "View all updates, log activities, and stay connected with your loved one's care.",
-    sees: ["Timeline & updates", "Medications", "Appointments", "Documents"],
-  },
-  {
-    title: "Professional Caregiver",
-    icon: Briefcase,
-    color: "success",
-    description: "Task-focused view with clear assignments, medication schedules, and daily checklists.",
-    sees: ["Assigned tasks", "Med schedules", "Care notes", "Emergency info"],
-  },
-  {
-    title: "Clinician",
-    icon: Stethoscope,
-    color: "info",
-    description: "Medical-focused view with health history, vitals, and clinical documentation.",
-    sees: ["Health records", "Vitals history", "Medications", "Clinical notes"],
-  },
-  {
-    title: "Care Recipient",
-    icon: Heart,
-    color: "warning",
-    description: "A simplified view for the person receiving care — their schedule, visitors, and updates.",
-    sees: ["Today's schedule", "Who's visiting", "Messages", "Reminders"],
-  },
-  {
-    title: "Read-Only",
-    icon: Eye,
-    color: "muted",
-    description: "View-only access for extended family who want to stay informed without editing.",
-    sees: ["Timeline view", "Health status", "Photos", "Updates"],
-  },
-];
+  { key: "coordinator", icon: UserCog, color: "primary" },
+  { key: "family", icon: Home, color: "accent" },
+  { key: "professional", icon: Briefcase, color: "success" },
+  { key: "clinician", icon: Stethoscope, color: "info" },
+  { key: "recipient", icon: Heart, color: "warning" },
+  { key: "readonly", icon: Eye, color: "muted" },
+] as const;
 
-// Security features
+// Security feature structure — text resolved from messages via the `key`.
 const securityFeatures = [
-  {
-    icon: Lock,
-    title: "End-to-end encryption",
-    description: "All data is encrypted at rest and in transit using AES-256 and TLS 1.3. Your family's information stays private.",
-  },
-  {
-    icon: Shield,
-    title: "Role-based access control",
-    description: "Fine-grained permissions ensure each person sees only what they need. No accidental oversharing.",
-  },
-  {
-    icon: FileCheck,
-    title: "Complete audit trail",
-    description: "Every action is logged with who, what, and when. Full accountability and traceability for compliance.",
-  },
-  {
-    icon: Eye,
-    title: "Privacy by design",
-    description: "We never sell data. We never share with advertisers. Your family's health information is not a product.",
-  },
-];
+  { key: "encryption", icon: Lock },
+  { key: "rbac", icon: Shield },
+  { key: "audit", icon: FileCheck },
+  { key: "privacy", icon: Eye },
+] as const;
 
 export default function HowItWorksPage() {
   return (
@@ -197,6 +98,7 @@ export default function HowItWorksPage() {
 // Emotional intro section
 function EmotionalIntro() {
   const [mounted, setMounted] = React.useState(false);
+  const t = useTranslations("howItWorksPage.intro");
 
   React.useEffect(() => {
     setMounted(true);
@@ -219,7 +121,7 @@ function EmotionalIntro() {
             mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
           )}
         >
-          How Kintwadi Works
+          {t("badge")}
         </Badge>
         <h1
           className={cn(
@@ -228,8 +130,7 @@ function EmotionalIntro() {
             mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
           )}
         >
-          Caring for someone you love{" "}
-          <span className="text-primary">shouldn&apos;t feel this hard</span>
+          {t.rich("title", { hl: (chunks) => <span className="text-primary">{chunks}</span> })}
         </h1>
         <p
           className={cn(
@@ -238,11 +139,8 @@ function EmotionalIntro() {
             mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
           )}
         >
-          Coordinating care across siblings, cities, and time zones is overwhelming. 
-          Information gets lost. People feel left out. Important things slip through the cracks. 
-          <span className="block mt-4 font-medium text-foreground">
-            Kintwadi brings everyone together in one place — so you can focus on what matters most.
-          </span>
+          {t("subtitle")}
+          <span className="block mt-4 font-medium text-foreground">{t("subtitleEmphasis")}</span>
         </p>
       </div>
     </section>
@@ -270,8 +168,10 @@ function TimelineSection() {
   );
 }
 
-function TimelineStep({ step, index }: { step: typeof timelineSteps[0]; index: number }) {
+function TimelineStep({ step, index }: { step: typeof timelineSteps[number]; index: number }) {
   const { ref, isVisible } = useScrollAnimation();
+  const t = useTranslations("howItWorksPage.timeline");
+  const details = t.raw(`steps.${step.key}.details`) as string[];
 
   const colorClasses = {
     primary: "bg-primary text-primary-foreground",
@@ -312,19 +212,19 @@ function TimelineStep({ step, index }: { step: typeof timelineSteps[0]; index: n
       <Card className="p-6 sm:p-8">
         <div className="flex items-center gap-3 mb-3">
           <span className="text-sm font-medium text-muted-foreground">
-            Step {step.number}
+            {t("stepLabel", { number: step.number })}
           </span>
         </div>
         <h3 className="font-serif text-xl sm:text-2xl font-bold mb-3">
-          {step.title}
+          {t(`steps.${step.key}.title`)}
         </h3>
         <p className="text-muted-foreground text-pretty mb-6">
-          {step.description}
+          {t(`steps.${step.key}.description`)}
         </p>
 
         {/* Details list */}
         <ul className="space-y-2">
-          {step.details.map((detail) => (
+          {details.map((detail) => (
             <li key={detail} className="flex items-center gap-3 text-sm">
               <Check className="h-4 w-4 text-primary shrink-0" />
               <span>{detail}</span>
@@ -339,6 +239,7 @@ function TimelineStep({ step, index }: { step: typeof timelineSteps[0]; index: n
 // Roles section
 function RolesSection() {
   const { ref, isVisible } = useScrollAnimation();
+  const t = useTranslations("howItWorksPage.roles");
 
   return (
     <section ref={ref} className="py-20 sm:py-28">
@@ -353,21 +254,20 @@ function RolesSection() {
         >
           <Badge variant="secondary" className="mb-4">
             <Sparkles className="mr-1.5 h-3 w-3" />
-            Role-Based Access
+            {t("badge")}
           </Badge>
           <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-balance">
-            Built for everyone in the circle
+            {t("title")}
           </h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto text-pretty">
-            Each person gets a tailored experience based on their role. The coordinator sees admin settings. 
-            The distant sibling sees daily updates. The caregiver sees tasks. Everyone gets exactly what they need.
+            {t("subtitle")}
           </p>
         </div>
 
         {/* Roles grid - 3 col on lg, 2 col on md, 1 col on mobile */}
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {roles.map((role, index) => (
-            <RoleCard key={role.title} role={role} index={index} isVisible={isVisible} />
+            <RoleCard key={role.key} role={role} index={index} isVisible={isVisible} />
           ))}
         </div>
       </div>
@@ -380,10 +280,13 @@ function RoleCard({
   index,
   isVisible,
 }: {
-  role: typeof roles[0];
+  role: typeof roles[number];
   index: number;
   isVisible: boolean;
 }) {
+  const t = useTranslations("howItWorksPage.roles");
+  const sees = t.raw(`items.${role.key}.sees`) as string[];
+
   const colorClasses = {
     primary: "bg-primary/10 text-primary",
     accent: "bg-accent/10 text-accent",
@@ -410,16 +313,16 @@ function RoleCard({
       >
         <role.icon className="h-6 w-6" />
       </div>
-      <h3 className="font-semibold text-lg mb-2">{role.title}</h3>
+      <h3 className="font-semibold text-lg mb-2">{t(`items.${role.key}.title`)}</h3>
       <p className="text-sm text-muted-foreground mb-4 flex-1">
-        {role.description}
+        {t(`items.${role.key}.description`)}
       </p>
       <div className="pt-4 border-t">
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
-          What they see
+          {t("whatTheySee")}
         </p>
         <div className="flex flex-wrap gap-1.5">
-          {role.sees.map((item) => (
+          {sees.map((item) => (
             <span
               key={item}
               className="inline-flex items-center rounded-md bg-muted px-2 py-1 text-xs"
@@ -436,6 +339,7 @@ function RoleCard({
 // Security section
 function SecuritySection() {
   const { ref, isVisible } = useScrollAnimation();
+  const t = useTranslations("howItWorksPage.security");
 
   return (
     <section ref={ref} className="py-20 sm:py-28 bg-muted/30">
@@ -450,14 +354,13 @@ function SecuritySection() {
         >
           <Badge variant="secondary" className="mb-4">
             <Shield className="mr-1.5 h-3 w-3" />
-            Security & Trust
+            {t("badge")}
           </Badge>
           <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-balance">
-            Your family&apos;s data, protected
+            {t("title")}
           </h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto text-pretty">
-            Health information is sensitive. We built Kintwadi with security and privacy at its foundation — 
-            not as an afterthought.
+            {t("subtitle")}
           </p>
         </div>
 
@@ -465,7 +368,7 @@ function SecuritySection() {
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {securityFeatures.map((feature, index) => (
             <Card
-              key={feature.title}
+              key={feature.key}
               className={cn(
                 "p-6 text-center",
                 "motion-safe:transition-all motion-safe:duration-700",
@@ -476,8 +379,8 @@ function SecuritySection() {
               <div className="mx-auto h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
                 <feature.icon className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="font-semibold mb-2">{feature.title}</h3>
-              <p className="text-sm text-muted-foreground">{feature.description}</p>
+              <h3 className="font-semibold mb-2">{t(`items.${feature.key}.title`)}</h3>
+              <p className="text-sm text-muted-foreground">{t(`items.${feature.key}.description`)}</p>
             </Card>
           ))}
         </div>
@@ -492,15 +395,15 @@ function SecuritySection() {
         >
           <div className="flex items-center gap-2 text-muted-foreground">
             <Shield className="h-5 w-5" />
-            <span className="text-sm font-medium">HIPAA Ready</span>
+            <span className="text-sm font-medium">{t("badges.hipaa")}</span>
           </div>
           <div className="flex items-center gap-2 text-muted-foreground">
             <Lock className="h-5 w-5" />
-            <span className="text-sm font-medium">SOC 2 Type II</span>
+            <span className="text-sm font-medium">{t("badges.soc2")}</span>
           </div>
           <div className="flex items-center gap-2 text-muted-foreground">
             <FileCheck className="h-5 w-5" />
-            <span className="text-sm font-medium">GDPR Compliant</span>
+            <span className="text-sm font-medium">{t("badges.gdpr")}</span>
           </div>
         </div>
       </div>
@@ -511,6 +414,7 @@ function SecuritySection() {
 // Closing CTA
 function ClosingCta() {
   const { ref, isVisible } = useScrollAnimation();
+  const t = useTranslations("howItWorksPage.cta");
 
   return (
     <section ref={ref} className="py-20 sm:py-28">
@@ -523,22 +427,21 @@ function ClosingCta() {
           )}
         >
           <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-balance">
-            Ready to bring your care circle together?
+            {t("title")}
           </h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-xl mx-auto text-pretty">
-            Bring everyone caring for your loved one into one shared place.
-            Free to start, set up in under a minute.
+            {t("subtitle")}
           </p>
           <div className="mt-8 flex flex-wrap gap-4 justify-center">
             <Link href="/dashboard">
               <Button size="lg" className="gap-2">
-                Get started free
+                {t("getStarted")}
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
             <Link href="/pricing">
               <Button size="lg" variant="outline">
-                View pricing
+                {t("viewPricing")}
               </Button>
             </Link>
           </div>

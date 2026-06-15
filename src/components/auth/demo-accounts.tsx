@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Loader2, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -18,16 +19,18 @@ import { signInWithCredentials, resolveLandingPath } from "@/lib/auth/actions";
  */
 const DEMO_PASSWORD = "Kintwadi123";
 
-const PERSONAS: { email: string; name: string; lens: string }[] = [
-  { email: "maria@kintwadi.demo", name: "Maria", lens: "Coordinator (owner)" },
-  { email: "paolo@kintwadi.demo", name: "Paolo", lens: "Remote family" },
-  { email: "grace@kintwadi.demo", name: "Grace", lens: "Professional aide" },
-  { email: "antonio@kintwadi.demo", name: "Antonio", lens: "Care recipient" },
-  { email: "rosa@kintwadi.demo", name: "Rosa", lens: "Read-only" },
-  { email: "chen@kintwadi.demo", name: "Dr. Chen", lens: "Clinician" },
-];
+// Persona lens text comes from `auth.demo.lenses.<lensKey>`; names are proper nouns, kept as-is.
+const PERSONAS = [
+  { email: "maria@kintwadi.demo", name: "Maria", lensKey: "coordinator" },
+  { email: "paolo@kintwadi.demo", name: "Paolo", lensKey: "remote" },
+  { email: "grace@kintwadi.demo", name: "Grace", lensKey: "aide" },
+  { email: "antonio@kintwadi.demo", name: "Antonio", lensKey: "recipient" },
+  { email: "rosa@kintwadi.demo", name: "Rosa", lensKey: "readonly" },
+  { email: "chen@kintwadi.demo", name: "Dr. Chen", lensKey: "clinician" },
+] as const;
 
 export function DemoAccountsPanel() {
+  const t = useTranslations("auth.demo");
   const [busy, setBusy] = React.useState<string | null>(null);
 
   if (process.env.NEXT_PUBLIC_DEMO_MODE !== "1") return null;
@@ -41,10 +44,10 @@ export function DemoAccountsPanel() {
     const res = await signInWithCredentials(fd);
     if (!res.ok) {
       setBusy(null);
-      toast.error("Demo sign-in failed", { description: res.error });
+      toast.error(t("failed"), { description: res.error });
       return;
     }
-    toast.success(`Welcome, ${name}!`, { description: "Entering the demo circle…" });
+    toast.success(t("welcome", { name }), { description: t("entering") });
     // Same full-navigation pattern as the form: guarantees the fresh session cookie is sent.
     window.location.assign(await resolveLandingPath());
   };
@@ -53,11 +56,9 @@ export function DemoAccountsPanel() {
     <div className="mt-6 rounded-2xl border border-primary/20 bg-primary/5 p-4">
       <div className="flex items-center gap-2">
         <Sparkles className="h-4 w-4 text-primary" aria-hidden="true" />
-        <p className="text-sm font-semibold">Reviewing Kintwadi? Try a role.</p>
+        <p className="text-sm font-semibold">{t("title")}</p>
       </div>
-      <p className="mt-1 text-xs text-muted-foreground">
-        One shared record, six lenses — each enforced by the database, not the UI.
-      </p>
+      <p className="mt-1 text-xs text-muted-foreground">{t("subtitle")}</p>
       <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
         {PERSONAS.map((p) => (
           <button
@@ -73,7 +74,7 @@ export function DemoAccountsPanel() {
           >
             <span className="min-w-0">
               <span className="block font-medium">{p.name}</span>
-              <span className="block truncate text-xs text-muted-foreground">{p.lens}</span>
+              <span className="block truncate text-xs text-muted-foreground">{t(`lenses.${p.lensKey}`)}</span>
             </span>
             {busy === p.email && <Loader2 className="h-4 w-4 shrink-0 animate-spin text-primary" aria-hidden="true" />}
           </button>

@@ -7,6 +7,7 @@
  * real guard and redirects to the provider on success.
  */
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -40,6 +41,7 @@ function AppleIcon({ className }: { className?: string }) {
 }
 
 export function SocialAuthButtons() {
+  const t = useTranslations("auth.social");
   const [pending, setPending] = React.useState<null | "google" | "apple">(null);
 
   if (!enabled.google && !enabled.apple) return null;
@@ -60,7 +62,7 @@ export function SocialAuthButtons() {
         setPending(null);
       }
     } catch {
-      toast.error("Could not start sign-in. Please try again.");
+      toast.error(t("error"));
       setPending(null);
     }
   };
@@ -81,7 +83,7 @@ export function SocialAuthButtons() {
             ) : (
               <GoogleIcon className="h-5 w-5" />
             )}
-            Continue with Google
+            {t("google")}
           </Button>
         )}
         {enabled.apple && (
@@ -97,7 +99,7 @@ export function SocialAuthButtons() {
             ) : (
               <AppleIcon className="h-5 w-5" />
             )}
-            Continue with Apple
+            {t("apple")}
           </Button>
         )}
       </div>
@@ -107,7 +109,7 @@ export function SocialAuthButtons() {
           <span className="w-full border-t border-border" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">Or continue with email</span>
+          <span className="bg-background px-2 text-muted-foreground">{t("divider")}</span>
         </div>
       </div>
     </>
