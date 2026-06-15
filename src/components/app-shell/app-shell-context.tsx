@@ -15,14 +15,15 @@ export type UserRole =
   | "care-recipient" 
   | "clinician";
 
-export const roleLabels: Record<UserRole, string> = {
-  coordinator: "Coordinator",
-  family: "Family",
-  caregiver: "Caregiver",
-  readonly: "Read-only",
-  "care-recipient": "Care recipient",
-  clinician: "Clinician",
-};
+/** All role keys, in display order. Labels live under the `app.roles` message namespace. */
+export const ROLE_KEYS: UserRole[] = [
+  "coordinator",
+  "family",
+  "caregiver",
+  "readonly",
+  "care-recipient",
+  "clinician",
+];
 
 // Define which nav items are visible for each role
 // Each role sees a tailored, intentionally-smaller surface. The role-view switcher swaps these so
@@ -89,16 +90,6 @@ export const roleNavAccess: Record<UserRole, string[]> = {
     "/timeline",
     "/documents",
   ],
-};
-
-/** Per-role label override for the home (/dashboard) nav item. */
-export const dashboardLabelByRole: Record<UserRole, string> = {
-  coordinator: "Dashboard",
-  family: "Dashboard",
-  caregiver: "Today",
-  readonly: "Home",
-  "care-recipient": "Home",
-  clinician: "Summary",
 };
 
 /** A care circle as the sidebar's "Switch Circle" menu needs it (data + an avatar color). */

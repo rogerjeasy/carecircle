@@ -3,34 +3,51 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Menu, Search, X, Phone } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ReportIncidentButton } from "@/components/incidents/report-incident-button";
 import { NotificationsBell } from "@/components/notifications";
+import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { GlobalSearch } from "./global-search";
 import { getOnCallNowAction } from "@/lib/rota/actions";
-import { useAppShell, dashboardLabelByRole } from "./app-shell-context";
+import { useAppShell } from "./app-shell-context";
 
-// Page titles mapping
-const pageTitles: Record<string, string> = {
-  "/dashboard": "Dashboard",
-  "/timeline": "Timeline",
-  "/medications": "Medications",
-  "/appointments": "Appointments",
-  "/tasks": "Tasks",
-  "/health": "Health",
-  "/documents": "Documents",
-  "/people": "People",
-  "/digest": "Digest",
-  "/ask": "Ask Kintwadi",
-  "/settings": "Settings",
-  "/notifications": "Notifications",
-  "/incidents": "Incidents",
-  "/profile": "Profile",
-  "/account": "Your profile",
-  "/emergency-card": "Emergency Card",
+// Route → key into the `app.nav` message namespace. /dashboard is handled separately (role-aware).
+type NavKey =
+  | "timeline"
+  | "medications"
+  | "appointments"
+  | "tasks"
+  | "health"
+  | "documents"
+  | "people"
+  | "digest"
+  | "ask"
+  | "settings"
+  | "notifications"
+  | "incidents"
+  | "profile"
+  | "account"
+  | "emergencyCard";
+const pageTitleKeys: Record<string, NavKey> = {
+  "/timeline": "timeline",
+  "/medications": "medications",
+  "/appointments": "appointments",
+  "/tasks": "tasks",
+  "/health": "health",
+  "/documents": "documents",
+  "/people": "people",
+  "/digest": "digest",
+  "/ask": "ask",
+  "/settings": "settings",
+  "/notifications": "notifications",
+  "/incidents": "incidents",
+  "/profile": "profile",
+  "/account": "account",
+  "/emergency-card": "emergencyCard",
 };
 
 interface TopBarProps {
@@ -40,6 +57,7 @@ interface TopBarProps {
 
 export function TopBar({ sidebarCollapsed, onMenuClick }: TopBarProps) {
   const pathname = usePathname();
+  const t = useTranslations("app");
   const { role, activeCircleId } = useAppShell();
   const [searchOpen, setSearchOpen] = React.useState(false);
 
@@ -62,8 +80,13 @@ export function TopBar({ sidebarCollapsed, onMenuClick }: TopBarProps) {
   }, [activeCircleId]);
 
   // The home route's title follows the role-view (Today / Home / Summary / Dashboard).
+  const titleKey = pageTitleKeys[pathname];
   const pageTitle =
-    pathname === "/dashboard" ? dashboardLabelByRole[role] : pageTitles[pathname] || "Dashboard";
+    pathname === "/dashboard"
+      ? t(`dashboardLabels.${role}`)
+      : titleKey
+        ? t(`nav.${titleKey}`)
+        : t("dashboardLabels.coordinator");
 
   return (
     <header
@@ -79,7 +102,7 @@ export function TopBar({ sidebarCollapsed, onMenuClick }: TopBarProps) {
         size="icon"
         className="shrink-0 md:hidden"
         onClick={onMenuClick}
-        aria-label="Open navigation menu"
+        aria-label={t("topbar.openMenu")}
       >
         <Menu className="h-5 w-5" />
       </Button>
@@ -92,11 +115,11 @@ export function TopBar({ sidebarCollapsed, onMenuClick }: TopBarProps) {
         {onCallPerson && (
           <Link
             href="/rota"
-            title={`On call until ${onCallPerson.until}`}
+            title={t("topbar.onCallUntil", { time: onCallPerson.until })}
             className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-success/10 px-2.5 py-1 text-xs font-medium text-success hover:bg-success/20 transition-colors"
           >
             <Phone className="h-3 w-3" />
-            <span>On call: {onCallPerson.name}</span>
+            <span>{t("topbar.onCall", { name: onCallPerson.name })}</span>
           </Link>
         )}
       </div>
@@ -112,7 +135,7 @@ export function TopBar({ sidebarCollapsed, onMenuClick }: TopBarProps) {
           size="icon"
           className="sm:hidden"
           onClick={() => setSearchOpen(!searchOpen)}
-          aria-label="Search"
+          aria-label={t("topbar.search")}
         >
           {searchOpen ? <X className="h-5 w-5" /> : <Search className="h-5 w-5" />}
         </Button>
@@ -122,12 +145,15 @@ export function TopBar({ sidebarCollapsed, onMenuClick }: TopBarProps) {
           variant="ghost"
           size="icon"
           iconOnly
-          label="Report an incident"
+          label={t("topbar.reportIncident")}
           className="text-destructive hover:bg-destructive/10 hover:text-destructive"
         />
 
         {/* Notifications */}
         <NotificationsBell />
+
+        {/* Language — global, all roles, every authenticated page */}
+        <LanguageSwitcher />
 
         {/* Theme toggle */}
         <ThemeToggle />

@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   LayoutDashboard,
   Clock,
@@ -28,8 +29,9 @@ import {
   CalendarClock,
   ShieldAlert,
   ShieldCheck,
+  type LucideIcon,
 } from "lucide-react";
-import { useAppShell, roleLabels, dashboardLabelByRole, UserRole } from "./app-shell-context";
+import { useAppShell, ROLE_KEYS } from "./app-shell-context";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -53,22 +55,23 @@ import {
   DropdownMenuPortal,
 } from "@/components/ui/dropdown-menu";
 
-// Navigation items
-const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/timeline", label: "Timeline", icon: Clock },
-  { href: "/medications", label: "Medications", icon: Pill, urgent: true },
-  { href: "/appointments", label: "Appointments", icon: Calendar },
-  { href: "/tasks", label: "Tasks", icon: CheckSquare },
-  { href: "/health", label: "Health", icon: HeartPulse },
-  { href: "/documents", label: "Documents", icon: FileText },
-  { href: "/people", label: "People", icon: Users },
-  { href: "/digest", label: "Digest", icon: Mail },
-  { href: "/rota", label: "Rota", icon: CalendarClock },
-  { href: "/ask", label: "Ask Kintwadi", icon: Sparkles },
-  { href: "/profile", label: "Profile", icon: User },
-  { href: "/emergency-card", label: "Emergency Card", icon: ShieldAlert },
-];
+// Navigation items — text resolved from the `app.nav` message namespace via `key`.
+type NavItem = { href: string; key: string; icon: LucideIcon; urgent?: boolean };
+const navItems: NavItem[] = [
+  { href: "/dashboard", key: "dashboard", icon: LayoutDashboard },
+  { href: "/timeline", key: "timeline", icon: Clock },
+  { href: "/medications", key: "medications", icon: Pill, urgent: true },
+  { href: "/appointments", key: "appointments", icon: Calendar },
+  { href: "/tasks", key: "tasks", icon: CheckSquare },
+  { href: "/health", key: "health", icon: HeartPulse },
+  { href: "/documents", key: "documents", icon: FileText },
+  { href: "/people", key: "people", icon: Users },
+  { href: "/digest", key: "digest", icon: Mail },
+  { href: "/rota", key: "rota", icon: CalendarClock },
+  { href: "/ask", key: "ask", icon: Sparkles },
+  { href: "/profile", key: "profile", icon: User },
+  { href: "/emergency-card", key: "emergencyCard", icon: ShieldAlert },
+] as const;
 
 // Placeholder shown in the circle switcher until the real circles load.
 const PLACEHOLDER_CIRCLE = { id: "", name: "Care Circle", initials: "··", color: "bg-muted", imageUrl: null };
@@ -80,14 +83,15 @@ interface SidebarProps {
 
 export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const pathname = usePathname();
+  const t = useTranslations("app");
   const { role, setRole, canAccessRoute, user, signOut, circles, activeCircleId, setActiveCircleId, setCreateCircleOpen } = useAppShell();
   const activeCircle = circles.find((c) => c.id === activeCircleId) ?? circles[0] ?? PLACEHOLDER_CIRCLE;
 
   // Real signed-in user (with graceful fallbacks while the profile loads).
   const currentUser = {
-    name: user?.name || "Your account",
+    name: user?.name || t("userMenu.account"),
     initials: user?.initials || "··",
-    role: user?.roleLabel || "",
+    roleLabel: user ? t(`roles.${user.role}`) : "",
     avatar: user?.image ?? null,
   };
 
@@ -127,7 +131,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
                       {activeCircle.name}
                     </span>
                     <span className="block truncate text-xs text-muted-foreground">
-                      Care Circle
+                      {t("sidebar.careCircle")}
                     </span>
                   </span>
                   <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
@@ -136,7 +140,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-56">
-            <DropdownMenuLabel>Switch Circle</DropdownMenuLabel>
+            <DropdownMenuLabel>{t("sidebar.switchCircle")}</DropdownMenuLabel>
             <DropdownMenuSeparator />
             {circles.map((circle) => (
               <DropdownMenuItem
@@ -163,7 +167,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
               <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-dashed border-muted-foreground/40">
                 <Plus className="h-3.5 w-3.5 text-muted-foreground" />
               </div>
-              <span>Create new circle</span>
+              <span>{t("sidebar.createCircle")}</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -175,7 +179,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
           {visibleNavItems.map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
             const Icon = item.icon;
-            const itemLabel = item.href === "/dashboard" ? dashboardLabelByRole[role] : item.label;
+            const itemLabel = item.href === "/dashboard" ? t(`dashboardLabels.${role}`) : t(`nav.${item.key}` as "nav.dashboard");
 
             const navLink = (
               <Link
@@ -232,7 +236,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
               <div className={cn("mb-1 border-t", collapsed ? "mx-2" : "mx-1")} />
               {!collapsed && (
                 <p className="px-3 pb-1 pt-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                  Platform
+                  {t("sidebar.platform")}
                 </p>
               )}
               {(() => {
@@ -253,7 +257,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
                       <span className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 rounded-r-full bg-primary" />
                     )}
                     <ShieldCheck className={cn("h-5 w-5 shrink-0", isActive && "text-primary")} />
-                    {!collapsed && <span className="truncate">Admin dashboard</span>}
+                    {!collapsed && <span className="truncate">{t("sidebar.adminDashboard")}</span>}
                   </Link>
                 );
 
@@ -261,7 +265,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
                   return (
                     <Tooltip delayDuration={0}>
                       <TooltipTrigger asChild>{adminLink}</TooltipTrigger>
-                      <TooltipContent side="right">Admin dashboard</TooltipContent>
+                      <TooltipContent side="right">{t("sidebar.adminDashboard")}</TooltipContent>
                     </Tooltip>
                   );
                 }
@@ -285,7 +289,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
                 <Settings className="h-5 w-5" />
               </Link>
             </TooltipTrigger>
-            <TooltipContent side="right">Settings</TooltipContent>
+            <TooltipContent side="right">{t("nav.settings")}</TooltipContent>
           </Tooltip>
         ) : (
           <Link
@@ -293,7 +297,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
             className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-foreground"
           >
             <Settings className="h-5 w-5" />
-            <span>Settings</span>
+            <span>{t("nav.settings")}</span>
           </Link>
         )}
 
@@ -322,7 +326,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
                     {currentUser.name}
                   </span>
                   <Badge variant="secondary" className="mt-0.5 text-[10px] px-1.5 py-0">
-                    {currentUser.role}
+                    {currentUser.roleLabel}
                   </Badge>
                 </span>
               )}
@@ -338,7 +342,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
                 </Avatar>
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold">{currentUser.name}</p>
-                  <p className="truncate text-xs text-muted-foreground">{currentUser.role}</p>
+                  <p className="truncate text-xs text-muted-foreground">{currentUser.roleLabel}</p>
                 </div>
               </div>
             </DropdownMenuLabel>
@@ -346,29 +350,29 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
             <DropdownMenuItem asChild>
               <Link href="/account">
                 <User className="mr-2 h-4 w-4" />
-                Your profile
+                {t("userMenu.yourProfile")}
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Link href="/settings">
                 <Bell className="mr-2 h-4 w-4" />
-                Notification settings
+                {t("userMenu.notificationSettings")}
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSub>
               <DropdownMenuSubTrigger>
                 <Eye className="mr-2 h-4 w-4" />
-                Switch role view
+                {t("userMenu.switchRoleView")}
               </DropdownMenuSubTrigger>
               <DropdownMenuPortal>
                 <DropdownMenuSubContent className="w-48">
-                  {(Object.keys(roleLabels) as UserRole[]).map((roleKey) => (
+                  {ROLE_KEYS.map((roleKey) => (
                     <DropdownMenuItem
                       key={roleKey}
                       onClick={() => setRole(roleKey)}
                       className="justify-between"
                     >
-                      {roleLabels[roleKey]}
+                      {t(`roles.${roleKey}`)}
                       {role === roleKey && <Check className="h-4 w-4 text-primary" />}
                     </DropdownMenuItem>
                   ))}
@@ -383,7 +387,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
               }}
             >
               <LogOut className="mr-2 h-4 w-4" />
-              Sign out
+              {t("userMenu.signOut")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -403,7 +407,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
           ) : (
             <>
               <ChevronLeft className="h-4 w-4 mr-2" />
-              <span>Collapse</span>
+              <span>{t("sidebar.collapse")}</span>
             </>
           )}
         </Button>
@@ -412,14 +416,14 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   );
 }
 
-// Mobile bottom tab bar
-const mobileNavItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/timeline", label: "Timeline", icon: Clock },
-  { href: "/medications", label: "Meds", icon: Pill, urgent: true },
-  { href: "/tasks", label: "Tasks", icon: CheckSquare },
-  { href: "#more", label: "More", icon: MoreHorizontal },
-];
+// Mobile bottom tab bar — text resolved from `app.nav` via `key`.
+const mobileNavItems: NavItem[] = [
+  { href: "/dashboard", key: "dashboard", icon: LayoutDashboard },
+  { href: "/timeline", key: "timeline", icon: Clock },
+  { href: "/medications", key: "medicationsShort", icon: Pill, urgent: true },
+  { href: "/tasks", key: "tasks", icon: CheckSquare },
+  { href: "#more", key: "more", icon: MoreHorizontal },
+] as const;
 
 interface MobileBottomNavProps {
   onMoreClick: () => void;
@@ -427,6 +431,7 @@ interface MobileBottomNavProps {
 
 export function MobileBottomNav({ onMoreClick }: MobileBottomNavProps) {
   const pathname = usePathname();
+  const t = useTranslations("app");
   const { canAccessRoute, role } = useAppShell();
   const [isVisible, setIsVisible] = React.useState(true);
   const [lastScrollY, setLastScrollY] = React.useState(0);
@@ -441,7 +446,7 @@ export function MobileBottomNav({ onMoreClick }: MobileBottomNavProps) {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
       const scrollDelta = currentScrollY - lastScrollY;
-      
+
       // Only trigger if scrolled more than 10px (avoid jitter)
       if (Math.abs(scrollDelta) < 10) return;
 
@@ -459,7 +464,7 @@ export function MobileBottomNav({ onMoreClick }: MobileBottomNavProps) {
 
     // Check if user prefers reduced motion
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    
+
     if (!prefersReducedMotion) {
       window.addEventListener("scroll", handleScroll, { passive: true });
       return () => window.removeEventListener("scroll", handleScroll);
@@ -488,12 +493,12 @@ export function MobileBottomNav({ onMoreClick }: MobileBottomNavProps) {
                 className="flex flex-1 flex-col items-center gap-1 py-2 text-muted-foreground"
               >
                 <Icon className="h-5 w-5" />
-                <span className="text-[10px] font-medium">{item.label}</span>
+                <span className="text-[10px] font-medium">{t(`nav.${item.key}` as "nav.dashboard")}</span>
               </button>
             );
           }
 
-          const itemLabel = item.href === "/dashboard" ? dashboardLabelByRole[role] : item.label;
+          const itemLabel = item.href === "/dashboard" ? t(`dashboardLabels.${role}`) : t(`nav.${item.key}` as "nav.dashboard");
 
           return (
             <Link

@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   Search,
   Sparkles,
@@ -21,15 +22,16 @@ import { Input } from "@/components/ui/input";
 import { globalSearch } from "@/lib/search/actions";
 import type { SearchResult, SearchResultType } from "@/lib/search/types";
 
-const TYPE_META: Record<SearchResultType, { label: string; icon: typeof Users }> = {
-  person: { label: "People", icon: Users },
-  recipient: { label: "Care recipient", icon: User },
-  medication: { label: "Medications", icon: Pill },
-  document: { label: "Documents", icon: FileText },
-  task: { label: "Tasks", icon: ListTodo },
-  appointment: { label: "Appointments", icon: Calendar },
-  timeline: { label: "Timeline", icon: MessageSquare },
-  incident: { label: "Incidents", icon: Siren },
+// Icon per result type; the group label comes from the `app.search.groups` message namespace.
+const TYPE_ICON: Record<SearchResultType, typeof Users> = {
+  person: Users,
+  recipient: User,
+  medication: Pill,
+  document: FileText,
+  task: ListTodo,
+  appointment: Calendar,
+  timeline: MessageSquare,
+  incident: Siren,
 };
 
 // Order groups are shown in the dropdown.
@@ -61,6 +63,7 @@ interface GlobalSearchProps {
  */
 export function GlobalSearch({ className, autoFocus, onNavigate }: GlobalSearchProps) {
   const router = useRouter();
+  const t = useTranslations("app.search");
   const [query, setQuery] = React.useState("");
   const [results, setResults] = React.useState<SearchResult[]>([]);
   const [loading, setLoading] = React.useState(false);
@@ -179,8 +182,8 @@ export function GlobalSearch({ className, autoFocus, onNavigate }: GlobalSearchP
         onChange={(e) => onQueryChange(e.target.value)}
         onFocus={() => setOpen(true)}
         onKeyDown={onKeyDown}
-        placeholder="Search or ask…"
-        aria-label="Search the care record"
+        placeholder={t("placeholder")}
+        aria-label={t("ariaLabel")}
         role="combobox"
         aria-expanded={showPanel}
         aria-controls="global-search-results"
@@ -209,20 +212,20 @@ export function GlobalSearch({ className, autoFocus, onNavigate }: GlobalSearchP
               icon={<Sparkles className="h-4 w-4 text-primary" />}
               title={
                 <span className="truncate">
-                  Ask Kintwadi: <span className="text-muted-foreground">“{trimmed}”</span>
+                  {t("askPrefix")} <span className="text-muted-foreground">“{trimmed}”</span>
                 </span>
               }
-              hint="Answered from this circle’s record"
+              hint={t("askHint")}
               enterHint
             />
           )}
 
           {grouped.map((group) => {
-            const Meta = TYPE_META[group.type];
+            const Icon = TYPE_ICON[group.type];
             return (
               <div key={group.type} className="mt-1.5 first:mt-0">
                 <p className="px-2 pb-1 pt-1.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-                  {Meta.label}
+                  {t(`groups.${group.type}` as "groups.person")}
                 </p>
                 {group.items.map((item) => {
                   const flatIndex = flatResults.indexOf(item) + (hasAsk ? 1 : 0);
@@ -232,7 +235,7 @@ export function GlobalSearch({ className, autoFocus, onNavigate }: GlobalSearchP
                       active={activeIndex === flatIndex}
                       onMouseEnter={() => setActiveIndex(flatIndex)}
                       onClick={() => select(flatIndex)}
-                      icon={<Meta.icon className="h-4 w-4 text-muted-foreground" />}
+                      icon={<Icon className="h-4 w-4 text-muted-foreground" />}
                       title={<span className="truncate">{item.title}</span>}
                       hint={item.subtitle}
                     />
