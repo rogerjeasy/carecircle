@@ -1,17 +1,19 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { ArrowUpRight } from "lucide-react";
 import { sourceIcon } from "./data";
 import type { SourceRef } from "./types";
 
 /** A small linked card citing a record the answer was grounded in. Reflows 2-up on wide screens. */
 export function SourceCards({ sources }: { sources: SourceRef[] }) {
+  const t = useTranslations("ask");
   if (sources.length === 0) return null;
   return (
     <div className="mt-3">
       <p className="mb-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-        Sources
+        {t("sources")}
       </p>
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         {sources.map((s) => {

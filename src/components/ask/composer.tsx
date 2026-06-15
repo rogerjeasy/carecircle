@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Mic, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -38,6 +39,8 @@ export interface ComposerProps {
 
 /** The persistent bottom input — send + a mic option, safe-area aware. */
 export function Composer({ value, onChange, onSubmit, disabled, recipientName }: ComposerProps) {
+  const t = useTranslations("ask");
+  const locale = useLocale();
   const [listening, setListening] = React.useState(false);
   const recognitionRef = React.useRef<SpeechRecognitionLike | null>(null);
 
@@ -51,11 +54,11 @@ export function Composer({ value, onChange, onSubmit, disabled, recipientName }:
     }
     const rec = createRecognition();
     if (!rec) {
-      toast("Voice input isn't supported on this device");
+      toast(t("composer.voiceUnsupported"));
       return;
     }
     recognitionRef.current = rec;
-    rec.lang = "en-US";
+    rec.lang = locale;
     rec.interimResults = false;
     rec.onresult = (e) => {
       const transcript = e.results?.[0]?.[0]?.transcript;
@@ -84,8 +87,8 @@ export function Composer({ value, onChange, onSubmit, disabled, recipientName }:
           <Input
             value={value}
             onChange={(e) => onChange(e.target.value)}
-            placeholder={recipientName ? `Ask about ${recipientName}'s care…` : "Ask about this circle's care…"}
-            aria-label={recipientName ? `Ask a question about ${recipientName}'s care` : "Ask a question about this circle's care"}
+            placeholder={recipientName ? t("composer.placeholderNamed", { name: recipientName }) : t("composer.placeholderGeneric")}
+            aria-label={recipientName ? t("composer.ariaNamed", { name: recipientName }) : t("composer.ariaGeneric")}
             className="h-12 pr-12"
           />
           <Button
@@ -93,7 +96,7 @@ export function Composer({ value, onChange, onSubmit, disabled, recipientName }:
             variant="ghost"
             size="icon"
             onClick={toggleMic}
-            aria-label={listening ? "Stop voice input" : "Start voice input"}
+            aria-label={listening ? t("composer.stopVoice") : t("composer.startVoice")}
             aria-pressed={listening}
             className={cn(
               "absolute right-1.5 top-1/2 h-9 w-9 -translate-y-1/2",
@@ -103,7 +106,7 @@ export function Composer({ value, onChange, onSubmit, disabled, recipientName }:
             <Mic className={cn("h-4 w-4", listening && "motion-safe:animate-pulse")} />
           </Button>
         </div>
-        <Button type="submit" size="icon" className="h-12 w-12 shrink-0" disabled={disabled || !value.trim()} aria-label="Send question">
+        <Button type="submit" size="icon" className="h-12 w-12 shrink-0" disabled={disabled || !value.trim()} aria-label={t("composer.send")}>
           <Send className="h-4 w-4" />
         </Button>
       </form>

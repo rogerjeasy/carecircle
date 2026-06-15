@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Lock, Sparkles, History, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -31,7 +32,6 @@ import { Composer } from "./composer";
 import { ConversationList } from "./conversation-list";
 import { AssistantMessage, ThinkingBubble, UserBubble } from "./message";
 import { useReducedMotion } from "./use-typewriter";
-import { EXAMPLE_PROMPTS } from "./data";
 import { askKintwadi, loadConversation, deleteConversation, renameConversation } from "@/lib/ask/actions";
 import type { ConversationDetail, ConversationSummary, Message } from "./types";
 
@@ -48,6 +48,7 @@ export interface AskScreenProps {
 
 /** "Ask Kintwadi" — a calm chat over THIS circle's record, with saved, resumable conversations. */
 export function AskScreen({ recipientName, conversations: initialList, initialConversation, initialQuery }: AskScreenProps) {
+  const t = useTranslations("ask");
   const reduced = useReducedMotion();
   const [conversations, setConversations] = React.useState<ConversationSummary[]>(initialList);
   const [activeId, setActiveId] = React.useState<string | null>(initialConversation?.id ?? null);
@@ -97,12 +98,12 @@ export function AskScreen({ recipientName, conversations: initialList, initialCo
           setMessages((prev) => [...prev, { id: `m-${idRef.current++}`, role: "assistant", text: res.error }]);
         }
       } catch {
-        toast.error("Couldn't reach the assistant. Please try again.");
+        toast.error(t("errors.unreachable"));
       } finally {
         setThinking(false);
       }
     },
-    [thinking, activeId]
+    [thinking, activeId, t]
   );
 
   // One-shot handoff from the top-bar search: auto-ask the `?q=` question in this fresh thread.
@@ -152,10 +153,10 @@ export function AskScreen({ recipientName, conversations: initialList, initialCo
     void deleteConversation(target.id).then((res) => {
       if (!res.ok) {
         setConversations(prev);
-        toast.error(res.error ?? "Couldn't delete the conversation");
+        toast.error(res.error ?? t("errors.deleteFailed"));
       }
     });
-  }, [pendingDelete, conversations, activeId, startNew]);
+  }, [pendingDelete, conversations, activeId, startNew, t]);
 
   const startRename = React.useCallback((c: ConversationSummary) => {
     setPendingRename(c);
@@ -172,14 +173,14 @@ export function AskScreen({ recipientName, conversations: initialList, initialCo
     void renameConversation(target.id, title).then((res) => {
       if (!res.ok) {
         setConversations(prev);
-        toast.error(res.error ?? "Couldn't rename the conversation");
+        toast.error(res.error ?? t("errors.renameFailed"));
       }
     });
-  }, [pendingRename, renameValue, conversations]);
+  }, [pendingRename, renameValue, conversations, t]);
 
   const newestAssistantId = [...messages].reverse().find((m) => m.role === "assistant")?.id;
   const hasConversation = messages.length > 0;
-  const who = recipientName ?? "your circle";
+  const who = recipientName ?? t("whoFallback");
 
   const list = (
     <ConversationList
@@ -209,16 +210,16 @@ export function AskScreen({ recipientName, conversations: initialList, initialCo
               onClick={() => setSheetOpen(true)}
             >
               <History className="h-4 w-4" aria-hidden="true" />
-              History
+              {t("history")}
             </Button>
             <Badge variant="secondary" className="gap-1.5">
               <Lock className="h-3 w-3" aria-hidden="true" />
-              <span className="truncate">{recipientName ? `${recipientName}'s care only` : "This circle only"}</span>
+              <span className="truncate">{recipientName ? t("scopeNamed", { name: recipientName }) : t("scopeGeneric")}</span>
             </Badge>
           </div>
           {hasConversation && (
             <Button variant="ghost" size="sm" onClick={startNew} className="text-muted-foreground">
-              New
+              {t("new")}
             </Button>
           )}
         </div>
@@ -235,7 +236,7 @@ export function AskScreen({ recipientName, conversations: initialList, initialCo
               role="log"
               aria-live="polite"
               aria-relevant="additions"
-              aria-label="Conversation with Kintwadi"
+              aria-label={t("conversationLog")}
             >
               {messages.map((m) =>
                 m.role === "user" ? (
@@ -257,7 +258,7 @@ export function AskScreen({ recipientName, conversations: initialList, initialCo
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
         <SheetContent side="left" className="flex w-[20rem] max-w-[85vw] flex-col p-4">
           <SheetHeader className="p-0">
-            <SheetTitle>Conversations</SheetTitle>
+            <SheetTitle>{t("historyTitle")}</SheetTitle>
           </SheetHeader>
           <div className="mt-4 min-h-0 flex-1">{list}</div>
         </SheetContent>
@@ -267,18 +268,18 @@ export function AskScreen({ recipientName, conversations: initialList, initialCo
       <AlertDialog open={pendingDelete !== null} onOpenChange={(o) => !o && setPendingDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete this conversation?</AlertDialogTitle>
+            <AlertDialogTitle>{t("deleteDialog.title")}</AlertDialogTitle>
             <AlertDialogDescription>
-              This removes it from your history. It can&apos;t be undone.
+              {t("deleteDialog.body")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Keep it</AlertDialogCancel>
+            <AlertDialogCancel>{t("deleteDialog.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Delete
+              {t("deleteDialog.confirm")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -294,26 +295,26 @@ export function AskScreen({ recipientName, conversations: initialList, initialCo
             }}
           >
             <DialogHeader>
-              <DialogTitle>Rename conversation</DialogTitle>
-              <DialogDescription>Give this conversation a name that&apos;s easy to find later.</DialogDescription>
+              <DialogTitle>{t("renameDialog.title")}</DialogTitle>
+              <DialogDescription>{t("renameDialog.body")}</DialogDescription>
             </DialogHeader>
             <div className="space-y-2 py-4">
-              <Label htmlFor="conversation-title">Title</Label>
+              <Label htmlFor="conversation-title">{t("renameDialog.label")}</Label>
               <Input
                 id="conversation-title"
                 value={renameValue}
                 onChange={(e) => setRenameValue(e.target.value)}
                 maxLength={80}
                 autoFocus
-                placeholder="e.g. Cardiology questions"
+                placeholder={t("renameDialog.placeholder")}
               />
             </div>
             <DialogFooter>
               <Button type="button" variant="ghost" onClick={() => setPendingRename(null)}>
-                Cancel
+                {t("renameDialog.cancel")}
               </Button>
               <Button type="submit" disabled={!renameValue.trim()}>
-                Save
+                {t("renameDialog.save")}
               </Button>
             </DialogFooter>
           </form>
@@ -324,6 +325,7 @@ export function AskScreen({ recipientName, conversations: initialList, initialCo
 }
 
 function ConversationSkeleton() {
+  const t = useTranslations("ask");
   return (
     <div className="mx-auto w-full max-w-3xl space-y-5 py-2" aria-hidden="true">
       <div className="flex justify-end">
@@ -336,26 +338,28 @@ function ConversationSkeleton() {
       </div>
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-        Loading conversation…
+        {t("loading")}
       </div>
     </div>
   );
 }
 
 function EmptyState({ who, onPick }: { who: string; onPick: (q: string) => void }) {
+  const t = useTranslations("ask");
+  const examplePrompts = t.raw("examplePrompts") as string[];
   return (
     <div className="mx-auto flex h-full max-w-2xl flex-col items-center justify-center gap-5 px-2 text-center">
       <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
         <Sparkles className="h-7 w-7" aria-hidden="true" />
       </div>
       <div>
-        <h2 className="font-display text-xl font-bold tracking-tight sm:text-2xl">Ask about {who}&apos;s care</h2>
+        <h2 className="font-display text-xl font-bold tracking-tight sm:text-2xl">{t("empty.heading", { who })}</h2>
         <p className="mt-1.5 text-sm text-muted-foreground">
-          Ask in plain language. Answers come only from this circle&apos;s record, with sources you can check.
+          {t("empty.body")}
         </p>
       </div>
       <ul className="flex flex-wrap justify-center gap-2">
-        {EXAMPLE_PROMPTS.map((prompt) => (
+        {examplePrompts.map((prompt) => (
           <li key={prompt} className="min-w-0">
             <button
               type="button"

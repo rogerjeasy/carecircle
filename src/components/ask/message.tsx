@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SourceCards } from "./source-card";
@@ -42,12 +43,13 @@ export function AssistantMessage({ message, animate }: { message: Message; anima
 
 /** A thinking indicator shown before the assistant's answer starts streaming. */
 export function ThinkingBubble() {
+  const t = useTranslations("ask");
   return (
     <div className="flex gap-3">
       <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
         <Sparkles className="h-4 w-4" aria-hidden="true" />
       </span>
-      <div className="flex items-center gap-1 rounded-2xl rounded-tl-md border bg-card px-4 py-3.5" aria-label="Thinking">
+      <div className="flex items-center gap-1 rounded-2xl rounded-tl-md border bg-card px-4 py-3.5" aria-label={t("thinking")}>
         {[0, 1, 2].map((i) => (
           <span
             key={i}
