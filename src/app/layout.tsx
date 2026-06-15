@@ -1,6 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Fraunces } from "next/font/google";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getMessages } from "next-intl/server";
 import { ThemeProvider } from "@/components/theme-provider";
+import { defaultLocale, getDir, isLocale } from "@/i18n/locales";
 import { Toaster } from "sonner";
 import "./globals.css";
 
@@ -40,14 +43,20 @@ export const viewport: Viewport = {
   maximumScale: 5,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Resolved per-request by src/i18n/request.ts (cookie → Accept-Language → default).
+  const resolved = await getLocale();
+  const locale = isLocale(resolved) ? resolved : defaultLocale;
+  const messages = await getMessages();
+
   return (
     <html
-      lang="en"
+      lang={locale}
+      dir={getDir(locale)}
       className={`${inter.variable} ${fraunces.variable} h-full antialiased`}
       data-scroll-behavior="smooth"
       suppressHydrationWarning
@@ -64,8 +73,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
-          <Toaster 
+          <NextIntlClientProvider locale={locale} messages={messages}>
+            {children}
+          </NextIntlClientProvider>
+          <Toaster
             position="top-center" 
             toastOptions={{
               classNames: {
