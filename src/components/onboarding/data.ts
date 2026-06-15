@@ -16,95 +16,105 @@ export const defaultData: OnboardingData = {
   invites: [],
 };
 
-export const commonConditions = [
-  "Diabetes",
-  "Hypertension",
-  "Heart disease",
-  "Arthritis",
-  "Dementia",
-  "Alzheimer's",
-  "Parkinson's",
-  "COPD",
-  "Asthma",
-  "Cancer",
-  "Stroke",
-  "Depression",
-];
+// Suggestion-list keys for the chip inputs (display text resolved via
+// `onboarding.conditions.<key>` / `onboarding.allergies.<key>`). The added chip stores the
+// localized label string itself (this is free-text data the user curates), so the suggestions
+// only drive the dropdown — the resolved label is what gets added.
+export const commonConditionKeys = [
+  "diabetes",
+  "hypertension",
+  "heartDisease",
+  "arthritis",
+  "dementia",
+  "alzheimers",
+  "parkinsons",
+  "copd",
+  "asthma",
+  "cancer",
+  "stroke",
+  "depression",
+] as const;
 
-export const commonAllergies = [
-  "Penicillin",
-  "Sulfa drugs",
-  "Aspirin",
-  "NSAIDs",
-  "Latex",
-  "Peanuts",
-  "Shellfish",
-  "Eggs",
-  "Dairy",
-  "Gluten",
-  "Bee stings",
-  "Contrast dye",
-];
+export const commonAllergyKeys = [
+  "penicillin",
+  "sulfaDrugs",
+  "aspirin",
+  "nsaids",
+  "latex",
+  "peanuts",
+  "shellfish",
+  "eggs",
+  "dairy",
+  "gluten",
+  "beeStings",
+  "contrastDye",
+] as const;
 
+// Relationship options. `value` is the canonical (lowercased) value stored on the recipient;
+// the display label is resolved via `onboarding.relationships.<key>`.
 export const relationships = [
-  "Parent",
-  "Spouse/Partner",
-  "Grandparent",
-  "Sibling",
-  "Child",
-  "In-law",
-  "Friend",
-  "Neighbor",
-  "Client",
-  "Other",
-];
+  { value: "parent", key: "parent" },
+  { value: "spouse/partner", key: "spousePartner" },
+  { value: "grandparent", key: "grandparent" },
+  { value: "sibling", key: "sibling" },
+  { value: "child", key: "child" },
+  { value: "in-law", key: "inLaw" },
+  { value: "friend", key: "friend" },
+  { value: "neighbor", key: "neighbor" },
+  { value: "client", key: "client" },
+  { value: "other", key: "other" },
+] as const;
 
+// Primary-language options. `value` is the stored (lowercased) value; the display label is
+// resolved via `onboarding.languages.<key>`.
 export const languages = [
-  "English",
-  "Spanish",
-  "French",
-  "Portuguese",
-  "German",
-  "Italian",
-  "Chinese (Mandarin)",
-  "Chinese (Cantonese)",
-  "Japanese",
-  "Korean",
-  "Vietnamese",
-  "Tagalog",
-  "Arabic",
-  "Hindi",
-  "Russian",
-  "Polish",
-  "Other",
-];
+  { value: "english", key: "english" },
+  { value: "spanish", key: "spanish" },
+  { value: "french", key: "french" },
+  { value: "portuguese", key: "portuguese" },
+  { value: "german", key: "german" },
+  { value: "italian", key: "italian" },
+  { value: "chinese (mandarin)", key: "mandarin" },
+  { value: "chinese (cantonese)", key: "cantonese" },
+  { value: "japanese", key: "japanese" },
+  { value: "korean", key: "korean" },
+  { value: "vietnamese", key: "vietnamese" },
+  { value: "tagalog", key: "tagalog" },
+  { value: "arabic", key: "arabic" },
+  { value: "hindi", key: "hindi" },
+  { value: "russian", key: "russian" },
+  { value: "polish", key: "polish" },
+  { value: "other", key: "other" },
+] as const;
 
+// Time-zone options. `value` is the canonical IANA id (stored verbatim); the display label is
+// resolved via `onboarding.timezones.<key>`.
 export const timezones = [
-  { value: "America/New_York", label: "Eastern Time (ET)" },
-  { value: "America/Chicago", label: "Central Time (CT)" },
-  { value: "America/Denver", label: "Mountain Time (MT)" },
-  { value: "America/Los_Angeles", label: "Pacific Time (PT)" },
-  { value: "America/Anchorage", label: "Alaska Time (AKT)" },
-  { value: "Pacific/Honolulu", label: "Hawaii Time (HT)" },
-  { value: "Europe/London", label: "London (GMT/BST)" },
-  { value: "Europe/Paris", label: "Central European (CET)" },
-  { value: "Europe/Berlin", label: "Berlin (CET)" },
-  { value: "Asia/Tokyo", label: "Japan (JST)" },
-  { value: "Asia/Shanghai", label: "China (CST)" },
-  { value: "Asia/Kolkata", label: "India (IST)" },
-  { value: "Australia/Sydney", label: "Sydney (AEST)" },
-];
+  { value: "America/New_York", key: "easternTime" },
+  { value: "America/Chicago", key: "centralTime" },
+  { value: "America/Denver", key: "mountainTime" },
+  { value: "America/Los_Angeles", key: "pacificTime" },
+  { value: "America/Anchorage", key: "alaskaTime" },
+  { value: "Pacific/Honolulu", key: "hawaiiTime" },
+  { value: "Europe/London", key: "london" },
+  { value: "Europe/Paris", key: "centralEuropean" },
+  { value: "Europe/Berlin", key: "berlin" },
+  { value: "Asia/Tokyo", key: "japan" },
+  { value: "Asia/Shanghai", key: "china" },
+  { value: "Asia/Kolkata", key: "india" },
+  { value: "Australia/Sydney", key: "sydney" },
+] as const;
 
 // Values match the schema's `role` enum (minus `owner`, which is the inviter).
-// The `description` is shown under each option to clarify what the role can do.
+// The label/description are resolved via `onboarding.roles.<value>.label` / `.description`.
 export const inviteRoles = [
-  { value: "family", label: "Family member", description: "View updates and help coordinate care" },
-  { value: "family_admin", label: "Family admin", description: "Manage people, roles, and circle settings" },
-  { value: "caregiver", label: "Caregiver", description: "Log meds, vitals, tasks, and daily care" },
-  { value: "clinician", label: "Clinician", description: "Doctor, nurse, or therapist — clinical access" },
-  { value: "care_recipient", label: "Care recipient", description: "The person receiving care" },
-  { value: "read_only", label: "Read-only", description: "Can view, but not make changes" },
-];
+  { value: "family" },
+  { value: "family_admin" },
+  { value: "caregiver" },
+  { value: "clinician" },
+  { value: "care_recipient" },
+  { value: "read_only" },
+] as const;
 
 // Step transition animations (framer-motion variants).
 export const stepVariants = {

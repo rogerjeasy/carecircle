@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Heart, User, X, Plus, Trash2, Sparkles, Users, Cake, Languages as LanguagesIcon, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -19,8 +20,8 @@ import {
 import { ChipInput } from "./chip-input";
 import { downscaleImage } from "./utils";
 import {
-  commonAllergies,
-  commonConditions,
+  commonAllergyKeys,
+  commonConditionKeys,
   inviteRoles,
   languages,
   relationships,
@@ -30,19 +31,18 @@ import type { OnboardingData, StepProps } from "./types";
 
 /* ----------------------------- Step 1: Welcome ---------------------------- */
 export function Step1Welcome() {
+  const t = useTranslations("onboarding");
   return (
     <div className="text-center space-y-6 py-8">
       <div className="mx-auto w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
         <Heart className="h-10 w-10 text-primary" />
       </div>
       <div className="space-y-3">
-        <h2 className="font-serif text-3xl font-bold text-foreground">Welcome to Kintwadi</h2>
-        <p className="text-lg text-muted-foreground max-w-md mx-auto">
-          You are about to bring your family and care team together in one place.
-        </p>
+        <h2 className="font-serif text-3xl font-bold text-foreground">{t("welcome.title")}</h2>
+        <p className="text-lg text-muted-foreground max-w-md mx-auto">{t("welcome.subtitle")}</p>
       </div>
       <div className="pt-4">
-        <p className="text-primary font-medium">Let&apos;s set up care for your loved one.</p>
+        <p className="text-primary font-medium">{t("welcome.cta")}</p>
       </div>
     </div>
   );
@@ -50,6 +50,7 @@ export function Step1Welcome() {
 
 /* ------------------------- Step 2: Care recipient ------------------------- */
 export function Step2CareRecipient({ data, updateData }: StepProps) {
+  const t = useTranslations("onboarding");
   const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -57,7 +58,7 @@ export function Step2CareRecipient({ data, updateData }: StepProps) {
         const dataUrl = await downscaleImage(file);
         updateData({ recipientPhoto: dataUrl });
       } catch {
-        toast.error("Couldn't read that image", { description: "Please try a different photo." });
+        toast.error(t("recipient.photoError"), { description: t("recipient.photoErrorHint") });
       }
     }
   };
@@ -65,8 +66,8 @@ export function Step2CareRecipient({ data, updateData }: StepProps) {
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h2 className="font-serif text-2xl font-bold">Who are you caring for?</h2>
-        <p className="text-muted-foreground">Tell us about the person at the center of this care circle.</p>
+        <h2 className="font-serif text-2xl font-bold">{t("recipient.title")}</h2>
+        <p className="text-muted-foreground">{t("recipient.subtitle")}</p>
       </div>
 
       <div className="space-y-4">
@@ -81,7 +82,7 @@ export function Step2CareRecipient({ data, updateData }: StepProps) {
             >
               {data.recipientPhoto ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={data.recipientPhoto} alt="Care recipient" className="w-full h-full object-cover" />
+                <img src={data.recipientPhoto} alt={t("recipient.photoAlt")} className="w-full h-full object-cover" />
               ) : (
                 <User className="h-10 w-10 text-muted-foreground/50" />
               )}
@@ -90,7 +91,7 @@ export function Step2CareRecipient({ data, updateData }: StepProps) {
                 accept="image/*"
                 onChange={handlePhotoChange}
                 className="absolute inset-0 opacity-0 cursor-pointer"
-                aria-label="Upload photo"
+                aria-label={t("recipient.uploadPhoto")}
               />
             </div>
             {data.recipientPhoto && (
@@ -98,21 +99,21 @@ export function Step2CareRecipient({ data, updateData }: StepProps) {
                 type="button"
                 onClick={() => updateData({ recipientPhoto: null })}
                 className="absolute -top-1 -right-1 p-1 rounded-full bg-destructive text-destructive-foreground"
-                aria-label="Remove photo"
+                aria-label={t("recipient.removePhoto")}
               >
                 <X className="h-3 w-3" />
               </button>
             )}
           </div>
         </div>
-        <p className="text-center text-xs text-muted-foreground">Add a photo (optional)</p>
+        <p className="text-center text-xs text-muted-foreground">{t("recipient.addPhotoOptional")}</p>
 
         {/* Name */}
         <div className="space-y-2">
-          <Label htmlFor="recipientName">Their name *</Label>
+          <Label htmlFor="recipientName">{t("recipient.nameLabel")}</Label>
           <Input
             id="recipientName"
-            placeholder="e.g., Antonio"
+            placeholder={t("recipient.namePlaceholder")}
             value={data.recipientName}
             onChange={(e) => updateData({ recipientName: e.target.value })}
             autoComplete="off"
@@ -121,7 +122,7 @@ export function Step2CareRecipient({ data, updateData }: StepProps) {
 
         {/* Date of birth */}
         <div className="space-y-2">
-          <Label htmlFor="recipientDob">Date of birth</Label>
+          <Label htmlFor="recipientDob">{t("recipient.dobLabel")}</Label>
           <Input
             id="recipientDob"
             type="date"
@@ -132,15 +133,15 @@ export function Step2CareRecipient({ data, updateData }: StepProps) {
 
         {/* Relationship */}
         <div className="space-y-2">
-          <Label htmlFor="relationship">Your relationship to them</Label>
+          <Label htmlFor="relationship">{t("recipient.relationshipLabel")}</Label>
           <Select value={data.relationship} onValueChange={(value) => updateData({ relationship: value })}>
             <SelectTrigger id="relationship">
-              <SelectValue placeholder="Select relationship" />
+              <SelectValue placeholder={t("recipient.relationshipPlaceholder")} />
             </SelectTrigger>
             <SelectContent>
               {relationships.map((rel) => (
-                <SelectItem key={rel} value={rel.toLowerCase()}>
-                  {rel}
+                <SelectItem key={rel.value} value={rel.value}>
+                  {t(`relationships.${rel.key}` as "relationships.parent")}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -153,45 +154,56 @@ export function Step2CareRecipient({ data, updateData }: StepProps) {
 
 /* ------------------------- Step 3: Health basics -------------------------- */
 export function Step3HealthBasics({ data, updateData }: StepProps) {
+  const t = useTranslations("onboarding");
+  // Resolve the suggestion labels for the locale. The chip the user picks is stored as the
+  // localized label string (free-text health data they curate), so the dropdown surfaces the
+  // translated option text directly.
+  const conditionSuggestions = React.useMemo(
+    () => commonConditionKeys.map((k) => t(`conditions.${k}` as "conditions.diabetes")),
+    [t],
+  );
+  const allergySuggestions = React.useMemo(
+    () => commonAllergyKeys.map((k) => t(`allergies.${k}` as "allergies.penicillin")),
+    [t],
+  );
+
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h2 className="font-serif text-2xl font-bold">Health basics</h2>
-        <p className="text-muted-foreground">
-          This helps your care team provide better support. All fields are optional.
-        </p>
+        <h2 className="font-serif text-2xl font-bold">{t("health.title")}</h2>
+        <p className="text-muted-foreground">{t("health.subtitle")}</p>
       </div>
 
       <div className="space-y-5">
         {/* Conditions */}
         <ChipInput
-          label="Key conditions"
+          label={t("health.conditionsLabel")}
           value={data.conditions}
           onChange={(conditions) => updateData({ conditions })}
-          suggestions={commonConditions}
-          placeholder="Type or select conditions..."
+          suggestions={conditionSuggestions}
+          placeholder={t("health.conditionsPlaceholder")}
         />
 
         {/* Allergies */}
         <ChipInput
-          label="Allergies"
+          label={t("health.allergiesLabel")}
           value={data.allergies}
           onChange={(allergies) => updateData({ allergies })}
-          suggestions={commonAllergies}
-          placeholder="Type or select allergies..."
+          suggestions={allergySuggestions}
+          placeholder={t("health.allergiesPlaceholder")}
         />
 
         {/* Primary language */}
         <div className="space-y-2">
-          <Label htmlFor="language">Primary language</Label>
+          <Label htmlFor="language">{t("health.languageLabel")}</Label>
           <Select value={data.primaryLanguage} onValueChange={(value) => updateData({ primaryLanguage: value })}>
             <SelectTrigger id="language">
-              <SelectValue placeholder="Select language" />
+              <SelectValue placeholder={t("health.languagePlaceholder")} />
             </SelectTrigger>
             <SelectContent>
               {languages.map((lang) => (
-                <SelectItem key={lang} value={lang.toLowerCase()}>
-                  {lang}
+                <SelectItem key={lang.value} value={lang.value}>
+                  {t(`languages.${lang.key}` as "languages.english")}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -200,15 +212,15 @@ export function Step3HealthBasics({ data, updateData }: StepProps) {
 
         {/* Timezone */}
         <div className="space-y-2">
-          <Label htmlFor="timezone">Time zone</Label>
+          <Label htmlFor="timezone">{t("health.timezoneLabel")}</Label>
           <Select value={data.timezone} onValueChange={(value) => updateData({ timezone: value })}>
             <SelectTrigger id="timezone">
-              <SelectValue placeholder="Select timezone" />
+              <SelectValue placeholder={t("health.timezonePlaceholder")} />
             </SelectTrigger>
             <SelectContent>
               {timezones.map((tz) => (
                 <SelectItem key={tz.value} value={tz.value}>
-                  {tz.label}
+                  {t(`timezones.${tz.key}` as "timezones.easternTime")}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -221,6 +233,7 @@ export function Step3HealthBasics({ data, updateData }: StepProps) {
 
 /* ------------------------- Step 4: Invite circle -------------------------- */
 export function Step4InviteCircle({ data, updateData }: StepProps) {
+  const t = useTranslations("onboarding");
   const addInvite = () => {
     updateData({ invites: [...data.invites, { email: "", role: "family" }] });
   };
@@ -238,15 +251,15 @@ export function Step4InviteCircle({ data, updateData }: StepProps) {
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h2 className="font-serif text-2xl font-bold">Invite your circle</h2>
-        <p className="text-muted-foreground">Add family members, caregivers, or anyone who helps with care.</p>
+        <h2 className="font-serif text-2xl font-bold">{t("invite.title")}</h2>
+        <p className="text-muted-foreground">{t("invite.subtitle")}</p>
       </div>
 
       <div className="space-y-4">
         {data.invites.length === 0 ? (
           <div className="text-center py-8 border border-dashed rounded-xl">
             <Users className="h-10 w-10 mx-auto text-muted-foreground/50 mb-3" />
-            <p className="text-muted-foreground text-sm">No invites yet. Add people to your care circle.</p>
+            <p className="text-muted-foreground text-sm">{t("invite.empty")}</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -255,21 +268,25 @@ export function Step4InviteCircle({ data, updateData }: StepProps) {
                 <div className="flex-1">
                   <Input
                     type="email"
-                    placeholder="Email address"
+                    placeholder={t("invite.emailPlaceholder")}
                     value={invite.email}
                     onChange={(e) => updateInvite(index, "email", e.target.value)}
-                    aria-label={`Email for invite ${index + 1}`}
+                    aria-label={t("invite.emailAria", { index: index + 1 })}
                   />
                 </div>
                 <div className="flex gap-2">
                   <Select value={invite.role} onValueChange={(value) => updateInvite(index, "role", value)}>
-                    <SelectTrigger className="w-full sm:w-[160px]" aria-label={`Role for invite ${index + 1}`}>
+                    <SelectTrigger className="w-full sm:w-[160px]" aria-label={t("invite.roleAria", { index: index + 1 })}>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="max-w-[min(20rem,calc(100vw-2rem))] sm:min-w-[16rem]">
                       {inviteRoles.map((role) => (
-                        <SelectItem key={role.value} value={role.value} description={role.description}>
-                          {role.label}
+                        <SelectItem
+                          key={role.value}
+                          value={role.value}
+                          description={t(`roles.${role.value}.description` as "roles.family.description")}
+                        >
+                          {t(`roles.${role.value}.label` as "roles.family.label")}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -279,7 +296,7 @@ export function Step4InviteCircle({ data, updateData }: StepProps) {
                     variant="ghost"
                     size="icon"
                     onClick={() => removeInvite(index)}
-                    aria-label="Remove invite"
+                    aria-label={t("invite.removeInvite")}
                     className="shrink-0"
                   >
                     <Trash2 className="h-4 w-4 text-muted-foreground" />
@@ -292,12 +309,10 @@ export function Step4InviteCircle({ data, updateData }: StepProps) {
 
         <Button type="button" variant="outline" onClick={addInvite} className="w-full">
           <Plus className="h-4 w-4 mr-2" />
-          Add another person
+          {t("invite.addPerson")}
         </Button>
 
-        <p className="text-center text-sm text-muted-foreground">
-          You can always invite more people later from the dashboard.
-        </p>
+        <p className="text-center text-sm text-muted-foreground">{t("invite.laterHint")}</p>
       </div>
     </div>
   );
@@ -305,25 +320,39 @@ export function Step4InviteCircle({ data, updateData }: StepProps) {
 
 /* ----------------------------- Step 5: Done ------------------------------- */
 export function Step5Done({ data }: { data: OnboardingData }) {
-  const recipientName = data.recipientName || "Your loved one";
+  const t = useTranslations("onboarding");
+  const locale = useLocale();
+  const recipientName = data.recipientName || t("done.fallbackName");
 
-  // Map the stored values back to the human-readable labels the user picked. Language is stored
-  // lowercased (the Select uses `lang.toLowerCase()` as its value), so re-match case-insensitively;
-  // timezone is stored as its IANA value, so look up its friendly label.
-  const languageLabel = data.primaryLanguage
-    ? languages.find((l) => l.toLowerCase() === data.primaryLanguage.toLowerCase()) ?? data.primaryLanguage
-    : null;
-  const timezoneLabel = data.timezone
-    ? timezones.find((t) => t.value === data.timezone)?.label ?? data.timezone
-    : null;
+  // Map the stored values back to the localized labels the user picked. Language is stored
+  // lowercased (the Select uses the option's lowercased `value`), so re-match case-insensitively
+  // and resolve via the message key; timezone is stored as its IANA value, so look up its key.
+  const languageEntry = data.primaryLanguage
+    ? languages.find((l) => l.value === data.primaryLanguage.toLowerCase())
+    : undefined;
+  const languageLabel = languageEntry
+    ? t(`languages.${languageEntry.key}` as "languages.english")
+    : data.primaryLanguage || null;
+  const timezoneEntry = data.timezone ? timezones.find((tz) => tz.value === data.timezone) : undefined;
+  const timezoneLabel = timezoneEntry
+    ? t(`timezones.${timezoneEntry.key}` as "timezones.easternTime")
+    : data.timezone || null;
+  const relationshipEntry = data.relationship
+    ? relationships.find((r) => r.value === data.relationship.toLowerCase())
+    : undefined;
+  const relationshipLabel = relationshipEntry
+    ? t(`relationships.${relationshipEntry.key}` as "relationships.parent")
+    : data.relationship || null;
   // DOB is a date-only "YYYY-MM-DD" string; anchor it to local midnight so it doesn't shift a day.
   const dobLabel = data.recipientDateOfBirth
-    ? new Date(`${data.recipientDateOfBirth}T00:00:00`).toLocaleDateString(undefined, {
+    ? new Date(`${data.recipientDateOfBirth}T00:00:00`).toLocaleDateString(locale, {
         year: "numeric",
         month: "long",
         day: "numeric",
       })
     : null;
+
+  const extraCount = data.conditions.length + data.allergies.length - 5;
 
   return (
     <div className="text-center space-y-6 py-6">
@@ -332,10 +361,8 @@ export function Step5Done({ data }: { data: OnboardingData }) {
       </div>
 
       <div className="space-y-3">
-        <h2 className="font-serif text-3xl font-bold text-foreground">{recipientName}&apos;s Care Circle is ready!</h2>
-        <p className="text-muted-foreground max-w-md mx-auto">
-          You&apos;ve taken the first step toward better coordinated care. Your circle is set up and ready to go.
-        </p>
+        <h2 className="font-serif text-3xl font-bold text-foreground">{t("done.title", { name: recipientName })}</h2>
+        <p className="text-muted-foreground max-w-md mx-auto">{t("done.subtitle")}</p>
       </div>
 
       {/* Summary card */}
@@ -353,7 +380,9 @@ export function Step5Done({ data }: { data: OnboardingData }) {
             )}
             <div>
               <p className="font-semibold">{recipientName}</p>
-              {data.relationship && <p className="text-sm text-muted-foreground capitalize">Your {data.relationship}</p>}
+              {relationshipLabel && (
+                <p className="text-sm text-muted-foreground">{t("done.relationship", { relationship: relationshipLabel })}</p>
+              )}
             </div>
           </div>
 
@@ -392,9 +421,9 @@ export function Step5Done({ data }: { data: OnboardingData }) {
                   {a}
                 </Badge>
               ))}
-              {data.conditions.length + data.allergies.length > 5 && (
+              {extraCount > 0 && (
                 <Badge variant="secondary" className="text-xs">
-                  +{data.conditions.length + data.allergies.length - 5} more
+                  {t("done.moreTags", { count: extraCount })}
                 </Badge>
               )}
             </div>
@@ -403,18 +432,14 @@ export function Step5Done({ data }: { data: OnboardingData }) {
           {data.invites.length > 0 && (
             <div className="flex items-center gap-2 pt-2 border-t text-sm text-muted-foreground">
               <Users className="h-4 w-4" />
-              <span>
-                {data.invites.length} invite{data.invites.length !== 1 ? "s" : ""} pending
-              </span>
+              <span>{t("done.invitesPending", { count: data.invites.length })}</span>
             </div>
           )}
         </CardContent>
       </Card>
 
       <div className="pt-4 space-y-2">
-        <p className="text-sm text-muted-foreground">
-          What&apos;s next? Start adding medications, appointments, and daily updates.
-        </p>
+        <p className="text-sm text-muted-foreground">{t("done.whatsNext")}</p>
       </div>
     </div>
   );

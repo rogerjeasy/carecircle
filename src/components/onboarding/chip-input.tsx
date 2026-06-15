@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { X, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
@@ -15,6 +16,7 @@ export interface ChipInputProps {
 }
 
 export function ChipInput({ label, value, onChange, suggestions, placeholder }: ChipInputProps) {
+  const t = useTranslations("onboarding");
   const [inputValue, setInputValue] = React.useState("");
   const [showSuggestions, setShowSuggestions] = React.useState(false);
   const [highlightedIndex, setHighlightedIndex] = React.useState(-1);
@@ -106,7 +108,7 @@ export function ChipInput({ label, value, onChange, suggestions, placeholder }: 
                   removeChip(chip);
                 }}
                 className="ml-1 rounded-full p-0.5 hover:bg-muted-foreground/20"
-                aria-label={`Remove ${chip}`}
+                aria-label={t("chip.remove", { value: chip })}
               >
                 <X className="h-3 w-3" />
               </button>
@@ -166,7 +168,10 @@ export function ChipInput({ label, value, onChange, suggestions, placeholder }: 
               >
                 <Plus className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                 <span>
-                  Add <span className="font-medium">&ldquo;{trimmed}&rdquo;</span>
+                  {t.rich("chip.addCustom", {
+                    value: trimmed,
+                    b: (chunks) => <span className="font-medium">{chunks}</span>,
+                  })}
                 </span>
               </button>
             )}

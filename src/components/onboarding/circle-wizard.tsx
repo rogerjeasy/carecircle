@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { ArrowRight, ArrowLeft, ChevronRight } from "lucide-react";
@@ -52,6 +53,7 @@ interface CircleWizardProps {
  * verbatim across both.
  */
 export function CircleWizard({ persistKey, onComplete, variant = "onboarding" }: CircleWizardProps) {
+  const t = useTranslations("onboarding");
   const [step, setStep] = React.useState(1);
   const [direction, setDirection] = React.useState(0);
   const [data, setData] = React.useState<OnboardingData>(defaultData);
@@ -139,16 +141,16 @@ export function CircleWizard({ persistKey, onComplete, variant = "onboarding" }:
 
       if (!result.ok) {
         setIsLoading(false);
-        toast.error("Couldn't create your care circle", { description: result.error });
+        toast.error(t("toast.createError"), { description: result.error });
         return;
       }
 
       if (persistKey) localStorage.removeItem(persistKey);
-      toast.success(variant === "dialog" ? "New care circle created" : "Welcome to Kintwadi!", {
+      toast.success(variant === "dialog" ? t("toast.successDialog") : t("toast.successOnboarding"), {
         description:
           result.invitesSent > 0
-            ? `Your care circle is ready · ${result.invitesSent} invite${result.invitesSent !== 1 ? "s" : ""} sent.`
-            : "Your care circle has been created.",
+            ? t("toast.successWithInvites", { count: result.invitesSent })
+            : t("toast.successNoInvites"),
       });
 
       // Hand off to the caller (navigate, or refresh + close the dialog). We intentionally keep
@@ -156,7 +158,7 @@ export function CircleWizard({ persistKey, onComplete, variant = "onboarding" }:
       await onComplete?.({ circleId: result.circleId, invitesSent: result.invitesSent });
     } catch {
       setIsLoading(false);
-      toast.error("Something went wrong", { description: "Please try again in a moment." });
+      toast.error(t("toast.genericError"), { description: t("toast.genericErrorHint") });
     }
   };
 
@@ -191,7 +193,7 @@ export function CircleWizard({ persistKey, onComplete, variant = "onboarding" }:
       <div className={cn("p-4 border-b", variant === "dialog" && "pr-12")}>
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-muted-foreground">
-            Step {step} of {totalSteps}
+            {t("nav.stepProgress", { step, total: totalSteps })}
           </span>
           {step > 1 && step < totalSteps && (
             <button
@@ -203,7 +205,7 @@ export function CircleWizard({ persistKey, onComplete, variant = "onboarding" }:
               }}
               className="text-xs text-muted-foreground hover:text-foreground"
             >
-              Start over
+              {t("nav.startOver")}
             </button>
           )}
         </div>
@@ -247,7 +249,7 @@ export function CircleWizard({ persistKey, onComplete, variant = "onboarding" }:
         {step > 1 && !isFinalStep && (
           <Button type="button" variant="ghost" onClick={handleBack} disabled={isLoading}>
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
+            {t("nav.back")}
           </Button>
         )}
 
@@ -261,7 +263,7 @@ export function CircleWizard({ persistKey, onComplete, variant = "onboarding" }:
             disabled={isLoading}
             className="text-muted-foreground"
           >
-            Skip for now
+            {t("nav.skip")}
           </Button>
         )}
 
@@ -286,16 +288,16 @@ export function CircleWizard({ persistKey, onComplete, variant = "onboarding" }:
                   />
                 </svg>
               </span>
-              Setting up...
+              {t("nav.settingUp")}
             </>
           ) : isFinalStep ? (
             <>
-              {variant === "dialog" ? "Create circle" : "Go to dashboard"}
+              {variant === "dialog" ? t("nav.createCircle") : t("nav.goToDashboard")}
               <ChevronRight className="h-4 w-4 ml-2" />
             </>
           ) : (
             <>
-              Continue
+              {t("nav.continue")}
               <ArrowRight className="h-4 w-4 ml-2" />
             </>
           )}
