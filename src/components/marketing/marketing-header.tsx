@@ -2,7 +2,8 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Menu, X, Users } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { Menu, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -15,12 +16,13 @@ import {
 } from "@/components/ui/sheet";
 
 const navLinks = [
-  { href: "/how-it-works", label: "How it works" },
-  { href: "/pricing", label: "Pricing" },
-  { href: "/about", label: "About" },
-];
+  { href: "/how-it-works", key: "howItWorks" },
+  { href: "/pricing", key: "pricing" },
+  { href: "/about", key: "about" },
+] as const;
 
 export function MarketingHeader() {
+  const t = useTranslations();
   const [scrolled, setScrolled] = React.useState(false);
   const [mobileOpen, setMobileOpen] = React.useState(false);
 
@@ -54,11 +56,11 @@ export function MarketingHeader() {
         <nav className="hidden md:flex items-center gap-8">
           {navLinks.map((link) => (
             <Link
-              key={link.label}
+              key={link.key}
               href={link.href}
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
-              {link.label}
+              {t(`nav.${link.key}`)}
             </Link>
           ))}
         </nav>
@@ -68,11 +70,11 @@ export function MarketingHeader() {
           <ThemeToggle />
           <Link href="/sign-in">
             <Button variant="ghost" size="sm">
-              Sign in
+              {t("common.signIn")}
             </Button>
           </Link>
           <Link href="/sign-up">
-            <Button size="sm">Get started free</Button>
+            <Button size="sm">{t("common.getStartedFree")}</Button>
           </Link>
         </div>
 
@@ -83,7 +85,7 @@ export function MarketingHeader() {
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="h-9 w-9">
                 <Menu className="h-5 w-5" />
-                <span className="sr-only">Open menu</span>
+                <span className="sr-only">{t("common.openMenu")}</span>
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-[300px]">
@@ -98,22 +100,22 @@ export function MarketingHeader() {
               <nav className="mt-8 flex flex-col gap-4">
                 {navLinks.map((link) => (
                   <Link
-                    key={link.label}
+                    key={link.key}
                     href={link.href}
                     onClick={() => setMobileOpen(false)}
                     className="text-lg font-medium text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    {link.label}
+                    {t(`nav.${link.key}`)}
                   </Link>
                 ))}
                 <div className="mt-6 flex flex-col gap-3">
                   <Link href="/sign-in" onClick={() => setMobileOpen(false)}>
                     <Button variant="outline" className="w-full">
-                      Sign in
+                      {t("common.signIn")}
                     </Button>
                   </Link>
                   <Link href="/sign-up" onClick={() => setMobileOpen(false)}>
-                    <Button className="w-full">Get started free</Button>
+                    <Button className="w-full">{t("common.getStartedFree")}</Button>
                   </Link>
                 </div>
               </nav>

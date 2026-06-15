@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { ArrowRight, Check, Pill, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -35,6 +36,8 @@ function useScrollAnimation() {
 }
 
 export function HeroSection() {
+  const t = useTranslations("marketing.hero");
+  const tc = useTranslations("common");
   const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => {
@@ -60,19 +63,20 @@ export function HeroSection() {
             )}
           >
             <Badge variant="secondary" className="mb-6 inline-flex">
-              One shared record for everyone caring for someone
+              {t("badge")}
             </Badge>
             <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight text-balance leading-[1.1]">
-              Care for your parents,{" "}
-              <span className="text-primary">together</span> — wherever you are.
+              {t.rich("title", {
+                hl: (chunks) => <span className="text-primary">{chunks}</span>,
+              })}
             </h1>
             <p className="mt-6 text-lg sm:text-xl text-muted-foreground max-w-xl mx-auto lg:mx-0 text-pretty">
-              Coordinate medications, appointments, and daily updates across siblings, cities, and countries. Everyone stays informed, no one falls through the cracks.
+              {t("subtitle")}
             </p>
             <div className="mt-8 flex flex-wrap gap-4 justify-center lg:justify-start">
               <Link href="/sign-up">
                 <Button size="lg" className="gap-2">
-                  Get started free
+                  {tc("getStartedFree")}
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
@@ -94,8 +98,8 @@ export function HeroSection() {
                   <span className="text-lg font-semibold text-primary">MA</span>
                 </div>
                 <div>
-                  <p className="font-semibold">Maria&apos;s Care Circle</p>
-                  <p className="text-sm text-muted-foreground">4 members active</p>
+                  <p className="font-semibold">{t("demo.circleName")}</p>
+                  <p className="text-sm text-muted-foreground">{t("demo.membersActive", { count: 4 })}</p>
                 </div>
               </div>
 
@@ -103,26 +107,26 @@ export function HeroSection() {
               <div className="rounded-xl bg-success/10 px-4 py-3 mb-6">
                 <div className="flex items-center gap-2 text-success">
                   <Check className="h-5 w-5" />
-                  <span className="font-medium">Today: all meds given</span>
+                  <span className="font-medium">{t("demo.allMedsGiven")}</span>
                 </div>
               </div>
 
               {/* Mini timeline */}
               <div className="space-y-3">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Recent activity</p>
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t("demo.recentActivity")}</p>
                 <div className="space-y-2">
                   <TimelineItem
                     icon={<Pill className="h-3.5 w-3.5" />}
                     iconBg="bg-primary"
-                    text="Morning medications given"
+                    text={t("demo.item1Text")}
                     time="8:30 AM"
                     person="Sarah"
                   />
                   <TimelineItem
                     icon={<Clock className="h-3.5 w-3.5" />}
                     iconBg="bg-accent"
-                    text="Dr. appointment confirmed for Thursday"
-                    time="Yesterday"
+                    text={t("demo.item2Text")}
+                    time={t("demo.yesterday")}
                     person="Michael"
                   />
                 </div>
@@ -143,8 +147,8 @@ export function HeroSection() {
                     <span className="text-xs font-semibold">TC</span>
                   </div>
                   <div>
-                    <p className="text-sm font-medium">Tom in Canada</p>
-                    <p className="text-xs text-muted-foreground">Just checked in</p>
+                    <p className="text-sm font-medium">{t("demo.tomLocation")}</p>
+                    <p className="text-xs text-muted-foreground">{t("demo.checkedIn")}</p>
                   </div>
                 </div>
               </Card>
@@ -187,14 +191,15 @@ function TimelineItem({
 // Social proof strip
 export function SocialProofSection() {
   const { ref, isVisible } = useScrollAnimation();
+  const t = useTranslations("marketing.socialProof");
 
   // Real, citable demographic context (UN World Population Ageing) — the "why" behind
   // Kintwadi. No fabricated traction numbers: the product is new and we don't claim
   // adoption we can't back up.
   const stats = [
-    { value: "2.1B", label: "People 60+ by 2050" },
-    { value: "1 in 6", label: "Will be 60+ by 2030" },
-    { value: "2×", label: "Older population, 2020 → 2050" },
+    { value: t("stat1Value"), label: t("stat1Label") },
+    { value: t("stat2Value"), label: t("stat2Label") },
+    { value: t("stat3Value"), label: t("stat3Label") },
   ];
 
   return (
@@ -208,7 +213,7 @@ export function SocialProofSection() {
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <p className="text-center text-sm text-muted-foreground mb-6">
-          Built for families caring for an aging loved one — across any distance
+          {t("heading")}
         </p>
         <div className="flex flex-wrap justify-center gap-8 sm:gap-12">
           {stats.map((stat) => (

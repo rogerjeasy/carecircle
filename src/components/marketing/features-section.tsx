@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import {
   MessageSquare,
   AlertTriangle,
@@ -15,28 +16,14 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { useScrollAnimation } from "./hero-section";
 
 const problems = [
-  {
-    icon: MessageSquare,
-    title: "Chaotic group chats",
-    description: "Important updates get buried in 47 unread messages about what to bring for Sunday dinner.",
-    solution: "A clear, organized timeline everyone can follow — no noise, just what matters.",
-  },
-  {
-    icon: AlertTriangle,
-    title: "Missed medications",
-    description: "\"Did anyone give Mom her evening pills?\" The question no one can answer with certainty.",
-    solution: "Real-time medication tracking with confirmations, so everyone knows what's been given.",
-  },
-  {
-    icon: Heart,
-    title: "The distant sibling's guilt",
-    description: "Living far away means feeling disconnected, worried, and helpless about a parent's daily care.",
-    solution: "Stay connected with AI-powered daily digests that keep you informed, no matter the distance.",
-  },
-];
+  { key: "chat", icon: MessageSquare },
+  { key: "meds", icon: AlertTriangle },
+  { key: "guilt", icon: Heart },
+] as const;
 
 export function ProblemSolutionSection() {
   const { ref, isVisible } = useScrollAnimation();
+  const t = useTranslations("marketing.problems");
 
   return (
     <section ref={ref} className="py-20 sm:py-28">
@@ -49,18 +36,21 @@ export function ProblemSolutionSection() {
           )}
         >
           <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-balance">
-            Caring shouldn&apos;t feel this hard
+            {t("heading")}
           </h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto text-pretty">
-            We built Kintwadi because we&apos;ve been there. The stress, the miscommunication, the guilt — there&apos;s a better way.
+            {t("subtitle")}
           </p>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {problems.map((problem, index) => (
             <ProblemCard
-              key={problem.title}
-              {...problem}
+              key={problem.key}
+              icon={problem.icon}
+              title={t(`items.${problem.key}.title`)}
+              description={t(`items.${problem.key}.description`)}
+              solution={t(`items.${problem.key}.solution`)}
               delay={index * 100}
               isVisible={isVisible}
             />
@@ -114,42 +104,34 @@ function ProblemCard({
 
 // Feature highlights section with alternating layout
 const features = [
-  {
-    title: "Shared Care Timeline",
-    description: "Every medication, appointment, and update in one place. See who did what and when — no more guessing or duplicate efforts.",
-    icon: Clock,
-    image: "timeline",
-  },
-  {
-    title: "Medication Safety",
-    description: "Track doses, set reminders, and get confirmations. The whole circle knows when meds have been given, reducing dangerous double-doses.",
-    icon: Shield,
-    image: "medications",
-  },
-  {
-    title: "Roles & Permissions",
-    description: "Family members, professional caregivers, and clinicians all see what they need — nothing more, nothing less. Full privacy control.",
-    icon: Users,
-    image: "roles",
-  },
-];
+  { key: "timeline", icon: Clock, image: "timeline" },
+  { key: "medications", icon: Shield, image: "medications" },
+  { key: "roles", icon: Users, image: "roles" },
+] as const;
 
 export function FeaturesSection() {
+  const t = useTranslations("marketing.features");
   return (
     <section className="py-20 sm:py-28 bg-muted/30">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-balance">
-            Everything you need to coordinate care
+            {t("heading")}
           </h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-            Purpose-built tools for the unique challenges of family caregiving.
+            {t("subtitle")}
           </p>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {features.map((feature) => (
-            <FeatureRow key={feature.title} {...feature} />
+            <FeatureRow
+              key={feature.key}
+              icon={feature.icon}
+              image={feature.image}
+              title={t(`items.${feature.key}.title`)}
+              description={t(`items.${feature.key}.description`)}
+            />
           ))}
         </div>
       </div>

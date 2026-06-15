@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import {
   Users,
   UserPlus,
@@ -17,12 +18,13 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { useScrollAnimation } from "./hero-section";
 
 // AI Digest and Emergency Card features
 export function MoreFeaturesSection() {
   const { ref, isVisible } = useScrollAnimation();
+  const t = useTranslations("marketing.moreFeatures");
 
   return (
     <section ref={ref} className="py-20 sm:py-28">
@@ -40,18 +42,18 @@ export function MoreFeaturesSection() {
               <Sparkles className="h-7 w-7 text-primary" />
             </div>
             <h3 className="font-serif text-2xl sm:text-3xl font-bold">
-              AI Daily Digest
+              {t("digest.title")}
             </h3>
             <p className="mt-4 text-lg text-muted-foreground text-pretty">
-              Every morning, the distant sibling gets a personalized summary: what happened yesterday, what&apos;s coming up, and any flags that need attention. Stay connected without constant check-ins.
+              {t("digest.description")}
             </p>
             <div className="mt-6 p-4 rounded-xl bg-card border">
               <div className="flex items-start gap-3">
                 <Mail className="h-5 w-5 text-primary mt-0.5" />
                 <div>
-                  <p className="font-medium text-sm">Good morning, Tom</p>
+                  <p className="font-medium text-sm">{t("digest.sampleGreeting")}</p>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Mom had a good day yesterday. All medications given, no incidents. Dr. appointment Thursday at 2pm.
+                    {t("digest.sampleBody")}
                   </p>
                 </div>
               </div>
@@ -70,20 +72,20 @@ export function MoreFeaturesSection() {
               <CreditCard className="h-7 w-7 text-accent" />
             </div>
             <h3 className="font-serif text-2xl sm:text-3xl font-bold">
-              Emergency Card
+              {t("emergency.title")}
             </h3>
             <p className="mt-4 text-lg text-muted-foreground text-pretty">
-              A shareable digital card with critical medical information. In an emergency, first responders can instantly see allergies, medications, conditions, and emergency contacts.
+              {t("emergency.description")}
             </p>
             <div className="mt-6 p-4 rounded-xl bg-card border">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-medium text-sm">Maria, 78</p>
-                  <p className="text-xs text-muted-foreground">Blood type: A+ · DNR: No</p>
+                  <p className="font-medium text-sm">{t("emergency.samplePerson")}</p>
+                  <p className="text-xs text-muted-foreground">{t("emergency.sampleBlood")}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-xs text-destructive font-medium">Allergies</p>
-                  <p className="text-xs text-muted-foreground">Penicillin, Sulfa</p>
+                  <p className="text-xs text-destructive font-medium">{t("emergency.allergies")}</p>
+                  <p className="text-xs text-muted-foreground">{t("emergency.sampleAllergies")}</p>
                 </div>
               </div>
             </div>
@@ -96,28 +98,14 @@ export function MoreFeaturesSection() {
 
 // How it works section
 const steps = [
-  {
-    number: "1",
-    title: "Create a circle",
-    description: "Start a care circle for your loved one in under a minute. Add their basic info and care needs.",
-    icon: Users,
-  },
-  {
-    number: "2",
-    title: "Invite family & caregivers",
-    description: "Send invites to siblings, professional caregivers, or clinicians. Everyone gets appropriate access.",
-    icon: UserPlus,
-  },
-  {
-    number: "3",
-    title: "Everyone sees the right view",
-    description: "Each person sees what they need — family gets updates, caregivers get tasks, clinicians get medical history.",
-    icon: Eye,
-  },
-];
+  { number: "1", key: "create", icon: Users },
+  { number: "2", key: "invite", icon: UserPlus },
+  { number: "3", key: "view", icon: Eye },
+] as const;
 
 export function HowItWorksSection() {
   const { ref, isVisible } = useScrollAnimation();
+  const t = useTranslations("marketing.howItWorks");
 
   return (
     <section ref={ref} id="how-it-works" className="py-20 sm:py-28 bg-muted/30">
@@ -130,10 +118,10 @@ export function HowItWorksSection() {
           )}
         >
           <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold">
-            How it works
+            {t("heading")}
           </h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-            Get your care circle up and running in three simple steps.
+            {t("subtitle")}
           </p>
         </div>
 
@@ -151,8 +139,8 @@ export function HowItWorksSection() {
               <div className="mx-auto h-16 w-16 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-2xl font-serif font-bold mb-6">
                 {step.number}
               </div>
-              <h3 className="text-xl font-semibold mb-2">{step.title}</h3>
-              <p className="text-muted-foreground text-pretty">{step.description}</p>
+              <h3 className="text-xl font-semibold mb-2">{t(`steps.${step.key}.title`)}</h3>
+              <p className="text-muted-foreground text-pretty">{t(`steps.${step.key}.description`)}</p>
             </div>
           ))}
         </div>
@@ -163,25 +151,14 @@ export function HowItWorksSection() {
 
 // Trust & Security section
 const trustFeatures = [
-  {
-    icon: Lock,
-    title: "End-to-end encryption",
-    description: "Your family&apos;s data is encrypted at rest and in transit.",
-  },
-  {
-    icon: Shield,
-    title: "Role-based access",
-    description: "Fine-grained permissions ensure everyone sees only what they should.",
-  },
-  {
-    icon: FileCheck,
-    title: "Full audit trail",
-    description: "Every action is logged and traceable for accountability.",
-  },
-];
+  { key: "encryption", icon: Lock },
+  { key: "access", icon: Shield },
+  { key: "audit", icon: FileCheck },
+] as const;
 
 export function TrustSection() {
   const { ref, isVisible } = useScrollAnimation();
+  const t = useTranslations("marketing.trust");
 
   return (
     <section ref={ref} className="py-20 sm:py-28">
@@ -194,17 +171,17 @@ export function TrustSection() {
           )}
         >
           <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold">
-            Your family&apos;s data, protected
+            {t("heading")}
           </h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-            We take privacy seriously. Kintwadi is built with security at its core.
+            {t("subtitle")}
           </p>
         </div>
 
         <div className="grid gap-6 sm:grid-cols-3">
           {trustFeatures.map((feature, index) => (
             <Card
-              key={feature.title}
+              key={feature.key}
               className={cn(
                 "text-center p-6",
                 "motion-safe:transition-all motion-safe:duration-700",
@@ -215,8 +192,8 @@ export function TrustSection() {
               <div className="mx-auto h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
                 <feature.icon className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="font-semibold mb-2">{feature.title}</h3>
-              <p className="text-sm text-muted-foreground">{feature.description}</p>
+              <h3 className="font-semibold mb-2">{t(`items.${feature.key}.title`)}</h3>
+              <p className="text-sm text-muted-foreground">{t(`items.${feature.key}.description`)}</p>
             </Card>
           ))}
         </div>
@@ -228,6 +205,7 @@ export function TrustSection() {
 // Testimonial section
 export function TestimonialSection() {
   const { ref, isVisible } = useScrollAnimation();
+  const t = useTranslations("marketing.testimonial");
 
   return (
     <section ref={ref} className="py-20 sm:py-28 bg-muted/30">
@@ -241,11 +219,9 @@ export function TestimonialSection() {
         >
           <Quote className="h-10 w-10 text-primary/30 mx-auto mb-6" />
           <blockquote className="font-serif text-xl sm:text-2xl lg:text-3xl font-medium text-balance leading-relaxed">
-            One sibling in Toronto, another in London, a parent back home in Lisbon — and care
-            decisions scattered across group chats, sticky notes, and missed calls. Kintwadi exists
-            to put everyone caring for someone on the same page, wherever they are.
+            {t("quote")}
           </blockquote>
-          <p className="mt-8 text-sm text-muted-foreground">Why we built Kintwadi</p>
+          <p className="mt-8 text-sm text-muted-foreground">{t("attribution")}</p>
         </Card>
       </div>
     </section>
@@ -255,6 +231,8 @@ export function TestimonialSection() {
 // Final CTA section
 export function CtaSection() {
   const { ref, isVisible } = useScrollAnimation();
+  const t = useTranslations("marketing.cta");
+  const tc = useTranslations("common");
 
   return (
     <section ref={ref} className="py-20 sm:py-28">
@@ -267,21 +245,21 @@ export function CtaSection() {
           )}
         >
           <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-balance">
-            Start caring together, today
+            {t("heading")}
           </h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-xl mx-auto text-pretty">
-            Bring your family and care team into one shared place to coordinate care. Free to start, no credit card required.
+            {t("subtitle")}
           </p>
           <div className="mt-8 flex flex-wrap gap-4 justify-center">
             <Link href="/sign-up">
               <Button size="lg" className="gap-2">
-                Get started free
+                {tc("getStartedFree")}
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
             <Link href="/how-it-works">
               <Button size="lg" variant="outline">
-                Learn more
+                {tc("learnMore")}
               </Button>
             </Link>
           </div>
