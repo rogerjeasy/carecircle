@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -51,6 +52,7 @@ function initialsFrom(name: string): string {
  * trust, no placeholder data).
  */
 export function AccountScreen() {
+  const t = useTranslations("account");
   const { setUserImage } = useAppShell();
   const [account, setAccount] = React.useState<AccountSettings | null>(null);
   const [name, setName] = React.useState("");
@@ -80,8 +82,8 @@ export function AccountScreen() {
     return (
       <div className="mx-auto max-w-3xl space-y-6">
         <div>
-          <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">Your profile</h1>
-          <p className="mt-1 text-muted-foreground">Update your personal details, photo and sign-in security.</p>
+          <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">{t("title")}</h1>
+          <p className="mt-1 text-muted-foreground">{t("subtitle")}</p>
         </div>
         <Card>
           <CardContent className="space-y-4 p-4 sm:p-6">
@@ -103,11 +105,11 @@ export function AccountScreen() {
 
   const onPickPhoto = (file: File) => {
     if (!file.type.startsWith("image/")) {
-      toast.error("Please choose an image file.");
+      toast.error(t("errImageType"));
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      toast.error("Please choose an image under 5 MB.");
+      toast.error(t("errImageSize"));
       return;
     }
     const reader = new FileReader();
@@ -118,7 +120,7 @@ export function AccountScreen() {
   const saveProfile = () => {
     const trimmed = name.trim();
     if (!trimmed) {
-      toast.error("Please enter your name.");
+      toast.error(t("errName"));
       return;
     }
     const fd = new FormData();
@@ -138,7 +140,7 @@ export function AccountScreen() {
       setPhotoDataUrl(null);
       // Reflect a new photo in the sidebar/nav immediately (only when it actually changed).
       if (changedPhoto) setUserImage(res.image);
-      toast.success("Profile updated");
+      toast.success(t("profileUpdated"));
     });
   };
 
@@ -153,7 +155,7 @@ export function AccountScreen() {
         return;
       }
       form.reset();
-      toast.success("Password updated");
+      toast.success(t("passwordUpdated"));
     });
   };
 
@@ -188,20 +190,20 @@ export function AccountScreen() {
                 }}
               />
               <Button variant="outline" size="sm" onClick={() => photoInputRef.current?.click()}>
-                Change photo
+                {t("changePhoto")}
               </Button>
-              <p className="text-xs text-muted-foreground">JPG or PNG, up to 5 MB.</p>
+              <p className="text-xs text-muted-foreground">{t("photoHint")}</p>
             </div>
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field htmlFor="acc-name" label="Full name">
+            <Field htmlFor="acc-name" label={t("fullName")}>
               <Input id="acc-name" value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" />
             </Field>
-            <Field htmlFor="acc-email" label="Email" hint="Your email is used to sign in and can't be changed here.">
+            <Field htmlFor="acc-email" label={t("email")} hint={t("emailHint")}>
               <Input id="acc-email" type="email" value={account.email} readOnly className="bg-muted/40" />
             </Field>
-            <Field htmlFor="acc-lang" label="Language">
+            <Field htmlFor="acc-lang" label={t("language")}>
               <Select value={language} onValueChange={setLanguage}>
                 <SelectTrigger id="acc-lang">
                   <SelectValue />
@@ -215,15 +217,15 @@ export function AccountScreen() {
                 </SelectContent>
               </Select>
             </Field>
-            <Field htmlFor="acc-tz" label="Time zone">
+            <Field htmlFor="acc-tz" label={t("timezone")}>
               <Select value={tz} onValueChange={setTz}>
                 <SelectTrigger id="acc-tz">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {TIMEZONES.map((t) => (
-                    <SelectItem key={t} value={t}>
-                      {t}
+                  {TIMEZONES.map((zone) => (
+                    <SelectItem key={zone} value={zone}>
+                      {zone}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -233,7 +235,7 @@ export function AccountScreen() {
 
           <div className="flex justify-end">
             <Button onClick={saveProfile} disabled={savingProfile || !dirty}>
-              {savingProfile ? "Saving…" : "Save changes"}
+              {savingProfile ? t("saving") : t("save")}
             </Button>
           </div>
         </CardContent>
@@ -242,7 +244,7 @@ export function AccountScreen() {
       {/* Password */}
       <Card>
         <CardContent className="space-y-4 p-4 sm:p-6">
-          <p className="text-sm font-semibold">Change password</p>
+          <p className="text-sm font-semibold">{t("changePassword")}</p>
           {account.hasPassword ? (
             <form
               ref={pwFormRef}
@@ -253,28 +255,28 @@ export function AccountScreen() {
               className="space-y-4"
             >
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <Field htmlFor="pw-current" label="Current">
+                <Field htmlFor="pw-current" label={t("current")}>
                   <Input id="pw-current" name="current" type="password" autoComplete="current-password" />
                 </Field>
-                <Field htmlFor="pw-new" label="New">
+                <Field htmlFor="pw-new" label={t("new")}>
                   <Input id="pw-new" name="next" type="password" autoComplete="new-password" />
                 </Field>
-                <Field htmlFor="pw-confirm" label="Confirm">
+                <Field htmlFor="pw-confirm" label={t("confirm")}>
                   <Input id="pw-confirm" name="confirm" type="password" autoComplete="new-password" />
                 </Field>
               </div>
               <p className="text-xs text-muted-foreground">
-                At least 8 characters, with an uppercase letter, a lowercase letter and a number.
+                {t("passwordHint")}
               </p>
               <div className="flex justify-end">
                 <Button type="submit" variant="outline" disabled={savingPw}>
-                  {savingPw ? "Updating…" : "Update password"}
+                  {savingPw ? t("updating") : t("updatePassword")}
                 </Button>
               </div>
             </form>
           ) : (
             <p className="rounded-lg bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
-              You sign in with a social provider, so there&apos;s no password to change here.
+              {t("socialNoPassword")}
             </p>
           )}
         </CardContent>
@@ -284,9 +286,9 @@ export function AccountScreen() {
       <Card className="border-destructive/30">
         <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-6">
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-destructive">Delete account</p>
+            <p className="text-sm font-semibold text-destructive">{t("deleteTitle")}</p>
             <p className="text-xs text-muted-foreground">
-              Permanently remove your account and personal data. This can&apos;t be undone.
+              {t("deleteDesc")}
             </p>
           </div>
           <AlertDialog>
@@ -296,18 +298,18 @@ export function AccountScreen() {
                 className="border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive sm:shrink-0"
               >
                 <Trash2 className="h-4 w-4" />
-                <span className="ml-1">Delete account</span>
+                <span className="ml-1">{t("deleteTitle")}</span>
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Delete your account?</AlertDialogTitle>
+                <AlertDialogTitle>{t("deleteConfirmTitle")}</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This permanently deletes your account and removes you from all care circles. This cannot be undone.
+                  {t("deleteConfirmBody")}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
                 <AlertDialogAction
                   onClick={async () => {
                     const res = await deleteAccount();
@@ -317,7 +319,7 @@ export function AccountScreen() {
                   }}
                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                 >
-                  Delete account
+                  {t("deleteTitle")}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
