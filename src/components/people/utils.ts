@@ -1,6 +1,5 @@
 // Pure helpers shared across the People screen.
 
-import { formatDistanceToNowStrict } from "date-fns";
 import type { UserRole } from "@/components/app-shell/app-shell-context";
 import { CAPABILITIES, PERMISSIONS, roleMeta } from "./data";
 import type { Access, CapabilityKey, CircleRole, Member, MemberStatus } from "./types";
@@ -14,21 +13,39 @@ export function firstName(name: string): string {
   return name.trim().split(/\s+/)[0] || name;
 }
 
+// Status badge styling (labels resolved via `people.status.<status>`).
 export const statusMeta: Record<
   MemberStatus,
-  { label: string; variant: "success" | "warning" | "secondary"; dot: string }
+  { variant: "success" | "warning" | "secondary"; dot: string }
 > = {
-  active: { label: "Active", variant: "success", dot: "bg-success" },
-  invited: { label: "Invited", variant: "warning", dot: "bg-warning" },
-  suspended: { label: "Suspended", variant: "secondary", dot: "bg-muted-foreground" },
+  active: { variant: "success", dot: "bg-success" },
+  invited: { variant: "warning", dot: "bg-warning" },
+  suspended: { variant: "secondary", dot: "bg-muted-foreground" },
 };
 
-/** "2 hours ago" / "Just now" / "—". */
-export function lastActiveLabel(date: Date | null): string {
-  if (!date) return "—";
-  const mins = (Date.now() - date.getTime()) / 60000;
-  if (mins < 5) return "Just now";
-  return `${formatDistanceToNowStrict(date)} ago`;
+/**
+ * Relative "last active" label, localized via native Intl.RelativeTimeFormat. Returns the dash
+ * for no date, and the "just now" string (passed in from messages) for very recent activity.
+ */
+export function lastActiveLabel(
+  date: Date | null,
+  locale: string,
+  labels: { dash: string; justNow: string }
+): string {
+  if (!date) return labels.dash;
+  const diffMs = date.getTime() - Date.now();
+  const mins = -diffMs / 60000;
+  if (mins < 5) return labels.justNow;
+  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: "always", style: "long" });
+  const minsAbs = Math.round(mins);
+  if (minsAbs < 60) return rtf.format(-minsAbs, "minute");
+  const hours = Math.round(minsAbs / 60);
+  if (hours < 24) return rtf.format(-hours, "hour");
+  const days = Math.round(hours / 24);
+  if (days < 30) return rtf.format(-days, "day");
+  const months = Math.round(days / 30);
+  if (months < 12) return rtf.format(-months, "month");
+  return rtf.format(-Math.round(months / 12), "year");
 }
 
 export function accessOf(capability: CapabilityKey, role: CircleRole): Access {
@@ -36,15 +53,14 @@ export function accessOf(capability: CapabilityKey, role: CircleRole): Access {
 }
 
 const ACCESS_RANK: Record<Access, number> = { none: 0, view: 1, edit: 2 };
-const ACCESS_VERB: Record<Access, string> = { none: "no", view: "view", edit: "full" };
 
 /** Capabilities a role can see (view or edit) — for the "what this role can see" summary. */
-export function roleCapabilities(role: CircleRole): { label: string; access: Access }[] {
-  return CAPABILITIES.map((c) => ({ label: c.label, access: PERMISSIONS[c.key][role] }));
+export function roleCapabilities(role: CircleRole): { key: CapabilityKey; access: Access }[] {
+  return CAPABILITIES.map((c) => ({ key: c.key, access: PERMISSIONS[c.key][role] }));
 }
 
 export interface RoleChange {
-  label: string;
+  key: CapabilityKey;
   from: Access;
   to: Access;
   direction: "gain" | "loss";
@@ -56,18 +72,8 @@ export function roleChangePreview(from: CircleRole, to: CircleRole): RoleChange[
     const a = PERMISSIONS[c.key][from];
     const b = PERMISSIONS[c.key][to];
     if (ACCESS_RANK[a] === ACCESS_RANK[b]) return [];
-    return [{ label: c.label, from: a, to: b, direction: ACCESS_RANK[b] > ACCESS_RANK[a] ? "gain" : "loss" }];
+    return [{ key: c.key, from: a, to: b, direction: ACCESS_RANK[b] > ACCESS_RANK[a] ? "gain" : "loss" }];
   });
-}
-
-/** A one-line natural summary, e.g. "Grace will gain full access to Medical documents…". */
-export function changeSentence(name: string, change: RoleChange): string {
-  if (change.direction === "gain") {
-    return `${ACCESS_VERB[change.to] === "view" ? "View" : "Full"} access to ${change.label.toLowerCase()}`;
-  }
-  return change.to === "none"
-    ? `Loses access to ${change.label.toLowerCase()}`
-    : `Reduced to ${ACCESS_VERB[change.to]} access for ${change.label.toLowerCase()}`;
 }
 
 export { roleMeta };

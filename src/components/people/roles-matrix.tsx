@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Database } from "lucide-react";
 import {
   Accordion,
@@ -13,15 +14,16 @@ import { CAPABILITIES, PERMISSIONS, ROLES } from "./data";
 
 /** "Roles & what they can see" — a matrix on tablet+/desktop, per-role accordions on phone. */
 export function RolesMatrix() {
+  const t = useTranslations("people");
   const isPhone = useIsPhone();
 
   return (
-    <section aria-label="Roles and permissions" className="space-y-3">
+    <section aria-label={t("matrix.aria")} className="space-y-3">
       <div>
-        <h2 className="font-display text-lg font-semibold tracking-tight">Roles &amp; what they can see</h2>
+        <h2 className="font-display text-lg font-semibold tracking-tight">{t("matrix.heading")}</h2>
         <p className="mt-0.5 flex items-start gap-1.5 text-xs text-muted-foreground">
           <Database className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-          These rules are enforced in the database, not just hidden in the app.
+          {t("matrix.dbNote")}
         </p>
       </div>
 
@@ -30,14 +32,14 @@ export function RolesMatrix() {
           {ROLES.map((role) => (
             <AccordionItem key={role.key} value={role.key} className="px-3 last:border-b-0">
               <AccordionTrigger className="text-left">
-                <span className="font-medium">{role.label}</span>
+                <span className="font-medium">{t(`roles.${role.key}.label` as "roles.coordinator.label")}</span>
               </AccordionTrigger>
               <AccordionContent>
-                <p className="mb-3 text-xs text-muted-foreground">{role.blurb}</p>
+                <p className="mb-3 text-xs text-muted-foreground">{t(`roles.${role.key}.blurb` as "roles.coordinator.blurb")}</p>
                 <ul className="space-y-2">
                   {CAPABILITIES.map((cap) => (
                     <li key={cap.key} className="flex items-center justify-between gap-3">
-                      <span className="min-w-0 truncate text-sm">{cap.label}</span>
+                      <span className="min-w-0 truncate text-sm">{t(`capabilities.${cap.key}` as "capabilities.timeline")}</span>
                       <AccessCell access={PERMISSIONS[cap.key][role.key]} />
                     </li>
                   ))}
@@ -50,15 +52,15 @@ export function RolesMatrix() {
         <>
           <div className="overflow-x-auto rounded-2xl border [scrollbar-width:thin]">
             <table className="w-full min-w-[48rem] border-collapse text-sm">
-              <caption className="sr-only">Permissions by role</caption>
+              <caption className="sr-only">{t("matrix.captionPerms")}</caption>
               <thead>
                 <tr className="bg-muted/40 text-left text-xs text-muted-foreground">
                   <th scope="col" className="sticky left-0 z-10 bg-muted/40 px-4 py-3 font-medium">
-                    Capability
+                    {t("matrix.capability")}
                   </th>
                   {ROLES.map((role) => (
                     <th key={role.key} scope="col" className="px-3 py-3 text-center font-medium">
-                      <span className="block leading-tight">{role.label}</span>
+                      <span className="block leading-tight">{t(`roles.${role.key}.label` as "roles.coordinator.label")}</span>
                     </th>
                   ))}
                 </tr>
@@ -69,10 +71,10 @@ export function RolesMatrix() {
                     <th scope="row" className="sticky left-0 z-10 bg-card px-4 py-2.5 text-left font-medium">
 
                       <span className="flex items-center gap-1.5">
-                        {cap.label}
+                        {t(`capabilities.${cap.key}` as "capabilities.timeline")}
                         {cap.sensitive && (
                           <span className="rounded bg-warning/10 px-1 py-0.5 text-[10px] font-medium text-warning">
-                            sensitive
+                            {t("matrix.sensitive")}
                           </span>
                         )}
                       </span>
@@ -92,13 +94,13 @@ export function RolesMatrix() {
           {/* Legend */}
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
             <span className="flex items-center gap-1.5">
-              <AccessCell access="edit" /> Full access
+              <AccessCell access="edit" /> {t("matrix.legendFull")}
             </span>
             <span className="flex items-center gap-1.5">
-              <AccessCell access="view" /> View only
+              <AccessCell access="view" /> {t("matrix.legendView")}
             </span>
             <span className="flex items-center gap-1.5">
-              <AccessCell access="none" /> No access
+              <AccessCell access="none" /> {t("matrix.legendNone")}
             </span>
           </div>
         </>

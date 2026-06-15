@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { Check, Loader2, Mail, Plus, ShieldCheck, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -15,7 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { AccessCell } from "./badges";
-import { ROLES, roleMeta } from "./data";
+import { ROLES } from "./data";
 import { roleCapabilities } from "./utils";
 import type { CircleRole, Invite } from "./types";
 
@@ -39,6 +40,7 @@ export interface InviteFormProps {
 
 /** The invite form: repeatable email+role rows, a note, and a live role-capability summary. */
 export function InviteForm({ onSubmit, onInvited, onCancel }: InviteFormProps) {
+  const t = useTranslations("people");
   const [rows, setRows] = React.useState<Row[]>(() => [newRow()]);
   const [note, setNote] = React.useState("");
   const [summaryRole, setSummaryRole] = React.useState<CircleRole>("family");
@@ -50,7 +52,7 @@ export function InviteForm({ onSubmit, onInvited, onCancel }: InviteFormProps) {
     setRows((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)));
 
   const emailError = (r: Row) =>
-    r.touched && r.email.trim() !== "" && !EMAIL_RE.test(r.email.trim()) ? "Enter a valid email" : undefined;
+    r.touched && r.email.trim() !== "" && !EMAIL_RE.test(r.email.trim()) ? t("inviteForm.invalidEmail") : undefined;
 
   const validRows = rows.filter((r) => EMAIL_RE.test(r.email.trim()));
   const canSubmit = validRows.length > 0 && !rows.some((r) => r.email.trim() !== "" && !EMAIL_RE.test(r.email.trim()));
@@ -80,9 +82,9 @@ export function InviteForm({ onSubmit, onInvited, onCancel }: InviteFormProps) {
               <Check className="h-6 w-6" aria-hidden="true" />
             </div>
             <p className="text-base font-semibold">
-              {sent.length === 1 ? "Invitation sent" : `${sent.length} invitations sent`}
+              {sent.length === 1 ? t("inviteForm.doneTitleOne") : t("inviteForm.doneTitleMany", { count: sent.length })}
             </p>
-            <p className="text-sm text-muted-foreground">They&apos;ll get an email with a link to join.</p>
+            <p className="text-sm text-muted-foreground">{t("inviteForm.doneBody")}</p>
           </div>
           <ul className="mt-5 space-y-2">
             {sent.map((inv) => (
@@ -91,7 +93,7 @@ export function InviteForm({ onSubmit, onInvited, onCancel }: InviteFormProps) {
                   <Mail className="h-4 w-4" aria-hidden="true" />
                 </div>
                 <span className="min-w-0 flex-1 truncate text-sm font-medium">{inv.email}</span>
-                <span className="shrink-0 text-xs text-muted-foreground">{roleMeta[inv.role].label}</span>
+                <span className="shrink-0 text-xs text-muted-foreground">{t(`roles.${inv.role}.label` as "roles.coordinator.label")}</span>
               </li>
             ))}
           </ul>
@@ -99,7 +101,7 @@ export function InviteForm({ onSubmit, onInvited, onCancel }: InviteFormProps) {
         <div className="shrink-0 border-t bg-background px-5 py-3 sm:px-6">
           <div className="flex justify-end">
             <Button type="button" onClick={() => onInvited(sent)}>
-              Done
+              {t("inviteForm.done")}
             </Button>
           </div>
         </div>
@@ -121,7 +123,7 @@ export function InviteForm({ onSubmit, onInvited, onCancel }: InviteFormProps) {
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
                       <div className="min-w-0 flex-1">
                         <Label htmlFor={`email-${row.id}`} className="sr-only">
-                          Email for invite {i + 1}
+                          {t("inviteForm.emailFor", { n: i + 1 })}
                         </Label>
                         <Input
                           id={`email-${row.id}`}
@@ -130,7 +132,7 @@ export function InviteForm({ onSubmit, onInvited, onCancel }: InviteFormProps) {
                           value={row.email}
                           onChange={(e) => update(row.id, { email: e.target.value })}
                           onBlur={() => update(row.id, { touched: true })}
-                          placeholder="name@example.com"
+                          placeholder={t("inviteForm.emailPlaceholder")}
                           aria-invalid={err ? true : undefined}
                           aria-describedby={err ? `email-${row.id}-error` : undefined}
                           className={cn(err && "border-destructive focus-visible:ring-destructive")}
@@ -144,13 +146,13 @@ export function InviteForm({ onSubmit, onInvited, onCancel }: InviteFormProps) {
                             setSummaryRole(v as CircleRole);
                           }}
                         >
-                          <SelectTrigger className="w-full sm:w-44" aria-label={`Role for invite ${i + 1}`}>
+                          <SelectTrigger className="w-full sm:w-44" aria-label={t("inviteForm.roleFor", { n: i + 1 })}>
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
                             {ROLES.map((r) => (
                               <SelectItem key={r.key} value={r.key}>
-                                {r.label}
+                                {t(`roles.${r.key}.label` as "roles.coordinator.label")}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -162,7 +164,7 @@ export function InviteForm({ onSubmit, onInvited, onCancel }: InviteFormProps) {
                             size="icon"
                             className="h-10 w-10 shrink-0 text-muted-foreground"
                             onClick={() => setRows((prev) => prev.filter((r) => r.id !== row.id))}
-                            aria-label={`Remove invite ${i + 1}`}
+                            aria-label={t("inviteForm.removeInvite", { n: i + 1 })}
                           >
                             <X className="h-4 w-4" />
                           </Button>
@@ -185,17 +187,17 @@ export function InviteForm({ onSubmit, onInvited, onCancel }: InviteFormProps) {
                 onClick={() => setRows((prev) => [...prev, newRow()])}
               >
                 <Plus className="h-4 w-4" />
-                <span className="ml-1">Add another</span>
+                <span className="ml-1">{t("inviteForm.addAnother")}</span>
               </Button>
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="invite-note">Personal note</Label>
+              <Label htmlFor="invite-note">{t("inviteForm.noteLabel")}</Label>
               <Textarea
                 id="invite-note"
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
-                placeholder="Add a short message to the invitation (optional)…"
+                placeholder={t("inviteForm.notePlaceholder")}
                 rows={2}
               />
             </div>
@@ -205,15 +207,17 @@ export function InviteForm({ onSubmit, onInvited, onCancel }: InviteFormProps) {
           <aside className="min-w-0 rounded-2xl border bg-muted/30 p-4 lg:self-start">
             <div className="mb-2 flex items-center gap-1.5">
               <ShieldCheck className="h-4 w-4 text-primary" aria-hidden="true" />
-              <p className="text-sm font-semibold">A {roleMeta[summaryRole].label} can see</p>
+              <p className="text-sm font-semibold">
+                {t("inviteForm.summaryCan", { role: t(`roles.${summaryRole}.label` as "roles.coordinator.label") })}
+              </p>
             </div>
             <p className="mb-3 text-xs text-muted-foreground">
-              {ROLES.find((r) => r.key === summaryRole)?.blurb}
+              {t(`roles.${summaryRole}.blurb` as "roles.coordinator.blurb")}
             </p>
             <ul className="space-y-1.5">
               {roleCapabilities(summaryRole).map((c) => (
-                <li key={c.label} className="flex items-center justify-between gap-3">
-                  <span className="min-w-0 truncate text-sm">{c.label}</span>
+                <li key={c.key} className="flex items-center justify-between gap-3">
+                  <span className="min-w-0 truncate text-sm">{t(`capabilities.${c.key}` as "capabilities.timeline")}</span>
                   <AccessCell access={c.access} />
                 </li>
               ))}
@@ -226,16 +230,16 @@ export function InviteForm({ onSubmit, onInvited, onCancel }: InviteFormProps) {
       <div className="shrink-0 border-t bg-background px-5 py-3 sm:px-6">
         <div className="flex items-center justify-end gap-2">
           <Button type="button" variant="outline" onClick={onCancel} disabled={submitting}>
-            Cancel
+            {t("inviteForm.cancel")}
           </Button>
           <Button type="submit" disabled={!canSubmit || submitting} className="min-w-[9rem]">
             {submitting ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" />
-                <span className="ml-1">Sending…</span>
+                <span className="ml-1">{t("inviteForm.sending")}</span>
               </>
             ) : (
-              <span>{validRows.length > 1 ? `Send ${validRows.length} invites` : "Send invite"}</span>
+              <span>{validRows.length > 1 ? t("inviteForm.sendN", { count: validRows.length }) : t("inviteForm.sendOne")}</span>
             )}
           </Button>
         </div>

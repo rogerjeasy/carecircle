@@ -3,38 +3,39 @@
 
 import type { Access, CapabilityKey, CircleRole } from "./types";
 
-/** Roles in display order, with a short blurb for the reference panel + invite summary. */
-export const ROLES: { key: CircleRole; label: string; blurb: string }[] = [
-  { key: "coordinator", label: "Coordinator", blurb: "Runs the circle. Full access, including settings and billing." },
-  { key: "family-admin", label: "Family Admin", blurb: "Trusted family member who can manage people and most content." },
-  { key: "family", label: "Family", blurb: "Family members who stay informed and help out day to day." },
-  { key: "caregiver", label: "Caregiver", blurb: "Paid or volunteer carers who record care as it happens." },
-  { key: "readonly", label: "Read-only", blurb: "Can follow along but can't change anything." },
-  { key: "care-recipient", label: "Care recipient", blurb: "The person being cared for, with a gentle view of their own care." },
-  { key: "clinician", label: "Clinician", blurb: "Doctors or nurses with clinical access, time-limited." },
+// Roles in display order (labels/blurbs resolved via `people.roles.<key>.label` / `.blurb`).
+export const ROLES: { key: CircleRole }[] = [
+  { key: "coordinator" },
+  { key: "family-admin" },
+  { key: "family" },
+  { key: "caregiver" },
+  { key: "readonly" },
+  { key: "care-recipient" },
+  { key: "clinician" },
 ];
 
-export const roleMeta: Record<CircleRole, { label: string; tint: string }> = {
-  coordinator: { label: "Coordinator", tint: "bg-primary/10 text-primary" },
-  "family-admin": { label: "Family Admin", tint: "bg-accent/10 text-accent-foreground" },
-  family: { label: "Family", tint: "bg-info/10 text-info" },
-  caregiver: { label: "Caregiver", tint: "bg-success/10 text-success" },
-  readonly: { label: "Read-only", tint: "bg-muted text-muted-foreground" },
-  "care-recipient": { label: "Care recipient", tint: "bg-warning/10 text-warning" },
-  clinician: { label: "Clinician", tint: "bg-info/10 text-info" },
+// Role badge tints (labels resolved via `people.roles.<key>.label`).
+export const roleMeta: Record<CircleRole, { tint: string }> = {
+  coordinator: { tint: "bg-primary/10 text-primary" },
+  "family-admin": { tint: "bg-accent/10 text-accent-foreground" },
+  family: { tint: "bg-info/10 text-info" },
+  caregiver: { tint: "bg-success/10 text-success" },
+  readonly: { tint: "bg-muted text-muted-foreground" },
+  "care-recipient": { tint: "bg-warning/10 text-warning" },
+  clinician: { tint: "bg-info/10 text-info" },
 };
 
-/** Capability rows for the matrix / role summaries. */
-export const CAPABILITIES: { key: CapabilityKey; label: string; sensitive?: boolean }[] = [
-  { key: "timeline", label: "Timeline & updates" },
-  { key: "meds", label: "Medications" },
-  { key: "appts", label: "Appointments" },
-  { key: "tasks", label: "Tasks & rota" },
-  { key: "health", label: "Health vitals" },
-  { key: "docsMedical", label: "Medical documents" },
-  { key: "docsFinancial", label: "Financial & legal docs", sensitive: true },
-  { key: "people", label: "People & roles" },
-  { key: "billing", label: "Settings & billing", sensitive: true },
+// Capability rows for the matrix / role summaries (labels resolved via `people.capabilities.<key>`).
+export const CAPABILITIES: { key: CapabilityKey; sensitive?: boolean }[] = [
+  { key: "timeline" },
+  { key: "meds" },
+  { key: "appts" },
+  { key: "tasks" },
+  { key: "health" },
+  { key: "docsMedical" },
+  { key: "docsFinancial", sensitive: true },
+  { key: "people" },
+  { key: "billing" },
 ];
 
 const E: Access = "edit";

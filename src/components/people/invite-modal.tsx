@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { ResponsiveModal } from "./responsive-modal";
 import { InviteForm } from "./invite-form";
 import type { CircleRole, Invite } from "./types";
@@ -15,12 +16,13 @@ export interface InviteModalProps {
 
 /** Invite people, in a comfortable centered Dialog on tablet+ and a full-height Sheet on phone. */
 export function InviteModal({ open, onOpenChange, onSubmit, onInvited }: InviteModalProps) {
+  const t = useTranslations("people");
   return (
     <ResponsiveModal
       open={open}
       onOpenChange={onOpenChange}
-      title="Invite people"
-      description="Send invitations and choose what each person can see."
+      title={t("inviteModal.title")}
+      description={t("inviteModal.description")}
       dialogClassName="sm:max-w-3xl"
     >
       <InviteForm onSubmit={onSubmit} onInvited={onInvited} onCancel={() => onOpenChange(false)} />

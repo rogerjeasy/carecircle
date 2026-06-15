@@ -1,5 +1,6 @@
 "use client";
 
+import { useLocale, useTranslations } from "next-intl";
 import { MoreHorizontal, Phone, RefreshCw, Shield, Trash2, UserCheck, UserX } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -26,11 +27,14 @@ export interface MemberTableProps {
 
 /** Member list — a real table on tablet+/desktop, stacked cards on phone. */
 export function MemberTable({ members, canManage, onAction }: MemberTableProps) {
+  const t = useTranslations("people");
+  const locale = useLocale();
   const isPhone = useIsPhone();
+  const activeLabels = { dash: t("table.lastActiveDash"), justNow: t("table.justNow") };
 
   if (isPhone) {
     return (
-      <ul className="space-y-2.5" aria-label="Members">
+      <ul className="space-y-2.5" aria-label={t("table.ariaMembers")}>
         {members.map((m) => (
           <li key={m.id} className="rounded-2xl border bg-card p-3.5">
             <div className="flex items-start gap-3">
@@ -48,7 +52,7 @@ export function MemberTable({ members, canManage, onAction }: MemberTableProps) 
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <RoleBadge role={m.role} />
               <StatusBadge status={m.status} />
-              <span className="ml-auto text-xs text-muted-foreground">{lastActiveLabel(m.lastActive)}</span>
+              <span className="ml-auto text-xs text-muted-foreground">{lastActiveLabel(m.lastActive, locale, activeLabels)}</span>
             </div>
           </li>
         ))}
@@ -59,16 +63,16 @@ export function MemberTable({ members, canManage, onAction }: MemberTableProps) 
   return (
     <div className="overflow-hidden rounded-2xl border">
       <table className="w-full text-sm">
-        <caption className="sr-only">People in this care circle</caption>
+        <caption className="sr-only">{t("table.captionMembers")}</caption>
         <thead>
           <tr className="border-b bg-muted/40 text-left text-xs text-muted-foreground">
-            <th scope="col" className="px-4 py-3 font-medium">Person</th>
-            <th scope="col" className="px-4 py-3 font-medium">Relationship</th>
-            <th scope="col" className="px-4 py-3 font-medium">Role</th>
-            <th scope="col" className="px-4 py-3 font-medium">Status</th>
-            <th scope="col" className="hidden px-4 py-3 font-medium lg:table-cell">Last active</th>
+            <th scope="col" className="px-4 py-3 font-medium">{t("table.person")}</th>
+            <th scope="col" className="px-4 py-3 font-medium">{t("table.relationship")}</th>
+            <th scope="col" className="px-4 py-3 font-medium">{t("table.role")}</th>
+            <th scope="col" className="px-4 py-3 font-medium">{t("table.status")}</th>
+            <th scope="col" className="hidden px-4 py-3 font-medium lg:table-cell">{t("table.lastActive")}</th>
             <th scope="col" className="px-4 py-3 text-right font-medium">
-              <span className="sr-only">Actions</span>
+              <span className="sr-only">{t("table.actions")}</span>
             </th>
           </tr>
         </thead>
@@ -97,7 +101,7 @@ export function MemberTable({ members, canManage, onAction }: MemberTableProps) 
                 <StatusBadge status={m.status} />
               </td>
               <td className="hidden whitespace-nowrap px-4 py-3 text-muted-foreground lg:table-cell">
-                {lastActiveLabel(m.lastActive)}
+                {lastActiveLabel(m.lastActive, locale, activeLabels)}
               </td>
               <td className="px-4 py-3 text-right">
                 <MemberActionsMenu member={m} canManage={canManage} onAction={onAction} />
@@ -119,37 +123,38 @@ function MemberActionsMenu({
   canManage: boolean;
   onAction: (member: Member, action: MemberAction) => void;
 }) {
+  const t = useTranslations("people");
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" aria-label={`Actions for ${member.name}`}>
+        <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" aria-label={t("table.actionsFor", { name: member.name })}>
           <MoreHorizontal className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
         <DropdownMenuItem disabled={!canManage} onClick={() => onAction(member, "change-role")}>
           <Shield className="mr-2 h-4 w-4" />
-          Change role
+          {t("table.changeRole")}
         </DropdownMenuItem>
         <DropdownMenuItem disabled={!canManage} onClick={() => onAction(member, "edit-phone")}>
           <Phone className="mr-2 h-4 w-4" />
-          {member.phone ? "Edit phone" : "Add phone"}
+          {member.phone ? t("table.editPhone") : t("table.addPhone")}
         </DropdownMenuItem>
         {member.status === "invited" && (
           <DropdownMenuItem disabled={!canManage} onClick={() => onAction(member, "resend")}>
             <RefreshCw className="mr-2 h-4 w-4" />
-            Resend invite
+            {t("table.resendInvite")}
           </DropdownMenuItem>
         )}
         {member.status === "suspended" ? (
           <DropdownMenuItem disabled={!canManage} onClick={() => onAction(member, "reactivate")}>
             <UserCheck className="mr-2 h-4 w-4" />
-            Reactivate
+            {t("table.reactivate")}
           </DropdownMenuItem>
         ) : (
           <DropdownMenuItem disabled={!canManage} onClick={() => onAction(member, "suspend")}>
             <UserX className="mr-2 h-4 w-4" />
-            Suspend
+            {t("table.suspend")}
           </DropdownMenuItem>
         )}
         <DropdownMenuSeparator />
@@ -159,7 +164,7 @@ function MemberActionsMenu({
           className="text-destructive focus:text-destructive"
         >
           <Trash2 className="mr-2 h-4 w-4" />
-          Remove
+          {t("table.remove")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
