@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { Siren } from "lucide-react";
 import { Button, type ButtonProps } from "@/components/ui/button";
 import { ReportIncidentModal } from "./report-incident-modal";
@@ -21,9 +22,11 @@ export function ReportIncidentButton({
   size = "default",
   className,
   iconOnly = false,
-  label = "Report incident",
+  label,
   onReported,
 }: ReportIncidentButtonProps) {
+  const t = useTranslations("incidents");
+  const resolvedLabel = label ?? t("button.report");
   const [open, setOpen] = React.useState(false);
   return (
     <>
@@ -32,13 +35,13 @@ export function ReportIncidentButton({
         size={size}
         className={className}
         onClick={() => setOpen(true)}
-        aria-label={iconOnly ? label : undefined}
+        aria-label={iconOnly ? resolvedLabel : undefined}
       >
         <Siren className="h-4 w-4" />
         {!iconOnly && (
           <>
-            <span className="ml-1 hidden sm:inline">{label}</span>
-            <span className="ml-1 sm:hidden">{label.split(" ")[0]}</span>
+            <span className="ml-1 hidden sm:inline">{resolvedLabel}</span>
+            <span className="ml-1 sm:hidden">{resolvedLabel.split(" ")[0]}</span>
           </>
         )}
       </Button>

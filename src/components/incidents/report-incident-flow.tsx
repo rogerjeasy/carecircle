@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import {
@@ -25,18 +26,17 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FormField } from "./form-field";
 import { reportIncident, fetchReportContext } from "@/lib/incidents/actions";
-import { severityMeta, typeMeta } from "./data";
+import { typeMeta } from "./data";
 import { firstName } from "./utils";
 import type { IncidentReportContext, IncidentType, Severity } from "./types";
 
 const TYPES: IncidentType[] = ["fall", "hospitalization", "emergency", "other"];
 const SEVERITIES: Severity[] = ["low", "medium", "high"];
 
-function joinNames(names: string[]): string {
-  if (names.length === 0) return "No one";
-  if (names.length === 1) return names[0];
-  if (names.length === 2) return `${names[0]} and ${names[1]}`;
-  return `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
+/** Locale-aware "A, B and C" join. Caller passes the "no one" fallback from messages. */
+function joinNames(names: string[], locale: string, noneLabel: string): string {
+  if (names.length === 0) return noneLabel;
+  return new Intl.ListFormat(locale, { style: "long", type: "conjunction" }).format(names);
 }
 
 export interface ReportIncidentFlowProps {
@@ -47,6 +47,8 @@ export interface ReportIncidentFlowProps {
 
 /** The multi-step report flow: type → details/severity/notify → reassuring confirmation. */
 export function ReportIncidentFlow({ onClose, onReported }: ReportIncidentFlowProps) {
+  const t = useTranslations("incidents");
+  const locale = useLocale();
   const router = useRouter();
   const [now] = React.useState(() => new Date());
   const [step, setStep] = React.useState<"type" | "details" | "done">("type");
@@ -94,11 +96,11 @@ export function ReportIncidentFlow({ onClose, onReported }: ReportIncidentFlowPr
   }, [photoUrl]);
 
   const members = ctx?.members ?? [];
-  const recipientName = ctx?.recipientName ?? "your loved one";
+  const recipientName = ctx?.recipientName ?? t("recipientFallback");
   const emergencyContact = ctx?.emergencyContact ?? null;
 
   const isHigh = severity === "high";
-  const descError = triedSubmit && description.trim().length < 3 ? "Please describe what happened" : undefined;
+  const descError = triedSubmit && description.trim().length < 3 ? t("form.descError") : undefined;
 
   const toggleNotify = (id: string) =>
     setNotify((prev) => {
@@ -149,31 +151,31 @@ export function ReportIncidentFlow({ onClose, onReported }: ReportIncidentFlowPr
     return (
       <div className="flex min-h-0 flex-1 flex-col">
         <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-6">
-          <p className="mb-4 text-sm text-muted-foreground">What kind of incident is it?</p>
+          <p className="mb-4 text-sm text-muted-foreground">{t("flow.typePrompt")}</p>
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            {TYPES.map((t) => {
-              const meta = typeMeta[t];
+            {TYPES.map((ty) => {
+              const meta = typeMeta[ty];
               const Icon = meta.icon;
               return (
                 <button
-                  key={t}
+                  key={ty}
                   type="button"
                   onClick={() => {
-                    setType(t);
+                    setType(ty);
                     setStep("details");
                   }}
                   className={cn(
                     "flex min-h-[7.5rem] flex-col items-center justify-center gap-2 rounded-2xl border bg-card p-4 text-center transition-all",
                     "hover:border-primary/50 hover:bg-muted/50 motion-safe:hover:-translate-y-0.5",
                     "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-                    type === t && "border-primary ring-2 ring-primary"
+                    type === ty && "border-primary ring-2 ring-primary"
                   )}
                 >
                   <span className={cn("flex h-12 w-12 items-center justify-center rounded-xl", meta.tint)}>
                     <Icon className="h-6 w-6" aria-hidden="true" />
                   </span>
-                  <span className="font-semibold leading-tight">{meta.label}</span>
-                  <span className="text-xs text-muted-foreground">{meta.blurb}</span>
+                  <span className="font-semibold leading-tight">{t(`types.${ty}.label` as "types.fall.label")}</span>
+                  <span className="text-xs text-muted-foreground">{t(`types.${ty}.blurb` as "types.fall.blurb")}</span>
                 </button>
               );
             })}
@@ -182,7 +184,7 @@ export function ReportIncidentFlow({ onClose, onReported }: ReportIncidentFlowPr
         <div className="shrink-0 border-t bg-background px-5 py-3 sm:px-6">
           <div className="flex justify-end">
             <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
+              {t("actions.cancel")}
             </Button>
           </div>
         </div>
@@ -200,17 +202,20 @@ export function ReportIncidentFlow({ onClose, onReported }: ReportIncidentFlowPr
               <CheckCircle2 className="h-7 w-7" aria-hidden="true" />
             </div>
             <div>
-              <p className="text-lg font-semibold">Incident reported</p>
+              <p className="text-lg font-semibold">{t("done.title")}</p>
               <p className="mt-1 text-sm text-muted-foreground">
                 {notifiedNames.length > 0
-                  ? `${joinNames(notifiedNames)} ${notifiedNames.length === 1 ? "has" : "have"} been notified.`
-                  : "Saved to the circle's record."}
+                  ? t("done.notified", {
+                      count: notifiedNames.length,
+                      names: joinNames(notifiedNames, locale, t("done.noOne")),
+                    })
+                  : t("done.savedNoNotify")}
               </p>
             </div>
           </div>
 
           <div className="mt-6 space-y-2">
-            <p className="text-sm font-medium">Next steps</p>
+            <p className="text-sm font-medium">{t("done.nextSteps")}</p>
             {emergencyContact?.phone && (
               <a
                 href={`tel:${emergencyContact.phone.replace(/[^+\d]/g, "")}`}
@@ -220,20 +225,20 @@ export function ReportIncidentFlow({ onClose, onReported }: ReportIncidentFlowPr
                   <Phone className="h-4 w-4" aria-hidden="true" />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block text-sm font-medium">Call {emergencyContact.name}</span>
+                  <span className="block text-sm font-medium">{t("detail.call", { name: emergencyContact.name })}</span>
                   <span className="block truncate text-xs text-muted-foreground">{emergencyContact.phone}</span>
                 </span>
                 <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
               </a>
             )}
-            <NextStepLink href="/emergency-card" label="Open Emergency Card" sub="Key details for responders" />
-            {newId && <NextStepLink href={`/incidents/${newId}`} label="View incident" sub="Track responses & resolve" />}
+            <NextStepLink href="/emergency-card" label={t("done.openCard")} sub={t("done.openCardSub")} />
+            {newId && <NextStepLink href={`/incidents/${newId}`} label={t("done.viewIncident")} sub={t("done.viewIncidentSub")} />}
           </div>
         </div>
         <div className="shrink-0 border-t bg-background px-5 py-3 sm:px-6">
           <div className="flex justify-end">
             <Button type="button" onClick={onClose}>
-              Done
+              {t("actions.done")}
             </Button>
           </div>
         </div>
@@ -253,14 +258,14 @@ export function ReportIncidentFlow({ onClose, onReported }: ReportIncidentFlowPr
             className="flex w-full items-center gap-2 rounded-xl border bg-muted/30 px-3 py-2 text-left text-sm transition-colors hover:bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <ArrowLeft className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-            <span className="text-muted-foreground">Type:</span>
-            <span className="font-medium">{typeMeta[type].label}</span>
-            <span className="ml-auto text-xs text-muted-foreground">Change</span>
+            <span className="text-muted-foreground">{t("form.typeLabel")}</span>
+            <span className="font-medium">{t(`types.${type}.label` as "types.fall.label")}</span>
+            <span className="ml-auto text-xs text-muted-foreground">{t("form.change")}</span>
           </button>
         )}
 
         {/* Severity */}
-        <FormField htmlFor="severity" label="How severe is it?">
+        <FormField htmlFor="severity" label={t("form.severityLabel")}>
           <div id="severity" className="grid grid-cols-3 gap-2">
             {SEVERITIES.map((s) => {
               const active = severity === s;
@@ -278,7 +283,7 @@ export function ReportIncidentFlow({ onClose, onReported }: ReportIncidentFlowPr
                     active && s === "low" && "border-primary bg-primary/10 text-primary"
                   )}
                 >
-                  {severityMeta[s].label}
+                  {t(`severities.${s}` as "severities.low")}
                 </button>
               );
             })}
@@ -290,24 +295,24 @@ export function ReportIncidentFlow({ onClose, onReported }: ReportIncidentFlowPr
           <div className="rounded-xl border border-destructive/40 bg-destructive/5 p-3 motion-safe:animate-in motion-safe:fade-in">
             <p className="flex items-center gap-1.5 text-sm font-semibold text-destructive">
               <ShieldAlert className="h-4 w-4 shrink-0" aria-hidden="true" />
-              This looks urgent
+              {t("urgent.title")}
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
-              If {recipientName} is in danger, call emergency services first.
+              {t("urgent.body", { name: recipientName })}
             </p>
             <div className="mt-2 flex flex-wrap gap-2">
               {emergencyContact?.phone && (
                 <Button asChild size="sm" variant="destructive">
                   <a href={`tel:${emergencyContact.phone.replace(/[^+\d]/g, "")}`}>
                     <Phone className="h-4 w-4" />
-                    <span className="ml-1">Call {firstName(emergencyContact.name)}</span>
+                    <span className="ml-1">{t("detail.call", { name: firstName(emergencyContact.name) })}</span>
                   </a>
                 </Button>
               )}
               <Button asChild size="sm" variant="outline">
                 <Link href="/emergency-card">
                   <ExternalLink className="h-4 w-4" />
-                  <span className="ml-1">Emergency Card</span>
+                  <span className="ml-1">{t("detail.emergencyCard")}</span>
                 </Link>
               </Button>
             </div>
@@ -315,12 +320,12 @@ export function ReportIncidentFlow({ onClose, onReported }: ReportIncidentFlowPr
         )}
 
         {/* What happened */}
-        <FormField htmlFor="description" label="What happened?" required error={descError}>
+        <FormField htmlFor="description" label={t("form.descLabel")} required error={descError}>
           <Textarea
             id="description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder={`Describe what happened, who was there, and how ${recipientName} is doing now…`}
+            placeholder={t("form.descPlaceholder", { name: recipientName })}
             rows={4}
             aria-invalid={descError ? true : undefined}
             className={cn(descError && "border-destructive focus-visible:ring-destructive")}
@@ -329,16 +334,16 @@ export function ReportIncidentFlow({ onClose, onReported }: ReportIncidentFlowPr
 
         {/* Time */}
         <div className="grid grid-cols-2 gap-3">
-          <FormField htmlFor="date" label="Date">
+          <FormField htmlFor="date" label={t("form.dateLabel")}>
             <Input id="date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
           </FormField>
-          <FormField htmlFor="time" label="Time">
+          <FormField htmlFor="time" label={t("form.timeLabel")}>
             <Input id="time" type="time" value={time} onChange={(e) => setTime(e.target.value)} />
           </FormField>
         </div>
 
         {/* Photo */}
-        <FormField htmlFor="photo" label="Photo" hint="Optional">
+        <FormField htmlFor="photo" label={t("form.photoLabel")} hint={t("form.optional")}>
           <input
             ref={photoInputRef}
             id="photo"
@@ -354,22 +359,22 @@ export function ReportIncidentFlow({ onClose, onReported }: ReportIncidentFlowPr
           {photoUrl ? (
             <div className="flex items-center gap-3 rounded-xl border bg-card p-2.5">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={photoUrl} alt="Incident photo preview" className="h-12 w-12 shrink-0 rounded-lg object-cover" />
-              <span className="min-w-0 flex-1 truncate text-sm text-muted-foreground">Photo attached</span>
-              <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={() => setPhoto(null)} aria-label="Remove photo">
+              <img src={photoUrl} alt={t("form.photoPreviewAlt")} className="h-12 w-12 shrink-0 rounded-lg object-cover" />
+              <span className="min-w-0 flex-1 truncate text-sm text-muted-foreground">{t("form.photoAttached")}</span>
+              <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={() => setPhoto(null)} aria-label={t("form.removePhoto")}>
                 <X className="h-4 w-4" />
               </Button>
             </div>
           ) : (
             <Button type="button" variant="outline" onClick={() => photoInputRef.current?.click()}>
               <Camera className="h-4 w-4" />
-              <span className="ml-1">Add a photo</span>
+              <span className="ml-1">{t("form.addPhoto")}</span>
             </Button>
           )}
         </FormField>
 
         {/* Notify */}
-        <FormField htmlFor="notify" label="Who should be notified now?">
+        <FormField htmlFor="notify" label={t("form.notifyLabel")}>
           {ctxLoading ? (
             <ul className="space-y-1.5">
               {[0, 1, 2].map((i) => (
@@ -384,7 +389,7 @@ export function ReportIncidentFlow({ onClose, onReported }: ReportIncidentFlowPr
             </ul>
           ) : members.length === 0 ? (
             <p className="rounded-xl border border-dashed px-3 py-4 text-center text-sm text-muted-foreground">
-              No other members to notify yet.
+              {t("form.noMembers")}
             </p>
           ) : (
             <ul id="notify" className="space-y-1.5">
@@ -400,7 +405,7 @@ export function ReportIncidentFlow({ onClose, onReported }: ReportIncidentFlowPr
                   <Switch
                     checked={notify.has(m.id)}
                     onCheckedChange={() => toggleNotify(m.id)}
-                    aria-label={`Notify ${m.name}`}
+                    aria-label={t("form.notifyMemberAria", { name: m.name })}
                   />
                 </li>
               ))}
@@ -414,7 +419,7 @@ export function ReportIncidentFlow({ onClose, onReported }: ReportIncidentFlowPr
         <div className="flex items-center justify-between gap-2">
           <Button type="button" variant="ghost" onClick={() => setStep("type")} disabled={submitting}>
             <ArrowLeft className="h-4 w-4" />
-            <span className="ml-1">Back</span>
+            <span className="ml-1">{t("actions.back")}</span>
           </Button>
           <Button
             type="button"
@@ -426,10 +431,10 @@ export function ReportIncidentFlow({ onClose, onReported }: ReportIncidentFlowPr
             {submitting ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" />
-                <span className="ml-1">Reporting…</span>
+                <span className="ml-1">{t("actions.reporting")}</span>
               </>
             ) : (
-              <span>Report &amp; notify</span>
+              <span>{t("actions.reportNotify")}</span>
             )}
           </Button>
         </div>

@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import {
   ArrowLeft,
@@ -50,6 +51,8 @@ function Detail({
   emergencyContact: EmergencyContact | null;
   canResolve: boolean;
 }) {
+  const t = useTranslations("incidents");
+  const locale = useLocale();
   const router = useRouter();
   const meta = typeMeta[incident.type];
   const Icon = meta.icon;
@@ -65,7 +68,7 @@ function Detail({
   const acknowledge = async () => {
     const res = await acknowledgeIncident(incident.id);
     if (!res.ok) return toast.error(res.error);
-    toast.success("You acknowledged this incident");
+    toast.success(t("toast.acknowledged"));
     startTransition(() => router.refresh());
   };
 
@@ -89,7 +92,7 @@ function Detail({
     const res = await resolveIncident(fd);
     if (!res.ok) return toast.error(res.error);
     setResolving(false);
-    toast.success("Incident marked resolved");
+    toast.success(t("toast.resolved"));
     startTransition(() => router.refresh());
   };
 
@@ -104,11 +107,11 @@ function Detail({
           className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
           <ArrowLeft className="h-4 w-4" />
-          All incidents
+          {t("detail.allIncidents")}
         </Link>
         <Badge variant={incident.status === "resolved" ? "success" : "secondary"} className="gap-1.5">
           <span className={cn("h-1.5 w-1.5 rounded-full", incident.status === "resolved" ? "bg-success" : "bg-warning")} aria-hidden="true" />
-          {incident.status === "resolved" ? "Resolved" : "Open"}
+          {incident.status === "resolved" ? t("status.resolved") : t("status.open")}
         </Badge>
       </div>
 
@@ -120,16 +123,23 @@ function Detail({
           </span>
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className="font-display text-xl font-bold tracking-tight sm:text-2xl">{meta.label}</h1>
-              <Badge variant={sev.badge}>{sev.label} severity</Badge>
+              <h1 className="font-display text-xl font-bold tracking-tight sm:text-2xl">
+                {t(`types.${incident.type}.label` as "types.fall.label")}
+              </h1>
+              <Badge variant={sev.badge}>
+                {t("detail.severityBadge", { severity: t(`severities.${incident.severity}` as "severities.low") })}
+              </Badge>
             </div>
             <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
               <span className="inline-flex items-center gap-1">
                 <Clock className="h-3.5 w-3.5" aria-hidden="true" />
-                {incidentTime(incident.at)}
+                {incidentTime(incident.at, locale, { today: t("day.today"), yesterday: t("day.yesterday") })}
               </span>
               <span className="inline-flex items-center gap-1">
-                Reported by <span className="font-medium text-foreground">{incident.reporterName}</span>
+                {t.rich("detail.reportedBy", {
+                  name: incident.reporterName,
+                  b: (chunks) => <span className="font-medium text-foreground">{chunks}</span>,
+                })}
               </span>
             </p>
           </div>
@@ -139,19 +149,19 @@ function Detail({
       {/* High-severity emergency shortcuts */}
       {isHigh && incident.status !== "resolved" && (
         <div className="flex flex-wrap items-center gap-2 rounded-xl border border-destructive/40 bg-destructive/5 p-3">
-          <span className="text-sm font-medium text-destructive">Need help fast?</span>
+          <span className="text-sm font-medium text-destructive">{t("detail.needHelp")}</span>
           {emergencyContact?.phone && (
             <Button asChild size="sm" variant="destructive">
               <a href={`tel:${emergencyContact.phone.replace(/[^+\d]/g, "")}`}>
                 <Phone className="h-4 w-4" />
-                <span className="ml-1">Call {firstName(emergencyContact.name)}</span>
+                <span className="ml-1">{t("detail.call", { name: firstName(emergencyContact.name) })}</span>
               </a>
             </Button>
           )}
           <Button asChild size="sm" variant="outline">
             <Link href="/emergency-card">
               <ExternalLink className="h-4 w-4" />
-              <span className="ml-1">Emergency Card</span>
+              <span className="ml-1">{t("detail.emergencyCard")}</span>
             </Link>
           </Button>
         </div>
@@ -164,25 +174,25 @@ function Detail({
           {/* What happened */}
           <Card>
             <CardContent className="space-y-3 p-4 sm:p-5">
-              <h2 className="text-sm font-semibold">What happened</h2>
+              <h2 className="text-sm font-semibold">{t("detail.whatHappened")}</h2>
               <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">{incident.description}</p>
               {incident.photoUrl && (
                 <div className="overflow-hidden rounded-xl border">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={incident.photoUrl} alt="Incident photo" className="max-h-64 w-full object-cover" />
+                  <img src={incident.photoUrl} alt={t("detail.photoAlt")} className="max-h-64 w-full object-cover" />
                 </div>
               )}
               <div className="flex flex-wrap gap-2 pt-1">
                 <Button asChild variant="outline" size="sm">
                   <Link href="/timeline">
                     <FileText className="h-4 w-4" />
-                    <span className="ml-1">Timeline event</span>
+                    <span className="ml-1">{t("detail.timelineEvent")}</span>
                   </Link>
                 </Button>
                 <Button asChild variant="outline" size="sm">
                   <Link href="/emergency-card">
                     <ExternalLink className="h-4 w-4" />
-                    <span className="ml-1">Emergency Card</span>
+                    <span className="ml-1">{t("detail.emergencyCard")}</span>
                   </Link>
                 </Button>
               </div>
@@ -193,13 +203,13 @@ function Detail({
           <Card>
             <CardContent className="space-y-3 p-4 sm:p-5">
               <div className="flex items-center justify-between gap-2">
-                <h2 className="text-sm font-semibold">Notified &amp; acknowledged</h2>
+                <h2 className="text-sm font-semibold">{t("detail.notifiedTitle")}</h2>
                 <span className="text-xs tabular-nums text-muted-foreground">
-                  {summary.acknowledged}/{summary.total} acknowledged
+                  {t("detail.acknowledgedCount", { acknowledged: summary.acknowledged, total: summary.total })}
                 </span>
               </div>
               {incident.notifications.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No one was notified for this incident.</p>
+                <p className="text-sm text-muted-foreground">{t("detail.noneNotified")}</p>
               ) : (
                 <ul className="space-y-2">
                   {incident.notifications.map((n) => {
@@ -215,7 +225,7 @@ function Detail({
                         </div>
                         <span className={cn("inline-flex shrink-0 items-center gap-1.5 text-xs font-medium", a.tint)}>
                           <span className={cn("h-1.5 w-1.5 rounded-full", a.dot)} aria-hidden="true" />
-                          {a.label}
+                          {t(`ack.${n.status}` as "ack.acknowledged")}
                         </span>
                       </li>
                     );
@@ -225,7 +235,7 @@ function Detail({
               {canAck && (
                 <Button variant="outline" size="sm" className="w-full" onClick={acknowledge} disabled={pending}>
                   <ShieldCheck className="h-4 w-4" />
-                  <span className="ml-1">Acknowledge</span>
+                  <span className="ml-1">{t("detail.acknowledge")}</span>
                 </Button>
               )}
             </CardContent>
@@ -237,33 +247,35 @@ function Detail({
               <CardContent className="space-y-1.5 p-4 sm:p-5">
                 <p className="flex items-center gap-1.5 text-sm font-semibold text-success">
                   <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
-                  Resolved
+                  {t("status.resolved")}
                 </p>
                 {incident.resolutionNote && <p className="text-sm text-foreground/90">{incident.resolutionNote}</p>}
                 <p className="text-xs text-muted-foreground">
                   {incident.resolvedByName ? `${incident.resolvedByName} · ` : ""}
-                  {incident.resolvedAt ? incidentTime(incident.resolvedAt) : ""}
+                  {incident.resolvedAt
+                    ? incidentTime(incident.resolvedAt, locale, { today: t("day.today"), yesterday: t("day.yesterday") })
+                    : ""}
                 </p>
               </CardContent>
             </Card>
           ) : resolving ? (
             <Card>
               <CardContent className="space-y-3 p-4 sm:p-5">
-                <h2 className="text-sm font-semibold">Resolve incident</h2>
+                <h2 className="text-sm font-semibold">{t("resolve.title")}</h2>
                 <Textarea
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
-                  placeholder="Add a short note on how this was resolved (optional)…"
+                  placeholder={t("resolve.notePlaceholder")}
                   rows={3}
-                  aria-label="Resolution notes"
+                  aria-label={t("resolve.noteAria")}
                 />
                 <div className="flex justify-end gap-2">
                   <Button variant="outline" size="sm" onClick={() => setResolving(false)} disabled={pending}>
-                    Cancel
+                    {t("actions.cancel")}
                   </Button>
                   <Button size="sm" onClick={resolve} disabled={pending}>
                     <CheckCircle2 className="h-4 w-4" />
-                    <span className="ml-1">Mark resolved</span>
+                    <span className="ml-1">{t("resolve.markResolved")}</span>
                   </Button>
                 </div>
               </CardContent>
@@ -272,7 +284,7 @@ function Detail({
             canResolve && (
               <Button variant="outline" className="w-full" onClick={() => setResolving(true)}>
                 <CheckCircle2 className="h-4 w-4" />
-                <span className="ml-1">Resolve incident</span>
+                <span className="ml-1">{t("resolve.title")}</span>
               </Button>
             )
           )}
@@ -283,12 +295,12 @@ function Detail({
           <CardContent className="flex h-full flex-col gap-3 p-4 sm:p-5">
             <h2 className="flex items-center gap-2 text-sm font-semibold">
               <MessageSquare className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-              Coordinating ({incident.comments.length})
+              {t("comments.title", { count: incident.comments.length })}
             </h2>
 
             {incident.comments.length === 0 ? (
               <p className="rounded-xl border border-dashed px-3 py-6 text-center text-sm text-muted-foreground">
-                No comments yet. Start the conversation.
+                {t("comments.empty")}
               </p>
             ) : (
               <ul className="space-y-3">
@@ -300,7 +312,7 @@ function Detail({
                     <div className="min-w-0 flex-1">
                       <p className="flex items-baseline gap-2">
                         <span className="truncate text-sm font-medium">{c.authorName}</span>
-                        <span className="shrink-0 text-xs text-muted-foreground">{relativeTime(c.at)}</span>
+                        <span className="shrink-0 text-xs text-muted-foreground">{relativeTime(c.at, locale)}</span>
                       </p>
                       <p className="break-words text-sm text-foreground/90">{c.text}</p>
                     </div>
@@ -313,11 +325,11 @@ function Detail({
               <Input
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
-                placeholder="Write a comment…"
-                aria-label="Add a comment"
+                placeholder={t("comments.placeholder")}
+                aria-label={t("comments.addAria")}
                 className="h-10"
               />
-              <Button type="submit" size="icon" className="h-10 w-10 shrink-0" disabled={!comment.trim() || pending} aria-label="Send comment">
+              <Button type="submit" size="icon" className="h-10 w-10 shrink-0" disabled={!comment.trim() || pending} aria-label={t("comments.sendAria")}>
                 <Send className="h-4 w-4" />
               </Button>
             </form>
@@ -329,19 +341,20 @@ function Detail({
 }
 
 function NotFound() {
+  const t = useTranslations("incidents");
   return (
     <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed px-6 py-16 text-center">
       <div className="flex h-14 w-14 items-center justify-center rounded-full bg-secondary text-muted-foreground">
         <Camera className="h-7 w-7" aria-hidden="true" />
       </div>
       <div>
-        <p className="text-base font-semibold">Incident not found</p>
-        <p className="mt-1 text-sm text-muted-foreground">It may have been removed, or belongs to another circle.</p>
+        <p className="text-base font-semibold">{t("notFound.title")}</p>
+        <p className="mt-1 text-sm text-muted-foreground">{t("notFound.body")}</p>
       </div>
       <Button asChild variant="outline">
         <Link href="/incidents">
           <ArrowLeft className="h-4 w-4" />
-          <span className="ml-1">Back to incidents</span>
+          <span className="ml-1">{t("notFound.back")}</span>
         </Link>
       </Button>
     </div>
