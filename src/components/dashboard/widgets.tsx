@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { TrendingDown, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -116,6 +117,7 @@ export function StatCard({
 }
 
 export function InsightBanner({ text, onDismiss, visible }: { text: string; onDismiss: () => void; visible: boolean }) {
+  const t = useTranslations("dashboard.insight");
   if (!visible) return null;
 
   return (
@@ -125,7 +127,7 @@ export function InsightBanner({ text, onDismiss, visible }: { text: string; onDi
           <TrendingDown className="h-4 w-4 text-warning" />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium">Worth a look</p>
+          <p className="text-sm font-medium">{t("title")}</p>
           <p className="text-xs text-muted-foreground">{text}</p>
         </div>
         <Button
@@ -133,7 +135,7 @@ export function InsightBanner({ text, onDismiss, visible }: { text: string; onDi
           size="sm"
           className="shrink-0 h-8 w-8 p-0"
           onClick={onDismiss}
-          aria-label="Dismiss insight"
+          aria-label={t("dismiss")}
         >
           <X className="h-4 w-4" />
         </Button>

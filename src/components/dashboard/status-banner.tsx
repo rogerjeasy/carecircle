@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Smile } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,12 +17,13 @@ interface StatusBannerProps {
 }
 
 export function StatusBanner({ role, recipient, subtext, weekAtGlance }: StatusBannerProps) {
+  const t = useTranslations("dashboard.banner");
   const isCaregiver = role === "caregiver";
   const isReadonly = role === "readonly";
   const fallbackInitials = recipient?.initials || "AS";
   // Recipient's first name for the banner copy (neutral fallback until the profile loads).
-  const recipientName = recipient?.firstName || "Your loved one";
-  const secondary = subtext || "Following along";
+  const recipientName = recipient?.firstName || t("fallbackName");
+  const secondary = subtext || t("followingAlong");
 
   if (isCaregiver) {
     return (
@@ -33,12 +35,12 @@ export function StatusBanner({ role, recipient, subtext, weekAtGlance }: StatusB
           </Avatar>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="font-semibold">Your shift</h3>
+              <h3 className="font-semibold">{t("yourShift")}</h3>
             </div>
             <p className="text-sm text-muted-foreground mt-0.5">{secondary}</p>
           </div>
           <div className="hidden sm:flex items-center gap-2">
-            <Button size="sm" variant="outline">View tasks</Button>
+            <Button size="sm" variant="outline">{t("viewTasks")}</Button>
           </div>
         </CardContent>
       </Card>
@@ -55,7 +57,7 @@ export function StatusBanner({ role, recipient, subtext, weekAtGlance }: StatusB
           </Avatar>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="font-semibold">{recipientName} is doing well</h3>
+              <h3 className="font-semibold">{t("doingWell", { name: recipientName })}</h3>
               <Smile className="h-4 w-4 text-success" />
             </div>
             <p className="text-sm text-muted-foreground mt-0.5">{secondary}</p>
@@ -75,7 +77,7 @@ export function StatusBanner({ role, recipient, subtext, weekAtGlance }: StatusB
         </Avatar>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="font-semibold">{recipientName} is having a good day</h3>
+            <h3 className="font-semibold">{t("goodDay", { name: recipientName })}</h3>
             <Smile className="h-4 w-4 text-success" />
           </div>
           <p className="text-sm text-muted-foreground mt-0.5">{secondary}</p>

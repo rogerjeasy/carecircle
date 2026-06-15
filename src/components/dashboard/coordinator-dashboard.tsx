@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { ArrowRight, Calendar, Check, CheckSquare, HeartPulse, Pill } from "lucide-react";
 import { LineChart, Line } from "recharts";
+import { useLocale, useTranslations } from "next-intl";
 import { useAppShell } from "@/components/app-shell/app-shell-context";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,8 @@ const VITAL_STATUS_LABEL = { normal: "Normal", elevated: "Elevated", low: "Low" 
 /** The coordinator / family home dashboard. */
 export function CoordinatorDashboard({ data }: { data: DashboardData | null }) {
   const { role, user } = useAppShell();
+  const t = useTranslations("dashboard");
+  const locale = useLocale();
   const timeOfDay = useTimeOfDay();
   const [insightVisible, setInsightVisible] = React.useState(true);
 
@@ -34,13 +37,10 @@ export function CoordinatorDashboard({ data }: { data: DashboardData | null }) {
   const doses = data?.todayDoses ?? [];
   const updates = data?.recentUpdates ?? [];
 
-  const greeting = {
-    morning: "Good morning",
-    afternoon: "Good afternoon",
-    evening: "Good evening",
-  }[timeOfDay];
+  const greeting = t(`greeting.${timeOfDay}`);
 
-  const today = new Date().toLocaleDateString("en-US", {
+  // Locale-aware date: weekday/month names follow the active language (and digit shaping for ar/he).
+  const today = new Date().toLocaleDateString(locale, {
     weekday: "long",
     month: "long",
     day: "numeric",
@@ -76,7 +76,7 @@ export function CoordinatorDashboard({ data }: { data: DashboardData | null }) {
       {/* Stat Cards Grid */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
-          label="Medications today"
+          label={t("stats.medications")}
           value={medsTotal > 0 ? `${medsGiven} of ${medsTotal}` : "—"}
           subtext={stats?.nextDoseLabel ? `Next: ${stats.nextDoseLabel}` : medsTotal > 0 ? "All done today" : "None scheduled"}
           icon={Pill}
@@ -86,7 +86,7 @@ export function CoordinatorDashboard({ data }: { data: DashboardData | null }) {
         </StatCard>
 
         <StatCard
-          label="Next appointment"
+          label={t("stats.nextAppointment")}
           value={stats?.nextAppointment?.whenLabel ?? "None"}
           subtext={stats?.nextAppointment?.subtitle ?? "No upcoming visits"}
           icon={Calendar}
@@ -94,7 +94,7 @@ export function CoordinatorDashboard({ data }: { data: DashboardData | null }) {
         />
 
         <StatCard
-          label="Open tasks"
+          label={t("stats.openTasks")}
           value={`${openTasks} open`}
           subtext={stats ? `${stats.tasksDueToday} due today` : "—"}
           icon={CheckSquare}
@@ -102,7 +102,7 @@ export function CoordinatorDashboard({ data }: { data: DashboardData | null }) {
         />
 
         <StatCard
-          label="Latest vitals"
+          label={t("stats.latestVitals")}
           value={stats?.latestVital?.value ?? "—"}
           subtext={
             stats?.latestVital
