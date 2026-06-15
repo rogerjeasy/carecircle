@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import {
   CartesianGrid,
@@ -20,11 +21,12 @@ import { useReducedMotion } from "./use-reduced-motion";
 
 /** Clinician read-only clinical summary. */
 export function ClinicianSummary({ data }: { data: DashboardData | null }) {
+  const t = useTranslations("experiences");
   const isPhone = useIsPhone();
   const reduced = useReducedMotion();
 
   const recipient = data?.recipient ?? null;
-  const fullName = recipient?.fullName ?? "Care recipient";
+  const fullName = recipient?.fullName ?? t("clinician.fallbackName");
   const conditions = recipient?.conditions ?? [];
   const allergies = recipient?.allergies ?? [];
   const meds = data?.clinical.meds ?? [];
@@ -33,7 +35,10 @@ export function ClinicianSummary({ data }: { data: DashboardData | null }) {
   const incidents = data?.clinical.incidents ?? [];
   const docs = data?.clinical.documents ?? [];
 
-  const ageDob = [recipient?.age != null ? `${recipient.age} years` : null, recipient?.dob ? `DOB ${recipient.dob}` : null]
+  const ageDob = [
+    recipient?.age != null ? t("clinician.ageYears", { age: recipient.age }) : null,
+    recipient?.dob ? t("clinician.dob", { dob: recipient.dob }) : null,
+  ]
     .filter(Boolean)
     .join(" · ");
 
@@ -44,15 +49,15 @@ export function ClinicianSummary({ data }: { data: DashboardData | null }) {
         <div className="flex items-start gap-2">
           <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-info" aria-hidden="true" />
           <div className="min-w-0">
-            <p className="text-sm font-semibold">Read-only clinical access</p>
+            <p className="text-sm font-semibold">{t("clinician.accessTitle")}</p>
             <p className="text-xs text-muted-foreground">
-              You can view {recipient?.firstName ?? "the recipient"}&apos;s clinical record but cannot make changes.
+              {t("clinician.accessNote", { name: recipient?.firstName ?? t("clinician.theRecipient") })}
             </p>
           </div>
         </div>
         <Badge variant="secondary" className="w-fit gap-1.5">
           <Lock className="h-3 w-3" aria-hidden="true" />
-          View only
+          {t("clinician.viewOnly")}
         </Badge>
       </div>
 
@@ -64,9 +69,9 @@ export function ClinicianSummary({ data }: { data: DashboardData | null }) {
 
       {/* Summary: conditions / allergies / blood type */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <SummaryCard title="Conditions">
+        <SummaryCard title={t("clinician.conditions")}>
           {conditions.length === 0 ? (
-            <p className="text-sm text-muted-foreground">None recorded</p>
+            <p className="text-sm text-muted-foreground">{t("clinician.noneRecorded")}</p>
           ) : (
             <ul className="flex flex-wrap gap-1.5">
               {conditions.map((c) => (
@@ -77,9 +82,9 @@ export function ClinicianSummary({ data }: { data: DashboardData | null }) {
             </ul>
           )}
         </SummaryCard>
-        <SummaryCard title="Allergies">
+        <SummaryCard title={t("clinician.allergies")}>
           {allergies.length === 0 ? (
-            <p className="text-sm text-muted-foreground">None recorded</p>
+            <p className="text-sm text-muted-foreground">{t("clinician.noneRecorded")}</p>
           ) : (
             <ul className="flex flex-wrap gap-1.5">
               {allergies.map((a) => (
@@ -90,7 +95,7 @@ export function ClinicianSummary({ data }: { data: DashboardData | null }) {
             </ul>
           )}
         </SummaryCard>
-        <SummaryCard title="Blood type">
+        <SummaryCard title={t("clinician.bloodType")}>
           <p className="text-2xl font-bold tabular-nums">{recipient?.bloodType ?? "—"}</p>
         </SummaryCard>
       </div>
@@ -102,10 +107,10 @@ export function ClinicianSummary({ data }: { data: DashboardData | null }) {
           <CardContent className="p-4 sm:p-5">
             <h2 className="mb-3 flex items-center gap-2 text-base font-semibold">
               <Pill className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-              Current medications
+              {t("clinician.currentMeds")}
             </h2>
             {meds.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No active medications.</p>
+              <p className="text-sm text-muted-foreground">{t("clinician.noActiveMeds")}</p>
             ) : isPhone ? (
               <ul className="space-y-2">
                 {meds.map((m) => (
@@ -122,12 +127,12 @@ export function ClinicianSummary({ data }: { data: DashboardData | null }) {
             ) : (
               <div className="overflow-x-auto [scrollbar-width:thin]">
                 <table className="w-full min-w-[26rem] text-sm">
-                  <caption className="sr-only">Current medications and adherence</caption>
+                  <caption className="sr-only">{t("clinician.medsCaption")}</caption>
                   <thead>
                     <tr className="border-b text-xs text-muted-foreground">
-                      <th scope="col" className="py-2.5 pr-4 text-left font-medium">Medication</th>
-                      <th scope="col" className="px-4 py-2.5 text-left font-medium">Schedule</th>
-                      <th scope="col" className="py-2.5 pl-4 text-left font-medium">Adherence</th>
+                      <th scope="col" className="py-2.5 pr-4 text-left font-medium">{t("clinician.colMedication")}</th>
+                      <th scope="col" className="px-4 py-2.5 text-left font-medium">{t("clinician.colSchedule")}</th>
+                      <th scope="col" className="py-2.5 pl-4 text-left font-medium">{t("clinician.colAdherence")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -157,11 +162,11 @@ export function ClinicianSummary({ data }: { data: DashboardData | null }) {
         {/* Vitals trends */}
         <Card>
           <CardContent className="space-y-4 p-4 sm:p-5">
-            <h2 className="text-base font-semibold">Vitals — last 7 days</h2>
+            <h2 className="text-base font-semibold">{t("clinician.vitalsTitle")}</h2>
             <div>
-              <p className="mb-1 text-xs font-medium text-muted-foreground">Blood pressure (mmHg)</p>
+              <p className="mb-1 text-xs font-medium text-muted-foreground">{t("clinician.bpLabel")}</p>
               {bpTrend.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No readings recorded.</p>
+                <p className="text-sm text-muted-foreground">{t("clinician.noReadings")}</p>
               ) : (
                 <div className="h-40 w-full" aria-hidden="true">
                   <ResponsiveContainer width="100%" height="100%">
@@ -170,17 +175,17 @@ export function ClinicianSummary({ data }: { data: DashboardData | null }) {
                       <XAxis dataKey="label" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={{ stroke: "hsl(var(--border))" }} />
                       <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} width={32} domain={[60, 150]} />
                       <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} />
-                      <Line type="monotone" dataKey="sys" name="Systolic" stroke="hsl(var(--chart-1))" strokeWidth={2} dot={false} isAnimationActive={!reduced} />
-                      <Line type="monotone" dataKey="dia" name="Diastolic" stroke="hsl(var(--chart-2))" strokeWidth={2} dot={false} isAnimationActive={!reduced} />
+                      <Line type="monotone" dataKey="sys" name={t("clinician.systolic")} stroke="hsl(var(--chart-1))" strokeWidth={2} dot={false} isAnimationActive={!reduced} />
+                      <Line type="monotone" dataKey="dia" name={t("clinician.diastolic")} stroke="hsl(var(--chart-2))" strokeWidth={2} dot={false} isAnimationActive={!reduced} />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
               )}
             </div>
             <div>
-              <p className="mb-1 text-xs font-medium text-muted-foreground">Glucose (mg/dL)</p>
+              <p className="mb-1 text-xs font-medium text-muted-foreground">{t("clinician.glucoseLabel")}</p>
               {glucoseTrend.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No readings recorded.</p>
+                <p className="text-sm text-muted-foreground">{t("clinician.noReadings")}</p>
               ) : (
                 <div className="h-32 w-full" aria-hidden="true">
                   <ResponsiveContainer width="100%" height="100%">
@@ -189,7 +194,7 @@ export function ClinicianSummary({ data }: { data: DashboardData | null }) {
                       <XAxis dataKey="label" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={{ stroke: "hsl(var(--border))" }} />
                       <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} width={32} domain={[90, 150]} />
                       <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} />
-                      <Line type="monotone" dataKey="v" name="Glucose" stroke="hsl(var(--chart-4))" strokeWidth={2} dot={false} isAnimationActive={!reduced} />
+                      <Line type="monotone" dataKey="v" name={t("clinician.glucose")} stroke="hsl(var(--chart-4))" strokeWidth={2} dot={false} isAnimationActive={!reduced} />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
@@ -205,10 +210,10 @@ export function ClinicianSummary({ data }: { data: DashboardData | null }) {
           <CardContent className="space-y-3 p-4 sm:p-5">
             <h2 className="flex items-center gap-2 text-base font-semibold">
               <AlertTriangle className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-              Recent incidents
+              {t("clinician.recentIncidents")}
             </h2>
             {incidents.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No incidents reported.</p>
+              <p className="text-sm text-muted-foreground">{t("clinician.noIncidents")}</p>
             ) : (
               <ul className="space-y-2">
                 {incidents.map((i, idx) => (
@@ -230,10 +235,10 @@ export function ClinicianSummary({ data }: { data: DashboardData | null }) {
           <CardContent className="space-y-3 p-4 sm:p-5">
             <h2 className="flex items-center gap-2 text-base font-semibold">
               <FileText className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-              Medical documents
+              {t("clinician.medicalDocs")}
             </h2>
             {docs.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No medical documents.</p>
+              <p className="text-sm text-muted-foreground">{t("clinician.noDocs")}</p>
             ) : (
               <ul className="space-y-2">
                 {docs.map((d, idx) => (

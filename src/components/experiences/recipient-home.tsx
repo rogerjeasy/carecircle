@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Calendar, Check, HeartHandshake, Phone, Pill, Volume2, Square } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -17,16 +18,18 @@ interface RecipientDose {
   given: boolean;
 }
 
-function greeting(): string {
+/** Time-of-day key for greeting copy; resolved via t(`recipient.greeting.${key}`). */
+function greetingKey(): "morning" | "afternoon" | "evening" {
   const h = new Date().getHours();
-  if (h < 12) return "Good morning";
-  if (h < 18) return "Good afternoon";
-  return "Good evening";
+  if (h < 12) return "morning";
+  if (h < 18) return "afternoon";
+  return "evening";
 }
 
 /** Care recipient home — dignified, large-type, high-contrast, oversized tap targets. */
 export function RecipientHome({ data }: { data: DashboardData | null }) {
-  const recipientName = data?.recipient?.firstName ?? "there";
+  const t = useTranslations("experiences");
+  const recipientName = data?.recipient?.firstName ?? t("recipient.fallbackName");
   const appts = data?.todayAppointments ?? [];
   const family = data?.emergencyContact ?? null;
 
@@ -48,14 +51,15 @@ export function RecipientHome({ data }: { data: DashboardData | null }) {
 
   const tookIt = (id: string) => {
     setDoses((prev) => prev.map((d) => (d.id === id ? { ...d, given: true } : d)));
-    toast.success("Well done — that's recorded 💚");
+    toast.success(t("recipient.toastTaken"));
   };
 
   const due = doses.filter((d) => !d.given);
+  const greeting = t(`recipient.greeting.${greetingKey()}` as "recipient.greeting.morning");
 
   const readAloud = () => {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) {
-      toast("Read-aloud isn't available on this device");
+      toast(t("recipient.readAloudUnavailable"));
       return;
     }
     if (speaking) {
@@ -65,9 +69,10 @@ export function RecipientHome({ data }: { data: DashboardData | null }) {
     }
     const text =
       due.length > 0
-        ? `${greeting()}, ${recipientName}. You have ${due.length} ${due.length === 1 ? "medicine" : "medicines"} to take. ` +
-          due.map((d) => `${d.name}, ${d.strength}, at ${d.time}.`).join(" ")
-        : `${greeting()}, ${recipientName}. You've taken all your medicines today. Well done.`;
+        ? t("recipient.speakDue", { greeting, name: recipientName, count: due.length }) +
+          " " +
+          due.map((d) => t("recipient.speakDose", { name: d.name, strength: d.strength, time: d.time })).join(" ")
+        : t("recipient.speakAllDone", { greeting, name: recipientName });
     const u = new SpeechSynthesisUtterance(text);
     u.rate = 0.95;
     u.onend = () => setSpeaking(false);
@@ -83,14 +88,14 @@ export function RecipientHome({ data }: { data: DashboardData | null }) {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
-            {greeting()}, {recipientName}
+            {t("recipient.greetingLine", { greeting, name: recipientName })}
           </h1>
           <p className="mt-1 text-muted-foreground">
             {doses.length === 0
-              ? "No medicines scheduled today."
+              ? t("recipient.noMeds")
               : due.length > 0
-                ? `You have ${due.length} ${due.length === 1 ? "medicine" : "medicines"} to take.`
-                : "You've taken all your medicines today 💚"}
+                ? t("recipient.dueCount", { count: due.length })
+                : t("recipient.allDone")}
           </p>
         </div>
         <Button
@@ -100,18 +105,18 @@ export function RecipientHome({ data }: { data: DashboardData | null }) {
           className="h-14 shrink-0 px-5 text-base"
         >
           {speaking ? <Square className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
-          <span className="ml-2">{speaking ? "Stop" : "Read aloud"}</span>
+          <span className="ml-2">{speaking ? t("recipient.stop") : t("recipient.readAloud")}</span>
         </Button>
       </div>
 
       {/* Medications */}
-      <section aria-label="Today's medications" className="space-y-3">
+      <section aria-label={t("recipient.medsAria")} className="space-y-3">
         <h2 className="flex items-center gap-2 text-xl font-semibold">
           <Pill className="h-5 w-5 text-primary" aria-hidden="true" />
-          Today&apos;s medicines
+          {t("recipient.medsTitle")}
         </h2>
         {doses.length === 0 ? (
-          <p className="text-base text-muted-foreground">There are no medicines to take today.</p>
+          <p className="text-base text-muted-foreground">{t("recipient.noMedsToday")}</p>
         ) : (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             {doses.map((d) => (
@@ -130,16 +135,16 @@ export function RecipientHome({ data }: { data: DashboardData | null }) {
                     {d.given ? (
                       <div className="flex h-14 items-center justify-center gap-2 rounded-xl bg-success/10 text-base font-semibold text-success">
                         <Check className="h-5 w-5" aria-hidden="true" />
-                        Taken
+                        {t("recipient.taken")}
                       </div>
                     ) : (
                       <Button
                         className="h-16 w-full text-lg"
                         onClick={() => tookIt(d.id)}
-                        aria-label={`I took ${d.name} ${d.strength}`}
+                        aria-label={t("recipient.tookAria", { name: d.name, strength: d.strength })}
                       >
                         <Check className="h-6 w-6" />
-                        <span className="ml-2">I took it</span>
+                        <span className="ml-2">{t("recipient.tookIt")}</span>
                       </Button>
                     )}
                   </div>
@@ -151,13 +156,13 @@ export function RecipientHome({ data }: { data: DashboardData | null }) {
       </section>
 
       {/* Appointments */}
-      <section aria-label="Today's appointments" className="space-y-3">
+      <section aria-label={t("recipient.apptsAria")} className="space-y-3">
         <h2 className="flex items-center gap-2 text-xl font-semibold">
           <Calendar className="h-5 w-5 text-primary" aria-hidden="true" />
-          Appointments
+          {t("recipient.apptsTitle")}
         </h2>
         {appts.length === 0 ? (
-          <p className="text-base text-muted-foreground">No appointments coming up.</p>
+          <p className="text-base text-muted-foreground">{t("recipient.noAppts")}</p>
         ) : (
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             {appts.map((a) => (
@@ -176,35 +181,35 @@ export function RecipientHome({ data }: { data: DashboardData | null }) {
       </section>
 
       {/* Help actions */}
-      <section aria-label="Get help" className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <section aria-label={t("recipient.helpAria")} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {family?.phone ? (
           <Button asChild className="h-20 text-xl">
-            <a href={`tel:${family.phone.replace(/[^+\d]/g, "")}`} aria-label={`Call ${family.name}`}>
+            <a href={`tel:${family.phone.replace(/[^+\d]/g, "")}`} aria-label={t("recipient.callAria", { name: family.name })}>
               <Phone className="h-7 w-7" />
-              <span className="ml-2">Call family</span>
+              <span className="ml-2">{t("recipient.callFamily")}</span>
             </a>
           </Button>
         ) : (
           <Button
             className="h-20 text-xl"
-            onClick={() => toast("No family phone number is saved yet")}
+            onClick={() => toast(t("recipient.noFamilyPhone"))}
           >
             <Phone className="h-7 w-7" />
-            <span className="ml-2">Call family</span>
+            <span className="ml-2">{t("recipient.callFamily")}</span>
           </Button>
         )}
         <Button
           variant="destructive"
           className="h-20 text-xl"
-          onClick={() => toast.success("Reaching your family now — hold tight 💚")}
+          onClick={() => toast.success(t("recipient.toastHelp"))}
         >
           <HeartHandshake className="h-7 w-7" />
-          <span className="ml-2">I need help</span>
+          <span className="ml-2">{t("recipient.needHelp")}</span>
         </Button>
       </section>
 
       <p className="text-center text-base text-muted-foreground">
-        You decide what to share. This is your space.
+        {t("recipient.footer")}
       </p>
     </div>
   );

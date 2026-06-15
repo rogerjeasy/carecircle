@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Activity, Check, HeartPulse, ListChecks, Pill, Send, Sun } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -25,9 +26,18 @@ interface ShiftTask {
   done: boolean;
 }
 
+// Quick-record vitals: stable keys, labels resolved via t(`vitals.${key}`).
+const VITALS: { key: "bp" | "sugar" | "weight" | "temperature"; icon: typeof HeartPulse }[] = [
+  { key: "bp", icon: HeartPulse },
+  { key: "sugar", icon: Activity },
+  { key: "weight", icon: Activity },
+  { key: "temperature", icon: HeartPulse },
+];
+
 /** Caregiver "My shift today" — only what an aide on the move needs, with big tap targets. */
 export function CaregiverToday({ data }: { data: DashboardData | null }) {
-  const recipientName = data?.recipient?.firstName ?? "your loved one";
+  const t = useTranslations("experiences");
+  const recipientName = data?.recipient?.firstName ?? t("caregiver.fallbackRecipient");
 
   const [doses, setDoses] = React.useState<ShiftDose[]>(() =>
     (data?.todayDoses ?? []).map((d) => ({
@@ -45,12 +55,12 @@ export function CaregiverToday({ data }: { data: DashboardData | null }) {
   const markGiven = (id: string) => {
     setDoses((prev) => prev.map((d) => (d.id === id ? { ...d, given: true } : d)));
     const d = doses.find((x) => x.id === id);
-    if (d) toast.success(`${d.name} ${d.strength} marked given`);
+    if (d) toast.success(t("caregiver.toastGiven", { name: d.name, strength: d.strength }));
   };
   const toggleTask = (id: string) => setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, done: !t.done } : t)));
   const postUpdate = () => {
     if (!update.trim()) return;
-    toast.success("Update posted to the timeline");
+    toast.success(t("caregiver.toastPosted"));
     setUpdate("");
   };
 
@@ -63,29 +73,29 @@ export function CaregiverToday({ data }: { data: DashboardData | null }) {
         <div className="min-w-0">
           <p className="flex items-center gap-1.5 text-sm font-medium text-primary">
             <Sun className="h-4 w-4" aria-hidden="true" />
-            My shift today
+            {t("caregiver.shiftLabel")}
           </p>
           <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
-            Caring for {recipientName}
+            {t("caregiver.heading", { name: recipientName })}
           </h1>
           <p className="mt-1 text-muted-foreground">
             {doses.length > 0
-              ? `${givenCount} of ${doses.length} doses given so far.`
-              : "No medications scheduled today."}
+              ? t("caregiver.dosesProgress", { given: givenCount, total: doses.length })
+              : t("caregiver.noMedsToday")}
           </p>
         </div>
         <Badge variant="success" className="w-fit gap-1.5">
           <span className="h-1.5 w-1.5 rounded-full bg-success" aria-hidden="true" />
-          On shift
+          {t("caregiver.onShift")}
         </Badge>
       </div>
 
       {/* 2-up sections */}
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         {/* Medications */}
-        <SectionCard icon={Pill} title="Today's medications">
+        <SectionCard icon={Pill} title={t("caregiver.medsTitle")}>
           {doses.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Nothing scheduled today.</p>
+            <p className="text-sm text-muted-foreground">{t("caregiver.nothingScheduled")}</p>
           ) : (
             <ul className="space-y-2.5">
               {doses.map((d) => (
@@ -101,11 +111,11 @@ export function CaregiverToday({ data }: { data: DashboardData | null }) {
                   </div>
                   {d.given ? (
                     <span className="inline-flex shrink-0 items-center gap-1 text-sm font-medium text-success">
-                      <Check className="h-4 w-4" aria-hidden="true" /> Given
+                      <Check className="h-4 w-4" aria-hidden="true" /> {t("caregiver.given")}
                     </span>
                   ) : (
                     <Button size="sm" className="h-11 shrink-0 px-4" onClick={() => markGiven(d.id)}>
-                      Mark given
+                      {t("caregiver.markGiven")}
                     </Button>
                   )}
                 </li>
@@ -115,9 +125,9 @@ export function CaregiverToday({ data }: { data: DashboardData | null }) {
         </SectionCard>
 
         {/* Tasks */}
-        <SectionCard icon={ListChecks} title="My tasks">
+        <SectionCard icon={ListChecks} title={t("caregiver.tasksTitle")}>
           {tasks.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No tasks for your shift.</p>
+            <p className="text-sm text-muted-foreground">{t("caregiver.noTasks")}</p>
           ) : (
             <ul className="space-y-2">
               {tasks.map((t) => (
@@ -141,41 +151,39 @@ export function CaregiverToday({ data }: { data: DashboardData | null }) {
         </SectionCard>
 
         {/* Vitals to record */}
-        <SectionCard icon={HeartPulse} title="Vitals to record">
-          <p className="mb-3 text-sm text-muted-foreground">Tap to record a quick reading.</p>
+        <SectionCard icon={HeartPulse} title={t("caregiver.vitalsTitle")}>
+          <p className="mb-3 text-sm text-muted-foreground">{t("caregiver.vitalsHint")}</p>
           <div className="grid grid-cols-2 gap-2">
-            {[
-              { label: "Blood pressure", icon: HeartPulse },
-              { label: "Blood sugar", icon: Activity },
-              { label: "Weight", icon: Activity },
-              { label: "Temperature", icon: HeartPulse },
-            ].map((v) => (
-              <Button
-                key={v.label}
-                variant="outline"
-                className="h-auto min-h-[3.5rem] flex-col gap-1 py-3"
-                onClick={() => toast(`Record ${v.label.toLowerCase()}`)}
-              >
-                <v.icon className="h-5 w-5" aria-hidden="true" />
-                <span className="text-xs font-medium">{v.label}</span>
-              </Button>
-            ))}
+            {VITALS.map((v) => {
+              const label = t(`vitals.${v.key}` as "vitals.bp");
+              return (
+                <Button
+                  key={v.key}
+                  variant="outline"
+                  className="h-auto min-h-[3.5rem] flex-col gap-1 py-3"
+                  onClick={() => toast(t("caregiver.recordVital", { vital: label }))}
+                >
+                  <v.icon className="h-5 w-5" aria-hidden="true" />
+                  <span className="text-xs font-medium">{label}</span>
+                </Button>
+              );
+            })}
           </div>
         </SectionCard>
 
         {/* Add update */}
-        <SectionCard icon={Send} title="Add an update">
+        <SectionCard icon={Send} title={t("caregiver.addUpdateTitle")}>
           <Textarea
             value={update}
             onChange={(e) => setUpdate(e.target.value)}
-            placeholder={`Share a quick note about ${recipientName}'s day…`}
+            placeholder={t("caregiver.updatePlaceholder", { name: recipientName })}
             rows={4}
-            aria-label="Add an update"
+            aria-label={t("caregiver.addUpdateTitle")}
           />
           <div className="mt-3 flex justify-end">
             <Button className="h-11" onClick={postUpdate} disabled={!update.trim()}>
               <Send className="h-4 w-4" />
-              <span className="ml-1">Post update</span>
+              <span className="ml-1">{t("caregiver.postUpdate")}</span>
             </Button>
           </div>
         </SectionCard>

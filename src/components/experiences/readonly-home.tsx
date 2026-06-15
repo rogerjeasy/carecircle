@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { Calendar, FileText, Heart, HeartPulse, Pill, Smile, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -28,9 +29,17 @@ interface FeedItem {
   reacted: boolean;
 }
 
+// Reassurance stat tiles: stable keys, labels resolved via t(`readonly.stat.${key}`).
+const STAT_META: { key: "meds" | "mood" | "bp"; icon: typeof Pill }[] = [
+  { key: "meds", icon: Pill },
+  { key: "mood", icon: Smile },
+  { key: "bp", icon: HeartPulse },
+];
+
 /** Read-only relative experience — reassurance first, then a view-only timeline (react, don't edit). */
 export function ReadonlyHome({ data }: { data: DashboardData | null }) {
-  const recipientName = data?.recipient?.firstName ?? "your loved one";
+  const t = useTranslations("experiences");
+  const recipientName = data?.recipient?.firstName ?? t("readonly.fallbackRecipient");
   const stats = data?.stats;
   const digestParagraph = data?.digest?.paragraph;
 
@@ -55,21 +64,20 @@ export function ReadonlyHome({ data }: { data: DashboardData | null }) {
       )
     );
 
-  const reassurance = [
-    {
-      icon: Pill,
-      label: "Meds",
-      value: stats && stats.medsTotalToday > 0 ? `${stats.medsGivenToday}/${stats.medsTotalToday} done` : "—",
-    },
-    { icon: Smile, label: "Mood", value: stats?.moodLabel ?? "—" },
-    { icon: HeartPulse, label: "BP", value: stats?.latestVital?.value ?? "—" },
-  ];
+  const statValue: Record<"meds" | "mood" | "bp", string> = {
+    meds:
+      stats && stats.medsTotalToday > 0
+        ? t("readonly.medsDone", { given: stats.medsGivenToday, total: stats.medsTotalToday })
+        : "—",
+    mood: stats?.moodLabel ?? "—",
+    bp: stats?.latestVital?.value ?? "—",
+  };
 
   return (
     <div className="space-y-6">
       <div className="min-w-0">
-        <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">How {recipientName} is doing</h1>
-        <p className="mt-1 text-muted-foreground">A gentle window into the day. You can react, but nothing here needs doing.</p>
+        <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">{t("readonly.heading", { name: recipientName })}</h1>
+        <p className="mt-1 text-muted-foreground">{t("readonly.subtitle")}</p>
       </div>
 
       {/* Two-up: reassurance summary + digest */}
@@ -78,17 +86,20 @@ export function ReadonlyHome({ data }: { data: DashboardData | null }) {
           <CardContent className="space-y-3 p-5 sm:p-6">
             <Badge variant="success" className="gap-1.5">
               <span className="h-1.5 w-1.5 rounded-full bg-success" aria-hidden="true" />
-              Calm day
+              {t("readonly.calmDay")}
             </Badge>
-            <p className="text-lg font-semibold">{recipientName} is having a good day 💚</p>
+            <p className="text-lg font-semibold">{t("readonly.goodDay", { name: recipientName })}</p>
             <div className="grid grid-cols-3 gap-2 pt-1">
-              {reassurance.map((s) => (
-                <div key={s.label} className="rounded-xl bg-card p-2.5 text-center">
-                  <s.icon className="mx-auto h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                  <p className="mt-1 text-sm font-semibold tabular-nums">{s.value}</p>
-                  <p className="text-xs text-muted-foreground">{s.label}</p>
-                </div>
-              ))}
+              {STAT_META.map((s) => {
+                const label = t(`readonly.stat.${s.key}` as "readonly.stat.meds");
+                return (
+                  <div key={s.key} className="rounded-xl bg-card p-2.5 text-center">
+                    <s.icon className="mx-auto h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                    <p className="mt-1 text-sm font-semibold tabular-nums">{statValue[s.key]}</p>
+                    <p className="text-xs text-muted-foreground">{label}</p>
+                  </div>
+                );
+              })}
             </div>
           </CardContent>
         </Card>
@@ -97,31 +108,30 @@ export function ReadonlyHome({ data }: { data: DashboardData | null }) {
           <CardContent className="flex h-full flex-col gap-2 p-5 sm:p-6">
             <p className="flex items-center gap-1.5 text-sm font-medium text-primary">
               <Sparkles className="h-4 w-4" aria-hidden="true" />
-              Today&apos;s digest
+              {t("readonly.digestLabel")}
             </p>
             <p className="text-pretty leading-relaxed text-foreground/90">
-              {digestParagraph ||
-                `No digest yet today. As the circle shares updates about ${recipientName}, a gentle summary will appear here.`}
+              {digestParagraph || t("readonly.noDigest", { name: recipientName })}
             </p>
             <Link
               href="/digest"
               className="mt-auto inline-flex w-fit items-center text-sm font-medium text-primary underline-offset-4 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
-              Read the full digest
+              {t("readonly.readFullDigest")}
             </Link>
           </CardContent>
         </Card>
       </div>
 
       {/* Read-only timeline */}
-      <section aria-label="Recent updates" className="mx-auto w-full max-w-2xl space-y-3">
+      <section aria-label={t("readonly.recentAria")} className="mx-auto w-full max-w-2xl space-y-3">
         <div className="flex items-center justify-between gap-2">
-          <h2 className="text-sm font-semibold">Recent updates</h2>
-          <Badge variant="secondary">View only</Badge>
+          <h2 className="text-sm font-semibold">{t("readonly.recentTitle")}</h2>
+          <Badge variant="secondary">{t("readonly.viewOnly")}</Badge>
         </div>
         {feed.length === 0 ? (
           <Card>
-            <CardContent className="p-6 text-center text-sm text-muted-foreground">No updates yet.</CardContent>
+            <CardContent className="p-6 text-center text-sm text-muted-foreground">{t("readonly.noUpdates")}</CardContent>
           </Card>
         ) : (
           <ul className="space-y-3">
@@ -150,7 +160,7 @@ export function ReadonlyHome({ data }: { data: DashboardData | null }) {
                               type="button"
                               onClick={() => react(e.id)}
                               aria-pressed={e.reacted}
-                              aria-label={e.reacted ? "Remove your heart" : "React with a heart"}
+                              aria-label={e.reacted ? t("readonly.removeHeart") : t("readonly.reactHeart")}
                               className={cn(
                                 "ml-auto inline-flex items-center gap-1 rounded-full px-2 py-1 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                                 e.reacted ? "bg-destructive/10 text-destructive" : "hover:bg-muted"
