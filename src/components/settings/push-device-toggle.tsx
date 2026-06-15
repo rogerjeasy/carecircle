@@ -7,6 +7,7 @@
  * unavailable when the browser can't do it or the server has no VAPID keys configured.
  */
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { BellRing } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
@@ -23,6 +24,7 @@ type State =
   | { kind: "ready"; subscribed: boolean; blocked: boolean };
 
 export function PushDeviceToggle() {
+  const t = useTranslations("settings.push");
   const [state, setState] = React.useState<State>({ kind: "loading" });
   const [busy, setBusy] = React.useState(false);
 
@@ -57,7 +59,7 @@ export function PushDeviceToggle() {
         return;
       }
       setState({ kind: "ready", subscribed: next, blocked: notificationPermission() === "denied" });
-      toast.success(next ? "Push enabled on this device" : "Push disabled on this device");
+      toast.success(next ? t("enabled") : t("disabled"));
     } finally {
       setBusy(false);
     }
@@ -75,12 +77,12 @@ export function PushDeviceToggle() {
 
   const note =
     state.kind === "unsupported"
-      ? "This browser doesn't support push notifications."
+      ? t("unsupported")
       : state.kind === "unconfigured"
-        ? "Push notifications aren't set up on the server yet — in-app and email still work."
+        ? t("unconfigured")
         : state.blocked
-          ? "Notifications are blocked for this site. Allow them in your browser settings, then try again."
-          : "Receive the activity you picked in the Push column above on this device, even when Kintwadi is closed.";
+          ? t("blocked")
+          : t("ready");
 
   return (
     <Card>
@@ -89,7 +91,7 @@ export function PushDeviceToggle() {
           title={
             <span className="flex items-center gap-1.5">
               <BellRing className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-              Push on this device
+              {t("title")}
             </span>
           }
           description={note}
@@ -98,7 +100,7 @@ export function PushDeviceToggle() {
               checked={state.kind === "ready" && state.subscribed}
               disabled={busy || state.kind !== "ready" || (state.kind === "ready" && state.blocked && !state.subscribed)}
               onCheckedChange={toggle}
-              aria-label="Enable push notifications on this device"
+              aria-label={t("enableAria")}
             />
           }
         />

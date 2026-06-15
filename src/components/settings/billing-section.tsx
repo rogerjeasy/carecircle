@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { CreditCard, Download, Lock, Plus, Star, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -20,7 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import { useIsPhone } from "./use-is-phone";
 import { SettingsSection } from "./section";
-import { BILLING_PLANS, billingPlanFor } from "./data";
+import { BILLING_PLANS, billingPlanFor, KNOWN_PLAN_IDS } from "./data";
 import {
   loadBilling,
   addPaymentMethod,
@@ -36,6 +37,7 @@ function brandLabel(brand: string): string {
 }
 
 export function BillingSection() {
+  const t = useTranslations("settings.billing");
   const isPhone = useIsPhone();
   const [billing, setBilling] = React.useState<BillingData | null>(null);
   const [addOpen, setAddOpen] = React.useState(false);
@@ -58,7 +60,7 @@ export function BillingSection() {
 
   if (!billing) {
     return (
-      <SettingsSection title="Billing" description="Your plan, payment methods, and invoices.">
+      <SettingsSection title={t("title")} description={t("description")}>
         <Card>
           <CardContent className="space-y-3 p-4 sm:p-6">
             <Skeleton className="h-7 w-40" />
@@ -70,13 +72,17 @@ export function BillingSection() {
   }
 
   const plan = billingPlanFor(billing.plan);
+  // Known plans pull name/features from messages; unknown ids render plainly with no feature list.
+  const planKnown = KNOWN_PLAN_IDS.has(plan.id);
+  const planName = planKnown ? t(`plans.${plan.id}.name` as "plans.free.name") : plan.id;
+  const planFeatures = planKnown ? (t.raw(`plans.${plan.id}.features` as "plans.free.features") as string[]) : [];
 
   const removeCard = async (id: string) => {
     setBusyId(id);
     const res = await removePaymentMethod(id);
     setBusyId(null);
     if (!res.ok) return toast.error(res.error);
-    toast.success("Card removed");
+    toast.success(t("cardRemoved"));
     void reload();
   };
 
@@ -89,18 +95,18 @@ export function BillingSection() {
   };
 
   return (
-    <SettingsSection title="Billing" description="Your plan, payment methods, and invoices.">
+    <SettingsSection title={t("title")} description={t("description")}>
       {/* Current plan — the real plan stored on the circle. */}
       <Card>
         <CardContent className="space-y-4 p-4 sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <p className="text-sm font-semibold">Current plan</p>
-                <Badge variant="success">Active</Badge>
+                <p className="text-sm font-semibold">{t("currentPlan")}</p>
+                <Badge variant="success">{t("active")}</Badge>
               </div>
               <p className="mt-1 text-2xl font-bold">
-                {plan.name}{" "}
+                {planName}{" "}
                 {plan.price && (
                   <span className="text-base font-medium text-muted-foreground">
                     {plan.price}
@@ -110,9 +116,9 @@ export function BillingSection() {
               </p>
             </div>
           </div>
-          {plan.features.length > 0 && (
+          {planFeatures.length > 0 && (
             <ul className="grid grid-cols-1 gap-1.5 text-sm text-muted-foreground sm:grid-cols-2">
-              {plan.features.map((f) => (
+              {planFeatures.map((f) => (
                 <li key={f} className="flex items-center gap-2">
                   <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary" aria-hidden="true" />
                   {f}
@@ -125,9 +131,9 @@ export function BillingSection() {
               const isCurrent = plan.id === p.id;
               return (
                 <button
-                  key={p.name}
+                  key={p.id}
                   type="button"
-                  onClick={() => !isCurrent && toast("Plan changes aren't available in this preview.")}
+                  onClick={() => !isCurrent && toast(t("planChangeUnavailable"))}
                   aria-pressed={isCurrent}
                   className={cn(
                     "rounded-xl border p-3 text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
@@ -135,14 +141,14 @@ export function BillingSection() {
                   )}
                 >
                   <div className="flex items-center justify-between text-sm font-semibold">
-                    {p.name}
-                    {isCurrent && <Badge variant="secondary">Current</Badge>}
+                    {t(`plans.${p.id}.name` as "plans.free.name")}
+                    {isCurrent && <Badge variant="secondary">{t("current")}</Badge>}
                   </div>
                   <p className="mt-1 text-lg font-bold">
                     {p.price}
-                    {p.period && <span className="text-xs font-normal text-muted-foreground">/mo</span>}
+                    {p.period && <span className="text-xs font-normal text-muted-foreground">{t("perMonth")}</span>}
                   </p>
-                  <p className="text-xs text-muted-foreground">{p.note}</p>
+                  <p className="text-xs text-muted-foreground">{t(`plans.${p.id}.note` as "plans.free.note")}</p>
                 </button>
               );
             })}
@@ -154,7 +160,7 @@ export function BillingSection() {
         <Card>
           <CardContent className="flex items-start gap-2 p-4 text-sm text-muted-foreground sm:p-6">
             <Lock className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-            <span>Payment methods and invoices are managed by your circle&apos;s coordinator.</span>
+            <span>{t("coordinatorManaged")}</span>
           </CardContent>
         </Card>
       ) : (
@@ -163,16 +169,16 @@ export function BillingSection() {
           <Card>
             <CardContent className="space-y-3 p-4 sm:p-6">
               <div className="flex items-center justify-between gap-2">
-                <p className="text-sm font-semibold">Payment methods</p>
+                <p className="text-sm font-semibold">{t("paymentMethods")}</p>
                 <Button variant="outline" size="sm" onClick={() => setAddOpen(true)}>
                   <Plus className="h-4 w-4" />
-                  <span className="ml-1">Add card</span>
+                  <span className="ml-1">{t("addCard")}</span>
                 </Button>
               </div>
 
               {billing.cards.length === 0 ? (
                 <p className="rounded-xl border border-dashed px-4 py-8 text-center text-sm text-muted-foreground">
-                  No payment methods yet. Add a card to keep billing uninterrupted.
+                  {t("noCards")}
                 </p>
               ) : (
                 <ul className="space-y-2">
@@ -189,7 +195,7 @@ export function BillingSection() {
               )}
               <p className="flex items-start gap-1.5 text-xs text-muted-foreground">
                 <Lock className="mt-0.5 h-3 w-3 shrink-0" aria-hidden="true" />
-                We store only your card&apos;s brand, last 4 digits, and expiry — never the full number.
+                {t("cardSecurityNote")}
               </p>
             </CardContent>
           </Card>
@@ -197,10 +203,10 @@ export function BillingSection() {
           {/* Invoices */}
           <Card className="p-0">
             <CardContent className="p-4 sm:p-6">
-              <p className="mb-3 text-sm font-semibold">Invoices</p>
+              <p className="mb-3 text-sm font-semibold">{t("invoices")}</p>
               {billing.invoices.length === 0 ? (
                 <p className="rounded-xl border border-dashed px-4 py-8 text-center text-sm text-muted-foreground">
-                  No invoices yet. They&apos;ll appear here once your plan is billed.
+                  {t("noInvoices")}
                 </p>
               ) : isPhone ? (
                 <ul className="space-y-2">
@@ -215,7 +221,7 @@ export function BillingSection() {
                         <Button asChild variant="ghost" size="sm" className="mt-1 h-8 px-2 text-xs">
                           <a href={inv.pdfUrl} target="_blank" rel="noreferrer">
                             <Download className="h-3.5 w-3.5" />
-                            <span className="ml-1">Download</span>
+                            <span className="ml-1">{t("download")}</span>
                           </a>
                         </Button>
                       )}
@@ -225,14 +231,14 @@ export function BillingSection() {
               ) : (
                 <div className="overflow-x-auto [scrollbar-width:thin]">
                   <table className="w-full min-w-[34rem] text-sm">
-                    <caption className="sr-only">Past invoices</caption>
+                    <caption className="sr-only">{t("captionInvoices")}</caption>
                     <thead>
                       <tr className="border-b text-xs text-muted-foreground">
-                        <th scope="col" className="py-2.5 pr-4 text-left font-medium">Invoice</th>
-                        <th scope="col" className="px-4 py-2.5 text-left font-medium">Date</th>
-                        <th scope="col" className="px-4 py-2.5 text-left font-medium">Amount</th>
-                        <th scope="col" className="px-4 py-2.5 text-left font-medium">Status</th>
-                        <th scope="col" className="py-2.5 pl-4 text-right font-medium"><span className="sr-only">Download</span></th>
+                        <th scope="col" className="py-2.5 pr-4 text-left font-medium">{t("invoiceCol")}</th>
+                        <th scope="col" className="px-4 py-2.5 text-left font-medium">{t("dateCol")}</th>
+                        <th scope="col" className="px-4 py-2.5 text-left font-medium">{t("amountCol")}</th>
+                        <th scope="col" className="px-4 py-2.5 text-left font-medium">{t("statusCol")}</th>
+                        <th scope="col" className="py-2.5 pl-4 text-right font-medium"><span className="sr-only">{t("download")}</span></th>
                       </tr>
                     </thead>
                     <tbody>
@@ -247,7 +253,7 @@ export function BillingSection() {
                               <Button asChild variant="ghost" size="sm" className="h-8">
                                 <a href={inv.pdfUrl} target="_blank" rel="noreferrer">
                                   <Download className="h-3.5 w-3.5" />
-                                  <span className="ml-1">PDF</span>
+                                  <span className="ml-1">{t("pdf")}</span>
                                 </a>
                               </Button>
                             ) : (
@@ -282,6 +288,7 @@ function PaymentRow({
   onRemove: () => void;
   onMakeDefault: () => void;
 }) {
+  const t = useTranslations("settings.billing");
   return (
     <li className="flex items-center gap-3 rounded-xl border bg-card p-3">
       <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-secondary text-primary">
@@ -290,16 +297,16 @@ function PaymentRow({
       <div className="min-w-0 flex-1">
         <p className="flex items-center gap-2 text-sm font-medium">
           <span className="truncate">{brandLabel(card.brand)} •••• {card.last4}</span>
-          {card.isDefault && <Badge variant="secondary" className="shrink-0">Default</Badge>}
+          {card.isDefault && <Badge variant="secondary" className="shrink-0">{t("defaultBadge")}</Badge>}
         </p>
         <p className="text-xs text-muted-foreground">
-          Expires {String(card.expMonth).padStart(2, "0")}/{String(card.expYear).slice(-2)}
+          {t("expires", { date: `${String(card.expMonth).padStart(2, "0")}/${String(card.expYear).slice(-2)}` })}
         </p>
       </div>
       {!card.isDefault && (
         <Button variant="ghost" size="sm" className="shrink-0 text-muted-foreground" onClick={onMakeDefault} disabled={busy}>
           <Star className="h-4 w-4" />
-          <span className="ml-1 hidden sm:inline">Default</span>
+          <span className="ml-1 hidden sm:inline">{t("makeDefault")}</span>
         </Button>
       )}
       <Button
@@ -308,7 +315,7 @@ function PaymentRow({
         className="h-9 w-9 shrink-0 text-muted-foreground hover:text-destructive"
         onClick={onRemove}
         disabled={busy}
-        aria-label="Remove card"
+        aria-label={t("removeCard")}
       >
         <Trash2 className="h-4 w-4" />
       </Button>
@@ -323,6 +330,7 @@ function AddCardDialog({
   onOpenChange: (o: boolean) => void;
   onAdded: () => Promise<void>;
 }) {
+  const t = useTranslations("settings.billing");
   const [number, setNumber] = React.useState("");
   const [expiry, setExpiry] = React.useState("");
   const [makeDefault, setMakeDefault] = React.useState(false);
@@ -338,7 +346,7 @@ function AddCardDialog({
     const digits = number.replace(/\D/g, "");
     const [mm, yy] = expiry.split("/");
     if (!mm || !yy || yy.length < 2) {
-      toast.error("Enter the expiry as MM/YY.");
+      toast.error(t("expiryError"));
       return;
     }
     setSaving(true);
@@ -353,7 +361,7 @@ function AddCardDialog({
       toast.error(res.error);
       return;
     }
-    toast.success("Card added");
+    toast.success(t("cardAdded"));
     await onAdded();
     onOpenChange(false);
   };
@@ -362,12 +370,12 @@ function AddCardDialog({
     <Dialog open onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add a payment card</DialogTitle>
-          <DialogDescription>We store only the brand, last 4 digits, and expiry — never the full number.</DialogDescription>
+          <DialogTitle>{t("addDialogTitle")}</DialogTitle>
+          <DialogDescription>{t("addDialogDesc")}</DialogDescription>
         </DialogHeader>
         <form onSubmit={submit} className="space-y-4">
           <div className="space-y-1.5">
-            <Label htmlFor="card-number">Card number</Label>
+            <Label htmlFor="card-number">{t("cardNumber")}</Label>
             <Input
               id="card-number"
               inputMode="numeric"
@@ -379,7 +387,7 @@ function AddCardDialog({
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="card-exp">Expiry (MM/YY)</Label>
+              <Label htmlFor="card-exp">{t("expiry")}</Label>
               <Input
                 id="card-exp"
                 inputMode="numeric"
@@ -397,15 +405,15 @@ function AddCardDialog({
                 checked={makeDefault}
                 onChange={(e) => setMakeDefault(e.target.checked)}
               />
-              Set as default
+              {t("setDefault")}
             </label>
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
-              Cancel
+              {t("cancel")}
             </Button>
             <Button type="submit" disabled={saving} className="min-w-[7rem]">
-              {saving ? "Adding…" : "Add card"}
+              {saving ? t("adding") : t("addCard")}
             </Button>
           </DialogFooter>
         </form>

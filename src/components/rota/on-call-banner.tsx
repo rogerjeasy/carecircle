@@ -1,5 +1,6 @@
 "use client";
 
+import { useLocale, useTranslations } from "next-intl";
 import { Phone, UserCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,6 +11,8 @@ import type { Shift } from "./types";
 
 /** The "On call now: Grace" highlight, plus who's physically present right now. */
 export function OnCallBanner({ shifts, now }: { shifts: Shift[]; now: Date }) {
+  const t = useTranslations("rota");
+  const locale = useLocale();
   const { members } = useRotaMembers();
   const onCall = onCallNow(shifts, now, members);
   const inPerson = inPersonNow(shifts, now, members);
@@ -33,10 +36,10 @@ export function OnCallBanner({ shifts, now }: { shifts: Shift[]; now: Date }) {
               <div className="min-w-0">
                 <p className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-primary">
                   <Phone className="h-3.5 w-3.5" aria-hidden="true" />
-                  On call now
+                  {t("banner.onCallNow")}
                 </p>
                 <p className="truncate text-lg font-semibold leading-tight">{onCall.member.name}</p>
-                <p className="truncate text-xs text-muted-foreground tabular-nums">{timeRange(onCall.shift)}</p>
+                <p className="truncate text-xs text-muted-foreground tabular-nums">{timeRange(locale, onCall.shift, t("overnightSuffix"))}</p>
               </div>
             </>
           ) : (
@@ -45,8 +48,8 @@ export function OnCallBanner({ shifts, now }: { shifts: Shift[]; now: Date }) {
                 <Phone className="h-5 w-5" aria-hidden="true" />
               </div>
               <div className="min-w-0">
-                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">On call now</p>
-                <p className="truncate text-base font-semibold leading-tight">No one is on call right now</p>
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{t("banner.onCallNow")}</p>
+                <p className="truncate text-base font-semibold leading-tight">{t("banner.noOneOnCall")}</p>
               </div>
             </>
           )}
@@ -55,12 +58,14 @@ export function OnCallBanner({ shifts, now }: { shifts: Shift[]; now: Date }) {
         <div className="flex items-center gap-2 rounded-xl bg-muted/60 px-3 py-2 text-sm sm:shrink-0">
           <UserCheck className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
           {inPerson ? (
-            <span className="min-w-0">
-              <span className="font-medium">{firstName(inPerson.name)}</span>
-              <span className="text-muted-foreground"> is here in person</span>
+            <span className="min-w-0 text-muted-foreground">
+              {t.rich("banner.isHereInPerson", {
+                name: firstName(inPerson.name),
+                strong: (chunks) => <span className="font-medium text-foreground">{chunks}</span>,
+              })}
             </span>
           ) : (
-            <span className="text-muted-foreground">No one in person right now</span>
+            <span className="text-muted-foreground">{t("banner.noOneInPerson")}</span>
           )}
         </div>
       </CardContent>

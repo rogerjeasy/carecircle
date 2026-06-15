@@ -1,14 +1,14 @@
 "use client";
 
-import { addDays, format, isSameDay, startOfWeek } from "date-fns";
+import { addDays, isSameDay, startOfWeek } from "date-fns";
+import { useLocale, useTranslations } from "next-intl";
 import { Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ShiftBlock } from "./shift-block";
 import { GatedControl } from "./gated-control";
 import { useIsPhone } from "./use-is-phone";
-import { DAY_FULL, DAY_LABELS } from "./data";
-import { shiftsForDay } from "./utils";
+import { monthDay, shiftsForDay, weekdayLabel } from "./utils";
 import type { Shift } from "./types";
 
 export interface WeekGridProps {
@@ -32,11 +32,13 @@ export function WeekGrid(props: WeekGridProps) {
 }
 
 function Grid({ shifts, now, canManage, onAddOnDay, onDeleteShift, onCallShiftId }: WeekGridProps) {
+  const t = useTranslations("rota");
+  const locale = useLocale();
   const weekStart = startOfWeek(now);
   return (
     <div className="overflow-x-auto rounded-2xl border bg-card [scrollbar-width:thin]">
       <div className="grid min-w-[44rem] grid-cols-7 divide-x">
-        {DAY_LABELS.map((label, i) => {
+        {Array.from({ length: 7 }).map((_, i) => {
           const date = addDays(weekStart, i);
           const today = isSameDay(date, now);
           const dayShifts = shiftsForDay(shifts, i);
@@ -44,19 +46,19 @@ function Grid({ shifts, now, canManage, onAddOnDay, onDeleteShift, onCallShiftId
             <div key={i} className={cn("flex min-w-0 flex-col", today && "bg-accent/5")}>
               <div className="flex items-center justify-between gap-1 border-b px-2 py-2">
                 <div className="min-w-0">
-                  <p className={cn("text-xs font-semibold", today && "text-primary")}>{label}</p>
-                  <p className="text-[11px] tabular-nums text-muted-foreground">{format(date, "MMM d")}</p>
+                  <p className={cn("text-xs font-semibold", today && "text-primary")}>{weekdayLabel(locale, i, "short")}</p>
+                  <p className="text-[11px] tabular-nums text-muted-foreground">{monthDay(locale, date)}</p>
                 </div>
                 {today && (
                   <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
-                    Today
+                    {t("today")}
                   </span>
                 )}
               </div>
               <div className="flex min-h-[9rem] flex-1 flex-col gap-1.5 p-1.5">
                 {dayShifts.length === 0 ? (
                   <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed py-4 text-center">
-                    <span className="text-[11px] text-muted-foreground">No one yet</span>
+                    <span className="text-[11px] text-muted-foreground">{t("noOneYet")}</span>
                   </div>
                 ) : (
                   dayShifts.map((s) => (
@@ -76,7 +78,7 @@ function Grid({ shifts, now, canManage, onAddOnDay, onDeleteShift, onCallShiftId
                       size="sm"
                       className="h-7 w-full justify-center text-xs text-muted-foreground"
                       onClick={() => onAddOnDay(i)}
-                      aria-label={`Add shift on ${DAY_FULL[i]}`}
+                      aria-label={t("addShiftOnDay", { day: weekdayLabel(locale, i, "long") })}
                     >
                       <Plus className="h-3.5 w-3.5" />
                     </Button>
@@ -92,26 +94,29 @@ function Grid({ shifts, now, canManage, onAddOnDay, onDeleteShift, onCallShiftId
 }
 
 function DayList({ shifts, now, canManage, onAddOnDay, onDeleteShift, onCallShiftId }: WeekGridProps) {
+  const t = useTranslations("rota");
+  const locale = useLocale();
   const weekStart = startOfWeek(now);
   return (
     <div className="space-y-3">
-      {DAY_LABELS.map((label, i) => {
+      {Array.from({ length: 7 }).map((_, i) => {
         const date = addDays(weekStart, i);
         const today = isSameDay(date, now);
         const dayShifts = shiftsForDay(shifts, i);
+        const dayFull = weekdayLabel(locale, i, "long");
         return (
           <section
             key={i}
-            aria-label={DAY_FULL[i]}
+            aria-label={dayFull}
             className={cn("rounded-2xl border bg-card p-3", today && "ring-1 ring-primary/40")}
           >
             <div className="mb-2 flex items-center justify-between gap-2">
               <div className="flex items-baseline gap-2">
-                <h3 className="text-sm font-semibold">{DAY_FULL[i]}</h3>
-                <span className="text-xs tabular-nums text-muted-foreground">{format(date, "MMM d")}</span>
+                <h3 className="text-sm font-semibold">{dayFull}</h3>
+                <span className="text-xs tabular-nums text-muted-foreground">{monthDay(locale, date)}</span>
                 {today && (
                   <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
-                    Today
+                    {t("today")}
                   </span>
                 )}
               </div>
@@ -121,7 +126,7 @@ function DayList({ shifts, now, canManage, onAddOnDay, onDeleteShift, onCallShif
                   size="icon"
                   className="h-7 w-7"
                   onClick={() => onAddOnDay(i)}
-                  aria-label={`Add shift on ${DAY_FULL[i]}`}
+                  aria-label={t("addShiftOnDay", { day: dayFull })}
                 >
                   <Plus className="h-4 w-4" />
                 </Button>
@@ -129,7 +134,7 @@ function DayList({ shifts, now, canManage, onAddOnDay, onDeleteShift, onCallShif
             </div>
             {dayShifts.length === 0 ? (
               <p className="rounded-lg border border-dashed px-3 py-3 text-center text-sm text-muted-foreground">
-                No one scheduled.
+                {t("noOneScheduled")}
               </p>
             ) : (
               <div className="grid grid-cols-1 gap-2 min-[420px]:grid-cols-2">

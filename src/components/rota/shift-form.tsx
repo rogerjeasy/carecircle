@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { Check, Loader2, Phone, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -13,9 +14,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { FormField } from "./form-field";
-import { DAY_FULL } from "./data";
 import { useRotaMembers } from "./members-context";
-import { firstName } from "./utils";
+import { firstName, weekdayLabel } from "./utils";
 import type { Shift, ShiftType } from "./types";
 
 export interface ShiftFormValues {
@@ -41,14 +41,16 @@ export function valuesToShift(values: ShiftFormValues, id: string): Shift {
   };
 }
 
-type Errors = Partial<Record<keyof ShiftFormValues, string>>;
+// Validation produces stable error KEYS; the component resolves them to localized copy via `t`.
+type ErrorKey = "member" | "start" | "end" | "endEqualsStart";
+type Errors = Partial<Record<keyof ShiftFormValues, ErrorKey>>;
 
 function validate(v: ShiftFormValues): { ok: boolean; errors: Errors } {
   const errors: Errors = {};
-  if (!v.memberId) errors.memberId = "Choose a member";
-  if (!v.start) errors.start = "Pick a start time";
-  if (!v.end) errors.end = "Pick an end time";
-  if (v.start && v.end && v.start === v.end) errors.end = "End can't equal start";
+  if (!v.memberId) errors.memberId = "member";
+  if (!v.start) errors.start = "start";
+  if (!v.end) errors.end = "end";
+  if (v.start && v.end && v.start === v.end) errors.end = "endEqualsStart";
   return { ok: Object.keys(errors).length === 0, errors };
 }
 
@@ -62,11 +64,21 @@ export interface ShiftFormProps {
 
 /** The Add-shift form. Scrolls internally with a sticky footer; hosted in a modal. */
 export function ShiftForm({ initialValues, onSubmit, onCancel }: ShiftFormProps) {
+  const t = useTranslations("rota");
+  const locale = useLocale();
   const { members } = useRotaMembers();
   const [values, setValues] = React.useState<ShiftFormValues>(initialValues);
   const [errors, setErrors] = React.useState<Errors>({});
   const [submitting, setSubmitting] = React.useState(false);
   const [success, setSuccess] = React.useState(false);
+
+  // Resolve validation error keys to localized copy (literal calls keep next-intl's typing happy).
+  const errorText: Record<ErrorKey, string> = {
+    member: t("form.errors.member"),
+    start: t("form.errors.start"),
+    end: t("form.errors.end"),
+    endEqualsStart: t("form.errors.endEqualsStart"),
+  };
 
   const update = (patch: Partial<ShiftFormValues>) => setValues((v) => ({ ...v, ...patch }));
 
@@ -92,14 +104,14 @@ export function ShiftForm({ initialValues, onSubmit, onCancel }: ShiftFormProps)
       <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4 sm:px-6">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {/* Member */}
-          <FormField htmlFor="memberId" label="Member" required full error={errors.memberId}>
+          <FormField htmlFor="memberId" label={t("form.member")} required full error={errors.memberId && errorText[errors.memberId]}>
             <Select value={values.memberId} onValueChange={(v) => update({ memberId: v })}>
               <SelectTrigger
                 id="memberId"
                 aria-invalid={errors.memberId ? true : undefined}
                 className={cn(errors.memberId && "border-destructive focus:ring-destructive")}
               >
-                <SelectValue placeholder="Who's on?" />
+                <SelectValue placeholder={t("form.memberPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
                 {members.map((m) => (
@@ -112,15 +124,15 @@ export function ShiftForm({ initialValues, onSubmit, onCancel }: ShiftFormProps)
           </FormField>
 
           {/* Day */}
-          <FormField htmlFor="dayIndex" label="Day" full>
+          <FormField htmlFor="dayIndex" label={t("form.day")} full>
             <Select value={values.dayIndex} onValueChange={(v) => update({ dayIndex: v })}>
               <SelectTrigger id="dayIndex">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {DAY_FULL.map((d, i) => (
+                {Array.from({ length: 7 }).map((_, i) => (
                   <SelectItem key={i} value={String(i)}>
-                    {d}
+                    {weekdayLabel(locale, i, "long")}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -128,7 +140,7 @@ export function ShiftForm({ initialValues, onSubmit, onCancel }: ShiftFormProps)
           </FormField>
 
           {/* Start */}
-          <FormField htmlFor="start" label="From" required error={errors.start}>
+          <FormField htmlFor="start" label={t("form.from")} required error={errors.start && errorText[errors.start]}>
             <Input
               id="start"
               type="time"
@@ -141,10 +153,10 @@ export function ShiftForm({ initialValues, onSubmit, onCancel }: ShiftFormProps)
           {/* End */}
           <FormField
             htmlFor="end"
-            label="To"
+            label={t("form.to")}
             required
-            hint={overnight ? "Runs overnight into the next day" : undefined}
-            error={errors.end}
+            hint={overnight ? t("form.overnightHint") : undefined}
+            error={errors.end && errorText[errors.end]}
           >
             <Input
               id="end"
@@ -156,19 +168,19 @@ export function ShiftForm({ initialValues, onSubmit, onCancel }: ShiftFormProps)
           </FormField>
 
           {/* Type */}
-          <FormField htmlFor="type" label="Type" full>
+          <FormField htmlFor="type" label={t("form.type")} full>
             <div id="type" className="grid grid-cols-2 gap-2">
               <TypeButton
                 active={values.type === "in-person"}
                 onClick={() => update({ type: "in-person" })}
                 icon={User}
-                label="In person"
+                label={t("form.inPerson")}
               />
               <TypeButton
                 active={values.type === "on-call"}
                 onClick={() => update({ type: "on-call" })}
                 icon={Phone}
-                label="On call"
+                label={t("form.onCall")}
               />
             </div>
           </FormField>
@@ -178,21 +190,21 @@ export function ShiftForm({ initialValues, onSubmit, onCancel }: ShiftFormProps)
       <div className="shrink-0 border-t bg-background px-5 py-3 sm:px-6">
         <div className="flex items-center justify-end gap-2">
           <Button type="button" variant="outline" onClick={onCancel} disabled={submitting || success}>
-            Cancel
+            {t("form.cancel")}
           </Button>
           <Button type="submit" disabled={submitting || success} className="min-w-[8.5rem]">
             {success ? (
               <>
                 <Check className="h-4 w-4" />
-                <span className="ml-1">Added</span>
+                <span className="ml-1">{t("form.added")}</span>
               </>
             ) : submitting ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" />
-                <span className="ml-1">Adding…</span>
+                <span className="ml-1">{t("form.adding")}</span>
               </>
             ) : (
-              <span>Add shift</span>
+              <span>{t("form.submit")}</span>
             )}
           </Button>
         </div>

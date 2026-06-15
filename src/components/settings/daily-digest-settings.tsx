@@ -9,6 +9,7 @@
  * or out. Authorization is enforced server-side — `canManage` only governs what we render.
  */
 import * as React from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { Languages, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
@@ -31,16 +32,16 @@ import {
 } from "@/lib/digest/settings";
 import { DIGEST_LANGUAGES } from "@/lib/digest/languages";
 
-/** "20" → "8:00 PM". Whole-hour labels for the send-time picker. */
-function hourLabel(h: number): string {
-  const period = h < 12 ? "AM" : "PM";
-  const display = h % 12 === 0 ? 12 : h % 12;
-  return `${display}:00 ${period}`;
+/** "20" → "8:00 PM" / "20:00" — a locale-formatted whole-hour label for the send-time picker. */
+function hourLabel(locale: string, h: number): string {
+  return new Date(2023, 0, 1, h, 0).toLocaleTimeString(locale, { hour: "numeric", minute: "2-digit" });
 }
 
 const HOURS = Array.from({ length: 24 }, (_, h) => h);
 
 export function DailyDigestSettings() {
+  const t = useTranslations("settings.digest");
+  const locale = useLocale();
   const [settings, setSettings] = React.useState<DigestSettings | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const [pending, startTransition] = React.useTransition();
@@ -64,7 +65,7 @@ export function DailyDigestSettings() {
       const res = await save();
       if (!res.ok) {
         setSettings(prev);
-        toast.error(res.error ?? "Couldn't save. Please try again.");
+        toast.error(res.error ?? t("saveFailed"));
       }
     });
   }
@@ -95,9 +96,9 @@ export function DailyDigestSettings() {
     <Card>
       <CardContent className="space-y-4 p-4 sm:p-6">
         <div>
-          <p className="text-sm font-semibold">Daily digest</p>
+          <p className="text-sm font-semibold">{t("title")}</p>
           <p className="text-xs text-muted-foreground">
-            A warm, AI-written evening summary of the day — emailed automatically to whoever wants it.
+            {t("desc")}
           </p>
         </div>
 
@@ -105,8 +106,8 @@ export function DailyDigestSettings() {
         {canManage ? (
           <>
             <ToggleRow
-              title="Send a nightly digest"
-              description="Generate and email the day's digest to opted-in members each evening."
+              title={t("sendNightly")}
+              description={t("sendNightlyDesc")}
               control={
                 <Switch
                   checked={enabled}
@@ -114,12 +115,12 @@ export function DailyDigestSettings() {
                   onCheckedChange={(v) =>
                     persist({ ...settings, enabled: v }, () => updateDigestSettings({ enabled: v, hour }), settings)
                   }
-                  aria-label="Send a nightly digest"
+                  aria-label={t("sendNightly")}
                 />
               }
             />
             {enabled && (
-              <Field htmlFor="digest-when" label="Send at" hint="In this circle's timezone.">
+              <Field htmlFor="digest-when" label={t("sendAt")} hint={t("sendAtHint")}>
                 <Select
                   value={String(hour)}
                   disabled={pending}
@@ -137,7 +138,7 @@ export function DailyDigestSettings() {
                   <SelectContent>
                     {HOURS.map((h) => (
                       <SelectItem key={h} value={String(h)}>
-                        {hourLabel(h)}
+                        {hourLabel(locale, h)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -148,9 +149,7 @@ export function DailyDigestSettings() {
           </>
         ) : (
           <p className="rounded-lg bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
-            {enabled
-              ? `Your circle's coordinator sends the digest at ${hourLabel(hour)}.`
-              : "Your circle's coordinator has the nightly digest turned off."}
+            {enabled ? t("coordSendsAt", { time: hourLabel(locale, hour) }) : t("coordOff")}
           </p>
         )}
 
@@ -159,10 +158,10 @@ export function DailyDigestSettings() {
           title={
             <span className="flex items-center gap-1.5">
               <Mail className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-              Email it to me
+              {t("emailToMe")}
             </span>
           }
-          description="Receive the nightly digest in your inbox."
+          description={t("emailToMeDesc")}
           control={
             <Switch
               checked={myOptIn}
@@ -170,7 +169,7 @@ export function DailyDigestSettings() {
               onCheckedChange={(v) =>
                 persist({ ...settings, myOptIn: v }, () => setMyDigestOptIn(v), settings)
               }
-              aria-label="Email the digest to me"
+              aria-label={t("emailToMeAria")}
             />
           }
         />
@@ -182,10 +181,10 @@ export function DailyDigestSettings() {
           label={
             <span className="flex items-center gap-1.5">
               <Languages className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-              My digest language
+              {t("myLanguage")}
             </span>
           }
-          hint="The digest is written once from the day's record, then translated for you."
+          hint={t("myLanguageHint")}
         >
           <Select
             value={myLanguage}

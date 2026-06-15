@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { Lock, Search, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -21,6 +22,7 @@ import { loadCircleAuditLog, type AuditLogEntry } from "@/lib/settings/audit";
  * never be edited or deleted (the table has no UPDATE/DELETE policy); this view only reads.
  */
 export function AuditLog() {
+  const t = useTranslations("settings.audit");
   const isPhone = useIsPhone();
   const [entries, setEntries] = React.useState<AuditLogEntry[] | null>(null);
   const [error, setError] = React.useState<string | null>(null);
@@ -82,14 +84,13 @@ export function AuditLog() {
       <div className="flex items-start gap-2 rounded-xl border bg-muted/40 px-3 py-2.5 text-xs text-muted-foreground">
         <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" aria-hidden="true" />
         <span>
-          This log is <span className="font-medium text-foreground">append-only</span> — entries can never be edited or
-          deleted, by anyone. It records who did what, and when.
+          {t.rich("immutableNote", { b: (chunks) => <span className="font-medium text-foreground">{chunks}</span> })}
         </span>
       </div>
 
       {entries.length === 0 ? (
         <p className="rounded-xl border border-dashed px-4 py-8 text-center text-sm text-muted-foreground">
-          No activity recorded yet.
+          {t("noActivity")}
         </p>
       ) : (
         <>
@@ -97,25 +98,25 @@ export function AuditLog() {
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <div className="relative min-w-0 flex-1">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search the log…" className="h-10 pl-9" aria-label="Search audit log" />
+              <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t("search")} className="h-10 pl-9" aria-label={t("searchAria")} />
             </div>
             <Select value={actor} onValueChange={setActor}>
-              <SelectTrigger className="h-10 w-full sm:w-40" aria-label="Filter by actor">
+              <SelectTrigger className="h-10 w-full sm:w-40" aria-label={t("filterActor")}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Everyone</SelectItem>
+                <SelectItem value="all">{t("everyone")}</SelectItem>
                 {actors.map((a) => (
                   <SelectItem key={a} value={a}>{a}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
             <Select value={action} onValueChange={setAction}>
-              <SelectTrigger className="h-10 w-full sm:w-44" aria-label="Filter by action">
+              <SelectTrigger className="h-10 w-full sm:w-44" aria-label={t("filterAction")}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All actions</SelectItem>
+                <SelectItem value="all">{t("allActions")}</SelectItem>
                 {actions.map((a) => (
                   <SelectItem key={a} value={a}>{a}</SelectItem>
                 ))}
@@ -125,7 +126,7 @@ export function AuditLog() {
 
           {rows.length === 0 ? (
             <p className="rounded-xl border border-dashed px-4 py-8 text-center text-sm text-muted-foreground">
-              No entries match these filters.
+              {t("noMatch")}
             </p>
           ) : isPhone ? (
             <ul className="space-y-2">
@@ -148,13 +149,13 @@ export function AuditLog() {
           ) : (
             <div className="overflow-hidden rounded-xl border">
               <table className="w-full text-sm">
-                <caption className="sr-only">Audit log — append-only record of actions</caption>
+                <caption className="sr-only">{t("caption")}</caption>
                 <thead>
                   <tr className="border-b bg-muted/40 text-left text-xs text-muted-foreground">
-                    <th scope="col" className="px-4 py-2.5 font-medium">Who</th>
-                    <th scope="col" className="px-4 py-2.5 font-medium">Action</th>
-                    <th scope="col" className="px-4 py-2.5 font-medium">Entity</th>
-                    <th scope="col" className="px-4 py-2.5 font-medium">When</th>
+                    <th scope="col" className="px-4 py-2.5 font-medium">{t("who")}</th>
+                    <th scope="col" className="px-4 py-2.5 font-medium">{t("action")}</th>
+                    <th scope="col" className="px-4 py-2.5 font-medium">{t("entity")}</th>
+                    <th scope="col" className="px-4 py-2.5 font-medium">{t("when")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -182,7 +183,7 @@ export function AuditLog() {
 
           <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
-            Showing {rows.length} of {entries.length} entries.
+            {t("showing", { shown: rows.length, total: entries.length })}
           </p>
         </>
       )}

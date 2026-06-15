@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Lock, Plus } from "lucide-react";
 import { useAppShell } from "@/components/app-shell/app-shell-context";
@@ -23,6 +24,7 @@ export interface RotaScreenProps {
 
 /** The Care Rota screen: who's on across the week, with an "On call now" highlight + add-shift. */
 export function RotaScreen({ initial }: RotaScreenProps) {
+  const t = useTranslations("rota");
   const { role } = useAppShell();
   const canManage = canManageRota(role);
 
@@ -54,21 +56,21 @@ export function RotaScreen({ initial }: RotaScreenProps) {
     if (res.ok) {
       setShifts((prev) => prev.map((s) => (s.id === tempId ? res.data : s)));
       const member = members.find((m) => m.id === res.data.memberId);
-      toast.success(`${member ? member.name : "Shift"} added to the rota`);
+      toast.success(member ? t("toasts.added", { name: member.name }) : t("toasts.addedFallback"));
     } else {
       setShifts((prev) => prev.filter((s) => s.id !== tempId));
-      toast.error(res.error ?? "Couldn't add the shift");
+      toast.error(res.error ?? t("toasts.addFailed"));
     }
   };
 
   const deleteShift = (id: string) => {
     const prev = shifts;
     setShifts((p) => p.filter((s) => s.id !== id));
-    toast("Shift removed");
+    toast(t("toasts.removed"));
     void deleteShiftAction(id).then((res) => {
       if (!res.ok) {
         setShifts(prev);
-        toast.error(res.error ?? "Couldn't remove the shift");
+        toast.error(res.error ?? t("toasts.removeFailed"));
       }
     });
   };
@@ -79,20 +81,20 @@ export function RotaScreen({ initial }: RotaScreenProps) {
         {/* Header */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
-            <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">Care rota</h1>
-            <p className="mt-1 text-muted-foreground">Who&apos;s on this week — in person and on call.</p>
+            <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">{t("title")}</h1>
+            <p className="mt-1 text-muted-foreground">{t("subtitle")}</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {!canManage && (
               <Badge variant="secondary" className="gap-1.5">
                 <Lock className="h-3 w-3" aria-hidden="true" />
-                View only
+                {t("viewOnly")}
               </Badge>
             )}
             <GatedControl canManage={canManage}>
               <Button onClick={() => setAddForDay(now.getDay())} disabled={members.length === 0}>
                 <Plus className="h-4 w-4" />
-                <span className="ml-1">Add shift</span>
+                <span className="ml-1">{t("addShift")}</span>
               </Button>
             </GatedControl>
           </div>
@@ -104,11 +106,11 @@ export function RotaScreen({ initial }: RotaScreenProps) {
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
           <span className="flex items-center gap-1.5">
             <span className="h-3 w-4 rounded border bg-muted" aria-hidden="true" />
-            In person
+            {t("legend.inPerson")}
           </span>
           <span className="flex items-center gap-1.5">
             <span className="h-3 w-4 rounded border border-dashed bg-muted" aria-hidden="true" />
-            On call
+            {t("legend.onCall")}
           </span>
         </div>
 

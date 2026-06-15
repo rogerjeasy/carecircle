@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { ChevronRight, HeartPulse, Trash2, Users } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -55,6 +56,8 @@ function initialsFrom(name: string): string {
 
 /* --------------------------------- Account -------------------------------- */
 export function AccountSection() {
+  const t = useTranslations("settings.account");
+  const tc = useTranslations("settings.common");
   const { setUserImage } = useAppShell();
   const [account, setAccount] = React.useState<AccountSettings | null>(null);
   const [name, setName] = React.useState("");
@@ -82,7 +85,7 @@ export function AccountSection() {
 
   if (!account) {
     return (
-      <SettingsSection title="Account" description="Your personal details and preferences.">
+      <SettingsSection title={t("title")} description={t("description")}>
         <Card>
           <CardContent className="space-y-4 p-4 sm:p-6">
             <Skeleton className="h-16 w-16 rounded-full" />
@@ -98,7 +101,7 @@ export function AccountSection() {
 
   const onPickPhoto = (file: File) => {
     if (file.size > 5 * 1024 * 1024) {
-      toast.error("Please choose an image under 5 MB.");
+      toast.error(t("photoTooLarge"));
       return;
     }
     const reader = new FileReader();
@@ -123,7 +126,7 @@ export function AccountSection() {
       setPhotoDataUrl(null);
       // Reflect a new photo in the sidebar/nav immediately (only when it actually changed).
       if (changedPhoto) setUserImage(res.image);
-      toast.success("Account updated");
+      toast.success(t("updated"));
     });
   };
 
@@ -138,12 +141,12 @@ export function AccountSection() {
         return;
       }
       form.reset();
-      toast.success("Password updated");
+      toast.success(t("passwordUpdated"));
     });
   };
 
   return (
-    <SettingsSection title="Account" description="Your personal details and preferences.">
+    <SettingsSection title={t("title")} description={t("description")}>
       <Card>
         <CardContent className="space-y-5 p-4 sm:p-6">
           {/* Photo */}
@@ -167,20 +170,20 @@ export function AccountSection() {
                 }}
               />
               <Button variant="outline" size="sm" onClick={() => photoInputRef.current?.click()}>
-                Change photo
+                {t("changePhoto")}
               </Button>
-              <p className="text-xs text-muted-foreground">JPG or PNG, up to 5 MB.</p>
+              <p className="text-xs text-muted-foreground">{t("photoHint")}</p>
             </div>
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field htmlFor="acc-name" label="Full name">
+            <Field htmlFor="acc-name" label={t("fullName")}>
               <Input id="acc-name" value={name} onChange={(e) => setName(e.target.value)} />
             </Field>
-            <Field htmlFor="acc-email" label="Email">
+            <Field htmlFor="acc-email" label={t("email")}>
               <Input id="acc-email" type="email" value={account.email} readOnly className="bg-muted/40" />
             </Field>
-            <Field htmlFor="acc-lang" label="Language">
+            <Field htmlFor="acc-lang" label={t("language")}>
               <Select value={language} onValueChange={setLanguage}>
                 <SelectTrigger id="acc-lang">
                   <SelectValue />
@@ -194,7 +197,7 @@ export function AccountSection() {
                 </SelectContent>
               </Select>
             </Field>
-            <Field htmlFor="acc-tz" label="Time zone">
+            <Field htmlFor="acc-tz" label={t("timezone")}>
               <Select value={tz} onValueChange={setTz}>
                 <SelectTrigger id="acc-tz">
                   <SelectValue />
@@ -212,7 +215,7 @@ export function AccountSection() {
 
           <div className="flex justify-end">
             <Button onClick={saveProfile} disabled={savingProfile}>
-              {savingProfile ? "Saving…" : "Save changes"}
+              {savingProfile ? tc("saving") : tc("saveChanges")}
             </Button>
           </div>
         </CardContent>
@@ -221,7 +224,7 @@ export function AccountSection() {
       {/* Password */}
       <Card>
         <CardContent className="space-y-4 p-4 sm:p-6">
-          <p className="text-sm font-semibold">Change password</p>
+          <p className="text-sm font-semibold">{t("changePassword")}</p>
           {account.hasPassword ? (
             <form
               ref={pwFormRef}
@@ -232,25 +235,25 @@ export function AccountSection() {
               className="space-y-4"
             >
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <Field htmlFor="pw-current" label="Current">
+                <Field htmlFor="pw-current" label={t("current")}>
                   <Input id="pw-current" name="current" type="password" autoComplete="current-password" />
                 </Field>
-                <Field htmlFor="pw-new" label="New">
+                <Field htmlFor="pw-new" label={t("new")}>
                   <Input id="pw-new" name="next" type="password" autoComplete="new-password" />
                 </Field>
-                <Field htmlFor="pw-confirm" label="Confirm">
+                <Field htmlFor="pw-confirm" label={t("confirm")}>
                   <Input id="pw-confirm" name="confirm" type="password" autoComplete="new-password" />
                 </Field>
               </div>
               <div className="flex justify-end">
                 <Button type="submit" variant="outline" disabled={savingPw}>
-                  {savingPw ? "Updating…" : "Update password"}
+                  {savingPw ? t("updating") : t("updatePassword")}
                 </Button>
               </div>
             </form>
           ) : (
             <p className="rounded-lg bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
-              You sign in with a social provider, so there&apos;s no password to change here.
+              {t("socialNoPassword")}
             </p>
           )}
         </CardContent>
@@ -260,15 +263,15 @@ export function AccountSection() {
       <Card className="border-destructive/30">
         <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-6">
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-destructive">Delete account</p>
+            <p className="text-sm font-semibold text-destructive">{t("deleteAccount")}</p>
             <p className="text-xs text-muted-foreground">
-              Permanently remove your account and personal data. This can&apos;t be undone.
+              {t("deleteAccountDesc")}
             </p>
           </div>
           <DangerAction
-            label="Delete account"
-            title="Delete your account?"
-            description="This permanently deletes your account and removes you from all care circles. This cannot be undone."
+            label={t("deleteAccount")}
+            title={t("deleteAccountTitle")}
+            description={t("deleteAccountConfirm")}
             onConfirm={async () => {
               const res = await deleteAccount();
               if (!res.ok) return toast.error(res.error);
@@ -284,6 +287,8 @@ export function AccountSection() {
 
 /* ------------------------------- Care circle ------------------------------ */
 export function KintwadiSection() {
+  const t = useTranslations("settings.circle");
+  const tc = useTranslations("settings.common");
   const router = useRouter();
   const [settings, setSettings] = React.useState<CircleSettings | null>(null);
   const [circleName, setCircleName] = React.useState("");
@@ -304,7 +309,7 @@ export function KintwadiSection() {
 
   if (!settings) {
     return (
-      <SettingsSection title="Care circle" description="Settings for this circle.">
+      <SettingsSection title={t("title")} description={t("description")}>
         <Card>
           <CardContent className="space-y-4 p-4 sm:p-6">
             <Skeleton className="h-10 w-full" />
@@ -325,7 +330,7 @@ export function KintwadiSection() {
         return;
       }
       setSettings((s) => (s ? { ...s, name: circleName } : s));
-      toast.success("Circle updated");
+      toast.success(t("updated"));
       router.refresh();
     });
 
@@ -333,23 +338,23 @@ export function KintwadiSection() {
     if (!transferTo) return;
     const res = await transferOwnership(transferTo);
     if (!res.ok) return toast.error(res.error);
-    toast.success("Ownership transferred");
+    toast.success(t("transferred"));
     router.refresh();
   };
 
   const doDelete = async () => {
     const res = await deleteCircle();
     if (!res.ok) return toast.error(res.error);
-    toast.success("Circle deleted");
+    toast.success(t("deleted"));
     router.push("/dashboard");
     router.refresh();
   };
 
   return (
-    <SettingsSection title="Care circle" description="Settings for this circle.">
+    <SettingsSection title={t("title")} description={t("description")}>
       <Card>
         <CardContent className="space-y-4 p-4 sm:p-6">
-          <Field htmlFor="circle-name" label="Circle name">
+          <Field htmlFor="circle-name" label={t("name")}>
             <Input
               id="circle-name"
               value={circleName}
@@ -360,13 +365,13 @@ export function KintwadiSection() {
           <LinkRow
             href="/people"
             icon={HeartPulse}
-            title="Care recipient"
-            sub={settings.recipientName ? `${settings.recipientName} · view circle` : "View circle"}
+            title={t("recipientTitle")}
+            sub={settings.recipientName ? t("recipientViewNamed", { name: settings.recipientName }) : t("recipientView")}
           />
           {canManage && (
             <div className="flex justify-end">
               <Button onClick={save} disabled={saving}>
-                {saving ? "Saving…" : "Save changes"}
+                {saving ? tc("saving") : tc("saveChanges")}
               </Button>
             </div>
           )}
@@ -376,19 +381,19 @@ export function KintwadiSection() {
       {isOwner && (
         <Card className="border-destructive/30">
           <CardContent className="space-y-4 p-4 sm:p-6">
-            <p className="text-sm font-semibold">Ownership &amp; lifecycle</p>
+            <p className="text-sm font-semibold">{t("ownership")}</p>
 
             {/* Transfer ownership */}
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium">Transfer ownership</p>
-                <p className="mb-2 text-xs text-muted-foreground">Hand coordinator duties to another member.</p>
+                <p className="text-sm font-medium">{t("transfer")}</p>
+                <p className="mb-2 text-xs text-muted-foreground">{t("transferDesc")}</p>
                 {members.length === 0 ? (
-                  <p className="text-xs text-muted-foreground">Invite another member first.</p>
+                  <p className="text-xs text-muted-foreground">{t("inviteFirst")}</p>
                 ) : (
                   <Select value={transferTo} onValueChange={setTransferTo}>
-                    <SelectTrigger className="sm:max-w-xs" aria-label="Choose a member">
-                      <SelectValue placeholder="Choose a member…" />
+                    <SelectTrigger className="sm:max-w-xs" aria-label={t("chooseMemberAria")}>
+                      <SelectValue placeholder={t("chooseMember")} />
                     </SelectTrigger>
                     <SelectContent>
                       {members.map((m) => (
@@ -403,12 +408,12 @@ export function KintwadiSection() {
               <ConfirmAction
                 trigger={
                   <Button variant="outline" className="sm:shrink-0" disabled={!transferTo}>
-                    Transfer
+                    {t("transferBtn")}
                   </Button>
                 }
-                title="Transfer ownership?"
-                description="The chosen member becomes the coordinator (owner), and you become a family admin. You can ask them to transfer it back later."
-                actionLabel="Transfer"
+                title={t("transferTitle")}
+                description={t("transferConfirmDesc")}
+                actionLabel={t("transferBtn")}
                 onConfirm={doTransfer}
               />
             </div>
@@ -416,13 +421,13 @@ export function KintwadiSection() {
             {/* Delete circle */}
             <div className="flex flex-col gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-w-0">
-                <p className="text-sm font-medium text-destructive">Delete circle</p>
-                <p className="text-xs text-muted-foreground">Removes the circle for everyone. This can&apos;t be undone.</p>
+                <p className="text-sm font-medium text-destructive">{t("deleteCircle")}</p>
+                <p className="text-xs text-muted-foreground">{t("deleteCircleDesc")}</p>
               </div>
               <DangerAction
-                label="Delete circle"
-                title="Delete this care circle?"
-                description="This deletes the circle and hides all of its data for every member. This cannot be undone."
+                label={t("deleteCircle")}
+                title={t("deleteCircleTitle")}
+                description={t("deleteCircleConfirm")}
                 onConfirm={doDelete}
               />
             </div>
@@ -435,11 +440,12 @@ export function KintwadiSection() {
 
 /* --------------------------------- Members -------------------------------- */
 export function MembersSection() {
+  const t = useTranslations("settings.members");
   return (
-    <SettingsSection title="Members & roles" description="Manage who's in the circle and what they can see.">
+    <SettingsSection title={t("title")} description={t("description")}>
       <Card>
         <CardContent className="p-2 sm:p-3">
-          <LinkRow href="/people" icon={Users} title="People in this circle" sub="Invite, change roles, suspend or remove" />
+          <LinkRow href="/people" icon={Users} title={t("linkTitle")} sub={t("linkSub")} />
         </CardContent>
       </Card>
     </SettingsSection>
@@ -448,11 +454,12 @@ export function MembersSection() {
 
 /* ------------------------------ Health alerts ----------------------------- */
 export function HealthAlertsSection() {
+  const t = useTranslations("settings.healthAlerts");
   return (
-    <SettingsSection title="Health alerts" description="Safe ranges that notify the family when a reading is out of range.">
+    <SettingsSection title={t("title")} description={t("description")}>
       <Card>
         <CardContent className="p-2 sm:p-3">
-          <LinkRow href="/health/alerts" icon={HeartPulse} title="Alert thresholds" sub="Per-metric min/max and who gets alerted" />
+          <LinkRow href="/health/alerts" icon={HeartPulse} title={t("linkTitle")} sub={t("linkSub")} />
         </CardContent>
       </Card>
     </SettingsSection>
@@ -502,6 +509,7 @@ function ConfirmAction({
   actionLabel: string;
   onConfirm: () => void;
 }) {
+  const tc = useTranslations("settings.common");
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>
@@ -511,7 +519,7 @@ function ConfirmAction({
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel>{tc("cancel")}</AlertDialogCancel>
           <AlertDialogAction onClick={onConfirm}>{actionLabel}</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
@@ -530,6 +538,7 @@ function DangerAction({
   description: string;
   onConfirm: () => void;
 }) {
+  const tc = useTranslations("settings.common");
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
@@ -544,7 +553,7 @@ function DangerAction({
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel>{tc("cancel")}</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"

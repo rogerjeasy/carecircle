@@ -1,5 +1,6 @@
 "use client";
 
+import { useLocale, useTranslations } from "next-intl";
 import { Phone, User, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -21,6 +22,8 @@ export function ShiftBlock({
   highlight?: boolean;
   className?: string;
 }) {
+  const t = useTranslations("rota");
+  const locale = useLocale();
   const { byId } = useRotaMembers();
   const member = byId(shift.memberId);
   if (!member) return null;
@@ -46,14 +49,14 @@ export function ShiftBlock({
         <span className="min-w-0 flex-1 truncate text-xs font-semibold">{firstName(member.name)}</span>
         <TypeIcon className="h-3 w-3 shrink-0 opacity-70" aria-hidden="true" />
       </div>
-      <p className="mt-0.5 truncate text-[11px] tabular-nums opacity-80">{timeRange(shift)}</p>
-      <span className="sr-only">{onCall ? "On call" : "In person"}</span>
+      <p className="mt-0.5 truncate text-[11px] tabular-nums opacity-80">{timeRange(locale, shift, t("overnightSuffix"))}</p>
+      <span className="sr-only">{onCall ? t("legend.onCall") : t("legend.inPerson")}</span>
 
       {canManage && (
         <button
           type="button"
           onClick={onDelete}
-          aria-label={`Remove ${firstName(member.name)}'s shift`}
+          aria-label={t("removeShift", { name: firstName(member.name) })}
           className="absolute -right-1.5 -top-1.5 hidden h-5 w-5 items-center justify-center rounded-full border bg-background text-muted-foreground shadow-sm transition-colors hover:text-destructive focus:outline-none focus-visible:ring-2 focus-visible:ring-ring group-hover:flex group-focus-within:flex"
         >
           <X className="h-3 w-3" />

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { AccountSection, KintwadiSection, MembersSection, HealthAlertsSection } from "./sections";
 import { NotificationsSettingsSection } from "./notifications-section";
@@ -20,19 +21,20 @@ const RENDERERS: Record<SectionId, React.ComponentType> = {
 
 /** The Settings area: a real two-pane layout (sub-nav + content) on tablet+, tab strip on phone. */
 export function SettingsScreen() {
+  const t = useTranslations("settings");
   const [active, setActive] = React.useState<SectionId>("account");
   const Active = RENDERERS[active];
 
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">Settings</h1>
-        <p className="mt-1 text-muted-foreground">Manage your account, this circle, and how Kintwadi works for you.</p>
+        <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">{t("title")}</h1>
+        <p className="mt-1 text-muted-foreground">{t("subtitle")}</p>
       </div>
 
       {/* Phone: scrollable tab strip */}
       <div className="-mx-4 overflow-x-auto px-4 sm:hidden [scrollbar-width:none]">
-        <div className="flex w-max gap-2 pb-1" role="tablist" aria-label="Settings sections">
+        <div className="flex w-max gap-2 pb-1" role="tablist" aria-label={t("sectionsAria")}>
           {SECTIONS.map((s) => (
             <button
               key={s.id}
@@ -46,7 +48,7 @@ export function SettingsScreen() {
               )}
             >
               <s.icon className="h-3.5 w-3.5" aria-hidden="true" />
-              {s.label}
+              {t(`sections.${s.id}` as "sections.account")}
             </button>
           ))}
         </div>
@@ -54,7 +56,7 @@ export function SettingsScreen() {
 
       {/* Tablet+: two-pane */}
       <div className="sm:grid sm:grid-cols-[13rem_minmax(0,1fr)] sm:gap-6 lg:grid-cols-[15rem_minmax(0,1fr)]">
-        <nav className="hidden sm:block" aria-label="Settings sections">
+        <nav className="hidden sm:block" aria-label={t("sectionsAria")}>
           <ul className="sticky top-20 space-y-1">
             {SECTIONS.map((s) => (
               <li key={s.id}>
@@ -68,7 +70,7 @@ export function SettingsScreen() {
                   )}
                 >
                   <s.icon className="h-4 w-4 shrink-0" aria-hidden="true" />
-                  <span className="truncate">{s.label}</span>
+                  <span className="truncate">{t(`sections.${s.id}` as "sections.account")}</span>
                 </button>
               </li>
             ))}

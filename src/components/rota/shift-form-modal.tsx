@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { ResponsiveModal } from "./responsive-modal";
 import { ShiftForm, type ShiftFormValues } from "./shift-form";
 
@@ -12,12 +13,13 @@ export interface ShiftFormModalProps {
 
 /** Add a shift, in a Dialog on tablet+ and a bottom Sheet on phone. */
 export function ShiftFormModal({ open, onOpenChange, initialValues, onSubmit }: ShiftFormModalProps) {
+  const t = useTranslations("rota");
   return (
     <ResponsiveModal
       open={open}
       onOpenChange={onOpenChange}
-      title="Add shift"
-      description="Set who's on, the day, the hours, and whether they're in person or on call."
+      title={t("form.title")}
+      description={t("form.description")}
     >
       <ShiftForm initialValues={initialValues} onSubmit={onSubmit} onCancel={() => onOpenChange(false)} />
     </ResponsiveModal>

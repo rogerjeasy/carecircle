@@ -20,29 +20,26 @@ export type SectionId =
   | "billing"
   | "privacy";
 
-export const SECTIONS: { id: SectionId; label: string; icon: typeof User }[] = [
-  { id: "account", label: "Account", icon: User },
-  { id: "care-circle", label: "Care circle", icon: Home },
-  { id: "members", label: "Members & roles", icon: Users },
-  { id: "notifications", label: "Notifications", icon: Bell },
-  { id: "health-alerts", label: "Health alerts", icon: HeartPulse },
-  { id: "billing", label: "Billing", icon: CreditCard },
-  { id: "privacy", label: "Privacy & security", icon: ShieldCheck },
+// Labels live in messages (`settings.sections.*`), keyed by these stable section ids.
+export const SECTIONS: { id: SectionId; icon: typeof User }[] = [
+  { id: "account", icon: User },
+  { id: "care-circle", icon: Home },
+  { id: "members", icon: Users },
+  { id: "notifications", icon: Bell },
+  { id: "health-alerts", icon: HeartPulse },
+  { id: "billing", icon: CreditCard },
+  { id: "privacy", icon: ShieldCheck },
 ];
 
-// --- Notifications matrix ---
-export const NOTIF_CHANNELS = [
-  { key: "inApp", label: "In-app" },
-  { key: "email", label: "Email" },
-  { key: "push", label: "Push" },
-] as const;
+// --- Notifications matrix --- (labels resolved via `settings.notifications.channels/types.*`)
+export const NOTIF_CHANNELS = [{ key: "inApp" }, { key: "email" }, { key: "push" }] as const;
 
 export const NOTIF_TYPES = [
-  { key: "meds", label: "Medications" },
-  { key: "vitals", label: "Vitals" },
-  { key: "tasks", label: "Tasks" },
-  { key: "incidents", label: "Incidents" },
-  { key: "digest", label: "Daily digest" },
+  { key: "meds" },
+  { key: "vitals" },
+  { key: "tasks" },
+  { key: "incidents" },
+  { key: "digest" },
 ] as const;
 
 export type ChannelKey = (typeof NOTIF_CHANNELS)[number]["key"];
@@ -58,58 +55,28 @@ export const DEFAULT_MATRIX: NotifMatrix = {
 };
 
 // --- Billing ---
-// The plan catalog, keyed by the `care_circle.plan` value the server returns. Names, prices, and
-// features mirror the public pricing page (src/components/pricing/data.ts).
+// Plan catalog keyed by the `care_circle.plan` value the server returns. Prices/period are
+// non-translatable; name/note/features are resolved from messages (`settings.billing.plans.<id>.*`).
 export interface BillingPlan {
   id: string;
-  name: string;
   /** Display price, e.g. "$0" or "$12"; "Custom" for sales-led plans. */
   price: string;
   /** Suffix after the price, e.g. "/month"; empty for custom pricing. */
   period: string;
-  note: string;
-  features: string[];
 }
 
 export const BILLING_PLANS: BillingPlan[] = [
-  {
-    id: "free",
-    name: "Free",
-    price: "$0",
-    period: "/month",
-    note: "For families getting started",
-    features: ["One care circle", "Shared care timeline", "Medication tracking", "Task management"],
-  },
-  {
-    id: "plus",
-    name: "Plus",
-    price: "$12",
-    period: "/month",
-    note: "AI assistance for busy families",
-    features: ["Multiple care circles", "AI Daily Digest", "Ask Kintwadi AI", "Document vault (5GB)"],
-  },
-  {
-    id: "teams",
-    name: "Care Teams",
-    price: "Custom",
-    period: "",
-    note: "Agencies & organizations",
-    features: ["Unlimited care circles", "Audit trail & compliance", "Priority support", "HIPAA BAA available"],
-  },
+  { id: "free", price: "$0", period: "/month" },
+  { id: "plus", price: "$12", period: "/month" },
+  { id: "teams", price: "Custom", period: "" },
 ];
 
-/** Resolve a circle's stored plan value to its catalog entry (unknown values render plainly). */
+/** Whether a plan id has a localized catalog entry (else the UI shows the raw id). */
+export const KNOWN_PLAN_IDS = new Set(BILLING_PLANS.map((p) => p.id));
+
+/** Resolve a circle's stored plan value to its price/period (unknown values render plainly). */
 export function billingPlanFor(planId: string): BillingPlan {
-  return (
-    BILLING_PLANS.find((p) => p.id === planId) ?? {
-      id: planId,
-      name: planId.charAt(0).toUpperCase() + planId.slice(1),
-      price: "",
-      period: "",
-      note: "",
-      features: [],
-    }
-  );
+  return BILLING_PLANS.find((p) => p.id === planId) ?? { id: planId, price: "", period: "" };
 }
 
 export const LANGUAGES = ["English", "Español", "Português", "Français", "Italiano"];
