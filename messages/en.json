@@ -1,0 +1,3332 @@
+{
+  "common": {
+    "getStartedFree": "Get started free",
+    "signIn": "Sign in",
+    "learnMore": "Learn more",
+    "openMenu": "Open menu"
+  },
+  "nav": {
+    "howItWorks": "How it works",
+    "pricing": "Pricing",
+    "about": "About"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "greeting": {
+      "morning": "Good morning",
+      "afternoon": "Good afternoon",
+      "evening": "Good evening"
+    },
+    "stats": {
+      "medications": "Medications today",
+      "nextAppointment": "Next appointment",
+      "openTasks": "Open tasks",
+      "latestVitals": "Latest vitals"
+    },
+    "insight": {
+      "title": "Worth a look",
+      "dismiss": "Dismiss insight"
+    },
+    "banner": {
+      "fallbackName": "Your loved one",
+      "followingAlong": "Following along",
+      "yourShift": "Your shift",
+      "viewTasks": "View tasks",
+      "doingWell": "{name} is doing well",
+      "goodDay": "{name} is having a good day"
+    },
+    "quickActions": {
+      "logMed": "Log medication",
+      "logMedShort": "Log",
+      "addUpdate": "Add update",
+      "addUpdateShort": "Add",
+      "newTask": "New task",
+      "newTaskShort": "New",
+      "report": "Report incident"
+    },
+    "cards": {
+      "digestTitle": "Daily Digest",
+      "digestFallback": "AI-generated summary",
+      "digestEmpty": "No digest yet for today. Once the circle logs medications, vitals and updates, Kintwadi summarises the day here.",
+      "askKintwadi": "Ask Kintwadi",
+      "generateDigest": "Generate today's digest",
+      "onCallNow": "On call now",
+      "active": "Active",
+      "noOnCall": "No one is on call right now.",
+      "viewRota": "View full rota",
+      "fairShare": "Fair share this week",
+      "noShifts": "No shifts scheduled this week.",
+      "hours": "{hours}h"
+    }
+  },
+  "marketing": {
+    "hero": {
+      "badge": "One shared record for everyone caring for someone",
+      "title": "Care for your parents, <hl>together</hl> — wherever you are.",
+      "subtitle": "Coordinate medications, appointments, and daily updates across siblings, cities, and countries. Everyone stays informed, no one falls through the cracks.",
+      "demo": {
+        "circleName": "Maria's Care Circle",
+        "membersActive": "{count} members active",
+        "allMedsGiven": "Today: all meds given",
+        "recentActivity": "Recent activity",
+        "item1Text": "Morning medications given",
+        "item2Text": "Dr. appointment confirmed for Thursday",
+        "yesterday": "Yesterday",
+        "tomLocation": "Tom in Canada",
+        "checkedIn": "Just checked in"
+      }
+    },
+    "socialProof": {
+      "heading": "Built for families caring for an aging loved one — across any distance",
+      "stat1Value": "2.1B",
+      "stat1Label": "People 60+ by 2050",
+      "stat2Value": "1 in 6",
+      "stat2Label": "Will be 60+ by 2030",
+      "stat3Value": "2×",
+      "stat3Label": "Older population, 2020 → 2050"
+    },
+    "problems": {
+      "heading": "Caring shouldn't feel this hard",
+      "subtitle": "We built Kintwadi because we've been there. The stress, the miscommunication, the guilt — there's a better way.",
+      "items": {
+        "chat": {
+          "title": "Chaotic group chats",
+          "description": "Important updates get buried in 47 unread messages about what to bring for Sunday dinner.",
+          "solution": "A clear, organized timeline everyone can follow — no noise, just what matters."
+        },
+        "meds": {
+          "title": "Missed medications",
+          "description": "\"Did anyone give Mom her evening pills?\" The question no one can answer with certainty.",
+          "solution": "Real-time medication tracking with confirmations, so everyone knows what's been given."
+        },
+        "guilt": {
+          "title": "The distant sibling's guilt",
+          "description": "Living far away means feeling disconnected, worried, and helpless about a parent's daily care.",
+          "solution": "Stay connected with AI-powered daily digests that keep you informed, no matter the distance."
+        }
+      }
+    },
+    "features": {
+      "heading": "Everything you need to coordinate care",
+      "subtitle": "Purpose-built tools for the unique challenges of family caregiving.",
+      "items": {
+        "timeline": {
+          "title": "Shared Care Timeline",
+          "description": "Every medication, appointment, and update in one place. See who did what and when — no more guessing or duplicate efforts."
+        },
+        "medications": {
+          "title": "Medication Safety",
+          "description": "Track doses, set reminders, and get confirmations. The whole circle knows when meds have been given, reducing dangerous double-doses."
+        },
+        "roles": {
+          "title": "Roles & Permissions",
+          "description": "Family members, professional caregivers, and clinicians all see what they need — nothing more, nothing less. Full privacy control."
+        }
+      }
+    },
+    "moreFeatures": {
+      "digest": {
+        "title": "AI Daily Digest",
+        "description": "Every morning, the distant sibling gets a personalized summary: what happened yesterday, what's coming up, and any flags that need attention. Stay connected without constant check-ins.",
+        "sampleGreeting": "Good morning, Tom",
+        "sampleBody": "Mom had a good day yesterday. All medications given, no incidents. Dr. appointment Thursday at 2pm."
+      },
+      "emergency": {
+        "title": "Emergency Card",
+        "description": "A shareable digital card with critical medical information. In an emergency, first responders can instantly see allergies, medications, conditions, and emergency contacts.",
+        "samplePerson": "Maria, 78",
+        "sampleBlood": "Blood type: A+ · DNR: No",
+        "allergies": "Allergies",
+        "sampleAllergies": "Penicillin, Sulfa"
+      }
+    },
+    "howItWorks": {
+      "heading": "How it works",
+      "subtitle": "Get your care circle up and running in three simple steps.",
+      "steps": {
+        "create": {
+          "title": "Create a circle",
+          "description": "Start a care circle for your loved one in under a minute. Add their basic info and care needs."
+        },
+        "invite": {
+          "title": "Invite family & caregivers",
+          "description": "Send invites to siblings, professional caregivers, or clinicians. Everyone gets appropriate access."
+        },
+        "view": {
+          "title": "Everyone sees the right view",
+          "description": "Each person sees what they need — family gets updates, caregivers get tasks, clinicians get medical history."
+        }
+      }
+    },
+    "trust": {
+      "heading": "Your family's data, protected",
+      "subtitle": "We take privacy seriously. Kintwadi is built with security at its core.",
+      "items": {
+        "encryption": {
+          "title": "End-to-end encryption",
+          "description": "Your family's data is encrypted at rest and in transit."
+        },
+        "access": {
+          "title": "Role-based access",
+          "description": "Fine-grained permissions ensure everyone sees only what they should."
+        },
+        "audit": {
+          "title": "Full audit trail",
+          "description": "Every action is logged and traceable for accountability."
+        }
+      }
+    },
+    "testimonial": {
+      "quote": "One sibling in Toronto, another in London, a parent back home in Lisbon — and care decisions scattered across group chats, sticky notes, and missed calls. Kintwadi exists to put everyone caring for someone on the same page, wherever they are.",
+      "attribution": "Why we built Kintwadi"
+    },
+    "cta": {
+      "heading": "Start caring together, today",
+      "subtitle": "Bring your family and care team into one shared place to coordinate care. Free to start, no credit card required."
+    },
+    "footer": {
+      "tagline": "One shared record for everyone caring for someone. Coordinate care across families, cities, and countries.",
+      "product": "Product",
+      "company": "Company",
+      "legal": "Legal",
+      "links": {
+        "features": "Features",
+        "howItWorks": "How it works",
+        "pricing": "Pricing",
+        "dashboard": "Dashboard",
+        "designSystem": "Design System",
+        "about": "About",
+        "careers": "Careers",
+        "blog": "Blog",
+        "contact": "Contact",
+        "privacy": "Privacy",
+        "terms": "Terms",
+        "security": "Security",
+        "hipaa": "HIPAA"
+      },
+      "rights": "© {year} Kintwadi. All rights reserved.",
+      "madeWith": "Made with care for caregivers everywhere."
+    }
+  },
+  "pricing": {
+    "hero": {
+      "badge": "Simple, transparent pricing",
+      "title": "Choose the plan that fits <hl>your family</hl>",
+      "subtitle": "Start free, upgrade when you need more. All plans include core care coordination features.",
+      "monthly": "Monthly",
+      "annual": "Annual",
+      "saveBadge": "Save 25%"
+    },
+    "tiers": {
+      "free": {
+        "name": "Free",
+        "description": "For families just getting started with coordinated care.",
+        "cta": "Get started"
+      },
+      "plus": {
+        "name": "Plus",
+        "description": "For families who need more power and AI assistance.",
+        "cta": "Start free trial"
+      },
+      "teams": {
+        "name": "Care Teams",
+        "description": "For agencies, employers, and healthcare organizations.",
+        "cta": "Contact sales"
+      }
+    },
+    "card": {
+      "mostPopular": "Most popular",
+      "perMonth": "/month",
+      "customPricing": "Custom pricing",
+      "saveAnnual": "Save {percent}% with annual billing",
+      "billedAnnually": "Billed annually"
+    },
+    "featureLabels": {
+      "oneCircle": "One care circle",
+      "multiCircles": "Multiple care circles",
+      "unlimitedCircles": "Unlimited care circles",
+      "timeline": "Shared care timeline",
+      "medTracking": "Medication tracking",
+      "taskMgmt": "Task management",
+      "basicRoles": "Basic roles (3 types)",
+      "allRoles": "All 6 role types",
+      "mobileApp": "Mobile app access",
+      "aiDigest": "AI Daily Digest",
+      "askAi": "Ask Kintwadi AI",
+      "docVault": "Document vault",
+      "docVault5gb": "Document vault (5GB)",
+      "advInsights": "Advanced insights",
+      "multiFamilyDash": "Multi-family dashboard",
+      "auditCompliance": "Audit trail & compliance",
+      "sso": "SSO / SAML integration",
+      "customRoles": "Custom roles & permissions",
+      "apiAccess": "API access",
+      "prioritySupport": "Priority support",
+      "successManager": "Dedicated success manager",
+      "hipaaBaa": "HIPAA BAA available",
+      "customOnboarding": "Custom onboarding"
+    },
+    "comparison": {
+      "title": "Compare all features",
+      "subtitle": "A detailed breakdown of what is included in each plan.",
+      "featureColumn": "Feature",
+      "free": "Free",
+      "plus": "Plus",
+      "teams": "Care Teams",
+      "teamsShort": "Teams",
+      "popular": "Popular",
+      "categories": {
+        "core": "Core Features",
+        "ai": "AI & Intelligence",
+        "storage": "Storage & Documents",
+        "security": "Security & Compliance",
+        "support": "Support"
+      },
+      "rows": {
+        "careCircles": "Care circles",
+        "teamMembers": "Team members per circle",
+        "sharedTimeline": "Shared timeline",
+        "medTracking": "Medication tracking",
+        "taskMgmt": "Task management",
+        "apptCalendar": "Appointment calendar",
+        "aiDigest": "AI Daily Digest",
+        "askAi": "Ask Kintwadi AI",
+        "smartReminders": "Smart reminders",
+        "careInsights": "Care insights",
+        "docVault": "Document vault",
+        "photoUploads": "Photo uploads",
+        "exportData": "Export data",
+        "roleAccess": "Role-based access",
+        "auditTrail": "Audit trail",
+        "ssoSaml": "SSO / SAML",
+        "hipaaBaa": "HIPAA BAA",
+        "encryption": "Data encryption",
+        "communitySupport": "Community support",
+        "emailSupport": "Email support",
+        "prioritySupport": "Priority support",
+        "successManager": "Dedicated success manager"
+      },
+      "values": {
+        "unlimited": "Unlimited",
+        "basic": "Basic",
+        "advanced": "Advanced",
+        "custom": "Custom",
+        "days30": "30 days",
+        "roles3": "3 roles",
+        "roles6": "6 roles"
+      }
+    },
+    "faq": {
+      "title": "Frequently asked questions",
+      "subtitle": "Everything you need to know about Kintwadi pricing.",
+      "items": {
+        "switch": {
+          "question": "Can I switch plans later?",
+          "answer": "Yes! You can upgrade or downgrade your plan at any time. When you upgrade, you will be charged the prorated difference. When you downgrade, your new rate will apply at the next billing cycle."
+        },
+        "data": {
+          "question": "What happens to my data if I downgrade?",
+          "answer": "Your data is never deleted. If you exceed the limits of your new plan (e.g., multiple circles on Free), you will still have read access but cannot add new content until you upgrade or reduce usage."
+        },
+        "trial": {
+          "question": "Is there a free trial for Plus?",
+          "answer": "Yes! Plus comes with a 14-day free trial. No credit card required to start. You will get full access to all Plus features during the trial period."
+        },
+        "teamsBilling": {
+          "question": "How does billing work for Care Teams?",
+          "answer": "Care Teams is billed annually based on the number of care circles and users. Contact our sales team for a custom quote tailored to your organization's needs."
+        },
+        "hipaa": {
+          "question": "Is Kintwadi HIPAA compliant?",
+          "answer": "Kintwadi implements industry-standard security measures including encryption at rest and in transit. For organizations requiring a signed Business Associate Agreement (BAA), this is available on the Care Teams plan."
+        },
+        "freeMembers": {
+          "question": "Can I add family members for free?",
+          "answer": "Yes! All plans allow you to invite family members and caregivers to your care circles at no additional cost. The plan limits apply to the number of circles and features, not the number of people."
+        }
+      }
+    },
+    "cta": {
+      "title": "Ready to simplify care coordination?",
+      "subtitle": "Bring everyone caring for your loved one onto one shared record. Start free, no credit card required.",
+      "getStarted": "Get started free",
+      "talkToSales": "Talk to sales"
+    }
+  },
+  "about": {
+    "hero": {
+      "badge": "About Kintwadi",
+      "tagline": "One shared record for everyone caring for someone.",
+      "subtitle": "Kintwadi is the calm, role-aware home for a family's caregiving — across siblings, cities, and time zones. One source of truth for today's meds, the care timeline, appointments, tasks and vitals.",
+      "getStarted": "Get started free",
+      "seePricing": "See pricing"
+    },
+    "stats": {
+      "people": {
+        "value": "2.1B",
+        "label": "people will be 60+ by 2050 (WHO)"
+      },
+      "age65": {
+        "value": "1 in 6",
+        "label": "people globally will be 65+"
+      },
+      "oneRecord": {
+        "value": "1 record",
+        "label": "many role-scoped lenses"
+      },
+      "zeroChats": {
+        "value": "0",
+        "label": "group chats needed to coordinate"
+      }
+    },
+    "problem": {
+      "eyebrow": "The problem",
+      "title": "Caregiving is universal — and badly tooled",
+      "subtitle": "When a parent starts needing help, coordination falls to chaotic group chats, sticky notes, and one exhausted “default” child.",
+      "items": {
+        "sandwich": {
+          "title": "The sandwich generation is drowning",
+          "body": "Adults care for aging parents while raising kids and working. The labor is invisible, unpaid, and emotionally heavy."
+        },
+        "coordination": {
+          "title": "Coordination is a mess",
+          "body": "Care runs on WhatsApp threads, paper med lists, and memory. There's no single source of truth, so things fall through the cracks."
+        },
+        "details": {
+          "title": "Dropped details are dangerous",
+          "body": "Medication errors are among the most common, preventable causes of harm for older adults. “Did Mom take her pills?” shouldn't be a guess."
+        },
+        "global": {
+          "title": "Families are global now",
+          "body": "The person who loves the patient most is often thousands of kilometres away — and feels powerless and guilty."
+        }
+      }
+    },
+    "difference": {
+      "eyebrow": "What makes it different",
+      "title": "The underserved middle",
+      "subtitle": "Clinical software is built for institutions; family organizers have no concept of care. Kintwadi is the family-grade, role-aware care record — built on three ideas no one has combined well.",
+      "items": {
+        "fairShare": {
+          "title": "Fair-share visibility",
+          "body": "Everyone can see who contributed what. Making the invisible labor visible defuses the #1 cause of family caregiving conflict."
+        },
+        "diaspora": {
+          "title": "The diaspora digest",
+          "body": "An AI-written, warm daily update that keeps the faraway relative emotionally connected — turning guilt into participation."
+        },
+        "oneRecord": {
+          "title": "One record, many lenses",
+          "body": "The aide, the remote sibling, the coordinator and the parent each see a view scoped to their role — enforced at the database, not just the UI."
+        }
+      }
+    },
+    "personas": {
+      "eyebrow": "Who it's for",
+      "title": "One record, a view for everyone",
+      "subtitle": "The same source of truth — scoped to each person's role, enforced at the database, not just the UI.",
+      "items": {
+        "coordinator": {
+          "name": "The Coordinator",
+          "who": "Often the “default” organizer.",
+          "need": "One place to run everything, and to stop being the single point of failure."
+        },
+        "remoteSibling": {
+          "name": "The Remote Sibling",
+          "who": "Loves the parent from afar.",
+          "need": "To know Mom is okay today, and an easy way to help from another time zone."
+        },
+        "careRecipient": {
+          "name": "The Care Recipient",
+          "who": "The parent being cared for.",
+          "need": "A respectful, simplified view — and control over who sees what."
+        },
+        "professional": {
+          "name": "The Professional Caregiver",
+          "who": "Hired aide / home-health worker.",
+          "need": "Clear daily meds & tasks, fast logging, scoped access — never family financials."
+        },
+        "extended": {
+          "name": "The Extended Circle",
+          "who": "Relatives, friends, neighbors.",
+          "need": "Read-only reassurance and a way to help when asked."
+        },
+        "agency": {
+          "name": "Care Manager / Agency",
+          "who": "Home-care & assisted-living (B2B).",
+          "need": "A multi-family dashboard with continuity, accountability and audit."
+        }
+      }
+    },
+    "pillars": {
+      "eyebrow": "What it does",
+      "title": "Everything a family's care needs",
+      "subtitle": "A deep, calm product — not a generic dashboard with 40 widgets.",
+      "items": {
+        "record": {
+          "title": "Shared care record",
+          "body": "A rich profile, a secure document vault, and an always-current emergency card."
+        },
+        "medication": {
+          "title": "Medication management",
+          "body": "Schedules, give/skip logging, refill alerts, and interaction & allergy warnings."
+        },
+        "timeline": {
+          "title": "Care timeline",
+          "body": "One chronological feed of meds, meals, mood, vitals, visits, notes and photos."
+        },
+        "appointments": {
+          "title": "Appointments",
+          "body": "Shared calendar, who's taking them, pre-visit prep and post-visit summaries."
+        },
+        "tasks": {
+          "title": "Tasks & rota",
+          "body": "Assignable recurring tasks, a shift schedule, and the gentle fair-share report."
+        },
+        "roles": {
+          "title": "Roles & permissions",
+          "body": "Distinct roles, granular scoping, a clean invite flow, and an immutable audit log."
+        },
+        "vitals": {
+          "title": "Vitals & health",
+          "body": "Blood pressure, glucose, weight, sleep and mood — with trends and threshold alerts."
+        },
+        "smart": {
+          "title": "The smart layer",
+          "body": "Daily Digest, decline detection, and Ask Kintwadi in plain language."
+        },
+        "notifications": {
+          "title": "Notifications",
+          "body": "Role- and event-aware alerts, urgent escalation, and in-context comments."
+        },
+        "emergency": {
+          "title": "Emergency mode",
+          "body": "One tap surfaces a shareable emergency card, ready for EMS or an ER, in any language."
+        }
+      }
+    },
+    "principles": {
+      "eyebrow": "Design philosophy",
+      "title": "Made for this audience",
+      "subtitle": "Warm, accessible, mobile-first — visibly built for stressed caregivers and older adults.",
+      "items": {
+        "calm": {
+          "title": "Calm over busy",
+          "body": "Stressed caregivers need reassurance, not 40 widgets — one glanceable answer: “Is she okay today?”"
+        },
+        "warm": {
+          "title": "Warm, not clinical",
+          "body": "A tender domain handled with a human, dignified tone — respectful, never infantilizing."
+        },
+        "accessible": {
+          "title": "Accessible by default",
+          "body": "Large type, high contrast, simple flows, screen-reader friendly. Accessibility is the UX."
+        },
+        "mobile": {
+          "title": "Mobile-first",
+          "body": "Caregiving happens on a phone, on the move — so the experience is built for it."
+        },
+        "lenses": {
+          "title": "One record, many lenses",
+          "body": "Each role gets a purpose-built view, so it feels effortless from the aide to the patient."
+        },
+        "transparency": {
+          "title": "Trust through transparency",
+          "body": "An append-only audit log and DB-enforced access build medical-grade, family-grade trust."
+        }
+      }
+    },
+    "cta": {
+      "title": "Care, together — wherever you are",
+      "subtitle": "Bring your family and care team into one shared, permission-aware record. Start free, no credit card required.",
+      "getStarted": "Get started free",
+      "howItWorks": "How it works"
+    }
+  },
+  "contact": {
+    "badge": "Contact us",
+    "title": "We'd love to hear from you",
+    "subtitle": "Questions, feedback, or thinking about Kintwadi for your family or organization? Send a note and a real person will reply.",
+    "replyTime": "We typically reply within <b>one business day</b>.",
+    "methods": {
+      "general": {
+        "label": "General",
+        "note": "Questions about Kintwadi and how it works."
+      },
+      "sales": {
+        "label": "Sales",
+        "note": "Plans, agencies, employers and custom quotes."
+      },
+      "support": {
+        "label": "Support",
+        "note": "Help with your account or care circle."
+      }
+    },
+    "form": {
+      "name": "Name",
+      "email": "Email",
+      "topic": "Topic",
+      "message": "Message",
+      "messagePlaceholder": "How can we help?",
+      "privacyNote": "We'll only use your email to reply.",
+      "send": "Send message",
+      "sending": "Sending…",
+      "errors": {
+        "name": "Please tell us your name",
+        "emailRequired": "Enter your email",
+        "emailInvalid": "Enter a valid email",
+        "message": "A little more detail helps (10+ characters)"
+      },
+      "topics": {
+        "general": "General enquiry",
+        "sales": "Sales & plans",
+        "support": "Help & support",
+        "partnerships": "Partnerships",
+        "press": "Press"
+      },
+      "success": {
+        "title": "Thanks, {name}!",
+        "body": "We've received your message and will reply to <email></email> within one business day.",
+        "another": "Send another message",
+        "fallbackName": "there"
+      }
+    }
+  },
+  "howItWorksPage": {
+    "intro": {
+      "badge": "How Kintwadi Works",
+      "title": "Caring for someone you love <hl>shouldn't feel this hard</hl>",
+      "subtitle": "Coordinating care across siblings, cities, and time zones is overwhelming. Information gets lost. People feel left out. Important things slip through the cracks.",
+      "subtitleEmphasis": "Kintwadi brings everyone together in one place — so you can focus on what matters most."
+    },
+    "timeline": {
+      "stepLabel": "Step {number}",
+      "steps": {
+        "create": {
+          "title": "Create a circle",
+          "description": "In under a minute, create a care circle for your loved one. Add their name, photo, and basic care information. This becomes the central hub where everything care-related lives.",
+          "details": [
+            "Add care recipient profile and photo",
+            "Set up primary conditions and allergies",
+            "Configure medication schedules",
+            "Choose your primary timezone"
+          ]
+        },
+        "invite": {
+          "title": "Invite your people",
+          "description": "Send invites to everyone who helps — siblings across the country, the professional caregiver, even the visiting nurse. Each person gets a role that matches what they need to see and do.",
+          "details": [
+            "Invite via email or shareable link",
+            "Assign appropriate roles",
+            "Set notification preferences",
+            "Control what each person can access"
+          ]
+        },
+        "coordinate": {
+          "title": "Coordinate care",
+          "description": "Log medications, appointments, daily observations. Create and assign tasks. Everyone sees updates in real-time. No more \"Did anyone give Mom her pills?\" confusion.",
+          "details": [
+            "Track medications with confirmations",
+            "Schedule and manage appointments",
+            "Assign and complete care tasks",
+            "Log health observations and vitals"
+          ]
+        },
+        "connect": {
+          "title": "Stay connected from anywhere",
+          "description": "Whether you're across town or across the world, stay informed. Get AI-powered daily digests, real-time notifications, and the peace of mind that comes from knowing what's happening.",
+          "details": [
+            "Daily AI-generated care summaries",
+            "Real-time push notifications",
+            "Secure messaging within the circle",
+            "Access from any device, anywhere"
+          ]
+        }
+      }
+    },
+    "roles": {
+      "badge": "Role-Based Access",
+      "title": "Built for everyone in the circle",
+      "subtitle": "Each person gets a tailored experience based on their role. The coordinator sees admin settings. The distant sibling sees daily updates. The caregiver sees tasks. Everyone gets exactly what they need.",
+      "whatTheySee": "What they see",
+      "items": {
+        "coordinator": {
+          "title": "Coordinator",
+          "description": "Full access to manage the circle, invite members, and configure all settings.",
+          "sees": [
+            "Everything",
+            "Admin settings",
+            "Billing",
+            "Audit logs"
+          ]
+        },
+        "family": {
+          "title": "Family Member",
+          "description": "View all updates, log activities, and stay connected with your loved one's care.",
+          "sees": [
+            "Timeline & updates",
+            "Medications",
+            "Appointments",
+            "Documents"
+          ]
+        },
+        "professional": {
+          "title": "Professional Caregiver",
+          "description": "Task-focused view with clear assignments, medication schedules, and daily checklists.",
+          "sees": [
+            "Assigned tasks",
+            "Med schedules",
+            "Care notes",
+            "Emergency info"
+          ]
+        },
+        "clinician": {
+          "title": "Clinician",
+          "description": "Medical-focused view with health history, vitals, and clinical documentation.",
+          "sees": [
+            "Health records",
+            "Vitals history",
+            "Medications",
+            "Clinical notes"
+          ]
+        },
+        "recipient": {
+          "title": "Care Recipient",
+          "description": "A simplified view for the person receiving care — their schedule, visitors, and updates.",
+          "sees": [
+            "Today's schedule",
+            "Who's visiting",
+            "Messages",
+            "Reminders"
+          ]
+        },
+        "readonly": {
+          "title": "Read-Only",
+          "description": "View-only access for extended family who want to stay informed without editing.",
+          "sees": [
+            "Timeline view",
+            "Health status",
+            "Photos",
+            "Updates"
+          ]
+        }
+      }
+    },
+    "security": {
+      "badge": "Security & Trust",
+      "title": "Your family's data, protected",
+      "subtitle": "Health information is sensitive. We built Kintwadi with security and privacy at its foundation — not as an afterthought.",
+      "items": {
+        "encryption": {
+          "title": "End-to-end encryption",
+          "description": "All data is encrypted at rest and in transit using AES-256 and TLS 1.3. Your family's information stays private."
+        },
+        "rbac": {
+          "title": "Role-based access control",
+          "description": "Fine-grained permissions ensure each person sees only what they need. No accidental oversharing."
+        },
+        "audit": {
+          "title": "Complete audit trail",
+          "description": "Every action is logged with who, what, and when. Full accountability and traceability for compliance."
+        },
+        "privacy": {
+          "title": "Privacy by design",
+          "description": "We never sell data. We never share with advertisers. Your family's health information is not a product."
+        }
+      },
+      "badges": {
+        "hipaa": "HIPAA Ready",
+        "soc2": "SOC 2 Type II",
+        "gdpr": "GDPR Compliant"
+      }
+    },
+    "cta": {
+      "title": "Ready to bring your care circle together?",
+      "subtitle": "Bring everyone caring for your loved one into one shared place. Free to start, set up in under a minute.",
+      "getStarted": "Get started free",
+      "viewPricing": "View pricing"
+    }
+  },
+  "auth": {
+    "common": {
+      "emailLabel": "Email address",
+      "emailPlaceholder": "maria@example.com",
+      "passwordLabel": "Password",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
+      "backToSignIn": "Back to sign in",
+      "signIn": "Sign in",
+      "strength": {
+        "label": "Password strength",
+        "weak": "Weak",
+        "fair": "Fair",
+        "good": "Good",
+        "strong": "Strong"
+      },
+      "requirements": {
+        "min8": "At least 8 characters",
+        "upper": "One uppercase letter",
+        "lower": "One lowercase letter",
+        "number": "One number"
+      }
+    },
+    "signIn": {
+      "brandHeadline": "Welcome back to your care circle.",
+      "brandSubtitle": "Your family is waiting. Sign in to see the latest updates and keep the care going.",
+      "bannerTagline": "Welcome back",
+      "stats": {
+        "people": {
+          "value": "2.1B",
+          "label": "People 60+ by 2050"
+        },
+        "age": {
+          "value": "1 in 6",
+          "label": "Will be 60+ by 2030"
+        },
+        "growth": {
+          "value": "2×",
+          "label": "Older population by 2050"
+        }
+      },
+      "title": "Sign in to your account",
+      "subtitle": "Welcome back! Please enter your details.",
+      "passwordPlaceholder": "Enter your password",
+      "forgotPassword": "Forgot password?",
+      "rememberMe": "Remember me for 30 days",
+      "submit": "Sign in",
+      "submitting": "Signing in...",
+      "noAccount": "Don't have an account?",
+      "signUpLink": "Sign up",
+      "toastTitle": "Welcome back!",
+      "toastDesc": "You have been signed in successfully.",
+      "errors": {
+        "emailRequired": "Email is required",
+        "emailInvalid": "Please enter a valid email address",
+        "passwordRequired": "Password is required"
+      }
+    },
+    "signUp": {
+      "brandHeadline": "Bring your family into the care.",
+      "brandSubtitle": "Coordinate care for your loved one with everyone involved — together, no matter the distance.",
+      "brandQuote": "One shared, permission-aware record for everyone caring for someone — so siblings across cities and countries can stay truly in it together, not lost in scattered group chats.",
+      "brandQuoteAttribution": "Why we built Kintwadi",
+      "bannerTagline": "Coordinate care together",
+      "title": "Create your account",
+      "subtitle": "Start coordinating care with your family today",
+      "fullNameLabel": "Full name",
+      "fullNamePlaceholder": "Maria Rodriguez",
+      "passwordPlaceholder": "Create a strong password",
+      "terms": "I agree to the <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>",
+      "submit": "Create account",
+      "submitting": "Creating account...",
+      "haveAccount": "Already have an account?",
+      "signInLink": "Sign in",
+      "toastSuccessTitle": "Welcome to Kintwadi!",
+      "toastSuccessDesc": "Your account has been created successfully.",
+      "toastErrorTitle": "Couldn't create your account",
+      "errors": {
+        "fullNameMin": "Please enter your full name",
+        "fullNameMax": "Name is too long",
+        "emailRequired": "Email is required",
+        "emailInvalid": "Please enter a valid email address",
+        "passwordMin": "Password must be at least 8 characters",
+        "passwordUpper": "Include at least one uppercase letter",
+        "passwordLower": "Include at least one lowercase letter",
+        "passwordNumber": "Include at least one number",
+        "terms": "You must accept the terms to continue"
+      }
+    },
+    "forgot": {
+      "brandHeadline": "We all forget sometimes.",
+      "brandSubtitle": "No worries — we will send you a secure link to reset your password and get you back to your care circle.",
+      "support": "Having trouble accessing your account? <link>Contact our support team</link>",
+      "bannerTagline": "Password recovery",
+      "title": "Forgot your password?",
+      "subtitle": "No problem. Enter your email address and we will send you a link to reset it.",
+      "submit": "Send reset link",
+      "submitting": "Sending...",
+      "rememberPassword": "Remember your password?",
+      "sent": {
+        "title": "Check your inbox",
+        "desc": "We sent a password reset link to <email></email>",
+        "instructions": "Click the link in the email to create a new password. The link will expire in 1 hour.",
+        "didntReceive": "Didn't receive the email? Check your spam folder or",
+        "resend": "Resend email",
+        "resending": "Resending..."
+      },
+      "errors": {
+        "emailRequired": "Email is required",
+        "emailInvalid": "Please enter a valid email address"
+      }
+    },
+    "reset": {
+      "brandHeadline": "Almost there! Create your new password.",
+      "brandSubtitle": "Choose a strong password to keep your care circle secure. You will be signed in automatically after resetting.",
+      "securityTipsTitle": "Security tips:",
+      "tips": {
+        "unique": "Use a unique password for Kintwadi",
+        "manager": "Consider using a password manager",
+        "noShare": "Never share your password with others"
+      },
+      "bannerTagline": "Set new password",
+      "title": "Set a new password",
+      "subtitle": "Create a strong password for your account. Make it unique and secure.",
+      "newPasswordLabel": "New password",
+      "newPasswordPlaceholder": "Create a strong password",
+      "confirmLabel": "Confirm password",
+      "confirmPlaceholder": "Re-enter your password",
+      "match": "Passwords match",
+      "noMatch": "Passwords do not match",
+      "submit": "Reset password",
+      "submitting": "Resetting password...",
+      "toastInvalidLink": "This reset link is invalid or has expired. Please request a new one.",
+      "toastErrorTitle": "Couldn't reset your password",
+      "errors": {
+        "passwordMin": "Password must be at least 8 characters",
+        "passwordUpper": "Password must include an uppercase letter",
+        "passwordLower": "Password must include a lowercase letter",
+        "passwordNumber": "Password must include a number",
+        "confirmRequired": "Please confirm your password",
+        "noMatch": "Passwords do not match"
+      },
+      "invalid": {
+        "title": "This reset link is invalid",
+        "desc": "The link may have expired or already been used. Request a fresh one and we will email it right over.",
+        "action": "Request a new link"
+      },
+      "success": {
+        "title": "Password reset successful",
+        "desc": "Your password has been changed successfully. You can now sign in with your new password.",
+        "continue": "Continue to sign in",
+        "securityNotice": "For your security, you have been signed out of all other devices. You will need to sign in again on those devices."
+      }
+    },
+    "social": {
+      "google": "Continue with Google",
+      "apple": "Continue with Apple",
+      "divider": "Or continue with email",
+      "error": "Could not start sign-in. Please try again."
+    },
+    "demo": {
+      "title": "Reviewing Kintwadi? Try a role.",
+      "subtitle": "One shared record, six lenses — each enforced by the database, not the UI.",
+      "failed": "Demo sign-in failed",
+      "welcome": "Welcome, {name}!",
+      "entering": "Entering the demo circle…",
+      "lenses": {
+        "coordinator": "Coordinator (owner)",
+        "remote": "Remote family",
+        "aide": "Professional aide",
+        "recipient": "Care recipient",
+        "readonly": "Read-only",
+        "clinician": "Clinician"
+      }
+    }
+  },
+  "app": {
+    "nav": {
+      "dashboard": "Dashboard",
+      "timeline": "Timeline",
+      "medications": "Medications",
+      "appointments": "Appointments",
+      "tasks": "Tasks",
+      "health": "Health",
+      "documents": "Documents",
+      "people": "People",
+      "digest": "Digest",
+      "rota": "Rota",
+      "ask": "Ask Kintwadi",
+      "profile": "Profile",
+      "emergencyCard": "Emergency Card",
+      "settings": "Settings",
+      "notifications": "Notifications",
+      "incidents": "Incidents",
+      "account": "Your profile",
+      "medicationsShort": "Meds",
+      "more": "More"
+    },
+    "dashboardLabels": {
+      "coordinator": "Dashboard",
+      "family": "Dashboard",
+      "caregiver": "Today",
+      "readonly": "Home",
+      "care-recipient": "Home",
+      "clinician": "Summary"
+    },
+    "roles": {
+      "coordinator": "Coordinator",
+      "family": "Family",
+      "caregiver": "Caregiver",
+      "readonly": "Read-only",
+      "care-recipient": "Care recipient",
+      "clinician": "Clinician"
+    },
+    "sidebar": {
+      "careCircle": "Care Circle",
+      "switchCircle": "Switch Circle",
+      "createCircle": "Create new circle",
+      "platform": "Platform",
+      "adminDashboard": "Admin dashboard",
+      "collapse": "Collapse",
+      "navMenu": "Navigation Menu"
+    },
+    "userMenu": {
+      "account": "Your account",
+      "yourProfile": "Your profile",
+      "notificationSettings": "Notification settings",
+      "switchRoleView": "Switch role view",
+      "signOut": "Sign out"
+    },
+    "topbar": {
+      "openMenu": "Open navigation menu",
+      "search": "Search",
+      "reportIncident": "Report an incident",
+      "onCall": "On call: {name}",
+      "onCallUntil": "On call until {time}"
+    },
+    "search": {
+      "placeholder": "Search or ask…",
+      "ariaLabel": "Search the care record",
+      "askPrefix": "Ask Kintwadi:",
+      "askHint": "Answered from this circle’s record",
+      "noMatches": "No matches in this circle. Try Ask Kintwadi above.",
+      "groups": {
+        "person": "People",
+        "recipient": "Care recipient",
+        "medication": "Medications",
+        "document": "Documents",
+        "task": "Tasks",
+        "appointment": "Appointments",
+        "timeline": "Timeline",
+        "incident": "Incidents"
+      }
+    },
+    "status": {
+      "prefix": "Some features are temporarily unavailable:",
+      "suffix": "Our team has been notified and is working on a fix — your data is safe, and everything else keeps working normally.",
+      "and": "and",
+      "dismiss": "Dismiss service notice",
+      "services": {
+        "api": "the app service",
+        "db": "saving & loading data",
+        "bedrock": "the Daily Digest & Ask Kintwadi assistant",
+        "s3": "documents & photos",
+        "ses": "email notifications",
+        "sns": "urgent alert notifications"
+      }
+    }
+  },
+  "medications": {
+    "title": "Medications",
+    "subtitle": "Track today's doses and manage the full list.",
+    "viewOnly": "View only — ask the coordinator to edit",
+    "tabs": {
+      "today": "Today",
+      "all": "All medications"
+    },
+    "addMedication": "Add medication",
+    "addFirst": "Add the first",
+    "you": "You",
+    "periods": {
+      "morning": "Morning",
+      "afternoon": "Afternoon",
+      "evening": "Evening",
+      "night": "Night"
+    },
+    "refill": {
+      "create": "Create refill task",
+      "short": "Refill",
+      "created": "Refill task created",
+      "createdDesc": "Reorder {name} added to Tasks",
+      "failed": "Couldn't create the refill task"
+    },
+    "askCoordinator": "Ask the coordinator",
+    "toasts": {
+      "updated": "{name} updated",
+      "added": "{name} added",
+      "saveFailed": "Couldn't save the medication",
+      "addFailed": "Couldn't add the medication",
+      "uploadFailed": "Couldn't upload {file}",
+      "removeAttachmentFailed": "Couldn't remove the attachment",
+      "saveRetry": "Couldn't save — please try again"
+    },
+    "today": {
+      "prevDay": "Previous day",
+      "nextDay": "Next day",
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "tomorrow": "Tomorrow",
+      "dosesGiven": "{given} of {total} doses given today",
+      "dosesGivenAria": "{given} of {total} doses given",
+      "noScheduleForDay": "No schedule loaded for {day}",
+      "switchBack": "Switch back to today to record doses.",
+      "backToToday": "Back to today",
+      "noDosesTitle": "No doses scheduled for today",
+      "noDosesBody": "Scheduled medications will appear here when it's time for a dose.",
+      "asNeeded": "As needed (PRN)",
+      "doseFallback": "Dose",
+      "markedGiven": "{name} {strength} marked given",
+      "recordedPatient": "Recorded as taken by the patient",
+      "recordedBy": "Recorded by {name}",
+      "markedSkipped": "{name} marked skipped",
+      "markedRefused": "{name} marked refused",
+      "snoozed": "{name} snoozed 15 minutes",
+      "loggedLate": "{name} logged as given (late)",
+      "prnLogged": "{name} dose logged",
+      "confirmSkippedTitle": "Mark dose as skipped?",
+      "confirmRefusedTitle": "Mark dose as refused?",
+      "confirmSkippedDesc": "This records that the dose was intentionally not given. It will be noted in the timeline.",
+      "confirmRefusedDesc": "This records that the patient declined the medication. It will be noted in the timeline.",
+      "cancel": "Cancel",
+      "confirm": "Confirm"
+    },
+    "status": {
+      "givenByTime": "Given {time} by {name}",
+      "givenTime": "Given {time}",
+      "undo": "Undo",
+      "refused": "Refused",
+      "skipped": "Skipped",
+      "missed": "Missed",
+      "logLate": "Log late",
+      "due": "Due {time}",
+      "markGiven": "Mark given",
+      "moreOptions": "More dose options",
+      "recordThisDose": "Record this dose",
+      "takenByPatient": "Taken by patient",
+      "snooze": "Snooze 15 min"
+    },
+    "prn": {
+      "last": "last {time}",
+      "todayCount": "{taken}/{max} today",
+      "maxReached": "Max reached",
+      "logDose": "Log dose"
+    },
+    "card": {
+      "editDetails": "Edit details",
+      "prescribedBy": "Prescribed by {name}",
+      "active": "Active",
+      "paused": "Paused",
+      "optionsFor": "Options for {name}",
+      "activeToggleAria": "{name} active"
+    },
+    "doseRow": {
+      "daysLeft": "{days} days left — order a refill soon"
+    },
+    "supply": {
+      "days": "{days}d",
+      "aria": "days of supply",
+      "ariaLow": "days of supply, low"
+    },
+    "allMeds": {
+      "searchPlaceholder": "Search by name, purpose, or prescriber…",
+      "searchAria": "Search medications",
+      "discontinued": "Discontinued",
+      "reactivate": "Reactivate",
+      "discontinuedDefault": "Discontinued",
+      "resumed": "{name} resumed",
+      "paused": "{name} paused",
+      "updateFailed": "Couldn't update — please try again",
+      "reactivated": "{name} reactivated",
+      "reactivateFailed": "Couldn't reactivate — please try again",
+      "noMatchTitle": "No medications match “{query}”",
+      "noMatchBody": "Try a different name, purpose, or prescriber.",
+      "emptyTitle": "No medications yet",
+      "emptyBodyManage": "Add the first medication to start tracking doses.",
+      "emptyBodyView": "Once a coordinator adds medications, they'll show up here."
+    },
+    "adherence": {
+      "title": "This week's adherence",
+      "given": "given",
+      "missed": "missed",
+      "onTime": "on time",
+      "legendGiven": "Given",
+      "legendMissed": "Missed",
+      "legendUpcoming": "Upcoming",
+      "emptyHint": "Adherence will appear here as doses are recorded.",
+      "noRecent": "No doses recorded in the last 7 days yet.",
+      "doseAria": "{day} dose {n}: {state}",
+      "states": {
+        "given": "given",
+        "missed": "missed",
+        "upcoming": "upcoming"
+      }
+    },
+    "print": {
+      "button": "Print / share",
+      "title": "Medication list",
+      "dialogDesc": "A clean summary you can print or share with the care team.",
+      "activeHeading": "Active medications ({count})",
+      "discontinuedHeading": "Discontinued ({count})",
+      "supplyLabel": "{days}d supply",
+      "copy": "Copy",
+      "share": "Share",
+      "print": "Print",
+      "copied": "Medication list copied to clipboard",
+      "copyFailed": "Couldn't copy to clipboard",
+      "shareUnsupported": "Sharing isn't supported on this device",
+      "popupBlocked": "Allow pop-ups to open the printable sheet",
+      "generated": "Generated {date}",
+      "shareHeader": "Medication list — {date}",
+      "footer": "Kintwadi — please verify against the original prescriptions. Not a substitute for medical advice.",
+      "colMedication": "Medication",
+      "colSchedule": "Schedule",
+      "colPurpose": "Purpose",
+      "colPrescriber": "Prescriber",
+      "colSupply": "Supply"
+    },
+    "form": {
+      "modal": {
+        "addTitle": "Add medication",
+        "editTitle": "Edit medication",
+        "addDesc": "Fill in the details to add it to the medication list.",
+        "editDesc": "Update the details, schedule, and supply."
+      },
+      "fields": {
+        "name": {
+          "label": "Medication name"
+        },
+        "strength": {
+          "label": "Strength",
+          "placeholder": "e.g. 10mg"
+        },
+        "form": {
+          "label": "Form",
+          "placeholder": "Choose a form"
+        },
+        "route": {
+          "label": "Route",
+          "placeholder": "Choose a route"
+        },
+        "purpose": {
+          "label": "Purpose",
+          "hint": "What is it for?",
+          "placeholder": "e.g. Blood pressure"
+        },
+        "prescriber": {
+          "label": "Prescriber",
+          "placeholder": "e.g. Dr. Chen"
+        },
+        "instructions": {
+          "label": "Instructions",
+          "hint": "Optional — e.g. take with food, avoid grapefruit",
+          "placeholder": "Any special instructions for caregivers…",
+          "ariaHint": "Optional notes"
+        },
+        "photo": {
+          "label": "Pill photo",
+          "hint": "Helps caregivers recognise the medication"
+        },
+        "attachments": {
+          "label": "Attachments",
+          "hint": "Optional — extra photos, leaflets, or documents (PDF, Word, images)"
+        },
+        "schedule": {
+          "label": "Schedule"
+        },
+        "supplyCount": {
+          "label": "Supply count",
+          "hint": "Days (or doses) on hand",
+          "aria": "Days on hand"
+        },
+        "refillThreshold": {
+          "label": "Refill threshold",
+          "hint": "Warn when this many left",
+          "aria": "Warn when this many left"
+        }
+      },
+      "nameInput": {
+        "placeholder": "Start typing… e.g. Ibuprofen"
+      },
+      "forms": {
+        "Tablet": "Tablet",
+        "Capsule": "Capsule",
+        "Liquid": "Liquid",
+        "Injection": "Injection",
+        "Patch": "Patch",
+        "Inhaler": "Inhaler",
+        "Drops": "Drops",
+        "Cream": "Cream",
+        "Other": "Other"
+      },
+      "routes": {
+        "Oral": "Oral",
+        "Sublingual": "Sublingual",
+        "Topical": "Topical",
+        "Inhaled": "Inhaled",
+        "Injection": "Injection",
+        "Ophthalmic": "Ophthalmic",
+        "Nasal": "Nasal",
+        "Other": "Other"
+      },
+      "footer": {
+        "ackToContinue": "Acknowledge the safety check above to continue.",
+        "requiredHint": "Required fields are marked with *"
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "saved": "Saved",
+        "saving": "Saving…",
+        "saveChanges": "Save changes",
+        "saveMedication": "Save medication"
+      },
+      "schedule": {
+        "prnTitle": "Taken as needed (PRN)",
+        "prnDesc": "No fixed schedule — given only when required.",
+        "prnAria": "Taken as needed",
+        "doseTimeAria": "Dose {n} time",
+        "removeDoseAria": "Remove dose {n}",
+        "everyDay": "Every day",
+        "weekdays": "Weekdays",
+        "addTime": "Add another time",
+        "weekdayShort": {
+          "sun": "S",
+          "mon": "M",
+          "tue": "T",
+          "wed": "W",
+          "thu": "T",
+          "fri": "F",
+          "sat": "S"
+        },
+        "weekdayFull": {
+          "sun": "Sunday",
+          "mon": "Monday",
+          "tue": "Tuesday",
+          "wed": "Wednesday",
+          "thu": "Thursday",
+          "fri": "Friday",
+          "sat": "Saturday"
+        }
+      },
+      "photoUpload": {
+        "chooseImageError": "Please choose an image file",
+        "tooLarge": "Image is too large (max 5 MB)",
+        "previewAlt": "Medication preview",
+        "replace": "Replace photo",
+        "upload": "Upload photo",
+        "remove": "Remove"
+      },
+      "attachments": {
+        "add": "Add images or documents",
+        "pending": "Pending",
+        "removeAria": "Remove {name}",
+        "tooLarge": "{name} is too large (max 15 MB)"
+      },
+      "safety": {
+        "passedTitle": "Safety check passed",
+        "passedDesc": "No known interactions with current medications or recorded allergies.",
+        "heading": "Safety check — {count, plural, one {# item} other {# items}} to review",
+        "regionAria": "Safety check warnings",
+        "severityHigh": "High",
+        "severityModerate": "Moderate",
+        "kindAllergy": "Allergy",
+        "kindInteraction": "Interaction",
+        "ackLabel": "I've reviewed these warnings and will confirm with the doctor.",
+        "ackAria": "Acknowledge safety warnings",
+        "ackError": "Please acknowledge the safety check to save.",
+        "interactionTitle": "May interact with {name}",
+        "allergyTitle": "Possible {allergen} allergy conflict",
+        "allergyDetail": "The care recipient has a recorded {allergen} allergy. Confirm with the prescriber before giving.",
+        "allergens": {
+          "penicillin": "penicillin",
+          "sulfa": "sulfa",
+          "opioid": "opioid"
+        },
+        "notes": {
+          "warfarin-aspirin": "Both thin the blood — combined use raises the risk of serious bleeding.",
+          "warfarin-ibuprofen": "NSAIDs increase bleeding risk when taken with anticoagulants.",
+          "warfarin-clarithromycin": "Can sharply raise warfarin levels and bleeding risk.",
+          "aspirin-ibuprofen": "Two NSAIDs together increase the risk of stomach bleeding.",
+          "lisinopril-ibuprofen": "NSAIDs can reduce blood-pressure control and affect the kidneys.",
+          "lisinopril-spironolactone": "Combined use can raise potassium to dangerous levels.",
+          "lisinopril-potassium": "Risk of high potassium (hyperkalemia).",
+          "atorvastatin-clarithromycin": "Raises statin levels — increased risk of muscle injury.",
+          "simvastatin-clarithromycin": "Raises statin levels — increased risk of muscle injury.",
+          "atorvastatin-gemfibrozil": "Increased risk of muscle breakdown (rhabdomyolysis).",
+          "metformin-furosemide": "May affect blood-sugar and kidney function — monitor.",
+          "sertraline-ibuprofen": "SSRIs with NSAIDs can increase bleeding risk."
+        }
+      },
+      "errors": {
+        "nameRequired": "Medication name is required",
+        "strengthRequired": "Strength is required (e.g. 10mg)",
+        "selectForm": "Select a form",
+        "selectRoute": "Select a route",
+        "purposeMax": "Keep this under 120 characters",
+        "prescriberMax": "Keep this under 80 characters",
+        "instructionsMax": "Keep instructions under 280 characters",
+        "enterNumber": "Enter a number",
+        "wholeNumber": "Use a whole number",
+        "cannotBeNegative": "Cannot be negative",
+        "supplyTooHigh": "That seems too high",
+        "refillTooHigh": "That seems too high",
+        "pickTime": "Pick a time",
+        "pickDay": "Pick at least one day",
+        "addDoseTime": "Add at least one dose time"
+      }
+    }
+  },
+  "rota": {
+    "title": "Care rota",
+    "subtitle": "Who's on this week — in person and on call.",
+    "viewOnly": "View only",
+    "addShift": "Add shift",
+    "askCoordinator": "Ask the coordinator",
+    "legend": {
+      "inPerson": "In person",
+      "onCall": "On call"
+    },
+    "today": "Today",
+    "noOneYet": "No one yet",
+    "noOneScheduled": "No one scheduled.",
+    "addShiftOnDay": "Add shift on {day}",
+    "removeShift": "Remove {name}'s shift",
+    "overnightSuffix": "+1",
+    "banner": {
+      "onCallNow": "On call now",
+      "noOneOnCall": "No one is on call right now",
+      "isHereInPerson": "<strong>{name}</strong> is here in person",
+      "noOneInPerson": "No one in person right now"
+    },
+    "toasts": {
+      "added": "{name} added to the rota",
+      "addedFallback": "Shift added to the rota",
+      "addFailed": "Couldn't add the shift",
+      "removed": "Shift removed",
+      "removeFailed": "Couldn't remove the shift"
+    },
+    "form": {
+      "title": "Add shift",
+      "description": "Set who's on, the day, the hours, and whether they're in person or on call.",
+      "member": "Member",
+      "memberPlaceholder": "Who's on?",
+      "day": "Day",
+      "from": "From",
+      "to": "To",
+      "overnightHint": "Runs overnight into the next day",
+      "type": "Type",
+      "inPerson": "In person",
+      "onCall": "On call",
+      "cancel": "Cancel",
+      "added": "Added",
+      "adding": "Adding…",
+      "submit": "Add shift",
+      "errors": {
+        "member": "Choose a member",
+        "start": "Pick a start time",
+        "end": "Pick an end time",
+        "endEqualsStart": "End can't equal start"
+      }
+    }
+  },
+  "ask": {
+    "history": "History",
+    "historyTitle": "Conversations",
+    "scopeNamed": "{name}'s care only",
+    "scopeGeneric": "This circle only",
+    "new": "New",
+    "conversationLog": "Conversation with Kintwadi",
+    "loading": "Loading conversation…",
+    "thinking": "Thinking",
+    "sources": "Sources",
+    "whoFallback": "your circle",
+    "empty": {
+      "heading": "Ask about {who}'s care",
+      "body": "Ask in plain language. Answers come only from this circle's record, with sources you can check."
+    },
+    "examplePrompts": [
+      "When was the last specialist appointment?",
+      "Has blood pressure improved this month?",
+      "What changed in the medications recently?",
+      "What do the latest documents say?"
+    ],
+    "composer": {
+      "placeholderNamed": "Ask about {name}'s care…",
+      "placeholderGeneric": "Ask about this circle's care…",
+      "ariaNamed": "Ask a question about {name}'s care",
+      "ariaGeneric": "Ask a question about this circle's care",
+      "startVoice": "Start voice input",
+      "stopVoice": "Stop voice input",
+      "voiceUnsupported": "Voice input isn't supported on this device",
+      "send": "Send question"
+    },
+    "list": {
+      "new": "Start a new conversation",
+      "emptyHint": "Your past conversations will appear here.",
+      "recent": "Recent",
+      "historyNav": "Conversation history",
+      "options": "Options for \"{title}\"",
+      "rename": "Rename",
+      "delete": "Delete"
+    },
+    "deleteDialog": {
+      "title": "Delete this conversation?",
+      "body": "This removes it from your history. It can't be undone.",
+      "cancel": "Keep it",
+      "confirm": "Delete"
+    },
+    "renameDialog": {
+      "title": "Rename conversation",
+      "body": "Give this conversation a name that's easy to find later.",
+      "label": "Title",
+      "placeholder": "e.g. Cardiology questions",
+      "cancel": "Cancel",
+      "save": "Save"
+    },
+    "errors": {
+      "unreachable": "Couldn't reach the assistant. Please try again.",
+      "deleteFailed": "Couldn't delete the conversation",
+      "renameFailed": "Couldn't rename the conversation"
+    }
+  },
+  "appointments": {
+    "title": "Appointments",
+    "subtitleNamed": "Plan {name}'s visits, prep questions, and who's taking them.",
+    "subtitleGeneric": "Plan upcoming visits, prep questions, and who's taking them.",
+    "viewOnly": "View only",
+    "addAppointment": "Add appointment",
+    "askCoordinator": "Ask the coordinator",
+    "unassigned": "Unassigned",
+    "takingNamed": "<strong>{name}</strong> is taking {recipient}",
+    "recipientFallback": "them",
+    "tabs": {
+      "calendar": "Calendar",
+      "list": "List"
+    },
+    "relative": {
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "yesterday": "Yesterday"
+    },
+    "kinds": {
+      "checkup": "Check-up",
+      "specialist": "Specialist",
+      "lab": "Lab / bloods",
+      "imaging": "Imaging / scan",
+      "therapy": "Therapy",
+      "dental": "Dental",
+      "other": "Other"
+    },
+    "status": {
+      "scheduled": "Scheduled",
+      "confirmed": "Confirmed",
+      "needs-prep": "Needs prep",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "toasts": {
+      "updated": "{title} updated",
+      "saveFailed": "Couldn't save the appointment",
+      "added": "{title} added",
+      "addedDescription": "Scheduled and added to the calendar.",
+      "addFailed": "Couldn't add the appointment",
+      "saveChangeFailed": "Couldn't save the change",
+      "postedToTimeline": "Posted to timeline",
+      "postedDescription": "{title} summary shared with the family."
+    },
+    "calendar": {
+      "today": "Today",
+      "prevMonth": "Previous month",
+      "nextMonth": "Next month",
+      "prevWeek": "Previous week",
+      "nextWeek": "Next week",
+      "gridLabel": "{month} calendar",
+      "dayLabel": "{date} — {count, plural, one {# appointment} other {# appointments}}",
+      "apptCount": "{count, plural, one {# appt} other {# appts}}",
+      "moreCount": "+{count} more",
+      "nothingScheduled": "Nothing scheduled.",
+      "nothingScheduledDay": "Nothing scheduled for this day.",
+      "addAppointment": "Add appointment"
+    },
+    "list": {
+      "upcoming": "Upcoming",
+      "past": "Past",
+      "emptyUpcoming": "No upcoming appointments scheduled.",
+      "emptyTitle": "No appointments yet",
+      "emptyBody": "Add the first appointment to start coordinating visits.",
+      "addAppointment": "Add appointment"
+    },
+    "detail": {
+      "onTimeline": "On timeline",
+      "provider": "Provider",
+      "when": "When",
+      "durationMin": "{min} min",
+      "location": "Location",
+      "assignedTo": "Assigned to",
+      "unassigned": "Unassigned",
+      "notes": "Notes",
+      "prep": "Prep questions",
+      "prepReady": "{done}/{total} ready",
+      "prepHint": "Things to ask the doctor at this visit.",
+      "noQuestionsManage": "No questions yet — add one below.",
+      "noQuestions": "No questions yet.",
+      "removeQuestion": "Remove \"{text}\"",
+      "addQuestionPlaceholder": "Add a question to ask…",
+      "addQuestionAria": "Add a prep question",
+      "add": "Add",
+      "visitSummary": "Visit summary",
+      "visitSummaryHint": "Fill this in after the visit, then share it with the family on the timeline.",
+      "summaryPlaceholder": "What happened at the visit? Outcomes, changes, next steps…",
+      "sharedNote": "Shared with the family timeline.",
+      "postingNote": "Posting adds a note to the shared timeline.",
+      "saving": "Saving…",
+      "updateRepost": "Update & re-post",
+      "saveAndPost": "Save & post to timeline",
+      "cancelAppointment": "Cancel appointment",
+      "close": "Close",
+      "edit": "Edit",
+      "confirmCancelTitle": "Cancel this appointment?",
+      "confirmCancelBody": "“{title}” will be marked cancelled. You can still see it in the Past list.",
+      "keepIt": "Keep it",
+      "confirmCancel": "Cancel appointment"
+    },
+    "card": {
+      "prepReadyTitle": "{done} of {total} prep questions ready"
+    },
+    "form": {
+      "title": "Title",
+      "titlePlaceholder": "e.g. Cardiology follow-up",
+      "type": "Type",
+      "typePlaceholder": "Choose a type",
+      "status": "Status",
+      "provider": "Provider",
+      "providerPlaceholder": "e.g. Dr. Chen",
+      "location": "Location",
+      "locationPlaceholder": "e.g. City Heart Clinic · Suite 4",
+      "date": "Date",
+      "time": "Time",
+      "duration": "Duration",
+      "durationHint": "Minutes",
+      "assignedTo": "Assigned to",
+      "assignedHint": "Who is taking them?",
+      "unassigned": "Unassigned",
+      "requiredNote": "Required fields are marked with *",
+      "cancel": "Cancel",
+      "saved": "Saved",
+      "saving": "Saving…",
+      "saveChanges": "Save changes",
+      "saveAppointment": "Save appointment",
+      "modalAddTitle": "Add appointment",
+      "modalEditTitle": "Edit appointment",
+      "modalAddDesc": "Schedule a visit and assign who's taking them.",
+      "modalEditDesc": "Update the details, time, and who's taking them.",
+      "errors": {
+        "title": "Give the appointment a title",
+        "kind": "Choose a type",
+        "provider": "Who is the provider?",
+        "location": "Keep this under 120 characters",
+        "date": "Pick a date",
+        "time": "Pick a time",
+        "durationNumber": "Enter a number",
+        "durationInt": "Use whole minutes",
+        "durationMin": "At least 5 minutes",
+        "durationMax": "That seems too long"
+      }
+    }
+  },
+  "tasks": {
+    "title": "Tasks",
+    "subtitle": "Share the caregiving load and keep things moving.",
+    "viewOnly": "View only",
+    "newTask": "New task",
+    "askCoordinator": "Ask the coordinator",
+    "unassigned": "Unassigned",
+    "tabs": {
+      "board": "Board",
+      "list": "List"
+    },
+    "relative": {
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "yesterday": "Yesterday"
+    },
+    "columns": {
+      "open": {
+        "label": "Open",
+        "hint": "Not started"
+      },
+      "doing": {
+        "label": "Doing",
+        "hint": "In progress"
+      },
+      "done": {
+        "label": "Done",
+        "hint": "Completed"
+      }
+    },
+    "categories": {
+      "errand": "Errand",
+      "medical": "Medical",
+      "admin": "Admin",
+      "refill": "Refill",
+      "visit": "Visit"
+    },
+    "recurrence": {
+      "none": "Does not repeat",
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "custom": "Custom…"
+    },
+    "toasts": {
+      "moveFailed": "Couldn't move the task",
+      "deleted": "{title} deleted",
+      "deletedFallback": "Task deleted",
+      "deleteFailed": "Couldn't delete the task",
+      "updated": "{title} updated",
+      "saveFailed": "Couldn't save the task",
+      "added": "{title} added",
+      "addFailed": "Couldn't add the task"
+    },
+    "board": {
+      "columnLabel": "{label} tasks",
+      "addTaskTo": "Add task to {label}",
+      "dragHint": "Drag a card here or add one.",
+      "emptyHint": "Nothing here yet.",
+      "addToColumn": "Add to {label}"
+    },
+    "card": {
+      "markDone": "Mark \"{title}\" done",
+      "markNotDone": "Mark \"{title}\" not done",
+      "options": "Options for {title}",
+      "moveTo": "Move to",
+      "edit": "Edit",
+      "delete": "Delete",
+      "overdue": "Overdue · {date}",
+      "repeats": "Repeats {recurrence}"
+    },
+    "list": {
+      "emptyTitle": "No tasks match these filters",
+      "emptyBody": "Try clearing a filter, or add a new task."
+    },
+    "filters": {
+      "filter": "Filter",
+      "assignee": "Filter by assignee",
+      "everyone": "Everyone",
+      "unassigned": "Unassigned",
+      "category": "Filter by category",
+      "allCategories": "All categories",
+      "status": "Filter by status",
+      "anyStatus": "Any status",
+      "clear": "Clear"
+    },
+    "fairShare": {
+      "title": "Fair share this week",
+      "subtitle": "Completed tasks by each person.",
+      "srCompleted": "{name}: {count} completed",
+      "freshStart": "No tasks completed yet this week — a fresh start.",
+      "carryingALot": "{name}'s carrying a lot — anyone able to help?",
+      "handledEverything": "{name}'s handled everything so far — share the load?",
+      "balanced": "Nicely balanced this week 💚"
+    },
+    "form": {
+      "title": "Title",
+      "titlePlaceholder": "e.g. Pick up prescription refill",
+      "details": "Details",
+      "optional": "Optional",
+      "detailsPlaceholder": "Anything helpful for whoever picks this up…",
+      "category": "Category",
+      "assignee": "Assignee",
+      "unassigned": "Unassigned",
+      "dueDate": "Due date",
+      "status": "Status",
+      "repeat": "Repeat",
+      "cancel": "Cancel",
+      "saved": "Saved",
+      "saving": "Saving…",
+      "saveChanges": "Save changes",
+      "createTask": "Create task",
+      "modalAddTitle": "New task",
+      "modalEditTitle": "Edit task",
+      "modalAddDesc": "Add a task and share the load.",
+      "modalEditDesc": "Update the details and assignment.",
+      "errors": {
+        "titleRequired": "Give the task a title",
+        "titleMax": "Keep the title under 140 characters",
+        "detailsMax": "Keep details under 500 characters"
+      }
+    }
+  },
+  "health": {
+    "title": "Health",
+    "subtitleNamed": "{name}'s vitals at a glance.",
+    "subtitleGeneric": "The vitals at a glance.",
+    "viewOnly": "View only",
+    "askCoordinator": "Ask the coordinator",
+    "timeRange": "Time range",
+    "alerts": "Alerts",
+    "logReading": "Log reading",
+    "insightsAria": "Insights",
+    "noReadingsYet": "No readings yet",
+    "empty": {
+      "title": "No readings yet",
+      "bodyCanLog": "Log the first vital to start tracking trends.",
+      "bodyView": "Once a reading is logged, trends appear here."
+    },
+    "toasts": {
+      "savedNormal": "Reading saved",
+      "savedNormalDesc": "Added to the chart and shared on the timeline.",
+      "savedFlagged": "Reading saved — outside the safe range",
+      "savedFlaggedDesc": "The circle has been alerted with an urgent timeline update.",
+      "saveFailed": "Couldn't save the reading"
+    },
+    "metrics": {
+      "bp": "Blood pressure",
+      "glucose": "Glucose",
+      "weight": "Weight",
+      "sleep": "Sleep",
+      "mood": "Mood",
+      "hr": "Resting HR"
+    },
+    "status": {
+      "normal": "Normal",
+      "elevated": "Elevated",
+      "low": "Low"
+    },
+    "trend": {
+      "steady": "Steady"
+    },
+    "mood": {
+      "1": "Very low",
+      "2": "Low",
+      "3": "Okay",
+      "4": "Good",
+      "5": "Great"
+    },
+    "insights": {
+      "weightDown": "Weight down {kg}kg over 30 days",
+      "weightUp": "Weight up {kg}kg over 30 days",
+      "bpElevated": "BP elevated {n} of last 7 days",
+      "sleepBelow": "Sleep averaging {h}h — below target",
+      "sleepSteady": "Sleep steady around {h}h 💚",
+      "hrHealthy": "Resting heart rate looking healthy ({bpm} bpm)"
+    },
+    "chart": {
+      "subtitle": "Trend over the selected range, with the normal band shaded.",
+      "focusMetric": "Focus metric",
+      "noReadingsRange": "No readings in this range.",
+      "systolic": "Systolic",
+      "diastolic": "Diastolic",
+      "normalRange": "Normal range ({min}–{max})",
+      "normalRangeSys": "Normal range ({min}–{max} sys)",
+      "readings": "Readings"
+    },
+    "series": {
+      "none": "No readings in this range.",
+      "summary": "{name}: {count} readings from {from} to {to}. Latest {latest}. Ranged {lo} to {hi}."
+    },
+    "table": {
+      "date": "Date",
+      "value": "Value",
+      "status": "Status",
+      "loggedBy": "Logged by",
+      "caption": "{name} readings, most recent first",
+      "readingsAria": "{name} readings",
+      "none": "No readings in this range."
+    },
+    "log": {
+      "modalTitle": "Log a reading",
+      "modalDesc": "Pick a metric and enter the latest values.",
+      "metric": "Metric",
+      "systolic": "Systolic",
+      "diastolic": "Diastolic",
+      "mood": "Mood",
+      "weight": "Weight",
+      "unit": "Unit",
+      "previewNormal": "Looks within the normal range.",
+      "previewElevated": "This would be flagged as elevated.",
+      "previewLow": "This would be flagged as low.",
+      "date": "Date",
+      "time": "Time",
+      "recordedBy": "Recorded by",
+      "note": "Note",
+      "optional": "Optional",
+      "notePlaceholder": "Anything worth remembering about this reading…",
+      "cancel": "Cancel",
+      "saved": "Saved",
+      "saving": "Saving…",
+      "save": "Save reading",
+      "errors": {
+        "systolicReq": "Enter systolic",
+        "systolicRange": "70–260 expected",
+        "diastolicReq": "Enter diastolic",
+        "diastolicRange": "40–160 expected",
+        "diastolicBelow": "Should be below systolic",
+        "mood": "Pick a mood",
+        "valueReq": "Enter a value",
+        "valueRange": "{lo}–{hi} expected",
+        "date": "Pick a date",
+        "time": "Pick a time",
+        "recordedBy": "Who recorded it?"
+      }
+    },
+    "alertsScreen": {
+      "back": "Back to Health",
+      "title": "Health alerts",
+      "subtitle": "Set the safe ranges that notify the family when a reading is out of range.",
+      "viewOnly": "View only",
+      "saved": "Saved",
+      "saving": "Saving…",
+      "saveChanges": "Save changes",
+      "fixRanges": "Please fix the highlighted ranges first.",
+      "savedToast": "Alert settings saved",
+      "savedToastDesc": "New readings are checked against these ranges for the whole circle.",
+      "saveFailed": "Couldn't save the alert settings",
+      "scale": "1–5 scale",
+      "enableAlerts": "Enable {name} alerts",
+      "alertBelow": "Alert below",
+      "lowMin": "Low (min)",
+      "highMax": "High (max)",
+      "diaLow": "Diastolic low",
+      "diaHigh": "Diastolic high",
+      "minBelowMax": "The minimum should be below the maximum.",
+      "previewOff": "Alerts are off for this metric.",
+      "previewBp": "Alert family if BP goes above {max}/{diaMax} or below {min}/{diaMin}.",
+      "previewSleep": "Alert family if sleep drops below {min} h.",
+      "previewMood": "Alert family if mood drops below “{label}”.",
+      "previewGeneric": "Alert family if {metric} goes above {max} or below {min} {unit}."
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Manage your account, this circle, and how Kintwadi works for you.",
+    "sectionsAria": "Settings sections",
+    "common": {
+      "cancel": "Cancel",
+      "saveChanges": "Save changes",
+      "saving": "Saving…"
+    },
+    "sections": {
+      "account": "Account",
+      "care-circle": "Care circle",
+      "members": "Members & roles",
+      "notifications": "Notifications",
+      "health-alerts": "Health alerts",
+      "billing": "Billing",
+      "privacy": "Privacy & security"
+    },
+    "account": {
+      "title": "Account",
+      "description": "Your personal details and preferences.",
+      "changePhoto": "Change photo",
+      "photoHint": "JPG or PNG, up to 5 MB.",
+      "photoTooLarge": "Please choose an image under 5 MB.",
+      "fullName": "Full name",
+      "email": "Email",
+      "language": "Language",
+      "timezone": "Time zone",
+      "updated": "Account updated",
+      "changePassword": "Change password",
+      "current": "Current",
+      "new": "New",
+      "confirm": "Confirm",
+      "updatePassword": "Update password",
+      "updating": "Updating…",
+      "passwordUpdated": "Password updated",
+      "socialNoPassword": "You sign in with a social provider, so there's no password to change here.",
+      "deleteAccount": "Delete account",
+      "deleteAccountDesc": "Permanently remove your account and personal data. This can't be undone.",
+      "deleteAccountTitle": "Delete your account?",
+      "deleteAccountConfirm": "This permanently deletes your account and removes you from all care circles. This cannot be undone."
+    },
+    "circle": {
+      "title": "Care circle",
+      "description": "Settings for this circle.",
+      "name": "Circle name",
+      "recipientTitle": "Care recipient",
+      "recipientViewNamed": "{name} · view circle",
+      "recipientView": "View circle",
+      "updated": "Circle updated",
+      "ownership": "Ownership & lifecycle",
+      "transfer": "Transfer ownership",
+      "transferDesc": "Hand coordinator duties to another member.",
+      "inviteFirst": "Invite another member first.",
+      "chooseMember": "Choose a member…",
+      "chooseMemberAria": "Choose a member",
+      "transferBtn": "Transfer",
+      "transferTitle": "Transfer ownership?",
+      "transferConfirmDesc": "The chosen member becomes the coordinator (owner), and you become a family admin. You can ask them to transfer it back later.",
+      "transferred": "Ownership transferred",
+      "deleteCircle": "Delete circle",
+      "deleteCircleDesc": "Removes the circle for everyone. This can't be undone.",
+      "deleteCircleTitle": "Delete this care circle?",
+      "deleteCircleConfirm": "This deletes the circle and hides all of its data for every member. This cannot be undone.",
+      "deleted": "Circle deleted"
+    },
+    "members": {
+      "title": "Members & roles",
+      "description": "Manage who's in the circle and what they can see.",
+      "linkTitle": "People in this circle",
+      "linkSub": "Invite, change roles, suspend or remove"
+    },
+    "healthAlerts": {
+      "title": "Health alerts",
+      "description": "Safe ranges that notify the family when a reading is out of range.",
+      "linkTitle": "Alert thresholds",
+      "linkSub": "Per-metric min/max and who gets alerted"
+    },
+    "notifications": {
+      "title": "Notifications",
+      "description": "Choose what you're notified about, and how.",
+      "saveFailed": "Couldn't save. Please try again.",
+      "type": "Type",
+      "caption": "Notification preferences by type and channel",
+      "channels": {
+        "inApp": "In-app",
+        "email": "Email",
+        "push": "Push"
+      },
+      "types": {
+        "meds": "Medications",
+        "vitals": "Vitals",
+        "tasks": "Tasks",
+        "incidents": "Incidents",
+        "digest": "Daily digest"
+      },
+      "quietHours": "Quiet hours",
+      "quietHoursDesc": "Pause non-urgent notifications overnight. Urgent incidents always come through.",
+      "enableQuiet": "Enable quiet hours",
+      "from": "From",
+      "to": "To"
+    },
+    "push": {
+      "title": "Push on this device",
+      "unsupported": "This browser doesn't support push notifications.",
+      "unconfigured": "Push notifications aren't set up on the server yet — in-app and email still work.",
+      "blocked": "Notifications are blocked for this site. Allow them in your browser settings, then try again.",
+      "ready": "Receive the activity you picked in the Push column above on this device, even when Kintwadi is closed.",
+      "enabled": "Push enabled on this device",
+      "disabled": "Push disabled on this device",
+      "enableAria": "Enable push notifications on this device"
+    },
+    "digest": {
+      "title": "Daily digest",
+      "desc": "A warm, AI-written evening summary of the day — emailed automatically to whoever wants it.",
+      "sendNightly": "Send a nightly digest",
+      "sendNightlyDesc": "Generate and email the day's digest to opted-in members each evening.",
+      "sendAt": "Send at",
+      "sendAtHint": "In this circle's timezone.",
+      "coordSendsAt": "Your circle's coordinator sends the digest at {time}.",
+      "coordOff": "Your circle's coordinator has the nightly digest turned off.",
+      "emailToMe": "Email it to me",
+      "emailToMeDesc": "Receive the nightly digest in your inbox.",
+      "emailToMeAria": "Email the digest to me",
+      "myLanguage": "My digest language",
+      "myLanguageHint": "The digest is written once from the day's record, then translated for you.",
+      "saveFailed": "Couldn't save. Please try again."
+    },
+    "billing": {
+      "title": "Billing",
+      "description": "Your plan, payment methods, and invoices.",
+      "currentPlan": "Current plan",
+      "active": "Active",
+      "current": "Current",
+      "planChangeUnavailable": "Plan changes aren't available in this preview.",
+      "perMonth": "/mo",
+      "coordinatorManaged": "Payment methods and invoices are managed by your circle's coordinator.",
+      "paymentMethods": "Payment methods",
+      "addCard": "Add card",
+      "noCards": "No payment methods yet. Add a card to keep billing uninterrupted.",
+      "cardSecurityNote": "We store only your card's brand, last 4 digits, and expiry — never the full number.",
+      "defaultBadge": "Default",
+      "makeDefault": "Default",
+      "expires": "Expires {date}",
+      "removeCard": "Remove card",
+      "cardRemoved": "Card removed",
+      "invoices": "Invoices",
+      "noInvoices": "No invoices yet. They'll appear here once your plan is billed.",
+      "invoiceCol": "Invoice",
+      "dateCol": "Date",
+      "amountCol": "Amount",
+      "statusCol": "Status",
+      "download": "Download",
+      "pdf": "PDF",
+      "captionInvoices": "Past invoices",
+      "addDialogTitle": "Add a payment card",
+      "addDialogDesc": "We store only the brand, last 4 digits, and expiry — never the full number.",
+      "cardNumber": "Card number",
+      "expiry": "Expiry (MM/YY)",
+      "setDefault": "Set as default",
+      "expiryError": "Enter the expiry as MM/YY.",
+      "cardAdded": "Card added",
+      "cancel": "Cancel",
+      "adding": "Adding…",
+      "plans": {
+        "free": {
+          "name": "Free",
+          "note": "For families getting started",
+          "features": [
+            "One care circle",
+            "Shared care timeline",
+            "Medication tracking",
+            "Task management"
+          ]
+        },
+        "plus": {
+          "name": "Plus",
+          "note": "AI assistance for busy families",
+          "features": [
+            "Multiple care circles",
+            "AI Daily Digest",
+            "Ask Kintwadi AI",
+            "Document vault (5GB)"
+          ]
+        },
+        "teams": {
+          "name": "Care Teams",
+          "note": "Agencies & organizations",
+          "features": [
+            "Unlimited care circles",
+            "Audit trail & compliance",
+            "Priority support",
+            "HIPAA BAA available"
+          ]
+        }
+      }
+    },
+    "privacy": {
+      "title": "Privacy & security",
+      "description": "Your session, the audit log, and your data.",
+      "thisSession": "This session",
+      "thisDevice": "This device",
+      "signedIn": "Signed in",
+      "signedInHere": "You're currently signed in here.",
+      "signOut": "Sign out",
+      "auditLog": "Audit log",
+      "auditCoordinatorsOnly": "The audit log is available to coordinators.",
+      "exportTitle": "Export your data",
+      "exportDesc": "Download a copy of this circle's care record.",
+      "export": "Export data",
+      "requesting": "Requesting…",
+      "exportRequested": "Export requested — we'll email you a link when it's ready."
+    },
+    "audit": {
+      "immutableNote": "This log is <b>append-only</b> — entries can never be edited or deleted, by anyone. It records who did what, and when.",
+      "noActivity": "No activity recorded yet.",
+      "search": "Search the log…",
+      "searchAria": "Search audit log",
+      "filterActor": "Filter by actor",
+      "everyone": "Everyone",
+      "filterAction": "Filter by action",
+      "allActions": "All actions",
+      "noMatch": "No entries match these filters.",
+      "who": "Who",
+      "action": "Action",
+      "entity": "Entity",
+      "when": "When",
+      "caption": "Audit log — append-only record of actions",
+      "showing": "Showing {shown} of {total} entries."
+    }
+  },
+  "language": {
+    "label": "Language"
+  },
+  "digest": {
+    "title": "Daily digest",
+    "subtitle": "A warm end-of-day update.",
+    "subtitleNamed": "A warm end-of-day update on {name}.",
+    "settingsBtn": "Digest settings",
+    "whenWritten": "When the digest is written",
+    "cadence": "Every evening",
+    "atTime": "at {time}",
+    "manageNote": "Digests summarise the day's real care record. Manage recipients and timing in Settings.",
+    "prevDay": "Previous day",
+    "nextDay": "Next day",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "showingOriginal": "Showing the original (English)",
+    "translatedTo": "Translated to {lang} for you",
+    "readIn": "Read in {lang}",
+    "showOriginal": "Show original",
+    "share": "Share with family",
+    "shared": "Shared with family",
+    "listen": "Listen",
+    "stop": "Stop",
+    "regenerate": "Regenerate",
+    "helpful": "Helpful?",
+    "helpfulYes": "This digest was helpful",
+    "helpfulNo": "This digest missed the mark",
+    "ready": "Digest ready",
+    "readAloudUnsupported": "Read-aloud isn't supported on this device",
+    "feedbackThanks": "Thanks — this helps tune future digests",
+    "writing": "Writing today's digest…",
+    "sourceMoments": "Source moments",
+    "emptyTitle": "No digest yet for {label}",
+    "emptyCanGenerate": "Write a warm summary from the day's logged care — meds, vitals, notes and more.",
+    "emptyReadOnly": "Digests are written each evening once the day's care is logged.",
+    "generate": "Generate digest",
+    "readYesterday": "Read yesterday's digest"
+  },
+  "timeline": {
+    "you": "You",
+    "ariaFeed": "Care timeline",
+    "loading": "Loading...",
+    "loadMore": "Load earlier updates",
+    "addedNote": "{name} added a note",
+    "errPost": "Couldn't post your note",
+    "errReaction": "Couldn't update your reaction",
+    "errWaitSaving": "Please wait for the post to finish saving",
+    "errComment": "Couldn't add your comment",
+    "errLoadMore": "Couldn't load earlier updates",
+    "day": {
+      "today": "Today",
+      "yesterday": "Yesterday"
+    },
+    "composer": {
+      "placeholder": "Share an update with your circle...",
+      "placeholderNamed": "Share an update about {name}...",
+      "attachPhoto": "Attach photo",
+      "addVital": "Add vital",
+      "cancel": "Cancel",
+      "post": "Post",
+      "posting": "Posting..."
+    },
+    "empty": {
+      "title": "No updates yet",
+      "filtered": "No events match your current filters. Try adjusting your search or filter criteria.",
+      "default": "Be the first to share an update with the care circle."
+    },
+    "types": {
+      "med": "Medication",
+      "vital": "Vital",
+      "note": "Note",
+      "appointment": "Appointment",
+      "incident": "Incident"
+    },
+    "filters": {
+      "all": "All",
+      "med": "Meds",
+      "vital": "Vitals",
+      "note": "Notes",
+      "appointment": "Appointments",
+      "incident": "Incidents"
+    },
+    "visibility": {
+      "everyone": {
+        "label": "Everyone",
+        "description": "Visible to all circle members"
+      },
+      "family": {
+        "label": "Family only",
+        "description": "Only family members can see"
+      },
+      "private": {
+        "label": "Private",
+        "description": "Only you and coordinators"
+      }
+    },
+    "badge": {
+      "family": "Family",
+      "private": "Private",
+      "urgent": "Urgent"
+    },
+    "ranges": {
+      "all": "All time",
+      "7d": "Last 7 days",
+      "30d": "Last 30 days"
+    },
+    "card": {
+      "readMore": "Read more",
+      "removeReaction": "Remove reaction",
+      "react": "React with heart",
+      "attachmentAlt": "Event attachment",
+      "attachmentFullAlt": "Full size attachment",
+      "imagePreview": "Image preview",
+      "comments": "Comments",
+      "addComment": "Add a comment...",
+      "commentCount": "{count, plural, one {# comment} other {# comments}}"
+    },
+    "controls": {
+      "jumpToDate": "Jump to date",
+      "dateRangeAria": "Date range",
+      "search": "Search updates...",
+      "searchAria": "Search updates",
+      "filterLabel": "Filter",
+      "dateRangeLabel": "Date range"
+    }
+  },
+  "incidents": {
+    "recipientFallback": "your loved one",
+    "title": "Incidents",
+    "subtitle": "Falls, hospitalizations and emergencies for {name}.",
+    "sections": {
+      "open": "Open",
+      "openEmpty": "No open incidents — all clear.",
+      "resolved": "Resolved"
+    },
+    "empty": {
+      "title": "No incidents reported",
+      "body": "That's good news. Report one here if something happens."
+    },
+    "status": {
+      "open": "Open",
+      "resolved": "Resolved"
+    },
+    "day": {
+      "today": "Today",
+      "yesterday": "Yesterday"
+    },
+    "types": {
+      "fall": {
+        "label": "Fall",
+        "blurb": "A slip, trip or fall"
+      },
+      "hospitalization": {
+        "label": "Hospitalization",
+        "blurb": "Admitted or taken to hospital"
+      },
+      "emergency": {
+        "label": "Emergency",
+        "blurb": "Urgent, needs attention now"
+      },
+      "other": {
+        "label": "Other",
+        "blurb": "Something else worth noting"
+      }
+    },
+    "severities": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    },
+    "ack": {
+      "acknowledged": "Acknowledged",
+      "seen": "Seen",
+      "pending": "Not yet seen"
+    },
+    "card": {
+      "by": "by {name}",
+      "ackCount": "{acknowledged}/{total} ack'd"
+    },
+    "button": {
+      "report": "Report incident"
+    },
+    "modal": {
+      "title": "Report an incident",
+      "description": "Let the circle know what happened — calmly and quickly."
+    },
+    "toast": {
+      "acknowledged": "You acknowledged this incident",
+      "resolved": "Incident marked resolved"
+    },
+    "detail": {
+      "allIncidents": "All incidents",
+      "severityBadge": "{severity} severity",
+      "reportedBy": "Reported by <b>{name}</b>",
+      "needHelp": "Need help fast?",
+      "call": "Call {name}",
+      "emergencyCard": "Emergency Card",
+      "whatHappened": "What happened",
+      "photoAlt": "Incident photo",
+      "timelineEvent": "Timeline event",
+      "notifiedTitle": "Notified & acknowledged",
+      "acknowledgedCount": "{acknowledged}/{total} acknowledged",
+      "noneNotified": "No one was notified for this incident.",
+      "acknowledge": "Acknowledge"
+    },
+    "resolve": {
+      "title": "Resolve incident",
+      "notePlaceholder": "Add a short note on how this was resolved (optional)…",
+      "noteAria": "Resolution notes",
+      "markResolved": "Mark resolved"
+    },
+    "actions": {
+      "cancel": "Cancel",
+      "done": "Done",
+      "back": "Back",
+      "reporting": "Reporting…",
+      "reportNotify": "Report & notify"
+    },
+    "comments": {
+      "title": "Coordinating ({count})",
+      "empty": "No comments yet. Start the conversation.",
+      "placeholder": "Write a comment…",
+      "addAria": "Add a comment",
+      "sendAria": "Send comment"
+    },
+    "notFound": {
+      "title": "Incident not found",
+      "body": "It may have been removed, or belongs to another circle.",
+      "back": "Back to incidents"
+    },
+    "flow": {
+      "typePrompt": "What kind of incident is it?"
+    },
+    "done": {
+      "title": "Incident reported",
+      "notified": "{names} {count, plural, one {has} other {have}} been notified.",
+      "noOne": "No one",
+      "savedNoNotify": "Saved to the circle's record.",
+      "nextSteps": "Next steps",
+      "openCard": "Open Emergency Card",
+      "openCardSub": "Key details for responders",
+      "viewIncident": "View incident",
+      "viewIncidentSub": "Track responses & resolve"
+    },
+    "form": {
+      "typeLabel": "Type:",
+      "change": "Change",
+      "severityLabel": "How severe is it?",
+      "descLabel": "What happened?",
+      "descError": "Please describe what happened",
+      "descPlaceholder": "Describe what happened, who was there, and how {name} is doing now…",
+      "dateLabel": "Date",
+      "timeLabel": "Time",
+      "photoLabel": "Photo",
+      "optional": "Optional",
+      "photoPreviewAlt": "Incident photo preview",
+      "photoAttached": "Photo attached",
+      "removePhoto": "Remove photo",
+      "addPhoto": "Add a photo",
+      "notifyLabel": "Who should be notified now?",
+      "noMembers": "No other members to notify yet.",
+      "notifyMemberAria": "Notify {name}"
+    },
+    "urgent": {
+      "title": "This looks urgent",
+      "body": "If {name} is in danger, call emergency services first."
+    }
+  },
+  "profile": {
+    "empty": {
+      "title": "No care recipient profile yet",
+      "description": "Once the circle is set up, the recipient's profile appears here."
+    },
+    "ageYears": "{age} years",
+    "dob": "DOB {dob}",
+    "emergencyCard": "Emergency Card",
+    "edit": "Edit",
+    "sections": {
+      "health": "Health summary",
+      "medications": "Current medications",
+      "preferences": "Care preferences",
+      "contacts": "Key contacts",
+      "insurance": "Insurance"
+    },
+    "manage": "Manage",
+    "labels": {
+      "conditions": "Conditions",
+      "allergies": "Allergies",
+      "bloodType": "Blood type",
+      "mobility": "Mobility",
+      "dietary": "Dietary",
+      "comfortNotes": "Comfort notes",
+      "doctors": "Doctors",
+      "nextOfKin": "Next of kin",
+      "provider": "Provider",
+      "plan": "Plan",
+      "memberId": "Member ID",
+      "group": "Group"
+    },
+    "noneRecorded": "None recorded",
+    "dash": "—",
+    "noMeds": "No active medications.",
+    "noComfort": "No care notes yet.",
+    "noComfortAdd": "No care notes yet. Add the human details that help someone care well.",
+    "noContacts": "No contacts on file.",
+    "call": "Call {name}",
+    "message": "Message {name}",
+    "modal": {
+      "title": "Edit profile",
+      "description": "Keep {name}'s details and care notes up to date.",
+      "saved": "Profile updated",
+      "groups": {
+        "basics": "Basics",
+        "health": "Health",
+        "preferences": "Care preferences"
+      },
+      "fullName": "Full name",
+      "dob": "Date of birth",
+      "language": "Primary language",
+      "bloodType": "Blood type",
+      "bloodTypePlaceholder": "e.g. O+",
+      "mobility": "Mobility",
+      "dietary": "Dietary needs",
+      "dietaryHint": "Comma-separated",
+      "comfort": "Comfort notes",
+      "comfortPlaceholder": "The human details that help someone care well…",
+      "cancel": "Cancel",
+      "save": "Save changes",
+      "saving": "Saving…"
+    },
+    "card": {
+      "noneRecorded": "None recorded",
+      "notRecorded": "Not recorded",
+      "noContacts": "No emergency contacts recorded yet."
+    },
+    "cardLangAria": "Card language",
+    "share": "Share",
+    "print": "Print",
+    "ec": {
+      "emptyTitle": "No emergency card yet",
+      "emptyDescription": "Set up the care recipient's profile to generate their emergency card.",
+      "fallbackName": "Care recipient",
+      "advanceDirectiveAria": "Advance directive",
+      "advanceDirectivePlaceholder": "e.g. \"DNR on file\"",
+      "editAdvanceDirective": "Edit advance directive",
+      "save": "Save",
+      "saving": "Saving…",
+      "cancel": "Cancel",
+      "advanceDirectiveSaved": "Advance directive updated",
+      "linkLive": "Emergency link is live — the QR below opens it without an account",
+      "linkRevoked": "Emergency link revoked — the QR no longer works",
+      "publicLinkCopied": "Public emergency link copied",
+      "linkCopied": "Link copied to clipboard",
+      "shareCancelled": "Sharing was cancelled",
+      "qrAria": "Emergency card QR code",
+      "opensExpires": "Opens without an account — for EMS and ER staff. Expires {expires}",
+      "openedAudited": " · opened {count}× (audited)",
+      "everyOpenAudited": " · every open is audited",
+      "noLinkTitle": "No public emergency link",
+      "noLinkManager": "Create one to print a scannable QR — EMS opens the card with no account. Expires in 72h, revocable, every open audited.",
+      "noLinkMember": "A coordinator can create a scannable public link for EMS.",
+      "working": "Working…",
+      "rotateLink": "Rotate link",
+      "revoke": "Revoke",
+      "creating": "Creating…",
+      "createLink": "Create emergency link"
+    },
+    "public": {
+      "inactiveTitle": "This emergency link isn't active",
+      "validity": "Shared by the family via Kintwadi. This link is temporary (valid until {validUntil}), can be revoked at any time, and every open is recorded for the family.",
+      "inactiveBody": "It may have expired or been revoked by the family. Ask a family member to share a fresh link from their Kintwadi emergency card."
+    }
+  },
+  "documents": {
+    "header": {
+      "title": "Documents",
+      "subtitle": "The family's shared vault for important paperwork."
+    },
+    "search": {
+      "placeholder": "Search documents…",
+      "ariaLabel": "Search documents",
+      "filterAria": "Filter by category"
+    },
+    "upload": "Upload",
+    "gated": {
+      "askCoordinator": "Ask the coordinator"
+    },
+    "restricted": {
+      "explainer": "Some documents may be <b>restricted to coordinators</b>. Access is enforced by the database itself (row-level security) — restricted files are never sent to your device, and every document view is recorded in the circle's tamper-proof audit ledger."
+    },
+    "empty": {
+      "emptyTitle": "No documents yet",
+      "emptySubtitle": "Upload the first document to start the vault.",
+      "noResultsTitle": "No documents match",
+      "noResultsSubtitle": "Try a different search or category.",
+      "askCoordinator": "Ask a coordinator to add documents"
+    },
+    "delete": {
+      "title": "Delete this document?",
+      "description": "“{title}” will be removed from the vault. This can't be undone.",
+      "cancel": "Keep it",
+      "confirm": "Delete"
+    },
+    "toasts": {
+      "fileUnavailable": "This file isn't available right now",
+      "addedEmergency": "Added to emergency card",
+      "removedEmergency": "Removed from emergency card",
+      "emergencyError": "Couldn't update the emergency card",
+      "renamed": "Renamed",
+      "renameError": "Couldn't rename",
+      "deleted": "“{title}” deleted",
+      "deleteError": "Couldn't delete",
+      "uploaded": "{count, plural, one {Document uploaded} other {# documents uploaded}}",
+      "uploadFileError": "Couldn't upload {name}"
+    },
+    "card": {
+      "previewAria": "Preview {title}",
+      "optionsAria": "Options for {title}",
+      "preview": "Preview",
+      "download": "Download",
+      "addEmergency": "Share to emergency card",
+      "removeEmergency": "Remove from emergency card",
+      "rename": "Rename",
+      "delete": "Delete",
+      "emergencyBadge": "Emergency"
+    },
+    "expiry": {
+      "expired": "Expired {month}",
+      "expiresIn": "{count, plural, one {Expires in # day} other {Expires in # days}}",
+      "expires": "Expires {month}"
+    },
+    "categories": {
+      "medical": "Medical",
+      "insurance": "Insurance",
+      "legal": "Legal",
+      "financial": "Financial",
+      "id": "ID",
+      "advance-directive": "Advance directive"
+    },
+    "categoryFilters": {
+      "all": "All"
+    },
+    "sensitivities": {
+      "standard": {
+        "label": "Standard",
+        "note": "Visible to everyone in the circle."
+      },
+      "sensitive": {
+        "label": "Sensitive",
+        "note": "Visible to family and coordinators."
+      },
+      "restricted": {
+        "label": "Restricted",
+        "note": "Visible to coordinators only."
+      }
+    },
+    "locked": {
+      "title": "Restricted document",
+      "visibleToCoordinators": "Visible to coordinators.",
+      "restricted": "Restricted",
+      "whyAria": "Why is this restricted?",
+      "whyTooltip": "Denied by the database's row-level security policy — not just hidden in the interface. Access attempts are recorded in the audit ledger."
+    },
+    "viewer": {
+      "onEmergencyCard": "On emergency card",
+      "close": "Close",
+      "fauxOffice": "Browsers can't preview this file type — use Download to open it.",
+      "fauxUnavailable": "This file isn't available right now — use Download to request it."
+    },
+    "uploadModal": {
+      "title": "Upload document",
+      "description": "Add a file and tell us who should be able to see it."
+    },
+    "uploadForm": {
+      "tooLarge": "{name} is too large (max 15 MB)",
+      "uploadFailed": "Upload failed — please try again",
+      "done": "{count, plural, one {Document uploaded} other {# documents uploaded}}",
+      "savedToVault": "Saved to the vault.",
+      "dropTitle": "Drag & drop files here",
+      "browse": "Browse files",
+      "fileHint": "PDF, Word, or images · up to 15 MB each",
+      "selectedFilesAria": "Selected files",
+      "removeFileAria": "Remove {name}",
+      "titleLabel": "Title",
+      "titlePlaceholder": "e.g. Health insurance card",
+      "categoryLabel": "Category",
+      "sensitivityLabel": "Sensitivity",
+      "expiryLabel": "Expiry date",
+      "expiryHint": "Optional",
+      "emergencyLabel": "Include on emergency card",
+      "emergencyHint": "Surfaced first for paramedics and on-call carers.",
+      "cancel": "Cancel",
+      "uploading": "Uploading…",
+      "uploadMany": "Upload {count} files"
+    },
+    "rename": {
+      "title": "Rename document",
+      "label": "Title",
+      "error": "Enter a title",
+      "cancel": "Cancel",
+      "save": "Save"
+    }
+  },
+  "people": {
+    "header": {
+      "title": "People in this circle",
+      "activeCount": "{count, plural, one {# active member} other {# active members}}.",
+      "activeCaringFor": "{count, plural, one {# active member} other {# active members}} caring for {name}."
+    },
+    "viewOnly": "View only",
+    "invitePeople": "Invite people",
+    "gated": {
+      "tooltip": "Ask the coordinator"
+    },
+    "empty": {
+      "title": "No one here yet",
+      "body": "Invite family and carers to start the circle."
+    },
+    "remove": {
+      "title": "Remove {name}?",
+      "fallbackName": "this person",
+      "description": "They'll lose all access to this care circle. You can invite them again later.",
+      "cancel": "Keep them",
+      "confirm": "Remove"
+    },
+    "toasts": {
+      "errSave": "Couldn't save the change",
+      "inviteResent": "Invite resent to {email}",
+      "errResend": "Couldn't resend",
+      "suspended": "{name} suspended",
+      "reactivated": "{name} reactivated",
+      "nowRole": "{name} is now {role}",
+      "phoneSaved": "Phone saved for {name}",
+      "phoneRemoved": "Phone removed for {name}",
+      "removed": "{name} removed from the circle",
+      "errSendInvites": "Couldn't send the invitations",
+      "inviteSent": "Invitation sent",
+      "invitesSent": "{count, plural, one {# invitation sent} other {# invitations sent}}",
+      "inviteRevoked": "Invitation to {email} revoked",
+      "errRevoke": "Couldn't revoke"
+    },
+    "roles": {
+      "coordinator": {
+        "label": "Coordinator",
+        "blurb": "Runs the circle. Full access, including settings and billing."
+      },
+      "family-admin": {
+        "label": "Family Admin",
+        "blurb": "Trusted family member who can manage people and most content."
+      },
+      "family": {
+        "label": "Family",
+        "blurb": "Family members who stay informed and help out day to day."
+      },
+      "caregiver": {
+        "label": "Caregiver",
+        "blurb": "Paid or volunteer carers who record care as it happens."
+      },
+      "readonly": {
+        "label": "Read-only",
+        "blurb": "Can follow along but can't change anything."
+      },
+      "care-recipient": {
+        "label": "Care recipient",
+        "blurb": "The person being cared for, with a gentle view of their own care."
+      },
+      "clinician": {
+        "label": "Clinician",
+        "blurb": "Doctors or nurses with clinical access, time-limited."
+      }
+    },
+    "capabilities": {
+      "timeline": "Timeline & updates",
+      "meds": "Medications",
+      "appts": "Appointments",
+      "tasks": "Tasks & rota",
+      "health": "Health vitals",
+      "docsMedical": "Medical documents",
+      "docsFinancial": "Financial & legal docs",
+      "people": "People & roles",
+      "billing": "Settings & billing"
+    },
+    "capabilitiesLower": {
+      "timeline": "timeline & updates",
+      "meds": "medications",
+      "appts": "appointments",
+      "tasks": "tasks & rota",
+      "health": "health vitals",
+      "docsMedical": "medical documents",
+      "docsFinancial": "financial & legal docs",
+      "people": "people & roles",
+      "billing": "settings & billing"
+    },
+    "status": {
+      "active": "Active",
+      "invited": "Invited",
+      "suspended": "Suspended"
+    },
+    "access": {
+      "edit": "Full",
+      "view": "View",
+      "none": "None"
+    },
+    "table": {
+      "ariaMembers": "Members",
+      "lastActiveDash": "—",
+      "justNow": "Just now",
+      "captionMembers": "People in this care circle",
+      "person": "Person",
+      "relationship": "Relationship",
+      "role": "Role",
+      "status": "Status",
+      "lastActive": "Last active",
+      "actions": "Actions",
+      "actionsFor": "Actions for {name}",
+      "changeRole": "Change role",
+      "editPhone": "Edit phone",
+      "addPhone": "Add phone",
+      "resendInvite": "Resend invite",
+      "reactivate": "Reactivate",
+      "suspend": "Suspend",
+      "remove": "Remove"
+    },
+    "invites": {
+      "aria": "Pending invitations",
+      "heading": "Pending invitations",
+      "sentOn": "Sent {date}",
+      "resend": "Resend",
+      "revoke": "Revoke"
+    },
+    "matrix": {
+      "aria": "Roles and permissions",
+      "heading": "Roles & what they can see",
+      "dbNote": "These rules are enforced in the database, not just hidden in the app.",
+      "captionPerms": "Permissions by role",
+      "capability": "Capability",
+      "sensitive": "sensitive",
+      "legendFull": "Full access",
+      "legendView": "View only",
+      "legendNone": "No access"
+    },
+    "inviteModal": {
+      "title": "Invite people",
+      "description": "Send invitations and choose what each person can see."
+    },
+    "inviteForm": {
+      "invalidEmail": "Enter a valid email",
+      "doneTitleOne": "Invitation sent",
+      "doneTitleMany": "{count, plural, one {# invitation sent} other {# invitations sent}}",
+      "doneBody": "They'll get an email with a link to join.",
+      "done": "Done",
+      "emailFor": "Email for invite {n}",
+      "emailPlaceholder": "name@example.com",
+      "roleFor": "Role for invite {n}",
+      "removeInvite": "Remove invite {n}",
+      "addAnother": "Add another",
+      "noteLabel": "Personal note",
+      "notePlaceholder": "Add a short message to the invitation (optional)…",
+      "summaryCan": "A {role} can see",
+      "cancel": "Cancel",
+      "sending": "Sending…",
+      "sendN": "Send {count} invites",
+      "sendOne": "Send invite"
+    },
+    "changeRole": {
+      "title": "Change role",
+      "description": "Update what {name} can see and do.",
+      "newRole": "New role",
+      "whatChanges": "What changes",
+      "pickDifferent": "Pick a different role to preview the changes.",
+      "noChanges": "No access changes between these roles.",
+      "gainFull": "<b>{name}</b> will gain full access to {cap}",
+      "gainView": "<b>{name}</b> will gain view access to {cap}",
+      "lossNone": "Loses access to {cap}",
+      "lossView": "Reduced to view access for {cap}",
+      "cancel": "Cancel",
+      "confirm": "Confirm change"
+    },
+    "phone": {
+      "editTitle": "Edit contact phone",
+      "addTitle": "Add contact phone",
+      "description": "A phone number for {name}, callable from the emergency card.",
+      "phoneLabel": "Phone number",
+      "phonePlaceholder": "+1 (555) 010-2030",
+      "blankToRemove": "Leave blank to remove the number.",
+      "cancel": "Cancel",
+      "save": "Save"
+    }
+  },
+  "experiences": {
+    "caregiver": {
+      "fallbackRecipient": "your loved one",
+      "shiftLabel": "My shift today",
+      "heading": "Caring for {name}",
+      "dosesProgress": "{given} of {total} doses given so far.",
+      "noMedsToday": "No medications scheduled today.",
+      "onShift": "On shift",
+      "medsTitle": "Today's medications",
+      "nothingScheduled": "Nothing scheduled today.",
+      "given": "Given",
+      "markGiven": "Mark given",
+      "tasksTitle": "My tasks",
+      "noTasks": "No tasks for your shift.",
+      "vitalsTitle": "Vitals to record",
+      "vitalsHint": "Tap to record a quick reading.",
+      "recordVital": "Record {vital}",
+      "addUpdateTitle": "Add an update",
+      "updatePlaceholder": "Share a quick note about {name}'s day…",
+      "postUpdate": "Post update",
+      "toastGiven": "{name} {strength} marked given",
+      "toastPosted": "Update posted to the timeline"
+    },
+    "vitals": {
+      "bp": "Blood pressure",
+      "sugar": "Blood sugar",
+      "weight": "Weight",
+      "temperature": "Temperature"
+    },
+    "recipient": {
+      "fallbackName": "there",
+      "greeting": {
+        "morning": "Good morning",
+        "afternoon": "Good afternoon",
+        "evening": "Good evening"
+      },
+      "greetingLine": "{greeting}, {name}",
+      "noMeds": "No medicines scheduled today.",
+      "dueCount": "{count, plural, one {You have # medicine to take.} other {You have # medicines to take.}}",
+      "allDone": "You've taken all your medicines today 💚",
+      "stop": "Stop",
+      "readAloud": "Read aloud",
+      "readAloudUnavailable": "Read-aloud isn't available on this device",
+      "speakDue": "{greeting}, {name}. {count, plural, one {You have # medicine to take.} other {You have # medicines to take.}}",
+      "speakDose": "{name}, {strength}, at {time}.",
+      "speakAllDone": "{greeting}, {name}. You've taken all your medicines today. Well done.",
+      "medsAria": "Today's medications",
+      "medsTitle": "Today's medicines",
+      "noMedsToday": "There are no medicines to take today.",
+      "taken": "Taken",
+      "tookAria": "I took {name} {strength}",
+      "tookIt": "I took it",
+      "apptsAria": "Today's appointments",
+      "apptsTitle": "Appointments",
+      "noAppts": "No appointments coming up.",
+      "helpAria": "Get help",
+      "callAria": "Call {name}",
+      "callFamily": "Call family",
+      "noFamilyPhone": "No family phone number is saved yet",
+      "needHelp": "I need help",
+      "toastHelp": "Reaching your family now — hold tight 💚",
+      "toastTaken": "Well done — that's recorded 💚",
+      "footer": "You decide what to share. This is your space."
+    },
+    "readonly": {
+      "fallbackRecipient": "your loved one",
+      "heading": "How {name} is doing",
+      "subtitle": "A gentle window into the day. You can react, but nothing here needs doing.",
+      "calmDay": "Calm day",
+      "goodDay": "{name} is having a good day 💚",
+      "digestLabel": "Today's digest",
+      "noDigest": "No digest yet today. As the circle shares updates about {name}, a gentle summary will appear here.",
+      "readFullDigest": "Read the full digest",
+      "recentAria": "Recent updates",
+      "recentTitle": "Recent updates",
+      "viewOnly": "View only",
+      "noUpdates": "No updates yet.",
+      "removeHeart": "Remove your heart",
+      "reactHeart": "React with a heart",
+      "medsDone": "{given}/{total} done",
+      "stat": {
+        "meds": "Meds",
+        "mood": "Mood",
+        "bp": "BP"
+      }
+    },
+    "clinician": {
+      "fallbackName": "Care recipient",
+      "ageYears": "{age} years",
+      "dob": "DOB {dob}",
+      "accessTitle": "Read-only clinical access",
+      "accessNote": "You can view {name}'s clinical record but cannot make changes.",
+      "theRecipient": "the recipient",
+      "viewOnly": "View only",
+      "conditions": "Conditions",
+      "allergies": "Allergies",
+      "bloodType": "Blood type",
+      "noneRecorded": "None recorded",
+      "currentMeds": "Current medications",
+      "noActiveMeds": "No active medications.",
+      "medsCaption": "Current medications and adherence",
+      "colMedication": "Medication",
+      "colSchedule": "Schedule",
+      "colAdherence": "Adherence",
+      "vitalsTitle": "Vitals — last 7 days",
+      "bpLabel": "Blood pressure (mmHg)",
+      "glucoseLabel": "Glucose (mg/dL)",
+      "noReadings": "No readings recorded.",
+      "systolic": "Systolic",
+      "diastolic": "Diastolic",
+      "glucose": "Glucose",
+      "recentIncidents": "Recent incidents",
+      "noIncidents": "No incidents reported.",
+      "medicalDocs": "Medical documents",
+      "noDocs": "No medical documents."
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "subtitle": "Stay on top of what's happening.",
+    "unreadCount": "{count, plural, one {# unread} other {# unread}}",
+    "markAllRead": "Mark all read",
+    "seeAll": "See all",
+    "justNow": "just now",
+    "unread": "Unread",
+    "bellAria": "{count, plural, =0 {Notifications, none unread} one {Notifications, # unread} other {Notifications, # unread}}",
+    "filters": {
+      "all": "All",
+      "mentions": "Mentions",
+      "urgent": "Urgent",
+      "tasks": "Tasks"
+    },
+    "types": {
+      "med": "Medication",
+      "vital": "Vital",
+      "task": "Task",
+      "incident": "Incident",
+      "mention": "Mention",
+      "appointment": "Appointment",
+      "digest": "Digest"
+    },
+    "groups": {
+      "pinned": "Needs attention",
+      "today": "Today",
+      "earlier": "Earlier"
+    },
+    "empty": {
+      "title": "You're all caught up 💚",
+      "body": "No new notifications right now."
+    },
+    "actions": {
+      "dismiss": "Dismiss",
+      "options": "Notification options",
+      "markRead": "Mark read"
+    }
+  },
+  "onboarding": {
+    "welcome": {
+      "title": "Welcome to Kintwadi",
+      "subtitle": "You are about to bring your family and care team together in one place.",
+      "cta": "Let's set up care for your loved one."
+    },
+    "recipient": {
+      "title": "Who are you caring for?",
+      "subtitle": "Tell us about the person at the center of this care circle.",
+      "photoAlt": "Care recipient",
+      "uploadPhoto": "Upload photo",
+      "removePhoto": "Remove photo",
+      "addPhotoOptional": "Add a photo (optional)",
+      "nameLabel": "Their name *",
+      "namePlaceholder": "e.g., Antonio",
+      "dobLabel": "Date of birth",
+      "relationshipLabel": "Your relationship to them",
+      "relationshipPlaceholder": "Select relationship",
+      "photoError": "Couldn't read that image",
+      "photoErrorHint": "Please try a different photo."
+    },
+    "health": {
+      "title": "Health basics",
+      "subtitle": "This helps your care team provide better support. All fields are optional.",
+      "conditionsLabel": "Key conditions",
+      "conditionsPlaceholder": "Type or select conditions...",
+      "allergiesLabel": "Allergies",
+      "allergiesPlaceholder": "Type or select allergies...",
+      "languageLabel": "Primary language",
+      "languagePlaceholder": "Select language",
+      "timezoneLabel": "Time zone",
+      "timezonePlaceholder": "Select timezone"
+    },
+    "invite": {
+      "title": "Invite your circle",
+      "subtitle": "Add family members, caregivers, or anyone who helps with care.",
+      "empty": "No invites yet. Add people to your care circle.",
+      "emailPlaceholder": "Email address",
+      "emailAria": "Email for invite {index}",
+      "roleAria": "Role for invite {index}",
+      "removeInvite": "Remove invite",
+      "addPerson": "Add another person",
+      "laterHint": "You can always invite more people later from the dashboard."
+    },
+    "done": {
+      "fallbackName": "Your loved one",
+      "title": "{name}'s Care Circle is ready!",
+      "subtitle": "You've taken the first step toward better coordinated care. Your circle is set up and ready to go.",
+      "relationship": "Your {relationship}",
+      "moreTags": "+{count} more",
+      "invitesPending": "{count, plural, one {# invite pending} other {# invites pending}}",
+      "whatsNext": "What's next? Start adding medications, appointments, and daily updates."
+    },
+    "nav": {
+      "stepProgress": "Step {step} of {total}",
+      "startOver": "Start over",
+      "back": "Back",
+      "skip": "Skip for now",
+      "settingUp": "Setting up...",
+      "createCircle": "Create circle",
+      "goToDashboard": "Go to dashboard",
+      "continue": "Continue"
+    },
+    "toast": {
+      "createError": "Couldn't create your care circle",
+      "successDialog": "New care circle created",
+      "successOnboarding": "Welcome to Kintwadi!",
+      "successWithInvites": "{count, plural, one {Your care circle is ready · # invite sent.} other {Your care circle is ready · # invites sent.}}",
+      "successNoInvites": "Your care circle has been created.",
+      "genericError": "Something went wrong",
+      "genericErrorHint": "Please try again in a moment."
+    },
+    "dialog": {
+      "title": "Create a new care circle",
+      "description": "Set up another care circle for someone you support, step by step."
+    },
+    "chip": {
+      "remove": "Remove {value}",
+      "addCustom": "Add <b>“{value}”</b>"
+    },
+    "relationships": {
+      "parent": "Parent",
+      "spousePartner": "Spouse/Partner",
+      "grandparent": "Grandparent",
+      "sibling": "Sibling",
+      "child": "Child",
+      "inLaw": "In-law",
+      "friend": "Friend",
+      "neighbor": "Neighbor",
+      "client": "Client",
+      "other": "Other"
+    },
+    "languages": {
+      "english": "English",
+      "spanish": "Spanish",
+      "french": "French",
+      "portuguese": "Portuguese",
+      "german": "German",
+      "italian": "Italian",
+      "mandarin": "Chinese (Mandarin)",
+      "cantonese": "Chinese (Cantonese)",
+      "japanese": "Japanese",
+      "korean": "Korean",
+      "vietnamese": "Vietnamese",
+      "tagalog": "Tagalog",
+      "arabic": "Arabic",
+      "hindi": "Hindi",
+      "russian": "Russian",
+      "polish": "Polish",
+      "other": "Other"
+    },
+    "timezones": {
+      "easternTime": "Eastern Time (ET)",
+      "centralTime": "Central Time (CT)",
+      "mountainTime": "Mountain Time (MT)",
+      "pacificTime": "Pacific Time (PT)",
+      "alaskaTime": "Alaska Time (AKT)",
+      "hawaiiTime": "Hawaii Time (HT)",
+      "london": "London (GMT/BST)",
+      "centralEuropean": "Central European (CET)",
+      "berlin": "Berlin (CET)",
+      "japan": "Japan (JST)",
+      "china": "China (CST)",
+      "india": "India (IST)",
+      "sydney": "Sydney (AEST)"
+    },
+    "roles": {
+      "family": {
+        "label": "Family member",
+        "description": "View updates and help coordinate care"
+      },
+      "family_admin": {
+        "label": "Family admin",
+        "description": "Manage people, roles, and circle settings"
+      },
+      "caregiver": {
+        "label": "Caregiver",
+        "description": "Log meds, vitals, tasks, and daily care"
+      },
+      "clinician": {
+        "label": "Clinician",
+        "description": "Doctor, nurse, or therapist — clinical access"
+      },
+      "care_recipient": {
+        "label": "Care recipient",
+        "description": "The person receiving care"
+      },
+      "read_only": {
+        "label": "Read-only",
+        "description": "Can view, but not make changes"
+      }
+    },
+    "conditions": {
+      "diabetes": "Diabetes",
+      "hypertension": "Hypertension",
+      "heartDisease": "Heart disease",
+      "arthritis": "Arthritis",
+      "dementia": "Dementia",
+      "alzheimers": "Alzheimer's",
+      "parkinsons": "Parkinson's",
+      "copd": "COPD",
+      "asthma": "Asthma",
+      "cancer": "Cancer",
+      "stroke": "Stroke",
+      "depression": "Depression"
+    },
+    "allergies": {
+      "penicillin": "Penicillin",
+      "sulfaDrugs": "Sulfa drugs",
+      "aspirin": "Aspirin",
+      "nsaids": "NSAIDs",
+      "latex": "Latex",
+      "peanuts": "Peanuts",
+      "shellfish": "Shellfish",
+      "eggs": "Eggs",
+      "dairy": "Dairy",
+      "gluten": "Gluten",
+      "beeStings": "Bee stings",
+      "contrastDye": "Contrast dye"
+    }
+  },
+  "account": {
+    "title": "Your profile",
+    "subtitle": "Update your personal details, photo and sign-in security.",
+    "changePhoto": "Change photo",
+    "photoHint": "JPG or PNG, up to 5 MB.",
+    "errImageType": "Please choose an image file.",
+    "errImageSize": "Please choose an image under 5 MB.",
+    "errName": "Please enter your name.",
+    "fullName": "Full name",
+    "email": "Email",
+    "emailHint": "Your email is used to sign in and can't be changed here.",
+    "language": "Language",
+    "timezone": "Time zone",
+    "save": "Save changes",
+    "saving": "Saving…",
+    "profileUpdated": "Profile updated",
+    "changePassword": "Change password",
+    "current": "Current",
+    "new": "New",
+    "confirm": "Confirm",
+    "passwordHint": "At least 8 characters, with an uppercase letter, a lowercase letter and a number.",
+    "updatePassword": "Update password",
+    "updating": "Updating…",
+    "passwordUpdated": "Password updated",
+    "socialNoPassword": "You sign in with a social provider, so there's no password to change here.",
+    "deleteTitle": "Delete account",
+    "deleteDesc": "Permanently remove your account and personal data. This can't be undone.",
+    "deleteConfirmTitle": "Delete your account?",
+    "deleteConfirmBody": "This permanently deletes your account and removes you from all care circles. This cannot be undone.",
+    "cancel": "Cancel"
+  },
+  "blog": {
+    "badge": "Kintwadi blog",
+    "heroTitle": "Notes on caring, together",
+    "heroSubtitle": "Stories, product updates, and ideas for coordinating care across families, distance and time zones.",
+    "featured": "Featured",
+    "readStory": "Read the story",
+    "morePosts": "More stories are on the way.",
+    "allPosts": "All posts"
+  },
+  "legal": {
+    "eyebrow": {
+      "legal": "Legal",
+      "trust": "Trust",
+      "compliance": "Compliance"
+    },
+    "lastUpdated": "Last updated {date}",
+    "disclaimer": "This page is illustrative content for a hackathon demo — not legal advice.",
+    "privacy": {
+      "title": "Privacy Policy",
+      "subtitle": "How Kintwadi collects, uses, and protects the information you trust us with.",
+      "updated": "June 6, 2026",
+      "short": {
+        "title": "The short version",
+        "body": "Kintwadi holds sensitive information about families and the people they care for. We collect only what we need to coordinate care, we never sell your data, and we scope every person's access to their role."
+      },
+      "collect": {
+        "title": "What we collect",
+        "items": [
+          "Account details — your name, email, and avatar.",
+          "Care-circle content you add — the care recipient's profile, medications, timeline updates, tasks, appointments, vitals, and documents.",
+          "Usage and device information needed to keep the service secure and reliable."
+        ]
+      },
+      "use": {
+        "title": "How we use it",
+        "body": "To provide the service: showing each member the right slice of one shared record, sending notifications and the Daily Digest, and surfacing safety signals like missed-med streaks or interaction warnings.",
+        "body2": "We do not sell personal information or use care content for advertising."
+      },
+      "who": {
+        "title": "Who can see your data",
+        "body": "Access is determined by role within a care circle and enforced at the database with row-level security — a hired aide, for example, can never read a family's financial or legal documents. Every sensitive action is recorded in an append-only audit log."
+      },
+      "choices": {
+        "title": "Your choices",
+        "items": [
+          "Export a copy of your circle's record at any time.",
+          "Control what you share — the care recipient decides what others see about them.",
+          "Delete your account; we remove your personal data on request."
+        ]
+      },
+      "contact": {
+        "title": "Contact",
+        "body": "Questions about privacy? Email <a>privacy@kintwadi.app</a>."
+      }
+    },
+    "terms": {
+      "title": "Terms of Service",
+      "subtitle": "The agreement between you and Kintwadi when you use the service.",
+      "updated": "June 6, 2026",
+      "using": {
+        "title": "Using Kintwadi",
+        "body": "Kintwadi helps families and care teams coordinate care. By creating an account you agree to use it lawfully, to keep your login secure, and to respect the privacy of everyone in your care circles."
+      },
+      "notMedical": {
+        "title": "Not a medical service",
+        "body": "Kintwadi is a coordination tool, not a medical device or a provider of medical advice. Safety features such as interaction warnings and decline detection are supportive aids — they don't replace professional clinical judgment. In an emergency, call your local emergency number."
+      },
+      "content": {
+        "title": "Your content",
+        "body": "You keep ownership of the content you add. You grant us the limited permission needed to store and display it to the right members and to operate features like the Daily Digest. You're responsible for having the right to share information about the people you care for."
+      },
+      "billing": {
+        "title": "Plans & billing",
+        "body": "Free and paid plans are described on our <a>pricing page</a>. Paid subscriptions renew until cancelled; you can change or cancel at any time, with changes taking effect at the next billing cycle."
+      },
+      "acceptable": {
+        "title": "Acceptable use",
+        "items": [
+          "Don't misuse the service, attempt to break its security, or access data you're not entitled to.",
+          "Don't upload unlawful content or impersonate others.",
+          "Respect the role-based permissions of your care circle."
+        ]
+      },
+      "changes": {
+        "title": "Changes",
+        "body": "We may update these terms as the product evolves. We'll note the date above and, for material changes, let you know in the app or by email."
+      }
+    },
+    "security": {
+      "title": "Security",
+      "subtitle": "Kintwadi holds sensitive health and family data. Protecting it is a first-class design goal, not an afterthought.",
+      "depth": {
+        "title": "Defense in depth",
+        "body": "Caregiving is an inherently access-controlled domain, so we built security into the data model itself. Permissions are enforced at multiple layers — the edge, the application, and the database — so a single bug can't expose data a person shouldn't see."
+      },
+      "measures": {
+        "encryption": {
+          "title": "Encryption everywhere",
+          "body": "Data is encrypted in transit (TLS) and at rest."
+        },
+        "rls": {
+          "title": "Row-level security",
+          "body": "Role-based access is enforced in the database, not just the UI."
+        },
+        "audit": {
+          "title": "Append-only audit log",
+          "body": "Every sensitive read or change is recorded and immutable."
+        },
+        "leastPriv": {
+          "title": "Least privilege",
+          "body": "Each role sees only the slice of the record it needs."
+        },
+        "resilient": {
+          "title": "Resilient data",
+          "body": "Managed Postgres with automated, encrypted backups."
+        },
+        "secrets": {
+          "title": "Secrets stay server-side",
+          "body": "Credentials live in environment config — never in the client."
+        }
+      },
+      "db": {
+        "title": "Enforced at the database",
+        "body": "Row-level security means a hired aide physically cannot read a family's financial documents, and safety-critical actions like “give a medication” commit as a single atomic transaction — logging the event, decrementing supply, and writing the timeline entry together, or not at all."
+      },
+      "disclosure": {
+        "title": "Responsible disclosure",
+        "body": "Found a vulnerability? We appreciate your help. Email <a>security@kintwadi.app</a> and we'll respond promptly."
+      }
+    },
+    "hipaa": {
+      "title": "HIPAA",
+      "subtitle": "Kintwadi is built with HIPAA principles in mind — designed to protect health information from day one.",
+      "approach": {
+        "title": "Our approach",
+        "body": "Kintwadi handles Protected Health Information (PHI), so we follow HIPAA's security and privacy principles throughout the product: minimum-necessary access, strong technical safeguards, and a full audit trail. This page describes our design posture; it is not a claim of formal certification."
+      },
+      "safeguardsTitle": "Technical safeguards",
+      "safeguards": [
+        "Encryption of PHI in transit and at rest",
+        "Role-based access enforced at the database (row-level security)",
+        "An append-only audit log of who viewed or changed what",
+        "Least-privilege access and server-side secrets",
+        "Clear separation of demo data from any real data"
+      ],
+      "baa": {
+        "title": "Business Associate Agreements (BAA)",
+        "body": "For organizations that require a signed BAA — home-care agencies, assisted-living facilities, and similar — a BAA is available on our Care Teams plan. Reach out to <a>sales@kintwadi.app</a> to start the conversation."
+      },
+      "report": {
+        "title": "Reporting a concern",
+        "body": "If you believe health information may have been handled improperly, contact <a>privacy@kintwadi.app</a> and we'll investigate."
+      }
+    }
+  }
+}

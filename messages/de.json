@@ -1,0 +1,3332 @@
+{
+  "common": {
+    "getStartedFree": "Kostenlos starten",
+    "signIn": "Anmelden",
+    "learnMore": "Mehr erfahren",
+    "openMenu": "Menü öffnen"
+  },
+  "nav": {
+    "howItWorks": "So funktioniert's",
+    "pricing": "Preise",
+    "about": "Über uns"
+  },
+  "dashboard": {
+    "title": "Übersicht",
+    "greeting": {
+      "morning": "Guten Morgen",
+      "afternoon": "Guten Tag",
+      "evening": "Guten Abend"
+    },
+    "stats": {
+      "medications": "Medikamente heute",
+      "nextAppointment": "Nächster Termin",
+      "openTasks": "Offene Aufgaben",
+      "latestVitals": "Letzte Vitalwerte"
+    },
+    "insight": {
+      "title": "Einen Blick wert",
+      "dismiss": "Hinweis ausblenden"
+    },
+    "banner": {
+      "fallbackName": "Ihr Angehöriger",
+      "followingAlong": "Sie verfolgen den Verlauf",
+      "yourShift": "Ihre Schicht",
+      "viewTasks": "Aufgaben ansehen",
+      "doingWell": "{name} geht es gut",
+      "goodDay": "{name} hat einen guten Tag"
+    },
+    "quickActions": {
+      "logMed": "Medikament erfassen",
+      "logMedShort": "Erfassen",
+      "addUpdate": "Notiz hinzufügen",
+      "addUpdateShort": "Hinzufügen",
+      "newTask": "Neue Aufgabe",
+      "newTaskShort": "Neu",
+      "report": "Vorfall melden"
+    },
+    "cards": {
+      "digestTitle": "Tageszusammenfassung",
+      "digestFallback": "KI-generierte Zusammenfassung",
+      "digestEmpty": "Noch keine Zusammenfassung für heute. Sobald der Kreis Medikamente, Vitalwerte und Updates protokolliert, fasst Kintwadi den Tag hier zusammen.",
+      "askKintwadi": "Kintwadi fragen",
+      "generateDigest": "Heutige Zusammenfassung erstellen",
+      "onCallNow": "Jetzt im Dienst",
+      "active": "Aktiv",
+      "noOnCall": "Derzeit ist niemand im Dienst.",
+      "viewRota": "Vollständigen Dienstplan ansehen",
+      "fairShare": "Faire Verteilung diese Woche",
+      "noShifts": "Diese Woche keine Schichten geplant.",
+      "hours": "{hours} Std."
+    }
+  },
+  "marketing": {
+    "hero": {
+      "badge": "Eine gemeinsame Akte für alle, die sich um jemanden kümmern",
+      "title": "Sorgen Sie für Ihre Eltern, <hl>gemeinsam</hl> — wo immer Sie sind.",
+      "subtitle": "Koordinieren Sie Medikamente, Termine und tägliche Neuigkeiten über Geschwister, Städte und Länder hinweg. Alle bleiben informiert, niemand wird vergessen.",
+      "demo": {
+        "circleName": "Marias Pflegekreis",
+        "membersActive": "{count} Mitglieder aktiv",
+        "allMedsGiven": "Heute: alle Medikamente gegeben",
+        "recentActivity": "Letzte Aktivität",
+        "item1Text": "Morgenmedikamente gegeben",
+        "item2Text": "Arzttermin für Donnerstag bestätigt",
+        "yesterday": "Gestern",
+        "tomLocation": "Tom in Kanada",
+        "checkedIn": "Hat sich gerade gemeldet"
+      }
+    },
+    "socialProof": {
+      "heading": "Für Familien gemacht, die sich um einen älteren Angehörigen kümmern — über jede Entfernung hinweg",
+      "stat1Value": "2,1 Mrd.",
+      "stat1Label": "Menschen über 60 bis 2050",
+      "stat2Value": "1 von 6",
+      "stat2Label": "Werden bis 2030 über 60 sein",
+      "stat3Value": "2×",
+      "stat3Label": "Ältere Bevölkerung, 2020 → 2050"
+    },
+    "problems": {
+      "heading": "Pflege sollte sich nicht so schwer anfühlen",
+      "subtitle": "Wir haben Kintwadi entwickelt, weil wir es selbst erlebt haben. Der Stress, die Missverständnisse, die Schuldgefühle — es gibt einen besseren Weg.",
+      "items": {
+        "chat": {
+          "title": "Chaotische Gruppenchats",
+          "description": "Wichtige Updates gehen zwischen 47 ungelesenen Nachrichten darüber unter, was man zum Sonntagsessen mitbringen soll.",
+          "solution": "Ein klarer, geordneter Verlauf, dem alle folgen können — kein Rauschen, nur das Wesentliche."
+        },
+        "meds": {
+          "title": "Vergessene Medikamente",
+          "description": "„Hat jemand Mama ihre Abendtabletten gegeben?\" Die Frage, die niemand mit Sicherheit beantworten kann.",
+          "solution": "Echtzeit-Medikamententracking mit Bestätigungen, damit alle wissen, was gegeben wurde."
+        },
+        "guilt": {
+          "title": "Das schlechte Gewissen des entfernten Geschwisters",
+          "description": "Weit weg zu wohnen bedeutet, sich abgeschnitten, besorgt und hilflos gegenüber der täglichen Pflege eines Elternteils zu fühlen.",
+          "solution": "Bleiben Sie mit KI-gestützten Tageszusammenfassungen verbunden, die Sie unabhängig von der Entfernung informieren."
+        }
+      }
+    },
+    "features": {
+      "heading": "Alles, was Sie zur Pflegekoordination brauchen",
+      "subtitle": "Maßgeschneiderte Werkzeuge für die besonderen Herausforderungen der familiären Pflege.",
+      "items": {
+        "timeline": {
+          "title": "Gemeinsamer Pflegeverlauf",
+          "description": "Jedes Medikament, jeder Termin und jedes Update an einem Ort. Sehen Sie, wer was wann getan hat — kein Rätselraten und keine Doppelarbeit mehr."
+        },
+        "medications": {
+          "title": "Medikamentensicherheit",
+          "description": "Verfolgen Sie Dosen, stellen Sie Erinnerungen ein und erhalten Sie Bestätigungen. Der ganze Kreis weiß, wann Medikamente gegeben wurden, und gefährliche Doppeldosen werden vermieden."
+        },
+        "roles": {
+          "title": "Rollen & Berechtigungen",
+          "description": "Familienmitglieder, professionelle Pflegekräfte und Ärzte sehen, was sie brauchen — nicht mehr und nicht weniger. Volle Kontrolle über die Privatsphäre."
+        }
+      }
+    },
+    "moreFeatures": {
+      "digest": {
+        "title": "KI-Tageszusammenfassung",
+        "description": "Jeden Morgen erhält das entfernte Geschwister eine persönliche Zusammenfassung: was gestern passiert ist, was ansteht und welche Punkte Aufmerksamkeit erfordern. Bleiben Sie verbunden, ohne ständig nachfragen zu müssen.",
+        "sampleGreeting": "Guten Morgen, Tom",
+        "sampleBody": "Mama hatte gestern einen guten Tag. Alle Medikamente gegeben, keine Vorfälle. Arzttermin am Donnerstag um 14 Uhr."
+      },
+      "emergency": {
+        "title": "Notfallkarte",
+        "description": "Eine teilbare digitale Karte mit den wichtigsten medizinischen Informationen. Im Notfall sehen Ersthelfer sofort Allergien, Medikamente, Erkrankungen und Notfallkontakte.",
+        "samplePerson": "Maria, 78",
+        "sampleBlood": "Blutgruppe: A+ · DNR: Nein",
+        "allergies": "Allergien",
+        "sampleAllergies": "Penicillin, Sulfonamide"
+      }
+    },
+    "howItWorks": {
+      "heading": "So funktioniert's",
+      "subtitle": "Bringen Sie Ihren Pflegekreis in drei einfachen Schritten zum Laufen.",
+      "steps": {
+        "create": {
+          "title": "Kreis erstellen",
+          "description": "Erstellen Sie in unter einer Minute einen Pflegekreis für Ihren Angehörigen. Fügen Sie Basisdaten und Pflegebedarf hinzu."
+        },
+        "invite": {
+          "title": "Familie & Pflegekräfte einladen",
+          "description": "Senden Sie Einladungen an Geschwister, professionelle Pflegekräfte oder Ärzte. Jeder erhält den passenden Zugang."
+        },
+        "view": {
+          "title": "Jeder sieht die richtige Ansicht",
+          "description": "Jede Person sieht, was sie braucht — die Familie erhält Updates, Pflegekräfte erhalten Aufgaben, Ärzte erhalten die Krankengeschichte."
+        }
+      }
+    },
+    "trust": {
+      "heading": "Die Daten Ihrer Familie, geschützt",
+      "subtitle": "Wir nehmen Datenschutz ernst. Kintwadi ist von Grund auf mit Sicherheit konzipiert.",
+      "items": {
+        "encryption": {
+          "title": "Ende-zu-Ende-Verschlüsselung",
+          "description": "Die Daten Ihrer Familie sind im Ruhezustand und bei der Übertragung verschlüsselt."
+        },
+        "access": {
+          "title": "Rollenbasierter Zugriff",
+          "description": "Feingranulare Berechtigungen stellen sicher, dass jeder nur das sieht, was er sehen soll."
+        },
+        "audit": {
+          "title": "Vollständiges Audit-Protokoll",
+          "description": "Jede Aktion wird protokolliert und ist nachvollziehbar — für volle Verantwortlichkeit."
+        }
+      }
+    },
+    "testimonial": {
+      "quote": "Ein Geschwister in Toronto, ein anderes in London, ein Elternteil zu Hause in Lissabon — und Pflegeentscheidungen verstreut über Gruppenchats, Notizzettel und verpasste Anrufe. Kintwadi gibt es, um alle, die sich um jemanden kümmern, auf denselben Stand zu bringen, wo immer sie sind.",
+      "attribution": "Warum wir Kintwadi entwickelt haben"
+    },
+    "cta": {
+      "heading": "Beginnen Sie heute, gemeinsam zu pflegen",
+      "subtitle": "Bringen Sie Ihre Familie und Ihr Pflegeteam an einem gemeinsamen Ort zusammen, um die Pflege zu koordinieren. Kostenlos starten, keine Kreditkarte nötig."
+    },
+    "footer": {
+      "tagline": "Eine gemeinsame Akte für alle, die sich um jemanden kümmern. Koordinieren Sie die Pflege über Familien, Städte und Länder hinweg.",
+      "product": "Produkt",
+      "company": "Unternehmen",
+      "legal": "Rechtliches",
+      "links": {
+        "features": "Funktionen",
+        "howItWorks": "So funktioniert's",
+        "pricing": "Preise",
+        "dashboard": "Übersicht",
+        "designSystem": "Design-System",
+        "about": "Über uns",
+        "careers": "Karriere",
+        "blog": "Blog",
+        "contact": "Kontakt",
+        "privacy": "Datenschutz",
+        "terms": "AGB",
+        "security": "Sicherheit",
+        "hipaa": "HIPAA"
+      },
+      "rights": "© {year} Kintwadi. Alle Rechte vorbehalten.",
+      "madeWith": "Mit Sorgfalt für Pflegende überall gemacht."
+    }
+  },
+  "pricing": {
+    "hero": {
+      "badge": "Einfache, transparente Preise",
+      "title": "Wählen Sie den Tarif, der zu <hl>Ihrer Familie</hl> passt",
+      "subtitle": "Kostenlos starten, bei Bedarf upgraden. Alle Tarife enthalten die zentralen Funktionen zur Pflegekoordination.",
+      "monthly": "Monatlich",
+      "annual": "Jährlich",
+      "saveBadge": "25 % sparen"
+    },
+    "tiers": {
+      "free": {
+        "name": "Kostenlos",
+        "description": "Für Familien, die mit koordinierter Pflege beginnen.",
+        "cta": "Loslegen"
+      },
+      "plus": {
+        "name": "Plus",
+        "description": "Für Familien, die mehr Leistung und KI-Unterstützung brauchen.",
+        "cta": "Kostenlose Testphase starten"
+      },
+      "teams": {
+        "name": "Pflegeteams",
+        "description": "Für Agenturen, Arbeitgeber und Gesundheitsorganisationen.",
+        "cta": "Vertrieb kontaktieren"
+      }
+    },
+    "card": {
+      "mostPopular": "Am beliebtesten",
+      "perMonth": "/Monat",
+      "customPricing": "Individueller Preis",
+      "saveAnnual": "Sparen Sie {percent} % bei jährlicher Abrechnung",
+      "billedAnnually": "Jährlich abgerechnet"
+    },
+    "featureLabels": {
+      "oneCircle": "Ein Pflegekreis",
+      "multiCircles": "Mehrere Pflegekreise",
+      "unlimitedCircles": "Unbegrenzte Pflegekreise",
+      "timeline": "Gemeinsamer Pflegeverlauf",
+      "medTracking": "Medikamententracking",
+      "taskMgmt": "Aufgabenverwaltung",
+      "basicRoles": "Basisrollen (3 Typen)",
+      "allRoles": "Alle 6 Rollentypen",
+      "mobileApp": "Zugang zur mobilen App",
+      "aiDigest": "KI-Tageszusammenfassung",
+      "askAi": "Ask Kintwadi KI",
+      "docVault": "Dokumententresor",
+      "docVault5gb": "Dokumententresor (5 GB)",
+      "advInsights": "Erweiterte Auswertungen",
+      "multiFamilyDash": "Mehrfamilien-Dashboard",
+      "auditCompliance": "Audit-Protokoll & Compliance",
+      "sso": "SSO-/SAML-Integration",
+      "customRoles": "Individuelle Rollen & Berechtigungen",
+      "apiAccess": "API-Zugriff",
+      "prioritySupport": "Priorisierter Support",
+      "successManager": "Dedizierter Erfolgsmanager",
+      "hipaaBaa": "HIPAA-BAA verfügbar",
+      "customOnboarding": "Individuelles Onboarding"
+    },
+    "comparison": {
+      "title": "Alle Funktionen vergleichen",
+      "subtitle": "Eine detaillierte Übersicht, was in jedem Tarif enthalten ist.",
+      "featureColumn": "Funktion",
+      "free": "Kostenlos",
+      "plus": "Plus",
+      "teams": "Pflegeteams",
+      "teamsShort": "Teams",
+      "popular": "Beliebt",
+      "categories": {
+        "core": "Kernfunktionen",
+        "ai": "KI & Intelligenz",
+        "storage": "Speicher & Dokumente",
+        "security": "Sicherheit & Compliance",
+        "support": "Support"
+      },
+      "rows": {
+        "careCircles": "Pflegekreise",
+        "teamMembers": "Mitglieder pro Kreis",
+        "sharedTimeline": "Gemeinsamer Verlauf",
+        "medTracking": "Medikamententracking",
+        "taskMgmt": "Aufgabenverwaltung",
+        "apptCalendar": "Terminkalender",
+        "aiDigest": "KI-Tageszusammenfassung",
+        "askAi": "Ask Kintwadi KI",
+        "smartReminders": "Intelligente Erinnerungen",
+        "careInsights": "Pflege-Auswertungen",
+        "docVault": "Dokumententresor",
+        "photoUploads": "Foto-Uploads",
+        "exportData": "Daten exportieren",
+        "roleAccess": "Rollenbasierter Zugriff",
+        "auditTrail": "Audit-Protokoll",
+        "ssoSaml": "SSO / SAML",
+        "hipaaBaa": "HIPAA-BAA",
+        "encryption": "Datenverschlüsselung",
+        "communitySupport": "Community-Support",
+        "emailSupport": "E-Mail-Support",
+        "prioritySupport": "Priorisierter Support",
+        "successManager": "Dedizierter Erfolgsmanager"
+      },
+      "values": {
+        "unlimited": "Unbegrenzt",
+        "basic": "Basis",
+        "advanced": "Erweitert",
+        "custom": "Individuell",
+        "days30": "30 Tage",
+        "roles3": "3 Rollen",
+        "roles6": "6 Rollen"
+      }
+    },
+    "faq": {
+      "title": "Häufig gestellte Fragen",
+      "subtitle": "Alles, was Sie über die Preise von Kintwadi wissen müssen.",
+      "items": {
+        "switch": {
+          "question": "Kann ich den Tarif später wechseln?",
+          "answer": "Ja! Sie können Ihren Tarif jederzeit hoch- oder herunterstufen. Beim Upgrade wird Ihnen die anteilige Differenz berechnet. Beim Downgrade gilt Ihr neuer Tarif ab dem nächsten Abrechnungszeitraum."
+        },
+        "data": {
+          "question": "Was passiert mit meinen Daten bei einem Downgrade?",
+          "answer": "Ihre Daten werden niemals gelöscht. Wenn Sie die Grenzen Ihres neuen Tarifs überschreiten (z. B. mehrere Kreise im Tarif Kostenlos), behalten Sie Lesezugriff, können aber keine neuen Inhalte hinzufügen, bis Sie upgraden oder die Nutzung reduzieren."
+        },
+        "trial": {
+          "question": "Gibt es eine kostenlose Testphase für Plus?",
+          "answer": "Ja! Plus beinhaltet eine 14-tägige kostenlose Testphase. Zum Start ist keine Kreditkarte erforderlich. Während der Testphase erhalten Sie vollen Zugriff auf alle Plus-Funktionen."
+        },
+        "teamsBilling": {
+          "question": "Wie funktioniert die Abrechnung für Pflegeteams?",
+          "answer": "Pflegeteams wird jährlich anhand der Anzahl der Pflegekreise und Nutzer abgerechnet. Kontaktieren Sie unser Vertriebsteam für ein individuelles, auf Ihre Organisation zugeschnittenes Angebot."
+        },
+        "hipaa": {
+          "question": "Ist Kintwadi HIPAA-konform?",
+          "answer": "Kintwadi setzt branchenübliche Sicherheitsmaßnahmen ein, darunter Verschlüsselung im Ruhezustand und bei der Übertragung. Für Organisationen, die einen unterzeichneten Business Associate Agreement (BAA) benötigen, ist dieser im Tarif Pflegeteams verfügbar."
+        },
+        "freeMembers": {
+          "question": "Kann ich Familienmitglieder kostenlos hinzufügen?",
+          "answer": "Ja! Alle Tarife ermöglichen es Ihnen, Familienmitglieder und Pflegekräfte ohne Zusatzkosten in Ihre Pflegekreise einzuladen. Die Tarifgrenzen gelten für die Anzahl der Kreise und Funktionen, nicht für die Anzahl der Personen."
+        }
+      }
+    },
+    "cta": {
+      "title": "Bereit, die Pflegekoordination zu vereinfachen?",
+      "subtitle": "Bringen Sie alle, die sich um Ihren Angehörigen kümmern, in einer gemeinsamen Akte zusammen. Kostenlos starten, keine Kreditkarte nötig.",
+      "getStarted": "Kostenlos starten",
+      "talkToSales": "Mit dem Vertrieb sprechen"
+    }
+  },
+  "about": {
+    "hero": {
+      "badge": "Über Kintwadi",
+      "tagline": "Eine gemeinsame Akte für alle, die sich um jemanden kümmern.",
+      "subtitle": "Kintwadi ist das ruhige, rollenbewusste Zuhause für die Pflege einer Familie — über Geschwister, Städte und Zeitzonen hinweg. Eine einzige verlässliche Quelle für die heutigen Medikamente, den Pflegeverlauf, Termine, Aufgaben und Vitalwerte.",
+      "getStarted": "Kostenlos starten",
+      "seePricing": "Preise ansehen"
+    },
+    "stats": {
+      "people": {
+        "value": "2,1 Mrd.",
+        "label": "Menschen werden bis 2050 über 60 sein (WHO)"
+      },
+      "age65": {
+        "value": "1 von 6",
+        "label": "Menschen weltweit werden über 65 sein"
+      },
+      "oneRecord": {
+        "value": "1 Akte",
+        "label": "viele rollenbezogene Ansichten"
+      },
+      "zeroChats": {
+        "value": "0",
+        "label": "Gruppenchats zur Koordination nötig"
+      }
+    },
+    "problem": {
+      "eyebrow": "Das Problem",
+      "title": "Pflege ist universell — und schlecht ausgestattet",
+      "subtitle": "Wenn ein Elternteil Hilfe braucht, läuft die Koordination über chaotische Gruppenchats, Notizzettel und ein erschöpftes „Standard“-Kind.",
+      "items": {
+        "sandwich": {
+          "title": "Die Sandwich-Generation geht unter",
+          "body": "Erwachsene pflegen alternde Eltern, während sie Kinder großziehen und arbeiten. Diese Arbeit ist unsichtbar, unbezahlt und emotional belastend."
+        },
+        "coordination": {
+          "title": "Die Koordination ist ein Durcheinander",
+          "body": "Pflege läuft über WhatsApp-Threads, Medikamentenlisten auf Papier und das Gedächtnis. Es gibt keine zentrale verlässliche Quelle, also gehen Dinge unter."
+        },
+        "details": {
+          "title": "Übersehene Details sind gefährlich",
+          "body": "Medikationsfehler gehören zu den häufigsten, vermeidbaren Schadensursachen bei älteren Menschen. „Hat Mama ihre Tabletten genommen?“ sollte keine Vermutung sein."
+        },
+        "global": {
+          "title": "Familien sind heute global",
+          "body": "Die Person, die den Patienten am meisten liebt, ist oft Tausende Kilometer entfernt — und fühlt sich machtlos und schuldig."
+        }
+      }
+    },
+    "difference": {
+      "eyebrow": "Was es anders macht",
+      "title": "Die unterversorgte Mitte",
+      "subtitle": "Klinische Software ist für Institutionen gemacht; Familienorganiser haben kein Konzept von Pflege. Kintwadi ist die familientaugliche, rollenbewusste Pflegeakte — aufgebaut auf drei Ideen, die niemand gut kombiniert hat.",
+      "items": {
+        "fairShare": {
+          "title": "Sichtbarkeit der fairen Aufteilung",
+          "body": "Alle sehen, wer was beigetragen hat. Die unsichtbare Arbeit sichtbar zu machen entschärft die häufigste Ursache für Konflikte in der Familienpflege."
+        },
+        "diaspora": {
+          "title": "Die Diaspora-Zusammenfassung",
+          "body": "Ein von KI geschriebenes, warmes Tagesupdate, das den entfernten Angehörigen emotional verbunden hält — und Schuldgefühle in Teilhabe verwandelt."
+        },
+        "oneRecord": {
+          "title": "Eine Akte, viele Ansichten",
+          "body": "Die Pflegekraft, das entfernte Geschwister, der Koordinator und der Elternteil sehen jeweils eine auf ihre Rolle zugeschnittene Ansicht — durchgesetzt in der Datenbank, nicht nur in der Oberfläche."
+        }
+      }
+    },
+    "personas": {
+      "eyebrow": "Für wen es ist",
+      "title": "Eine Akte, eine Ansicht für jeden",
+      "subtitle": "Dieselbe verlässliche Quelle — zugeschnitten auf die Rolle jedes Einzelnen, durchgesetzt in der Datenbank, nicht nur in der Oberfläche.",
+      "items": {
+        "coordinator": {
+          "name": "Der Koordinator",
+          "who": "Oft der „Standard“-Organisator.",
+          "need": "Ein Ort, um alles zu steuern, und nicht länger der einzige Ausfallpunkt zu sein."
+        },
+        "remoteSibling": {
+          "name": "Das entfernte Geschwister",
+          "who": "Liebt den Elternteil aus der Ferne.",
+          "need": "Zu wissen, dass es Mama heute gut geht, und eine einfache Möglichkeit, aus einer anderen Zeitzone zu helfen."
+        },
+        "careRecipient": {
+          "name": "Die pflegebedürftige Person",
+          "who": "Der Elternteil, der gepflegt wird.",
+          "need": "Eine respektvolle, vereinfachte Ansicht — und Kontrolle darüber, wer was sieht."
+        },
+        "professional": {
+          "name": "Die professionelle Pflegekraft",
+          "who": "Angestellte Pflegekraft / häuslicher Pflegedienst.",
+          "need": "Klare tägliche Medikamente & Aufgaben, schnelle Erfassung, begrenzter Zugriff — niemals Familienfinanzen."
+        },
+        "extended": {
+          "name": "Der erweiterte Kreis",
+          "who": "Verwandte, Freunde, Nachbarn.",
+          "need": "Beruhigung mit Lesezugriff und eine Möglichkeit zu helfen, wenn man gefragt wird."
+        },
+        "agency": {
+          "name": "Pflegemanager / Agentur",
+          "who": "Häusliche Pflege & betreutes Wohnen (B2B).",
+          "need": "Ein Mehrfamilien-Dashboard mit Kontinuität, Verantwortlichkeit und Audit."
+        }
+      }
+    },
+    "pillars": {
+      "eyebrow": "Was es leistet",
+      "title": "Alles, was die Pflege einer Familie braucht",
+      "subtitle": "Ein durchdachtes, ruhiges Produkt — kein generisches Dashboard mit 40 Widgets.",
+      "items": {
+        "record": {
+          "title": "Gemeinsame Pflegeakte",
+          "body": "Ein umfassendes Profil, ein sicherer Dokumententresor und eine stets aktuelle Notfallkarte."
+        },
+        "medication": {
+          "title": "Medikamentenverwaltung",
+          "body": "Zeitpläne, Gabe-/Auslass-Protokoll, Nachfüll-Warnungen sowie Wechselwirkungs- und Allergiewarnungen."
+        },
+        "timeline": {
+          "title": "Pflegeverlauf",
+          "body": "Ein chronologischer Feed aus Medikamenten, Mahlzeiten, Stimmung, Vitalwerten, Besuchen, Notizen und Fotos."
+        },
+        "appointments": {
+          "title": "Termine",
+          "body": "Gemeinsamer Kalender, wer hingeht, Vorbereitung vor dem Besuch und Zusammenfassungen danach."
+        },
+        "tasks": {
+          "title": "Aufgaben & Dienstplan",
+          "body": "Zuweisbare wiederkehrende Aufgaben, ein Schichtplan und der sanfte Bericht zur fairen Aufteilung."
+        },
+        "roles": {
+          "title": "Rollen & Berechtigungen",
+          "body": "Klar getrennte Rollen, granulare Eingrenzung, ein sauberer Einladungsablauf und ein unveränderliches Audit-Protokoll."
+        },
+        "vitals": {
+          "title": "Vitalwerte & Gesundheit",
+          "body": "Blutdruck, Blutzucker, Gewicht, Schlaf und Stimmung — mit Trends und Schwellenwert-Warnungen."
+        },
+        "smart": {
+          "title": "Die smarte Ebene",
+          "body": "Tageszusammenfassung, Erkennung von Verschlechterung und Ask Kintwadi in einfacher Sprache."
+        },
+        "notifications": {
+          "title": "Benachrichtigungen",
+          "body": "Rollen- und ereignisbewusste Hinweise, dringende Eskalation und Kommentare im Kontext."
+        },
+        "emergency": {
+          "title": "Notfallmodus",
+          "body": "Ein Tipp zeigt eine teilbare Notfallkarte, bereit für Rettungsdienst oder Notaufnahme, in jeder Sprache."
+        }
+      }
+    },
+    "principles": {
+      "eyebrow": "Designphilosophie",
+      "title": "Für dieses Publikum gemacht",
+      "subtitle": "Warm, barrierefrei, mobil zuerst — sichtbar für gestresste Pflegende und ältere Menschen gebaut.",
+      "items": {
+        "calm": {
+          "title": "Ruhe statt Betrieb",
+          "body": "Gestresste Pflegende brauchen Beruhigung, nicht 40 Widgets — eine auf einen Blick erfassbare Antwort: „Geht es ihr heute gut?“"
+        },
+        "warm": {
+          "title": "Warm, nicht klinisch",
+          "body": "Ein sensibler Bereich, mit einem menschlichen, würdevollen Ton behandelt — respektvoll, nie bevormundend."
+        },
+        "accessible": {
+          "title": "Barrierefrei von Haus aus",
+          "body": "Große Schrift, hoher Kontrast, einfache Abläufe, kompatibel mit Screenreadern. Barrierefreiheit ist die UX."
+        },
+        "mobile": {
+          "title": "Mobil zuerst",
+          "body": "Pflege passiert am Telefon, unterwegs — also ist die Erfahrung dafür gebaut."
+        },
+        "lenses": {
+          "title": "Eine Akte, viele Ansichten",
+          "body": "Jede Rolle erhält eine eigens gestaltete Ansicht, damit es sich von der Pflegekraft bis zum Patienten mühelos anfühlt."
+        },
+        "transparency": {
+          "title": "Vertrauen durch Transparenz",
+          "body": "Ein nur erweiterbares Audit-Protokoll und datenbankseitig durchgesetzter Zugriff schaffen Vertrauen auf medizinischem und familiärem Niveau."
+        }
+      }
+    },
+    "cta": {
+      "title": "Pflege, gemeinsam — wo immer Sie sind",
+      "subtitle": "Bringen Sie Ihre Familie und Ihr Pflegeteam in einer gemeinsamen, berechtigungsbewussten Akte zusammen. Kostenlos starten, keine Kreditkarte nötig.",
+      "getStarted": "Kostenlos starten",
+      "howItWorks": "So funktioniert's"
+    }
+  },
+  "contact": {
+    "badge": "Kontakt",
+    "title": "Wir freuen uns, von Ihnen zu hören",
+    "subtitle": "Fragen, Feedback oder denken Sie über Kintwadi für Ihre Familie oder Organisation nach? Senden Sie uns eine Nachricht und ein echter Mensch antwortet.",
+    "replyTime": "Wir antworten in der Regel innerhalb <b>eines Werktags</b>.",
+    "methods": {
+      "general": {
+        "label": "Allgemein",
+        "note": "Fragen zu Kintwadi und wie es funktioniert."
+      },
+      "sales": {
+        "label": "Vertrieb",
+        "note": "Tarife, Agenturen, Arbeitgeber und individuelle Angebote."
+      },
+      "support": {
+        "label": "Support",
+        "note": "Hilfe zu Ihrem Konto oder Pflegekreis."
+      }
+    },
+    "form": {
+      "name": "Name",
+      "email": "E-Mail",
+      "topic": "Thema",
+      "message": "Nachricht",
+      "messagePlaceholder": "Wie können wir helfen?",
+      "privacyNote": "Wir verwenden Ihre E-Mail nur, um zu antworten.",
+      "send": "Nachricht senden",
+      "sending": "Wird gesendet…",
+      "errors": {
+        "name": "Bitte nennen Sie uns Ihren Namen",
+        "emailRequired": "Geben Sie Ihre E-Mail ein",
+        "emailInvalid": "Geben Sie eine gültige E-Mail ein",
+        "message": "Etwas mehr Details helfen (10+ Zeichen)"
+      },
+      "topics": {
+        "general": "Allgemeine Anfrage",
+        "sales": "Vertrieb & Tarife",
+        "support": "Hilfe & Support",
+        "partnerships": "Partnerschaften",
+        "press": "Presse"
+      },
+      "success": {
+        "title": "Danke, {name}!",
+        "body": "Wir haben Ihre Nachricht erhalten und antworten an <email></email> innerhalb eines Werktags.",
+        "another": "Weitere Nachricht senden",
+        "fallbackName": "Ihnen"
+      }
+    }
+  },
+  "howItWorksPage": {
+    "intro": {
+      "badge": "So funktioniert Kintwadi",
+      "title": "Sich um einen geliebten Menschen zu kümmern <hl>sollte sich nicht so schwer anfühlen</hl>",
+      "subtitle": "Pflege über Geschwister, Städte und Zeitzonen hinweg zu koordinieren ist überwältigend. Informationen gehen verloren. Menschen fühlen sich ausgeschlossen. Wichtige Dinge gehen unter.",
+      "subtitleEmphasis": "Kintwadi bringt alle an einem Ort zusammen — damit Sie sich auf das Wesentliche konzentrieren können."
+    },
+    "timeline": {
+      "stepLabel": "Schritt {number}",
+      "steps": {
+        "create": {
+          "title": "Einen Kreis erstellen",
+          "description": "Erstellen Sie in unter einer Minute einen Pflegekreis für Ihren Angehörigen. Fügen Sie Name, Foto und grundlegende Pflegeinformationen hinzu. Das wird die zentrale Drehscheibe, auf der alles rund um die Pflege liegt.",
+          "details": [
+            "Profil und Foto der pflegebedürftigen Person hinzufügen",
+            "Wichtigste Erkrankungen und Allergien einrichten",
+            "Medikamentenpläne konfigurieren",
+            "Ihre primäre Zeitzone wählen"
+          ]
+        },
+        "invite": {
+          "title": "Ihre Leute einladen",
+          "description": "Senden Sie Einladungen an alle, die helfen — Geschwister im ganzen Land, die professionelle Pflegekraft, sogar die Besuchspflege. Jede Person erhält eine Rolle, die zu dem passt, was sie sehen und tun muss.",
+          "details": [
+            "Per E-Mail oder teilbarem Link einladen",
+            "Passende Rollen zuweisen",
+            "Benachrichtigungseinstellungen festlegen",
+            "Steuern, worauf jede Person zugreifen kann"
+          ]
+        },
+        "coordinate": {
+          "title": "Pflege koordinieren",
+          "description": "Erfassen Sie Medikamente, Termine, tägliche Beobachtungen. Erstellen und weisen Sie Aufgaben zu. Alle sehen Updates in Echtzeit. Keine Verwirrung mehr à la „Hat jemand Mama ihre Tabletten gegeben?“.",
+          "details": [
+            "Medikamente mit Bestätigungen verfolgen",
+            "Termine planen und verwalten",
+            "Pflegeaufgaben zuweisen und erledigen",
+            "Gesundheitsbeobachtungen und Vitalwerte erfassen"
+          ]
+        },
+        "connect": {
+          "title": "Von überall verbunden bleiben",
+          "description": "Ob am anderen Ende der Stadt oder der Welt — bleiben Sie informiert. Erhalten Sie KI-gestützte Tageszusammenfassungen, Echtzeit-Benachrichtigungen und die Gewissheit zu wissen, was passiert.",
+          "details": [
+            "Täglich KI-generierte Pflegezusammenfassungen",
+            "Echtzeit-Push-Benachrichtigungen",
+            "Sichere Nachrichten innerhalb des Kreises",
+            "Zugriff von jedem Gerät, überall"
+          ]
+        }
+      }
+    },
+    "roles": {
+      "badge": "Rollenbasierter Zugriff",
+      "title": "Für jeden im Kreis gebaut",
+      "subtitle": "Jede Person erhält eine maßgeschneiderte Erfahrung basierend auf ihrer Rolle. Der Koordinator sieht Administrationseinstellungen. Das entfernte Geschwister sieht tägliche Updates. Die Pflegekraft sieht Aufgaben. Jeder erhält genau das, was er braucht.",
+      "whatTheySee": "Was sie sehen",
+      "items": {
+        "coordinator": {
+          "title": "Koordinator",
+          "description": "Voller Zugriff, um den Kreis zu verwalten, Mitglieder einzuladen und alle Einstellungen zu konfigurieren.",
+          "sees": [
+            "Alles",
+            "Administrationseinstellungen",
+            "Abrechnung",
+            "Audit-Protokolle"
+          ]
+        },
+        "family": {
+          "title": "Familienmitglied",
+          "description": "Alle Updates ansehen, Aktivitäten erfassen und mit der Pflege Ihres Angehörigen verbunden bleiben.",
+          "sees": [
+            "Verlauf & Updates",
+            "Medikamente",
+            "Termine",
+            "Dokumente"
+          ]
+        },
+        "professional": {
+          "title": "Professionelle Pflegekraft",
+          "description": "Aufgabenorientierte Ansicht mit klaren Zuweisungen, Medikamentenplänen und täglichen Checklisten.",
+          "sees": [
+            "Zugewiesene Aufgaben",
+            "Medikamentenpläne",
+            "Pflegenotizen",
+            "Notfallinfos"
+          ]
+        },
+        "clinician": {
+          "title": "Arzt",
+          "description": "Medizinisch ausgerichtete Ansicht mit Gesundheitsverlauf, Vitalwerten und klinischer Dokumentation.",
+          "sees": [
+            "Gesundheitsakten",
+            "Vitalwert-Verlauf",
+            "Medikamente",
+            "Klinische Notizen"
+          ]
+        },
+        "recipient": {
+          "title": "Pflegebedürftige Person",
+          "description": "Eine vereinfachte Ansicht für die gepflegte Person — ihr Tagesplan, Besucher und Updates.",
+          "sees": [
+            "Heutiger Plan",
+            "Wer zu Besuch kommt",
+            "Nachrichten",
+            "Erinnerungen"
+          ]
+        },
+        "readonly": {
+          "title": "Nur Lesen",
+          "description": "Nur-Lese-Zugriff für die erweiterte Familie, die informiert bleiben möchte, ohne zu bearbeiten.",
+          "sees": [
+            "Verlaufsansicht",
+            "Gesundheitsstatus",
+            "Fotos",
+            "Updates"
+          ]
+        }
+      }
+    },
+    "security": {
+      "badge": "Sicherheit & Vertrauen",
+      "title": "Die Daten Ihrer Familie, geschützt",
+      "subtitle": "Gesundheitsinformationen sind sensibel. Wir haben Kintwadi mit Sicherheit und Datenschutz als Fundament gebaut — nicht als nachträglichen Gedanken.",
+      "items": {
+        "encryption": {
+          "title": "Ende-zu-Ende-Verschlüsselung",
+          "description": "Alle Daten werden im Ruhezustand und bei der Übertragung mit AES-256 und TLS 1.3 verschlüsselt. Die Informationen Ihrer Familie bleiben privat."
+        },
+        "rbac": {
+          "title": "Rollenbasierte Zugriffssteuerung",
+          "description": "Feingranulare Berechtigungen stellen sicher, dass jede Person nur das sieht, was sie braucht. Kein versehentliches Überteilen."
+        },
+        "audit": {
+          "title": "Vollständiges Audit-Protokoll",
+          "description": "Jede Aktion wird mit Wer, Was und Wann protokolliert. Volle Verantwortlichkeit und Nachvollziehbarkeit für Compliance."
+        },
+        "privacy": {
+          "title": "Datenschutz durch Design",
+          "description": "Wir verkaufen niemals Daten. Wir teilen niemals mit Werbetreibenden. Die Gesundheitsinformationen Ihrer Familie sind kein Produkt."
+        }
+      },
+      "badges": {
+        "hipaa": "HIPAA-bereit",
+        "soc2": "SOC 2 Type II",
+        "gdpr": "DSGVO-konform"
+      }
+    },
+    "cta": {
+      "title": "Bereit, Ihren Pflegekreis zusammenzubringen?",
+      "subtitle": "Bringen Sie alle, die sich um Ihren Angehörigen kümmern, an einem gemeinsamen Ort zusammen. Kostenlos starten, in unter einer Minute eingerichtet.",
+      "getStarted": "Kostenlos starten",
+      "viewPricing": "Preise ansehen"
+    }
+  },
+  "auth": {
+    "common": {
+      "emailLabel": "E-Mail-Adresse",
+      "emailPlaceholder": "maria@beispiel.com",
+      "passwordLabel": "Passwort",
+      "showPassword": "Passwort anzeigen",
+      "hidePassword": "Passwort ausblenden",
+      "backToSignIn": "Zurück zur Anmeldung",
+      "signIn": "Anmelden",
+      "strength": {
+        "label": "Passwortstärke",
+        "weak": "Schwach",
+        "fair": "Mittel",
+        "good": "Gut",
+        "strong": "Stark"
+      },
+      "requirements": {
+        "min8": "Mindestens 8 Zeichen",
+        "upper": "Ein Großbuchstabe",
+        "lower": "Ein Kleinbuchstabe",
+        "number": "Eine Zahl"
+      }
+    },
+    "signIn": {
+      "brandHeadline": "Willkommen zurück in Ihrem Pflegekreis.",
+      "brandSubtitle": "Ihre Familie wartet. Melden Sie sich an, um die neuesten Updates zu sehen und die Pflege fortzusetzen.",
+      "bannerTagline": "Willkommen zurück",
+      "stats": {
+        "people": {
+          "value": "2,1 Mrd.",
+          "label": "Menschen über 60 bis 2050"
+        },
+        "age": {
+          "value": "1 von 6",
+          "label": "Werden bis 2030 über 60 sein"
+        },
+        "growth": {
+          "value": "2×",
+          "label": "Ältere Bevölkerung bis 2050"
+        }
+      },
+      "title": "Bei Ihrem Konto anmelden",
+      "subtitle": "Willkommen zurück! Bitte geben Sie Ihre Daten ein.",
+      "passwordPlaceholder": "Geben Sie Ihr Passwort ein",
+      "forgotPassword": "Passwort vergessen?",
+      "rememberMe": "30 Tage angemeldet bleiben",
+      "submit": "Anmelden",
+      "submitting": "Anmeldung läuft...",
+      "noAccount": "Sie haben noch kein Konto?",
+      "signUpLink": "Registrieren",
+      "toastTitle": "Willkommen zurück!",
+      "toastDesc": "Sie haben sich erfolgreich angemeldet.",
+      "errors": {
+        "emailRequired": "E-Mail ist erforderlich",
+        "emailInvalid": "Bitte geben Sie eine gültige E-Mail-Adresse ein",
+        "passwordRequired": "Passwort ist erforderlich"
+      }
+    },
+    "signUp": {
+      "brandHeadline": "Holen Sie Ihre Familie in die Pflege.",
+      "brandSubtitle": "Koordinieren Sie die Pflege Ihres Angehörigen mit allen Beteiligten — gemeinsam, egal über welche Entfernung.",
+      "brandQuote": "Eine gemeinsame, berechtigungsbewusste Akte für alle, die sich um jemanden kümmern — damit Geschwister über Städte und Länder hinweg wirklich gemeinsam dabei sind und nicht in verstreuten Gruppenchats verloren gehen.",
+      "brandQuoteAttribution": "Warum wir Kintwadi entwickelt haben",
+      "bannerTagline": "Pflege gemeinsam koordinieren",
+      "title": "Konto erstellen",
+      "subtitle": "Beginnen Sie noch heute, die Pflege mit Ihrer Familie zu koordinieren",
+      "fullNameLabel": "Vollständiger Name",
+      "fullNamePlaceholder": "Maria Rodriguez",
+      "passwordPlaceholder": "Erstellen Sie ein starkes Passwort",
+      "terms": "Ich stimme den <terms>Nutzungsbedingungen</terms> und der <privacy>Datenschutzerklärung</privacy> zu",
+      "submit": "Konto erstellen",
+      "submitting": "Konto wird erstellt...",
+      "haveAccount": "Sie haben bereits ein Konto?",
+      "signInLink": "Anmelden",
+      "toastSuccessTitle": "Willkommen bei Kintwadi!",
+      "toastSuccessDesc": "Ihr Konto wurde erfolgreich erstellt.",
+      "toastErrorTitle": "Konto konnte nicht erstellt werden",
+      "errors": {
+        "fullNameMin": "Bitte geben Sie Ihren vollständigen Namen ein",
+        "fullNameMax": "Der Name ist zu lang",
+        "emailRequired": "E-Mail ist erforderlich",
+        "emailInvalid": "Bitte geben Sie eine gültige E-Mail-Adresse ein",
+        "passwordMin": "Das Passwort muss mindestens 8 Zeichen lang sein",
+        "passwordUpper": "Fügen Sie mindestens einen Großbuchstaben hinzu",
+        "passwordLower": "Fügen Sie mindestens einen Kleinbuchstaben hinzu",
+        "passwordNumber": "Fügen Sie mindestens eine Zahl hinzu",
+        "terms": "Sie müssen die Bedingungen akzeptieren, um fortzufahren"
+      }
+    },
+    "forgot": {
+      "brandHeadline": "Wir vergessen alle mal etwas.",
+      "brandSubtitle": "Kein Problem — wir senden Ihnen einen sicheren Link, um Ihr Passwort zurückzusetzen und Sie zurück in Ihren Pflegekreis zu bringen.",
+      "support": "Haben Sie Probleme beim Zugriff auf Ihr Konto? <link>Kontaktieren Sie unser Support-Team</link>",
+      "bannerTagline": "Passwortwiederherstellung",
+      "title": "Passwort vergessen?",
+      "subtitle": "Kein Problem. Geben Sie Ihre E-Mail-Adresse ein und wir senden Ihnen einen Link zum Zurücksetzen.",
+      "submit": "Link zum Zurücksetzen senden",
+      "submitting": "Senden...",
+      "rememberPassword": "Erinnern Sie sich an Ihr Passwort?",
+      "sent": {
+        "title": "Prüfen Sie Ihren Posteingang",
+        "desc": "Wir haben einen Link zum Zurücksetzen des Passworts an <email></email> gesendet",
+        "instructions": "Klicken Sie auf den Link in der E-Mail, um ein neues Passwort zu erstellen. Der Link läuft in 1 Stunde ab.",
+        "didntReceive": "E-Mail nicht erhalten? Prüfen Sie Ihren Spam-Ordner oder",
+        "resend": "E-Mail erneut senden",
+        "resending": "Wird erneut gesendet..."
+      },
+      "errors": {
+        "emailRequired": "E-Mail ist erforderlich",
+        "emailInvalid": "Bitte geben Sie eine gültige E-Mail-Adresse ein"
+      }
+    },
+    "reset": {
+      "brandHeadline": "Fast geschafft! Erstellen Sie Ihr neues Passwort.",
+      "brandSubtitle": "Wählen Sie ein starkes Passwort, um Ihren Pflegekreis zu schützen. Nach dem Zurücksetzen werden Sie automatisch angemeldet.",
+      "securityTipsTitle": "Sicherheitstipps:",
+      "tips": {
+        "unique": "Verwenden Sie ein eindeutiges Passwort für Kintwadi",
+        "manager": "Erwägen Sie die Verwendung eines Passwort-Managers",
+        "noShare": "Geben Sie Ihr Passwort niemals an andere weiter"
+      },
+      "bannerTagline": "Neues Passwort festlegen",
+      "title": "Neues Passwort festlegen",
+      "subtitle": "Erstellen Sie ein starkes Passwort für Ihr Konto. Machen Sie es eindeutig und sicher.",
+      "newPasswordLabel": "Neues Passwort",
+      "newPasswordPlaceholder": "Erstellen Sie ein starkes Passwort",
+      "confirmLabel": "Passwort bestätigen",
+      "confirmPlaceholder": "Passwort erneut eingeben",
+      "match": "Passwörter stimmen überein",
+      "noMatch": "Passwörter stimmen nicht überein",
+      "submit": "Passwort zurücksetzen",
+      "submitting": "Passwort wird zurückgesetzt...",
+      "toastInvalidLink": "Dieser Link zum Zurücksetzen ist ungültig oder abgelaufen. Bitte fordern Sie einen neuen an.",
+      "toastErrorTitle": "Passwort konnte nicht zurückgesetzt werden",
+      "errors": {
+        "passwordMin": "Das Passwort muss mindestens 8 Zeichen lang sein",
+        "passwordUpper": "Das Passwort muss einen Großbuchstaben enthalten",
+        "passwordLower": "Das Passwort muss einen Kleinbuchstaben enthalten",
+        "passwordNumber": "Das Passwort muss eine Zahl enthalten",
+        "confirmRequired": "Bitte bestätigen Sie Ihr Passwort",
+        "noMatch": "Passwörter stimmen nicht überein"
+      },
+      "invalid": {
+        "title": "Dieser Link zum Zurücksetzen ist ungültig",
+        "desc": "Der Link ist möglicherweise abgelaufen oder wurde bereits verwendet. Fordern Sie einen neuen an und wir senden ihn Ihnen sofort per E-Mail.",
+        "action": "Neuen Link anfordern"
+      },
+      "success": {
+        "title": "Passwort erfolgreich zurückgesetzt",
+        "desc": "Ihr Passwort wurde erfolgreich geändert. Sie können sich jetzt mit Ihrem neuen Passwort anmelden.",
+        "continue": "Weiter zur Anmeldung",
+        "securityNotice": "Zu Ihrer Sicherheit wurden Sie auf allen anderen Geräten abgemeldet. Sie müssen sich auf diesen Geräten erneut anmelden."
+      }
+    },
+    "social": {
+      "google": "Mit Google fortfahren",
+      "apple": "Mit Apple fortfahren",
+      "divider": "Oder mit E-Mail fortfahren",
+      "error": "Anmeldung konnte nicht gestartet werden. Bitte versuchen Sie es erneut."
+    },
+    "demo": {
+      "title": "Sie testen Kintwadi? Probieren Sie eine Rolle.",
+      "subtitle": "Eine gemeinsame Akte, sechs Perspektiven — jede von der Datenbank durchgesetzt, nicht von der Oberfläche.",
+      "failed": "Demo-Anmeldung fehlgeschlagen",
+      "welcome": "Willkommen, {name}!",
+      "entering": "Demo-Kreis wird betreten…",
+      "lenses": {
+        "coordinator": "Koordinator (Eigentümer)",
+        "remote": "Entfernte Familie",
+        "aide": "Professionelle Pflegekraft",
+        "recipient": "Pflegebedürftige Person",
+        "readonly": "Nur Lesen",
+        "clinician": "Arzt"
+      }
+    }
+  },
+  "app": {
+    "nav": {
+      "dashboard": "Übersicht",
+      "timeline": "Verlauf",
+      "medications": "Medikamente",
+      "appointments": "Termine",
+      "tasks": "Aufgaben",
+      "health": "Gesundheit",
+      "documents": "Dokumente",
+      "people": "Personen",
+      "digest": "Tagesüberblick",
+      "rota": "Dienstplan",
+      "ask": "Kintwadi fragen",
+      "profile": "Profil",
+      "emergencyCard": "Notfallkarte",
+      "settings": "Einstellungen",
+      "notifications": "Benachrichtigungen",
+      "incidents": "Vorfälle",
+      "account": "Ihr Profil",
+      "medicationsShort": "Medik.",
+      "more": "Mehr"
+    },
+    "dashboardLabels": {
+      "coordinator": "Übersicht",
+      "family": "Übersicht",
+      "caregiver": "Heute",
+      "readonly": "Start",
+      "care-recipient": "Start",
+      "clinician": "Zusammenfassung"
+    },
+    "roles": {
+      "coordinator": "Koordinator",
+      "family": "Familie",
+      "caregiver": "Pflegeperson",
+      "readonly": "Nur Lesen",
+      "care-recipient": "Pflegeempfänger",
+      "clinician": "Behandler"
+    },
+    "sidebar": {
+      "careCircle": "Pflegekreis",
+      "switchCircle": "Kreis wechseln",
+      "createCircle": "Neuen Kreis erstellen",
+      "platform": "Plattform",
+      "adminDashboard": "Admin-Übersicht",
+      "collapse": "Einklappen",
+      "navMenu": "Navigationsmenü"
+    },
+    "userMenu": {
+      "account": "Ihr Konto",
+      "yourProfile": "Ihr Profil",
+      "notificationSettings": "Benachrichtigungseinstellungen",
+      "switchRoleView": "Rollenansicht wechseln",
+      "signOut": "Abmelden"
+    },
+    "topbar": {
+      "openMenu": "Navigationsmenü öffnen",
+      "search": "Suchen",
+      "reportIncident": "Vorfall melden",
+      "onCall": "Bereitschaft: {name}",
+      "onCallUntil": "Bereitschaft bis {time}"
+    },
+    "search": {
+      "placeholder": "Suchen oder fragen…",
+      "ariaLabel": "Pflegeakte durchsuchen",
+      "askPrefix": "Kintwadi fragen:",
+      "askHint": "Beantwortet aus der Akte dieses Kreises",
+      "noMatches": "Keine Treffer in diesem Kreis. Versuchen Sie oben „Kintwadi fragen“.",
+      "groups": {
+        "person": "Personen",
+        "recipient": "Pflegeempfänger",
+        "medication": "Medikamente",
+        "document": "Dokumente",
+        "task": "Aufgaben",
+        "appointment": "Termine",
+        "timeline": "Verlauf",
+        "incident": "Vorfälle"
+      }
+    },
+    "status": {
+      "prefix": "Einige Funktionen sind vorübergehend nicht verfügbar:",
+      "suffix": "Unser Team wurde benachrichtigt und arbeitet an einer Lösung — Ihre Daten sind sicher, und alles andere funktioniert weiterhin normal.",
+      "and": "und",
+      "dismiss": "Servicehinweis schließen",
+      "services": {
+        "api": "den App-Dienst",
+        "db": "das Speichern und Laden von Daten",
+        "bedrock": "den Tagesüberblick und den Kintwadi-Assistenten",
+        "s3": "Dokumente und Fotos",
+        "ses": "E-Mail-Benachrichtigungen",
+        "sns": "dringende Warnmeldungen"
+      }
+    }
+  },
+  "medications": {
+    "title": "Medikamente",
+    "subtitle": "Verfolgen Sie die heutigen Dosen und verwalten Sie die gesamte Liste.",
+    "viewOnly": "Nur Lesen — bitten Sie den Koordinator um Änderungen",
+    "tabs": {
+      "today": "Heute",
+      "all": "Alle Medikamente"
+    },
+    "addMedication": "Medikament hinzufügen",
+    "addFirst": "Erstes hinzufügen",
+    "you": "Sie",
+    "periods": {
+      "morning": "Morgen",
+      "afternoon": "Nachmittag",
+      "evening": "Abend",
+      "night": "Nacht"
+    },
+    "refill": {
+      "create": "Nachbestellaufgabe erstellen",
+      "short": "Nachbestellen",
+      "created": "Nachbestellaufgabe erstellt",
+      "createdDesc": "Nachbestellung von {name} zu Aufgaben hinzugefügt",
+      "failed": "Nachbestellaufgabe konnte nicht erstellt werden"
+    },
+    "askCoordinator": "Koordinator fragen",
+    "toasts": {
+      "updated": "{name} aktualisiert",
+      "added": "{name} hinzugefügt",
+      "saveFailed": "Medikament konnte nicht gespeichert werden",
+      "addFailed": "Medikament konnte nicht hinzugefügt werden",
+      "uploadFailed": "{file} konnte nicht hochgeladen werden",
+      "removeAttachmentFailed": "Anhang konnte nicht entfernt werden",
+      "saveRetry": "Speichern fehlgeschlagen — bitte erneut versuchen"
+    },
+    "today": {
+      "prevDay": "Vorheriger Tag",
+      "nextDay": "Nächster Tag",
+      "today": "Heute",
+      "yesterday": "Gestern",
+      "tomorrow": "Morgen",
+      "dosesGiven": "{given} von {total} Dosen heute gegeben",
+      "dosesGivenAria": "{given} von {total} Dosen gegeben",
+      "noScheduleForDay": "Kein Plan geladen für {day}",
+      "switchBack": "Wechseln Sie zurück zu heute, um Dosen zu erfassen.",
+      "backToToday": "Zurück zu heute",
+      "noDosesTitle": "Keine Dosen für heute geplant",
+      "noDosesBody": "Geplante Medikamente erscheinen hier, wenn eine Dosis fällig ist.",
+      "asNeeded": "Bei Bedarf (PRN)",
+      "doseFallback": "Dosis",
+      "markedGiven": "{name} {strength} als gegeben markiert",
+      "recordedPatient": "Als von der Patientin/dem Patienten eingenommen erfasst",
+      "recordedBy": "Erfasst von {name}",
+      "markedSkipped": "{name} als ausgelassen markiert",
+      "markedRefused": "{name} als verweigert markiert",
+      "snoozed": "{name} um 15 Minuten verschoben",
+      "loggedLate": "{name} als gegeben erfasst (verspätet)",
+      "prnLogged": "Dosis von {name} erfasst",
+      "confirmSkippedTitle": "Dosis als ausgelassen markieren?",
+      "confirmRefusedTitle": "Dosis als verweigert markieren?",
+      "confirmSkippedDesc": "Dies erfasst, dass die Dosis absichtlich nicht gegeben wurde. Es wird im Verlauf vermerkt.",
+      "confirmRefusedDesc": "Dies erfasst, dass die Patientin/der Patient das Medikament abgelehnt hat. Es wird im Verlauf vermerkt.",
+      "cancel": "Abbrechen",
+      "confirm": "Bestätigen"
+    },
+    "status": {
+      "givenByTime": "Gegeben um {time} von {name}",
+      "givenTime": "Gegeben um {time}",
+      "undo": "Rückgängig",
+      "refused": "Verweigert",
+      "skipped": "Ausgelassen",
+      "missed": "Verpasst",
+      "logLate": "Verspätet erfassen",
+      "due": "Fällig {time}",
+      "markGiven": "Als gegeben markieren",
+      "moreOptions": "Weitere Dosisoptionen",
+      "recordThisDose": "Diese Dosis erfassen",
+      "takenByPatient": "Von Patient eingenommen",
+      "snooze": "15 Min. verschieben"
+    },
+    "prn": {
+      "last": "zuletzt {time}",
+      "todayCount": "{taken}/{max} heute",
+      "maxReached": "Maximum erreicht",
+      "logDose": "Dosis erfassen"
+    },
+    "card": {
+      "editDetails": "Details bearbeiten",
+      "prescribedBy": "Verschrieben von {name}",
+      "active": "Aktiv",
+      "paused": "Pausiert",
+      "optionsFor": "Optionen für {name}",
+      "activeToggleAria": "{name} aktiv"
+    },
+    "doseRow": {
+      "daysLeft": "{days} Tage übrig — bald nachbestellen"
+    },
+    "supply": {
+      "days": "{days} T",
+      "aria": "Tage Vorrat",
+      "ariaLow": "Tage Vorrat, niedrig"
+    },
+    "allMeds": {
+      "searchPlaceholder": "Nach Name, Zweck oder Verschreiber suchen…",
+      "searchAria": "Medikamente durchsuchen",
+      "discontinued": "Abgesetzt",
+      "reactivate": "Reaktivieren",
+      "discontinuedDefault": "Abgesetzt",
+      "resumed": "{name} fortgesetzt",
+      "paused": "{name} pausiert",
+      "updateFailed": "Aktualisierung fehlgeschlagen — bitte erneut versuchen",
+      "reactivated": "{name} reaktiviert",
+      "reactivateFailed": "Reaktivierung fehlgeschlagen — bitte erneut versuchen",
+      "noMatchTitle": "Keine Medikamente passen zu „{query}“",
+      "noMatchBody": "Versuchen Sie einen anderen Namen, Zweck oder Verschreiber.",
+      "emptyTitle": "Noch keine Medikamente",
+      "emptyBodyManage": "Fügen Sie das erste Medikament hinzu, um die Dosiserfassung zu starten.",
+      "emptyBodyView": "Sobald ein Koordinator Medikamente hinzufügt, erscheinen sie hier."
+    },
+    "adherence": {
+      "title": "Therapietreue dieser Woche",
+      "given": "gegeben",
+      "missed": "verpasst",
+      "onTime": "pünktlich",
+      "legendGiven": "Gegeben",
+      "legendMissed": "Verpasst",
+      "legendUpcoming": "Anstehend",
+      "emptyHint": "Die Therapietreue erscheint hier, sobald Dosen erfasst werden.",
+      "noRecent": "In den letzten 7 Tagen noch keine Dosen erfasst.",
+      "doseAria": "{day} Dosis {n}: {state}",
+      "states": {
+        "given": "gegeben",
+        "missed": "verpasst",
+        "upcoming": "anstehend"
+      }
+    },
+    "print": {
+      "button": "Drucken / teilen",
+      "title": "Medikamentenliste",
+      "dialogDesc": "Eine übersichtliche Zusammenfassung zum Drucken oder Teilen mit dem Pflegeteam.",
+      "activeHeading": "Aktive Medikamente ({count})",
+      "discontinuedHeading": "Abgesetzt ({count})",
+      "supplyLabel": "{days} T Vorrat",
+      "copy": "Kopieren",
+      "share": "Teilen",
+      "print": "Drucken",
+      "copied": "Medikamentenliste in die Zwischenablage kopiert",
+      "copyFailed": "Kopieren in die Zwischenablage fehlgeschlagen",
+      "shareUnsupported": "Teilen wird auf diesem Gerät nicht unterstützt",
+      "popupBlocked": "Erlauben Sie Pop-ups, um das druckbare Blatt zu öffnen",
+      "generated": "Erstellt am {date}",
+      "shareHeader": "Medikamentenliste — {date}",
+      "footer": "Kintwadi — bitte mit den Originalrezepten abgleichen. Kein Ersatz für medizinische Beratung.",
+      "colMedication": "Medikament",
+      "colSchedule": "Zeitplan",
+      "colPurpose": "Zweck",
+      "colPrescriber": "Verschreiber",
+      "colSupply": "Vorrat"
+    },
+    "form": {
+      "modal": {
+        "addTitle": "Medikament hinzufügen",
+        "editTitle": "Medikament bearbeiten",
+        "addDesc": "Geben Sie die Details ein, um es zur Medikamentenliste hinzuzufügen.",
+        "editDesc": "Aktualisieren Sie Details, Zeitplan und Vorrat."
+      },
+      "fields": {
+        "name": {
+          "label": "Medikamentenname"
+        },
+        "strength": {
+          "label": "Stärke",
+          "placeholder": "z. B. 10 mg"
+        },
+        "form": {
+          "label": "Form",
+          "placeholder": "Form wählen"
+        },
+        "route": {
+          "label": "Verabreichungsweg",
+          "placeholder": "Weg wählen"
+        },
+        "purpose": {
+          "label": "Zweck",
+          "hint": "Wofür ist es?",
+          "placeholder": "z. B. Blutdruck"
+        },
+        "prescriber": {
+          "label": "Verschreiber",
+          "placeholder": "z. B. Dr. Chen"
+        },
+        "instructions": {
+          "label": "Hinweise",
+          "hint": "Optional — z. B. mit dem Essen einnehmen, Grapefruit meiden",
+          "placeholder": "Besondere Hinweise für Pflegende…",
+          "ariaHint": "Optionale Notizen"
+        },
+        "photo": {
+          "label": "Tablettenfoto",
+          "hint": "Hilft Pflegenden, das Medikament zu erkennen"
+        },
+        "attachments": {
+          "label": "Anhänge",
+          "hint": "Optional — zusätzliche Fotos, Beipackzettel oder Dokumente (PDF, Word, Bilder)"
+        },
+        "schedule": {
+          "label": "Zeitplan"
+        },
+        "supplyCount": {
+          "label": "Vorratsmenge",
+          "hint": "Vorhandene Tage (oder Dosen)",
+          "aria": "Vorhandene Tage"
+        },
+        "refillThreshold": {
+          "label": "Nachbestellschwelle",
+          "hint": "Warnen, wenn so viele übrig sind",
+          "aria": "Warnen, wenn so viele übrig sind"
+        }
+      },
+      "nameInput": {
+        "placeholder": "Tippen Sie… z. B. Ibuprofen"
+      },
+      "forms": {
+        "Tablet": "Tablette",
+        "Capsule": "Kapsel",
+        "Liquid": "Flüssigkeit",
+        "Injection": "Injektion",
+        "Patch": "Pflaster",
+        "Inhaler": "Inhalator",
+        "Drops": "Tropfen",
+        "Cream": "Creme",
+        "Other": "Andere"
+      },
+      "routes": {
+        "Oral": "Oral",
+        "Sublingual": "Sublingual",
+        "Topical": "Topisch",
+        "Inhaled": "Inhalativ",
+        "Injection": "Injektion",
+        "Ophthalmic": "Ophthalmisch",
+        "Nasal": "Nasal",
+        "Other": "Andere"
+      },
+      "footer": {
+        "ackToContinue": "Bestätigen Sie den Sicherheitscheck oben, um fortzufahren.",
+        "requiredHint": "Pflichtfelder sind mit * markiert"
+      },
+      "actions": {
+        "cancel": "Abbrechen",
+        "saved": "Gespeichert",
+        "saving": "Wird gespeichert…",
+        "saveChanges": "Änderungen speichern",
+        "saveMedication": "Medikament speichern"
+      },
+      "schedule": {
+        "prnTitle": "Bei Bedarf (PRN)",
+        "prnDesc": "Kein fester Zeitplan — nur bei Bedarf gegeben.",
+        "prnAria": "Bei Bedarf",
+        "doseTimeAria": "Uhrzeit für Dosis {n}",
+        "removeDoseAria": "Dosis {n} entfernen",
+        "everyDay": "Täglich",
+        "weekdays": "Wochentags",
+        "addTime": "Weitere Uhrzeit hinzufügen",
+        "weekdayShort": {
+          "sun": "S",
+          "mon": "M",
+          "tue": "D",
+          "wed": "M",
+          "thu": "D",
+          "fri": "F",
+          "sat": "S"
+        },
+        "weekdayFull": {
+          "sun": "Sonntag",
+          "mon": "Montag",
+          "tue": "Dienstag",
+          "wed": "Mittwoch",
+          "thu": "Donnerstag",
+          "fri": "Freitag",
+          "sat": "Samstag"
+        }
+      },
+      "photoUpload": {
+        "chooseImageError": "Bitte wählen Sie eine Bilddatei",
+        "tooLarge": "Das Bild ist zu groß (max. 5 MB)",
+        "previewAlt": "Medikamentenvorschau",
+        "replace": "Foto ersetzen",
+        "upload": "Foto hochladen",
+        "remove": "Entfernen"
+      },
+      "attachments": {
+        "add": "Bilder oder Dokumente hinzufügen",
+        "pending": "Ausstehend",
+        "removeAria": "{name} entfernen",
+        "tooLarge": "{name} ist zu groß (max. 15 MB)"
+      },
+      "safety": {
+        "passedTitle": "Sicherheitscheck bestanden",
+        "passedDesc": "Keine bekannten Wechselwirkungen mit aktuellen Medikamenten oder erfassten Allergien.",
+        "heading": "Sicherheitscheck — {count, plural, one {# Punkt zu prüfen} other {# Punkte zu prüfen}}",
+        "regionAria": "Warnungen des Sicherheitschecks",
+        "severityHigh": "Hoch",
+        "severityModerate": "Mittel",
+        "kindAllergy": "Allergie",
+        "kindInteraction": "Wechselwirkung",
+        "ackLabel": "Ich habe diese Warnungen geprüft und werde sie mit dem Arzt abklären.",
+        "ackAria": "Sicherheitswarnungen bestätigen",
+        "ackError": "Bitte bestätigen Sie den Sicherheitscheck zum Speichern.",
+        "interactionTitle": "Kann mit {name} wechselwirken",
+        "allergyTitle": "Möglicher {allergen}-Allergiekonflikt",
+        "allergyDetail": "Bei der pflegebedürftigen Person ist eine {allergen}-Allergie erfasst. Vor der Gabe mit dem Verschreiber abklären.",
+        "allergens": {
+          "penicillin": "Penicillin",
+          "sulfa": "Sulfonamide",
+          "opioid": "Opioide"
+        },
+        "notes": {
+          "warfarin-aspirin": "Beide verdünnen das Blut — die Kombination erhöht das Risiko schwerer Blutungen.",
+          "warfarin-ibuprofen": "NSAR erhöhen das Blutungsrisiko bei gleichzeitiger Einnahme von Antikoagulanzien.",
+          "warfarin-clarithromycin": "Kann die Warfarin-Spiegel und das Blutungsrisiko stark erhöhen.",
+          "aspirin-ibuprofen": "Zwei NSAR zusammen erhöhen das Risiko von Magenblutungen.",
+          "lisinopril-ibuprofen": "NSAR können die Blutdruckkontrolle verringern und die Nieren beeinträchtigen.",
+          "lisinopril-spironolactone": "Die Kombination kann den Kaliumspiegel auf gefährliche Werte erhöhen.",
+          "lisinopril-potassium": "Risiko eines hohen Kaliumspiegels (Hyperkaliämie).",
+          "atorvastatin-clarithromycin": "Erhöht die Statin-Spiegel — höheres Risiko für Muskelschäden.",
+          "simvastatin-clarithromycin": "Erhöht die Statin-Spiegel — höheres Risiko für Muskelschäden.",
+          "atorvastatin-gemfibrozil": "Erhöhtes Risiko für Muskelabbau (Rhabdomyolyse).",
+          "metformin-furosemide": "Kann Blutzucker und Nierenfunktion beeinflussen — überwachen.",
+          "sertraline-ibuprofen": "SSRI mit NSAR können das Blutungsrisiko erhöhen."
+        }
+      },
+      "errors": {
+        "nameRequired": "Medikamentenname ist erforderlich",
+        "strengthRequired": "Stärke ist erforderlich (z. B. 10 mg)",
+        "selectForm": "Wählen Sie eine Form",
+        "selectRoute": "Wählen Sie einen Weg",
+        "purposeMax": "Bitte unter 120 Zeichen halten",
+        "prescriberMax": "Bitte unter 80 Zeichen halten",
+        "instructionsMax": "Hinweise unter 280 Zeichen halten",
+        "enterNumber": "Zahl eingeben",
+        "wholeNumber": "Ganze Zahl verwenden",
+        "cannotBeNegative": "Darf nicht negativ sein",
+        "supplyTooHigh": "Das scheint zu hoch",
+        "refillTooHigh": "Das scheint zu hoch",
+        "pickTime": "Uhrzeit wählen",
+        "pickDay": "Mindestens einen Tag wählen",
+        "addDoseTime": "Mindestens eine Dosiszeit hinzufügen"
+      }
+    }
+  },
+  "rota": {
+    "title": "Pflegeplan",
+    "subtitle": "Wer ist diese Woche da — vor Ort und in Rufbereitschaft.",
+    "viewOnly": "Nur Ansicht",
+    "addShift": "Schicht hinzufügen",
+    "askCoordinator": "Wenden Sie sich an die Koordination",
+    "legend": {
+      "inPerson": "Vor Ort",
+      "onCall": "Rufbereitschaft"
+    },
+    "today": "Heute",
+    "noOneYet": "Noch niemand",
+    "noOneScheduled": "Niemand eingeplant.",
+    "addShiftOnDay": "Schicht am {day} hinzufügen",
+    "removeShift": "Schicht von {name} entfernen",
+    "overnightSuffix": "+1",
+    "banner": {
+      "onCallNow": "Jetzt in Rufbereitschaft",
+      "noOneOnCall": "Derzeit ist niemand in Rufbereitschaft",
+      "isHereInPerson": "<strong>{name}</strong> ist vor Ort",
+      "noOneInPerson": "Derzeit niemand vor Ort"
+    },
+    "toasts": {
+      "added": "{name} zum Pflegeplan hinzugefügt",
+      "addedFallback": "Schicht zum Pflegeplan hinzugefügt",
+      "addFailed": "Schicht konnte nicht hinzugefügt werden",
+      "removed": "Schicht entfernt",
+      "removeFailed": "Schicht konnte nicht entfernt werden"
+    },
+    "form": {
+      "title": "Schicht hinzufügen",
+      "description": "Legen Sie fest, wer da ist, den Tag, die Uhrzeit und ob vor Ort oder in Rufbereitschaft.",
+      "member": "Mitglied",
+      "memberPlaceholder": "Wer ist da?",
+      "day": "Tag",
+      "from": "Von",
+      "to": "Bis",
+      "overnightHint": "Geht über Nacht bis zum nächsten Tag",
+      "type": "Art",
+      "inPerson": "Vor Ort",
+      "onCall": "Rufbereitschaft",
+      "cancel": "Abbrechen",
+      "added": "Hinzugefügt",
+      "adding": "Wird hinzugefügt…",
+      "submit": "Schicht hinzufügen",
+      "errors": {
+        "member": "Wählen Sie ein Mitglied",
+        "start": "Wählen Sie eine Startzeit",
+        "end": "Wählen Sie eine Endzeit",
+        "endEqualsStart": "Ende darf nicht gleich Beginn sein"
+      }
+    }
+  },
+  "ask": {
+    "history": "Verlauf",
+    "historyTitle": "Unterhaltungen",
+    "scopeNamed": "Nur die Pflege von {name}",
+    "scopeGeneric": "Nur dieser Kreis",
+    "new": "Neu",
+    "conversationLog": "Unterhaltung mit Kintwadi",
+    "loading": "Unterhaltung wird geladen…",
+    "thinking": "Denkt nach",
+    "sources": "Quellen",
+    "whoFallback": "Ihr Kreis",
+    "empty": {
+      "heading": "Fragen zur Pflege von {who}",
+      "body": "Fragen Sie in einfacher Sprache. Antworten stammen ausschließlich aus dem Verlauf dieses Kreises, mit überprüfbaren Quellen."
+    },
+    "examplePrompts": [
+      "Wann war der letzte Facharzttermin?",
+      "Hat sich der Blutdruck diesen Monat verbessert?",
+      "Was hat sich bei den Medikamenten zuletzt geändert?",
+      "Was sagen die neuesten Dokumente?"
+    ],
+    "composer": {
+      "placeholderNamed": "Fragen zur Pflege von {name}…",
+      "placeholderGeneric": "Fragen zur Pflege dieses Kreises…",
+      "ariaNamed": "Eine Frage zur Pflege von {name} stellen",
+      "ariaGeneric": "Eine Frage zur Pflege dieses Kreises stellen",
+      "startVoice": "Spracheingabe starten",
+      "stopVoice": "Spracheingabe stoppen",
+      "voiceUnsupported": "Spracheingabe wird auf diesem Gerät nicht unterstützt",
+      "send": "Frage senden"
+    },
+    "list": {
+      "new": "Neue Unterhaltung beginnen",
+      "emptyHint": "Ihre vergangenen Unterhaltungen erscheinen hier.",
+      "recent": "Zuletzt",
+      "historyNav": "Unterhaltungsverlauf",
+      "options": "Optionen für „{title}“",
+      "rename": "Umbenennen",
+      "delete": "Löschen"
+    },
+    "deleteDialog": {
+      "title": "Diese Unterhaltung löschen?",
+      "body": "Damit wird sie aus Ihrem Verlauf entfernt. Das kann nicht rückgängig gemacht werden.",
+      "cancel": "Behalten",
+      "confirm": "Löschen"
+    },
+    "renameDialog": {
+      "title": "Unterhaltung umbenennen",
+      "body": "Geben Sie dieser Unterhaltung einen Namen, den Sie später leicht wiederfinden.",
+      "label": "Titel",
+      "placeholder": "z. B. Fragen zur Kardiologie",
+      "cancel": "Abbrechen",
+      "save": "Speichern"
+    },
+    "errors": {
+      "unreachable": "Der Assistent ist nicht erreichbar. Bitte versuchen Sie es erneut.",
+      "deleteFailed": "Unterhaltung konnte nicht gelöscht werden",
+      "renameFailed": "Unterhaltung konnte nicht umbenannt werden"
+    }
+  },
+  "appointments": {
+    "title": "Termine",
+    "subtitleNamed": "Planen Sie {name}s Termine, Fragen zur Vorbereitung und wer mitgeht.",
+    "subtitleGeneric": "Planen Sie anstehende Termine, Fragen zur Vorbereitung und wer mitgeht.",
+    "viewOnly": "Nur Ansicht",
+    "addAppointment": "Termin hinzufügen",
+    "askCoordinator": "Wenden Sie sich an die Koordination",
+    "unassigned": "Nicht zugewiesen",
+    "takingNamed": "<strong>{name}</strong> begleitet {recipient}",
+    "recipientFallback": "die Person",
+    "tabs": {
+      "calendar": "Kalender",
+      "list": "Liste"
+    },
+    "relative": {
+      "today": "Heute",
+      "tomorrow": "Morgen",
+      "yesterday": "Gestern"
+    },
+    "kinds": {
+      "checkup": "Untersuchung",
+      "specialist": "Facharzt",
+      "lab": "Labor / Blut",
+      "imaging": "Bildgebung / Scan",
+      "therapy": "Therapie",
+      "dental": "Zahn",
+      "other": "Sonstiges"
+    },
+    "status": {
+      "scheduled": "Geplant",
+      "confirmed": "Bestätigt",
+      "needs-prep": "Vorbereitung nötig",
+      "completed": "Abgeschlossen",
+      "cancelled": "Abgesagt"
+    },
+    "toasts": {
+      "updated": "{title} aktualisiert",
+      "saveFailed": "Termin konnte nicht gespeichert werden",
+      "added": "{title} hinzugefügt",
+      "addedDescription": "Geplant und zum Kalender hinzugefügt.",
+      "addFailed": "Termin konnte nicht hinzugefügt werden",
+      "saveChangeFailed": "Änderung konnte nicht gespeichert werden",
+      "postedToTimeline": "Im Verlauf veröffentlicht",
+      "postedDescription": "Zusammenfassung von {title} mit der Familie geteilt."
+    },
+    "calendar": {
+      "today": "Heute",
+      "prevMonth": "Voriger Monat",
+      "nextMonth": "Nächster Monat",
+      "prevWeek": "Vorige Woche",
+      "nextWeek": "Nächste Woche",
+      "gridLabel": "Kalender {month}",
+      "dayLabel": "{date} — {count, plural, one {# Termin} other {# Termine}}",
+      "apptCount": "{count, plural, one {# Termin} other {# Termine}}",
+      "moreCount": "+{count} weitere",
+      "nothingScheduled": "Nichts geplant.",
+      "nothingScheduledDay": "Für diesen Tag nichts geplant.",
+      "addAppointment": "Termin hinzufügen"
+    },
+    "list": {
+      "upcoming": "Anstehend",
+      "past": "Vergangen",
+      "emptyUpcoming": "Keine anstehenden Termine geplant.",
+      "emptyTitle": "Noch keine Termine",
+      "emptyBody": "Fügen Sie den ersten Termin hinzu, um Besuche zu koordinieren.",
+      "addAppointment": "Termin hinzufügen"
+    },
+    "detail": {
+      "onTimeline": "Im Verlauf",
+      "provider": "Behandler",
+      "when": "Wann",
+      "durationMin": "{min} Min.",
+      "location": "Ort",
+      "assignedTo": "Zugewiesen an",
+      "unassigned": "Nicht zugewiesen",
+      "notes": "Notizen",
+      "prep": "Vorbereitungsfragen",
+      "prepReady": "{done}/{total} bereit",
+      "prepHint": "Dinge, die Sie bei diesem Besuch die Ärztin fragen sollten.",
+      "noQuestionsManage": "Noch keine Fragen — fügen Sie unten eine hinzu.",
+      "noQuestions": "Noch keine Fragen.",
+      "removeQuestion": "„{text}“ entfernen",
+      "addQuestionPlaceholder": "Eine Frage hinzufügen…",
+      "addQuestionAria": "Eine Vorbereitungsfrage hinzufügen",
+      "add": "Hinzufügen",
+      "visitSummary": "Besuchszusammenfassung",
+      "visitSummaryHint": "Füllen Sie dies nach dem Besuch aus und teilen Sie es mit der Familie im Verlauf.",
+      "summaryPlaceholder": "Was ist beim Besuch passiert? Ergebnisse, Änderungen, nächste Schritte…",
+      "sharedNote": "Mit dem Familienverlauf geteilt.",
+      "postingNote": "Das Veröffentlichen fügt dem geteilten Verlauf eine Notiz hinzu.",
+      "saving": "Wird gespeichert…",
+      "updateRepost": "Aktualisieren & erneut posten",
+      "saveAndPost": "Speichern & im Verlauf posten",
+      "cancelAppointment": "Termin absagen",
+      "close": "Schließen",
+      "edit": "Bearbeiten",
+      "confirmCancelTitle": "Diesen Termin absagen?",
+      "confirmCancelBody": "„{title}“ wird als abgesagt markiert. Sie sehen ihn weiterhin in der Liste der vergangenen Termine.",
+      "keepIt": "Behalten",
+      "confirmCancel": "Termin absagen"
+    },
+    "card": {
+      "prepReadyTitle": "{done} von {total} Vorbereitungsfragen bereit"
+    },
+    "form": {
+      "title": "Titel",
+      "titlePlaceholder": "z. B. Kardiologie-Nachsorge",
+      "type": "Typ",
+      "typePlaceholder": "Typ wählen",
+      "status": "Status",
+      "provider": "Behandler",
+      "providerPlaceholder": "z. B. Dr. Chen",
+      "location": "Ort",
+      "locationPlaceholder": "z. B. Herzklinik · Raum 4",
+      "date": "Datum",
+      "time": "Uhrzeit",
+      "duration": "Dauer",
+      "durationHint": "Minuten",
+      "assignedTo": "Zugewiesen an",
+      "assignedHint": "Wer begleitet die Person?",
+      "unassigned": "Nicht zugewiesen",
+      "requiredNote": "Pflichtfelder sind mit * gekennzeichnet",
+      "cancel": "Abbrechen",
+      "saved": "Gespeichert",
+      "saving": "Wird gespeichert…",
+      "saveChanges": "Änderungen speichern",
+      "saveAppointment": "Termin speichern",
+      "modalAddTitle": "Termin hinzufügen",
+      "modalEditTitle": "Termin bearbeiten",
+      "modalAddDesc": "Planen Sie einen Besuch und legen Sie fest, wer mitgeht.",
+      "modalEditDesc": "Aktualisieren Sie Details, Uhrzeit und wer mitgeht.",
+      "errors": {
+        "title": "Geben Sie dem Termin einen Titel",
+        "kind": "Wählen Sie einen Typ",
+        "provider": "Wer ist der Behandler?",
+        "location": "Bleiben Sie unter 120 Zeichen",
+        "date": "Wählen Sie ein Datum",
+        "time": "Wählen Sie eine Uhrzeit",
+        "durationNumber": "Geben Sie eine Zahl ein",
+        "durationInt": "Verwenden Sie ganze Minuten",
+        "durationMin": "Mindestens 5 Minuten",
+        "durationMax": "Das scheint zu lang"
+      }
+    }
+  },
+  "tasks": {
+    "title": "Aufgaben",
+    "subtitle": "Teilen Sie die Pflegelast und halten Sie alles in Bewegung.",
+    "viewOnly": "Nur Ansicht",
+    "newTask": "Neue Aufgabe",
+    "askCoordinator": "Wenden Sie sich an die Koordination",
+    "unassigned": "Nicht zugewiesen",
+    "tabs": {
+      "board": "Board",
+      "list": "Liste"
+    },
+    "relative": {
+      "today": "Heute",
+      "tomorrow": "Morgen",
+      "yesterday": "Gestern"
+    },
+    "columns": {
+      "open": {
+        "label": "Offen",
+        "hint": "Nicht begonnen"
+      },
+      "doing": {
+        "label": "In Arbeit",
+        "hint": "In Bearbeitung"
+      },
+      "done": {
+        "label": "Erledigt",
+        "hint": "Abgeschlossen"
+      }
+    },
+    "categories": {
+      "errand": "Besorgung",
+      "medical": "Medizinisch",
+      "admin": "Verwaltung",
+      "refill": "Nachfüllen",
+      "visit": "Besuch"
+    },
+    "recurrence": {
+      "none": "Wiederholt sich nicht",
+      "daily": "Täglich",
+      "weekly": "Wöchentlich",
+      "custom": "Benutzerdefiniert…"
+    },
+    "toasts": {
+      "moveFailed": "Aufgabe konnte nicht verschoben werden",
+      "deleted": "{title} gelöscht",
+      "deletedFallback": "Aufgabe gelöscht",
+      "deleteFailed": "Aufgabe konnte nicht gelöscht werden",
+      "updated": "{title} aktualisiert",
+      "saveFailed": "Aufgabe konnte nicht gespeichert werden",
+      "added": "{title} hinzugefügt",
+      "addFailed": "Aufgabe konnte nicht hinzugefügt werden"
+    },
+    "board": {
+      "columnLabel": "Aufgaben „{label}“",
+      "addTaskTo": "Aufgabe zu „{label}“ hinzufügen",
+      "dragHint": "Ziehen Sie eine Karte hierher oder fügen Sie eine hinzu.",
+      "emptyHint": "Hier ist noch nichts.",
+      "addToColumn": "Zu „{label}“ hinzufügen"
+    },
+    "card": {
+      "markDone": "„{title}“ als erledigt markieren",
+      "markNotDone": "„{title}“ als nicht erledigt markieren",
+      "options": "Optionen für {title}",
+      "moveTo": "Verschieben nach",
+      "edit": "Bearbeiten",
+      "delete": "Löschen",
+      "overdue": "Überfällig · {date}",
+      "repeats": "Wiederholt sich: {recurrence}"
+    },
+    "list": {
+      "emptyTitle": "Keine Aufgaben passen zu diesen Filtern",
+      "emptyBody": "Versuchen Sie, einen Filter zu entfernen, oder fügen Sie eine neue Aufgabe hinzu."
+    },
+    "filters": {
+      "filter": "Filtern",
+      "assignee": "Nach Person filtern",
+      "everyone": "Alle",
+      "unassigned": "Nicht zugewiesen",
+      "category": "Nach Kategorie filtern",
+      "allCategories": "Alle Kategorien",
+      "status": "Nach Status filtern",
+      "anyStatus": "Beliebiger Status",
+      "clear": "Zurücksetzen"
+    },
+    "fairShare": {
+      "title": "Lastverteilung diese Woche",
+      "subtitle": "Erledigte Aufgaben pro Person.",
+      "srCompleted": "{name}: {count} erledigt",
+      "freshStart": "Diese Woche noch keine Aufgaben erledigt — ein frischer Start.",
+      "carryingALot": "{name} trägt viel — kann jemand helfen?",
+      "handledEverything": "{name} hat bisher alles erledigt — die Last teilen?",
+      "balanced": "Diese Woche schön ausgewogen 💚"
+    },
+    "form": {
+      "title": "Titel",
+      "titlePlaceholder": "z. B. Rezept-Nachfüllung abholen",
+      "details": "Details",
+      "optional": "Optional",
+      "detailsPlaceholder": "Alles, was der übernehmenden Person hilft…",
+      "category": "Kategorie",
+      "assignee": "Zugewiesen an",
+      "unassigned": "Nicht zugewiesen",
+      "dueDate": "Fällig am",
+      "status": "Status",
+      "repeat": "Wiederholung",
+      "cancel": "Abbrechen",
+      "saved": "Gespeichert",
+      "saving": "Wird gespeichert…",
+      "saveChanges": "Änderungen speichern",
+      "createTask": "Aufgabe erstellen",
+      "modalAddTitle": "Neue Aufgabe",
+      "modalEditTitle": "Aufgabe bearbeiten",
+      "modalAddDesc": "Fügen Sie eine Aufgabe hinzu und teilen Sie die Last.",
+      "modalEditDesc": "Aktualisieren Sie die Details und die Zuweisung.",
+      "errors": {
+        "titleRequired": "Geben Sie der Aufgabe einen Titel",
+        "titleMax": "Halten Sie den Titel unter 140 Zeichen",
+        "detailsMax": "Halten Sie die Details unter 500 Zeichen"
+      }
+    }
+  },
+  "health": {
+    "title": "Gesundheit",
+    "subtitleNamed": "{name}s Vitalwerte auf einen Blick.",
+    "subtitleGeneric": "Die Vitalwerte auf einen Blick.",
+    "viewOnly": "Nur Ansicht",
+    "askCoordinator": "Wenden Sie sich an die Koordination",
+    "timeRange": "Zeitraum",
+    "alerts": "Warnungen",
+    "logReading": "Messwert erfassen",
+    "insightsAria": "Erkenntnisse",
+    "noReadingsYet": "Noch keine Messwerte",
+    "empty": {
+      "title": "Noch keine Messwerte",
+      "bodyCanLog": "Erfassen Sie den ersten Vitalwert, um Trends zu verfolgen.",
+      "bodyView": "Sobald ein Messwert erfasst ist, erscheinen hier Trends."
+    },
+    "toasts": {
+      "savedNormal": "Messwert gespeichert",
+      "savedNormalDesc": "Zum Diagramm hinzugefügt und im Verlauf geteilt.",
+      "savedFlagged": "Messwert gespeichert — außerhalb des sicheren Bereichs",
+      "savedFlaggedDesc": "Der Kreis wurde mit einer dringenden Verlaufsmeldung benachrichtigt.",
+      "saveFailed": "Messwert konnte nicht gespeichert werden"
+    },
+    "metrics": {
+      "bp": "Blutdruck",
+      "glucose": "Blutzucker",
+      "weight": "Gewicht",
+      "sleep": "Schlaf",
+      "mood": "Stimmung",
+      "hr": "Ruhepuls"
+    },
+    "status": {
+      "normal": "Normal",
+      "elevated": "Erhöht",
+      "low": "Niedrig"
+    },
+    "trend": {
+      "steady": "Stabil"
+    },
+    "mood": {
+      "1": "Sehr schlecht",
+      "2": "Schlecht",
+      "3": "Okay",
+      "4": "Gut",
+      "5": "Großartig"
+    },
+    "insights": {
+      "weightDown": "Gewicht {kg} kg gesunken in 30 Tagen",
+      "weightUp": "Gewicht {kg} kg gestiegen in 30 Tagen",
+      "bpElevated": "Blutdruck an {n} der letzten 7 Tage erhöht",
+      "sleepBelow": "Schlaf im Schnitt {h} h — unter dem Ziel",
+      "sleepSteady": "Schlaf stabil bei etwa {h} h 💚",
+      "hrHealthy": "Ruhepuls sieht gesund aus ({bpm} bpm)"
+    },
+    "chart": {
+      "subtitle": "Trend über den gewählten Zeitraum, mit schattiertem Normalbereich.",
+      "focusMetric": "Fokus-Wert",
+      "noReadingsRange": "Keine Messwerte in diesem Zeitraum.",
+      "systolic": "Systolisch",
+      "diastolic": "Diastolisch",
+      "normalRange": "Normalbereich ({min}–{max})",
+      "normalRangeSys": "Normalbereich ({min}–{max} sys)",
+      "readings": "Messwerte"
+    },
+    "series": {
+      "none": "Keine Messwerte in diesem Zeitraum.",
+      "summary": "{name}: {count} Messwerte von {from} bis {to}. Letzter {latest}. Bereich {lo} bis {hi}."
+    },
+    "table": {
+      "date": "Datum",
+      "value": "Wert",
+      "status": "Status",
+      "loggedBy": "Erfasst von",
+      "caption": "{name}-Messwerte, neueste zuerst",
+      "readingsAria": "{name}-Messwerte",
+      "none": "Keine Messwerte in diesem Zeitraum."
+    },
+    "log": {
+      "modalTitle": "Messwert erfassen",
+      "modalDesc": "Wählen Sie einen Wert und geben Sie die neuesten Werte ein.",
+      "metric": "Wert",
+      "systolic": "Systolisch",
+      "diastolic": "Diastolisch",
+      "mood": "Stimmung",
+      "weight": "Gewicht",
+      "unit": "Einheit",
+      "previewNormal": "Liegt im Normalbereich.",
+      "previewElevated": "Dies würde als erhöht markiert.",
+      "previewLow": "Dies würde als niedrig markiert.",
+      "date": "Datum",
+      "time": "Uhrzeit",
+      "recordedBy": "Erfasst von",
+      "note": "Notiz",
+      "optional": "Optional",
+      "notePlaceholder": "Etwas Erwähnenswertes zu diesem Messwert…",
+      "cancel": "Abbrechen",
+      "saved": "Gespeichert",
+      "saving": "Wird gespeichert…",
+      "save": "Messwert speichern",
+      "errors": {
+        "systolicReq": "Systolisch eingeben",
+        "systolicRange": "70–260 erwartet",
+        "diastolicReq": "Diastolisch eingeben",
+        "diastolicRange": "40–160 erwartet",
+        "diastolicBelow": "Sollte unter dem systolischen liegen",
+        "mood": "Stimmung wählen",
+        "valueReq": "Einen Wert eingeben",
+        "valueRange": "{lo}–{hi} erwartet",
+        "date": "Datum wählen",
+        "time": "Uhrzeit wählen",
+        "recordedBy": "Wer hat es erfasst?"
+      }
+    },
+    "alertsScreen": {
+      "back": "Zurück zu Gesundheit",
+      "title": "Gesundheitswarnungen",
+      "subtitle": "Legen Sie die sicheren Bereiche fest, die die Familie benachrichtigen, wenn ein Messwert außerhalb liegt.",
+      "viewOnly": "Nur Ansicht",
+      "saved": "Gespeichert",
+      "saving": "Wird gespeichert…",
+      "saveChanges": "Änderungen speichern",
+      "fixRanges": "Bitte korrigieren Sie zuerst die markierten Bereiche.",
+      "savedToast": "Warneinstellungen gespeichert",
+      "savedToastDesc": "Neue Messwerte werden für den ganzen Kreis gegen diese Bereiche geprüft.",
+      "saveFailed": "Warneinstellungen konnten nicht gespeichert werden",
+      "scale": "1–5-Skala",
+      "enableAlerts": "{name}-Warnungen aktivieren",
+      "alertBelow": "Warnen unter",
+      "lowMin": "Niedrig (Min.)",
+      "highMax": "Hoch (Max.)",
+      "diaLow": "Diastolisch niedrig",
+      "diaHigh": "Diastolisch hoch",
+      "minBelowMax": "Das Minimum sollte unter dem Maximum liegen.",
+      "previewOff": "Warnungen für diesen Wert sind aus.",
+      "previewBp": "Familie warnen, wenn der Blutdruck über {max}/{diaMax} steigt oder unter {min}/{diaMin} fällt.",
+      "previewSleep": "Familie warnen, wenn der Schlaf unter {min} h fällt.",
+      "previewMood": "Familie warnen, wenn die Stimmung unter „{label}“ fällt.",
+      "previewGeneric": "Familie warnen, wenn {metric} über {max} steigt oder unter {min} {unit} fällt."
+    }
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "subtitle": "Verwalten Sie Ihr Konto, diesen Kreis und wie Kintwadi für Sie arbeitet.",
+    "sectionsAria": "Einstellungsbereiche",
+    "common": {
+      "cancel": "Abbrechen",
+      "saveChanges": "Änderungen speichern",
+      "saving": "Wird gespeichert…"
+    },
+    "sections": {
+      "account": "Konto",
+      "care-circle": "Pflegekreis",
+      "members": "Mitglieder & Rollen",
+      "notifications": "Benachrichtigungen",
+      "health-alerts": "Gesundheitswarnungen",
+      "billing": "Abrechnung",
+      "privacy": "Datenschutz & Sicherheit"
+    },
+    "account": {
+      "title": "Konto",
+      "description": "Ihre persönlichen Angaben und Einstellungen.",
+      "changePhoto": "Foto ändern",
+      "photoHint": "JPG oder PNG, bis 5 MB.",
+      "photoTooLarge": "Bitte wählen Sie ein Bild unter 5 MB.",
+      "fullName": "Vollständiger Name",
+      "email": "E-Mail",
+      "language": "Sprache",
+      "timezone": "Zeitzone",
+      "updated": "Konto aktualisiert",
+      "changePassword": "Passwort ändern",
+      "current": "Aktuell",
+      "new": "Neu",
+      "confirm": "Bestätigen",
+      "updatePassword": "Passwort aktualisieren",
+      "updating": "Wird aktualisiert…",
+      "passwordUpdated": "Passwort aktualisiert",
+      "socialNoPassword": "Sie melden sich über einen Drittanbieter an, daher gibt es hier kein Passwort zu ändern.",
+      "deleteAccount": "Konto löschen",
+      "deleteAccountDesc": "Entfernen Sie Ihr Konto und Ihre persönlichen Daten dauerhaft. Das kann nicht rückgängig gemacht werden.",
+      "deleteAccountTitle": "Ihr Konto löschen?",
+      "deleteAccountConfirm": "Dies löscht Ihr Konto dauerhaft und entfernt Sie aus allen Pflegekreisen. Das kann nicht rückgängig gemacht werden."
+    },
+    "circle": {
+      "title": "Pflegekreis",
+      "description": "Einstellungen für diesen Kreis.",
+      "name": "Name des Kreises",
+      "recipientTitle": "Pflegeempfänger",
+      "recipientViewNamed": "{name} · Kreis ansehen",
+      "recipientView": "Kreis ansehen",
+      "updated": "Kreis aktualisiert",
+      "ownership": "Eigentum & Lebenszyklus",
+      "transfer": "Eigentum übertragen",
+      "transferDesc": "Übergeben Sie die Koordinationsaufgaben an ein anderes Mitglied.",
+      "inviteFirst": "Laden Sie zuerst ein anderes Mitglied ein.",
+      "chooseMember": "Mitglied wählen…",
+      "chooseMemberAria": "Mitglied wählen",
+      "transferBtn": "Übertragen",
+      "transferTitle": "Eigentum übertragen?",
+      "transferConfirmDesc": "Das gewählte Mitglied wird Koordinator (Eigentümer) und Sie werden Familien-Admin. Sie können später um Rückübertragung bitten.",
+      "transferred": "Eigentum übertragen",
+      "deleteCircle": "Kreis löschen",
+      "deleteCircleDesc": "Entfernt den Kreis für alle. Das kann nicht rückgängig gemacht werden.",
+      "deleteCircleTitle": "Diesen Pflegekreis löschen?",
+      "deleteCircleConfirm": "Dies löscht den Kreis und verbirgt alle Daten für jedes Mitglied. Das kann nicht rückgängig gemacht werden.",
+      "deleted": "Kreis gelöscht"
+    },
+    "members": {
+      "title": "Mitglieder & Rollen",
+      "description": "Verwalten Sie, wer im Kreis ist und was sie sehen können.",
+      "linkTitle": "Personen in diesem Kreis",
+      "linkSub": "Einladen, Rollen ändern, sperren oder entfernen"
+    },
+    "healthAlerts": {
+      "title": "Gesundheitswarnungen",
+      "description": "Sichere Bereiche, die die Familie benachrichtigen, wenn ein Messwert außerhalb liegt.",
+      "linkTitle": "Warnschwellen",
+      "linkSub": "Min/Max pro Wert und wer benachrichtigt wird"
+    },
+    "notifications": {
+      "title": "Benachrichtigungen",
+      "description": "Wählen Sie, worüber und wie Sie benachrichtigt werden.",
+      "saveFailed": "Speichern fehlgeschlagen. Bitte erneut versuchen.",
+      "type": "Typ",
+      "caption": "Benachrichtigungseinstellungen nach Typ und Kanal",
+      "channels": {
+        "inApp": "In-App",
+        "email": "E-Mail",
+        "push": "Push"
+      },
+      "types": {
+        "meds": "Medikamente",
+        "vitals": "Vitalwerte",
+        "tasks": "Aufgaben",
+        "incidents": "Vorfälle",
+        "digest": "Tägliche Zusammenfassung"
+      },
+      "quietHours": "Ruhezeiten",
+      "quietHoursDesc": "Pausieren Sie nachts nicht dringende Benachrichtigungen. Dringende Vorfälle kommen immer durch.",
+      "enableQuiet": "Ruhezeiten aktivieren",
+      "from": "Von",
+      "to": "Bis"
+    },
+    "push": {
+      "title": "Push auf diesem Gerät",
+      "unsupported": "Dieser Browser unterstützt keine Push-Benachrichtigungen.",
+      "unconfigured": "Push-Benachrichtigungen sind auf dem Server noch nicht eingerichtet — In-App und E-Mail funktionieren weiterhin.",
+      "blocked": "Benachrichtigungen sind für diese Seite blockiert. Erlauben Sie sie in den Browsereinstellungen und versuchen Sie es erneut.",
+      "ready": "Erhalten Sie die in der Push-Spalte gewählte Aktivität auf diesem Gerät, auch wenn Kintwadi geschlossen ist.",
+      "enabled": "Push auf diesem Gerät aktiviert",
+      "disabled": "Push auf diesem Gerät deaktiviert",
+      "enableAria": "Push-Benachrichtigungen auf diesem Gerät aktivieren"
+    },
+    "digest": {
+      "title": "Tägliche Zusammenfassung",
+      "desc": "Eine herzliche, KI-geschriebene Abendzusammenfassung des Tages — automatisch per E-Mail an alle, die sie möchten.",
+      "sendNightly": "Nächtliche Zusammenfassung senden",
+      "sendNightlyDesc": "Erstellen und senden Sie die Tageszusammenfassung jeden Abend per E-Mail an angemeldete Mitglieder.",
+      "sendAt": "Senden um",
+      "sendAtHint": "In der Zeitzone dieses Kreises.",
+      "coordSendsAt": "Der Koordinator Ihres Kreises sendet die Zusammenfassung um {time}.",
+      "coordOff": "Der Koordinator Ihres Kreises hat die nächtliche Zusammenfassung deaktiviert.",
+      "emailToMe": "Mir per E-Mail senden",
+      "emailToMeDesc": "Erhalten Sie die nächtliche Zusammenfassung in Ihrem Postfach.",
+      "emailToMeAria": "Mir die Zusammenfassung per E-Mail senden",
+      "myLanguage": "Meine Zusammenfassungssprache",
+      "myLanguageHint": "Die Zusammenfassung wird einmal aus dem Tagesverlauf geschrieben und dann für Sie übersetzt.",
+      "saveFailed": "Speichern fehlgeschlagen. Bitte erneut versuchen."
+    },
+    "billing": {
+      "title": "Abrechnung",
+      "description": "Ihr Tarif, Zahlungsmethoden und Rechnungen.",
+      "currentPlan": "Aktueller Tarif",
+      "active": "Aktiv",
+      "current": "Aktuell",
+      "planChangeUnavailable": "Tarifwechsel sind in dieser Vorschau nicht verfügbar.",
+      "perMonth": "/Mon.",
+      "coordinatorManaged": "Zahlungsmethoden und Rechnungen werden vom Koordinator Ihres Kreises verwaltet.",
+      "paymentMethods": "Zahlungsmethoden",
+      "addCard": "Karte hinzufügen",
+      "noCards": "Noch keine Zahlungsmethoden. Fügen Sie eine Karte hinzu, damit die Abrechnung nicht unterbrochen wird.",
+      "cardSecurityNote": "Wir speichern nur die Kartenmarke, die letzten 4 Ziffern und das Ablaufdatum — niemals die vollständige Nummer.",
+      "defaultBadge": "Standard",
+      "makeDefault": "Standard",
+      "expires": "Läuft ab {date}",
+      "removeCard": "Karte entfernen",
+      "cardRemoved": "Karte entfernt",
+      "invoices": "Rechnungen",
+      "noInvoices": "Noch keine Rechnungen. Sie erscheinen hier, sobald Ihr Tarif abgerechnet wird.",
+      "invoiceCol": "Rechnung",
+      "dateCol": "Datum",
+      "amountCol": "Betrag",
+      "statusCol": "Status",
+      "download": "Herunterladen",
+      "pdf": "PDF",
+      "captionInvoices": "Frühere Rechnungen",
+      "addDialogTitle": "Zahlungskarte hinzufügen",
+      "addDialogDesc": "Wir speichern nur die Marke, die letzten 4 Ziffern und das Ablaufdatum — niemals die vollständige Nummer.",
+      "cardNumber": "Kartennummer",
+      "expiry": "Ablauf (MM/JJ)",
+      "setDefault": "Als Standard festlegen",
+      "expiryError": "Geben Sie das Ablaufdatum als MM/JJ ein.",
+      "cardAdded": "Karte hinzugefügt",
+      "cancel": "Abbrechen",
+      "adding": "Wird hinzugefügt…",
+      "plans": {
+        "free": {
+          "name": "Kostenlos",
+          "note": "Für Familien, die starten",
+          "features": [
+            "Ein Pflegekreis",
+            "Geteilter Pflegeverlauf",
+            "Medikamenten-Tracking",
+            "Aufgabenverwaltung"
+          ]
+        },
+        "plus": {
+          "name": "Plus",
+          "note": "KI-Unterstützung für vielbeschäftigte Familien",
+          "features": [
+            "Mehrere Pflegekreise",
+            "KI-Tageszusammenfassung",
+            "Ask Kintwadi KI",
+            "Dokumententresor (5 GB)"
+          ]
+        },
+        "teams": {
+          "name": "Care Teams",
+          "note": "Agenturen & Organisationen",
+          "features": [
+            "Unbegrenzte Pflegekreise",
+            "Audit-Trail & Compliance",
+            "Priorisierter Support",
+            "HIPAA-BAA verfügbar"
+          ]
+        }
+      }
+    },
+    "privacy": {
+      "title": "Datenschutz & Sicherheit",
+      "description": "Ihre Sitzung, das Audit-Protokoll und Ihre Daten.",
+      "thisSession": "Diese Sitzung",
+      "thisDevice": "Dieses Gerät",
+      "signedIn": "Angemeldet",
+      "signedInHere": "Sie sind hier derzeit angemeldet.",
+      "signOut": "Abmelden",
+      "auditLog": "Audit-Protokoll",
+      "auditCoordinatorsOnly": "Das Audit-Protokoll ist Koordinatoren vorbehalten.",
+      "exportTitle": "Ihre Daten exportieren",
+      "exportDesc": "Laden Sie eine Kopie des Pflegeprotokolls dieses Kreises herunter.",
+      "export": "Daten exportieren",
+      "requesting": "Wird angefordert…",
+      "exportRequested": "Export angefordert — wir senden Ihnen per E-Mail einen Link, sobald er fertig ist."
+    },
+    "audit": {
+      "immutableNote": "Dieses Protokoll ist <b>nur-anhängend</b> — Einträge können von niemandem bearbeitet oder gelöscht werden. Es zeichnet auf, wer was wann getan hat.",
+      "noActivity": "Noch keine Aktivität aufgezeichnet.",
+      "search": "Protokoll durchsuchen…",
+      "searchAria": "Audit-Protokoll durchsuchen",
+      "filterActor": "Nach Akteur filtern",
+      "everyone": "Alle",
+      "filterAction": "Nach Aktion filtern",
+      "allActions": "Alle Aktionen",
+      "noMatch": "Keine Einträge passen zu diesen Filtern.",
+      "who": "Wer",
+      "action": "Aktion",
+      "entity": "Objekt",
+      "when": "Wann",
+      "caption": "Audit-Protokoll — nur-anhängende Aufzeichnung von Aktionen",
+      "showing": "{shown} von {total} Einträgen werden angezeigt."
+    }
+  },
+  "language": {
+    "label": "Sprache"
+  },
+  "digest": {
+    "title": "Tageszusammenfassung",
+    "subtitle": "Ein herzliches Update zum Tagesausklang.",
+    "subtitleNamed": "Ein herzliches Update zum Tagesausklang über {name}.",
+    "settingsBtn": "Zusammenfassungseinstellungen",
+    "whenWritten": "Wann die Zusammenfassung verfasst wird",
+    "cadence": "Jeden Abend",
+    "atTime": "um {time}",
+    "manageNote": "Zusammenfassungen fassen die tatsächliche Pflegedokumentation des Tages zusammen. Empfänger und Zeitpunkt in den Einstellungen verwalten.",
+    "prevDay": "Vorheriger Tag",
+    "nextDay": "Nächster Tag",
+    "today": "Heute",
+    "yesterday": "Gestern",
+    "showingOriginal": "Original wird angezeigt (Englisch)",
+    "translatedTo": "Für Sie auf {lang} übersetzt",
+    "readIn": "Auf {lang} lesen",
+    "showOriginal": "Original anzeigen",
+    "share": "Mit der Familie teilen",
+    "shared": "Mit der Familie geteilt",
+    "listen": "Anhören",
+    "stop": "Stopp",
+    "regenerate": "Neu erstellen",
+    "helpful": "Hilfreich?",
+    "helpfulYes": "Diese Zusammenfassung war hilfreich",
+    "helpfulNo": "Diese Zusammenfassung traf es nicht",
+    "ready": "Zusammenfassung fertig",
+    "readAloudUnsupported": "Vorlesen wird auf diesem Gerät nicht unterstützt",
+    "feedbackThanks": "Danke — das hilft, künftige Zusammenfassungen zu verbessern",
+    "writing": "Heutige Zusammenfassung wird verfasst…",
+    "sourceMoments": "Quellmomente",
+    "emptyTitle": "Noch keine Zusammenfassung für {label}",
+    "emptyCanGenerate": "Verfassen Sie eine herzliche Zusammenfassung aus der protokollierten Pflege des Tages — Medikamente, Vitalwerte, Notizen und mehr.",
+    "emptyReadOnly": "Zusammenfassungen werden jeden Abend verfasst, sobald die Pflege des Tages protokolliert ist.",
+    "generate": "Zusammenfassung erstellen",
+    "readYesterday": "Gestrige Zusammenfassung lesen"
+  },
+  "timeline": {
+    "you": "Sie",
+    "ariaFeed": "Pflege-Verlauf",
+    "loading": "Wird geladen…",
+    "loadMore": "Frühere Updates laden",
+    "addedNote": "{name} hat eine Notiz hinzugefügt",
+    "errPost": "Ihre Notiz konnte nicht veröffentlicht werden",
+    "errReaction": "Ihre Reaktion konnte nicht aktualisiert werden",
+    "errWaitSaving": "Bitte warten Sie, bis der Beitrag gespeichert ist",
+    "errComment": "Ihr Kommentar konnte nicht hinzugefügt werden",
+    "errLoadMore": "Frühere Updates konnten nicht geladen werden",
+    "day": {
+      "today": "Heute",
+      "yesterday": "Gestern"
+    },
+    "composer": {
+      "placeholder": "Teilen Sie ein Update mit Ihrem Kreis…",
+      "placeholderNamed": "Teilen Sie ein Update über {name}…",
+      "attachPhoto": "Foto anhängen",
+      "addVital": "Vitalwert hinzufügen",
+      "cancel": "Abbrechen",
+      "post": "Veröffentlichen",
+      "posting": "Wird veröffentlicht…"
+    },
+    "empty": {
+      "title": "Noch keine Updates",
+      "filtered": "Keine Ereignisse entsprechen Ihren Filtern. Passen Sie Ihre Suche oder Filter an.",
+      "default": "Teilen Sie als Erster ein Update mit dem Pflegekreis."
+    },
+    "types": {
+      "med": "Medikament",
+      "vital": "Vitalwert",
+      "note": "Notiz",
+      "appointment": "Termin",
+      "incident": "Vorfall"
+    },
+    "filters": {
+      "all": "Alle",
+      "med": "Medik.",
+      "vital": "Vitalwerte",
+      "note": "Notizen",
+      "appointment": "Termine",
+      "incident": "Vorfälle"
+    },
+    "visibility": {
+      "everyone": {
+        "label": "Alle",
+        "description": "Für alle Kreismitglieder sichtbar"
+      },
+      "family": {
+        "label": "Nur Familie",
+        "description": "Nur Familienmitglieder können es sehen"
+      },
+      "private": {
+        "label": "Privat",
+        "description": "Nur Sie und Koordinatoren"
+      }
+    },
+    "badge": {
+      "family": "Familie",
+      "private": "Privat",
+      "urgent": "Dringend"
+    },
+    "ranges": {
+      "all": "Gesamter Zeitraum",
+      "7d": "Letzte 7 Tage",
+      "30d": "Letzte 30 Tage"
+    },
+    "card": {
+      "readMore": "Mehr lesen",
+      "removeReaction": "Reaktion entfernen",
+      "react": "Mit Herz reagieren",
+      "attachmentAlt": "Ereignis-Anhang",
+      "attachmentFullAlt": "Anhang in voller Größe",
+      "imagePreview": "Bildvorschau",
+      "comments": "Kommentare",
+      "addComment": "Kommentar hinzufügen…",
+      "commentCount": "{count, plural, one {# Kommentar} other {# Kommentare}}"
+    },
+    "controls": {
+      "jumpToDate": "Zu Datum springen",
+      "dateRangeAria": "Zeitraum",
+      "search": "Updates suchen…",
+      "searchAria": "Updates suchen",
+      "filterLabel": "Filter",
+      "dateRangeLabel": "Zeitraum"
+    }
+  },
+  "incidents": {
+    "recipientFallback": "Ihre Angehörige",
+    "title": "Vorfälle",
+    "subtitle": "Stürze, Krankenhausaufenthalte und Notfälle für {name}.",
+    "sections": {
+      "open": "Offen",
+      "openEmpty": "Keine offenen Vorfälle — alles in Ordnung.",
+      "resolved": "Gelöst"
+    },
+    "empty": {
+      "title": "Keine Vorfälle gemeldet",
+      "body": "Das sind gute Nachrichten. Melden Sie hier einen, falls etwas passiert."
+    },
+    "status": {
+      "open": "Offen",
+      "resolved": "Gelöst"
+    },
+    "day": {
+      "today": "Heute",
+      "yesterday": "Gestern"
+    },
+    "types": {
+      "fall": {
+        "label": "Sturz",
+        "blurb": "Ein Ausrutschen, Stolpern oder Sturz"
+      },
+      "hospitalization": {
+        "label": "Krankenhausaufenthalt",
+        "blurb": "Aufgenommen oder ins Krankenhaus gebracht"
+      },
+      "emergency": {
+        "label": "Notfall",
+        "blurb": "Dringend, braucht jetzt Aufmerksamkeit"
+      },
+      "other": {
+        "label": "Sonstiges",
+        "blurb": "Etwas anderes, das erwähnenswert ist"
+      }
+    },
+    "severities": {
+      "low": "Niedrig",
+      "medium": "Mittel",
+      "high": "Hoch"
+    },
+    "ack": {
+      "acknowledged": "Bestätigt",
+      "seen": "Gesehen",
+      "pending": "Noch nicht gesehen"
+    },
+    "card": {
+      "by": "von {name}",
+      "ackCount": "{acknowledged}/{total} bestätigt"
+    },
+    "button": {
+      "report": "Vorfall melden"
+    },
+    "modal": {
+      "title": "Vorfall melden",
+      "description": "Lassen Sie den Kreis wissen, was passiert ist — ruhig und schnell."
+    },
+    "toast": {
+      "acknowledged": "Sie haben diesen Vorfall bestätigt",
+      "resolved": "Vorfall als gelöst markiert"
+    },
+    "detail": {
+      "allIncidents": "Alle Vorfälle",
+      "severityBadge": "Schweregrad {severity}",
+      "reportedBy": "Gemeldet von <b>{name}</b>",
+      "needHelp": "Schnelle Hilfe nötig?",
+      "call": "{name} anrufen",
+      "emergencyCard": "Notfallkarte",
+      "whatHappened": "Was passiert ist",
+      "photoAlt": "Foto des Vorfalls",
+      "timelineEvent": "Verlaufsereignis",
+      "notifiedTitle": "Benachrichtigt & bestätigt",
+      "acknowledgedCount": "{acknowledged}/{total} bestätigt",
+      "noneNotified": "Für diesen Vorfall wurde niemand benachrichtigt.",
+      "acknowledge": "Bestätigen"
+    },
+    "resolve": {
+      "title": "Vorfall lösen",
+      "notePlaceholder": "Fügen Sie eine kurze Notiz hinzu, wie dies gelöst wurde (optional)…",
+      "noteAria": "Lösungsnotizen",
+      "markResolved": "Als gelöst markieren"
+    },
+    "actions": {
+      "cancel": "Abbrechen",
+      "done": "Fertig",
+      "back": "Zurück",
+      "reporting": "Wird gemeldet…",
+      "reportNotify": "Melden & benachrichtigen"
+    },
+    "comments": {
+      "title": "Abstimmung ({count})",
+      "empty": "Noch keine Kommentare. Beginnen Sie die Unterhaltung.",
+      "placeholder": "Kommentar schreiben…",
+      "addAria": "Kommentar hinzufügen",
+      "sendAria": "Kommentar senden"
+    },
+    "notFound": {
+      "title": "Vorfall nicht gefunden",
+      "body": "Er wurde möglicherweise entfernt oder gehört zu einem anderen Kreis.",
+      "back": "Zurück zu den Vorfällen"
+    },
+    "flow": {
+      "typePrompt": "Um welche Art von Vorfall handelt es sich?"
+    },
+    "done": {
+      "title": "Vorfall gemeldet",
+      "notified": "{names} {count, plural, one {wurde benachrichtigt} other {wurden benachrichtigt}}.",
+      "noOne": "Niemand",
+      "savedNoNotify": "Im Verzeichnis des Kreises gespeichert.",
+      "nextSteps": "Nächste Schritte",
+      "openCard": "Notfallkarte öffnen",
+      "openCardSub": "Wichtige Angaben für Einsatzkräfte",
+      "viewIncident": "Vorfall ansehen",
+      "viewIncidentSub": "Reaktionen verfolgen & lösen"
+    },
+    "form": {
+      "typeLabel": "Typ:",
+      "change": "Ändern",
+      "severityLabel": "Wie schwer ist es?",
+      "descLabel": "Was ist passiert?",
+      "descError": "Bitte beschreiben Sie, was passiert ist",
+      "descPlaceholder": "Beschreiben Sie, was passiert ist, wer dabei war und wie es {name} jetzt geht…",
+      "dateLabel": "Datum",
+      "timeLabel": "Uhrzeit",
+      "photoLabel": "Foto",
+      "optional": "Optional",
+      "photoPreviewAlt": "Vorschau des Vorfallfotos",
+      "photoAttached": "Foto angehängt",
+      "removePhoto": "Foto entfernen",
+      "addPhoto": "Foto hinzufügen",
+      "notifyLabel": "Wer soll jetzt benachrichtigt werden?",
+      "noMembers": "Noch keine weiteren Mitglieder zum Benachrichtigen.",
+      "notifyMemberAria": "{name} benachrichtigen"
+    },
+    "urgent": {
+      "title": "Das sieht dringend aus",
+      "body": "Wenn {name} in Gefahr ist, rufen Sie zuerst den Notruf."
+    }
+  },
+  "profile": {
+    "empty": {
+      "title": "Noch kein Profil der pflegebedürftigen Person",
+      "description": "Sobald der Kreis eingerichtet ist, erscheint hier das Profil der pflegebedürftigen Person."
+    },
+    "ageYears": "{age} Jahre",
+    "dob": "Geb. {dob}",
+    "emergencyCard": "Notfallkarte",
+    "edit": "Bearbeiten",
+    "sections": {
+      "health": "Gesundheitsübersicht",
+      "medications": "Aktuelle Medikamente",
+      "preferences": "Pflegepräferenzen",
+      "contacts": "Wichtige Kontakte",
+      "insurance": "Versicherung"
+    },
+    "manage": "Verwalten",
+    "labels": {
+      "conditions": "Erkrankungen",
+      "allergies": "Allergien",
+      "bloodType": "Blutgruppe",
+      "mobility": "Mobilität",
+      "dietary": "Ernährung",
+      "comfortNotes": "Komfortnotizen",
+      "doctors": "Ärzte",
+      "nextOfKin": "Nächste Angehörige",
+      "provider": "Anbieter",
+      "plan": "Tarif",
+      "memberId": "Mitgliedsnummer",
+      "group": "Gruppe"
+    },
+    "noneRecorded": "Keine erfasst",
+    "dash": "—",
+    "noMeds": "Keine aktiven Medikamente.",
+    "noComfort": "Noch keine Pflegehinweise.",
+    "noComfortAdd": "Noch keine Pflegehinweise. Fügen Sie die persönlichen Details hinzu, die gute Pflege ermöglichen.",
+    "noContacts": "Keine Kontakte hinterlegt.",
+    "call": "{name} anrufen",
+    "message": "{name} eine Nachricht senden",
+    "modal": {
+      "title": "Profil bearbeiten",
+      "description": "Halten Sie die Angaben und Pflegehinweise von {name} aktuell.",
+      "saved": "Profil aktualisiert",
+      "groups": {
+        "basics": "Grunddaten",
+        "health": "Gesundheit",
+        "preferences": "Pflegepräferenzen"
+      },
+      "fullName": "Vollständiger Name",
+      "dob": "Geburtsdatum",
+      "language": "Hauptsprache",
+      "bloodType": "Blutgruppe",
+      "bloodTypePlaceholder": "z. B. O+",
+      "mobility": "Mobilität",
+      "dietary": "Ernährungsbedürfnisse",
+      "dietaryHint": "Durch Kommas getrennt",
+      "comfort": "Komfortnotizen",
+      "comfortPlaceholder": "Die persönlichen Details, die gute Pflege ermöglichen…",
+      "cancel": "Abbrechen",
+      "save": "Änderungen speichern",
+      "saving": "Wird gespeichert…"
+    },
+    "card": {
+      "noneRecorded": "Keine erfasst",
+      "notRecorded": "Nicht erfasst",
+      "noContacts": "Noch keine Notfallkontakte erfasst."
+    },
+    "cardLangAria": "Kartensprache",
+    "share": "Teilen",
+    "print": "Drucken",
+    "ec": {
+      "emptyTitle": "Noch keine Notfallkarte",
+      "emptyDescription": "Richten Sie das Profil der pflegebedürftigen Person ein, um ihre Notfallkarte zu erstellen.",
+      "fallbackName": "Pflegebedürftige Person",
+      "advanceDirectiveAria": "Patientenverfügung",
+      "advanceDirectivePlaceholder": "z. B. „DNR hinterlegt“",
+      "editAdvanceDirective": "Patientenverfügung bearbeiten",
+      "save": "Speichern",
+      "saving": "Wird gespeichert…",
+      "cancel": "Abbrechen",
+      "advanceDirectiveSaved": "Patientenverfügung aktualisiert",
+      "linkLive": "Notfall-Link ist aktiv — der QR-Code unten öffnet ihn ohne Konto",
+      "linkRevoked": "Notfall-Link widerrufen — der QR-Code funktioniert nicht mehr",
+      "publicLinkCopied": "Öffentlicher Notfall-Link kopiert",
+      "linkCopied": "Link in die Zwischenablage kopiert",
+      "shareCancelled": "Das Teilen wurde abgebrochen",
+      "qrAria": "QR-Code der Notfallkarte",
+      "opensExpires": "Öffnet sich ohne Konto — für Rettungs- und Notaufnahmepersonal. Läuft ab am {expires}",
+      "openedAudited": " · {count}× geöffnet (auditiert)",
+      "everyOpenAudited": " · jede Öffnung wird auditiert",
+      "noLinkTitle": "Kein öffentlicher Notfall-Link",
+      "noLinkManager": "Erstellen Sie einen, um einen scannbaren QR-Code zu drucken — Rettungskräfte öffnen die Karte ohne Konto. Läuft in 72 Std. ab, widerrufbar, jede Öffnung auditiert.",
+      "noLinkMember": "Ein Koordinator kann einen scannbaren öffentlichen Link für Rettungskräfte erstellen.",
+      "working": "Wird ausgeführt…",
+      "rotateLink": "Link erneuern",
+      "revoke": "Widerrufen",
+      "creating": "Wird erstellt…",
+      "createLink": "Notfall-Link erstellen"
+    },
+    "public": {
+      "inactiveTitle": "Dieser Notfall-Link ist nicht aktiv",
+      "validity": "Von der Familie über Kintwadi geteilt. Dieser Link ist temporär (gültig bis {validUntil}), kann jederzeit widerrufen werden, und jede Öffnung wird für die Familie aufgezeichnet.",
+      "inactiveBody": "Er ist möglicherweise abgelaufen oder wurde von der Familie widerrufen. Bitten Sie ein Familienmitglied, einen neuen Link von seiner Kintwadi-Notfallkarte zu teilen."
+    }
+  },
+  "documents": {
+    "header": {
+      "title": "Dokumente",
+      "subtitle": "Der gemeinsame Tresor der Familie für wichtige Unterlagen."
+    },
+    "search": {
+      "placeholder": "Dokumente suchen…",
+      "ariaLabel": "Dokumente suchen",
+      "filterAria": "Nach Kategorie filtern"
+    },
+    "upload": "Hochladen",
+    "gated": {
+      "askCoordinator": "Fragen Sie die Koordinatorin oder den Koordinator"
+    },
+    "restricted": {
+      "explainer": "Manche Dokumente sind möglicherweise <b>auf Koordinatoren beschränkt</b>. Der Zugriff wird von der Datenbank selbst erzwungen (Zeilenebenen-Sicherheit) — eingeschränkte Dateien werden niemals an Ihr Gerät gesendet, und jede Dokumentenansicht wird im manipulationssicheren Prüfprotokoll des Kreises aufgezeichnet."
+    },
+    "empty": {
+      "emptyTitle": "Noch keine Dokumente",
+      "emptySubtitle": "Laden Sie das erste Dokument hoch, um den Tresor zu starten.",
+      "noResultsTitle": "Keine passenden Dokumente",
+      "noResultsSubtitle": "Versuchen Sie eine andere Suche oder Kategorie.",
+      "askCoordinator": "Bitten Sie einen Koordinator, Dokumente hinzuzufügen"
+    },
+    "delete": {
+      "title": "Dieses Dokument löschen?",
+      "description": "„{title}“ wird aus dem Tresor entfernt. Dies kann nicht rückgängig gemacht werden.",
+      "cancel": "Behalten",
+      "confirm": "Löschen"
+    },
+    "toasts": {
+      "fileUnavailable": "Diese Datei ist gerade nicht verfügbar",
+      "addedEmergency": "Zur Notfallkarte hinzugefügt",
+      "removedEmergency": "Von der Notfallkarte entfernt",
+      "emergencyError": "Notfallkarte konnte nicht aktualisiert werden",
+      "renamed": "Umbenannt",
+      "renameError": "Umbenennen nicht möglich",
+      "deleted": "„{title}“ gelöscht",
+      "deleteError": "Löschen nicht möglich",
+      "uploaded": "{count, plural, one {Dokument hochgeladen} other {# Dokumente hochgeladen}}",
+      "uploadFileError": "{name} konnte nicht hochgeladen werden"
+    },
+    "card": {
+      "previewAria": "{title} ansehen",
+      "optionsAria": "Optionen für {title}",
+      "preview": "Vorschau",
+      "download": "Herunterladen",
+      "addEmergency": "Zur Notfallkarte hinzufügen",
+      "removeEmergency": "Von der Notfallkarte entfernen",
+      "rename": "Umbenennen",
+      "delete": "Löschen",
+      "emergencyBadge": "Notfall"
+    },
+    "expiry": {
+      "expired": "Abgelaufen {month}",
+      "expiresIn": "{count, plural, one {Läuft in # Tag ab} other {Läuft in # Tagen ab}}",
+      "expires": "Läuft ab {month}"
+    },
+    "categories": {
+      "medical": "Medizinisch",
+      "insurance": "Versicherung",
+      "legal": "Rechtliches",
+      "financial": "Finanzen",
+      "id": "Ausweis",
+      "advance-directive": "Patientenverfügung"
+    },
+    "categoryFilters": {
+      "all": "Alle"
+    },
+    "sensitivities": {
+      "standard": {
+        "label": "Standard",
+        "note": "Für alle im Kreis sichtbar."
+      },
+      "sensitive": {
+        "label": "Sensibel",
+        "note": "Für Familie und Koordinatoren sichtbar."
+      },
+      "restricted": {
+        "label": "Eingeschränkt",
+        "note": "Nur für Koordinatoren sichtbar."
+      }
+    },
+    "locked": {
+      "title": "Eingeschränktes Dokument",
+      "visibleToCoordinators": "Für Koordinatoren sichtbar.",
+      "restricted": "Eingeschränkt",
+      "whyAria": "Warum ist dies eingeschränkt?",
+      "whyTooltip": "Abgelehnt durch die Zeilenebenen-Sicherheitsrichtlinie der Datenbank — nicht nur in der Oberfläche ausgeblendet. Zugriffsversuche werden im Prüfprotokoll aufgezeichnet."
+    },
+    "viewer": {
+      "onEmergencyCard": "Auf der Notfallkarte",
+      "close": "Schließen",
+      "fauxOffice": "Browser können diesen Dateityp nicht in der Vorschau anzeigen — verwenden Sie Herunterladen, um ihn zu öffnen.",
+      "fauxUnavailable": "Diese Datei ist gerade nicht verfügbar — verwenden Sie Herunterladen, um sie anzufordern."
+    },
+    "uploadModal": {
+      "title": "Dokument hochladen",
+      "description": "Fügen Sie eine Datei hinzu und legen Sie fest, wer sie sehen darf."
+    },
+    "uploadForm": {
+      "tooLarge": "{name} ist zu groß (max. 15 MB)",
+      "uploadFailed": "Hochladen fehlgeschlagen — bitte erneut versuchen",
+      "done": "{count, plural, one {Dokument hochgeladen} other {# Dokumente hochgeladen}}",
+      "savedToVault": "Im Tresor gespeichert.",
+      "dropTitle": "Dateien hierher ziehen und ablegen",
+      "browse": "Dateien durchsuchen",
+      "fileHint": "PDF, Word oder Bilder · bis zu 15 MB pro Datei",
+      "selectedFilesAria": "Ausgewählte Dateien",
+      "removeFileAria": "{name} entfernen",
+      "titleLabel": "Titel",
+      "titlePlaceholder": "z. B. Versichertenkarte",
+      "categoryLabel": "Kategorie",
+      "sensitivityLabel": "Vertraulichkeit",
+      "expiryLabel": "Ablaufdatum",
+      "expiryHint": "Optional",
+      "emergencyLabel": "Auf der Notfallkarte einschließen",
+      "emergencyHint": "Wird zuerst für Sanitäter und diensthabende Pflegekräfte angezeigt.",
+      "cancel": "Abbrechen",
+      "uploading": "Wird hochgeladen…",
+      "uploadMany": "{count} Dateien hochladen"
+    },
+    "rename": {
+      "title": "Dokument umbenennen",
+      "label": "Titel",
+      "error": "Geben Sie einen Titel ein",
+      "cancel": "Abbrechen",
+      "save": "Speichern"
+    }
+  },
+  "people": {
+    "header": {
+      "title": "Personen in diesem Kreis",
+      "activeCount": "{count, plural, one {# aktives Mitglied} other {# aktive Mitglieder}}.",
+      "activeCaringFor": "{count, plural, one {# aktives Mitglied} other {# aktive Mitglieder}} kümmern sich um {name}."
+    },
+    "viewOnly": "Nur ansehen",
+    "invitePeople": "Personen einladen",
+    "gated": {
+      "tooltip": "Fragen Sie die Koordinatorin oder den Koordinator"
+    },
+    "empty": {
+      "title": "Noch niemand hier",
+      "body": "Laden Sie Familie und Pflegende ein, um den Kreis zu starten."
+    },
+    "remove": {
+      "title": "{name} entfernen?",
+      "fallbackName": "diese Person",
+      "description": "Sie verliert jeglichen Zugang zu diesem Pflegekreis. Sie können sie später erneut einladen.",
+      "cancel": "Behalten",
+      "confirm": "Entfernen"
+    },
+    "toasts": {
+      "errSave": "Die Änderung konnte nicht gespeichert werden",
+      "inviteResent": "Einladung erneut an {email} gesendet",
+      "errResend": "Erneutes Senden nicht möglich",
+      "suspended": "{name} gesperrt",
+      "reactivated": "{name} reaktiviert",
+      "nowRole": "{name} ist jetzt {role}",
+      "phoneSaved": "Telefonnummer für {name} gespeichert",
+      "phoneRemoved": "Telefonnummer für {name} entfernt",
+      "removed": "{name} aus dem Kreis entfernt",
+      "errSendInvites": "Die Einladungen konnten nicht gesendet werden",
+      "inviteSent": "Einladung gesendet",
+      "invitesSent": "{count, plural, one {# Einladung gesendet} other {# Einladungen gesendet}}",
+      "inviteRevoked": "Einladung an {email} widerrufen",
+      "errRevoke": "Widerrufen nicht möglich"
+    },
+    "roles": {
+      "coordinator": {
+        "label": "Koordinator",
+        "blurb": "Leitet den Kreis. Voller Zugriff, einschließlich Einstellungen und Abrechnung."
+      },
+      "family-admin": {
+        "label": "Familien-Admin",
+        "blurb": "Vertrauenswürdiges Familienmitglied, das Personen und die meisten Inhalte verwalten kann."
+      },
+      "family": {
+        "label": "Familie",
+        "blurb": "Familienmitglieder, die informiert bleiben und im Alltag helfen."
+      },
+      "caregiver": {
+        "label": "Pflegekraft",
+        "blurb": "Bezahlte oder ehrenamtliche Pflegende, die die Pflege laufend dokumentieren."
+      },
+      "readonly": {
+        "label": "Nur Lesen",
+        "blurb": "Kann mitverfolgen, aber nichts ändern."
+      },
+      "care-recipient": {
+        "label": "Pflegebedürftige Person",
+        "blurb": "Die betreute Person, mit einem behutsamen Blick auf die eigene Pflege."
+      },
+      "clinician": {
+        "label": "Behandelnde Fachkraft",
+        "blurb": "Ärztinnen oder Pflegekräfte mit zeitlich begrenztem klinischem Zugriff."
+      }
+    },
+    "capabilities": {
+      "timeline": "Verlauf & Updates",
+      "meds": "Medikamente",
+      "appts": "Termine",
+      "tasks": "Aufgaben & Dienstplan",
+      "health": "Vitalwerte",
+      "docsMedical": "Medizinische Dokumente",
+      "docsFinancial": "Finanz- & Rechtsdokumente",
+      "people": "Personen & Rollen",
+      "billing": "Einstellungen & Abrechnung"
+    },
+    "capabilitiesLower": {
+      "timeline": "Verlauf & Updates",
+      "meds": "Medikamente",
+      "appts": "Termine",
+      "tasks": "Aufgaben & Dienstplan",
+      "health": "Vitalwerte",
+      "docsMedical": "medizinische Dokumente",
+      "docsFinancial": "Finanz- & Rechtsdokumente",
+      "people": "Personen & Rollen",
+      "billing": "Einstellungen & Abrechnung"
+    },
+    "status": {
+      "active": "Aktiv",
+      "invited": "Eingeladen",
+      "suspended": "Gesperrt"
+    },
+    "access": {
+      "edit": "Voll",
+      "view": "Ansehen",
+      "none": "Kein"
+    },
+    "table": {
+      "ariaMembers": "Mitglieder",
+      "lastActiveDash": "—",
+      "justNow": "Gerade eben",
+      "captionMembers": "Personen in diesem Pflegekreis",
+      "person": "Person",
+      "relationship": "Beziehung",
+      "role": "Rolle",
+      "status": "Status",
+      "lastActive": "Zuletzt aktiv",
+      "actions": "Aktionen",
+      "actionsFor": "Aktionen für {name}",
+      "changeRole": "Rolle ändern",
+      "editPhone": "Telefon bearbeiten",
+      "addPhone": "Telefon hinzufügen",
+      "resendInvite": "Einladung erneut senden",
+      "reactivate": "Reaktivieren",
+      "suspend": "Sperren",
+      "remove": "Entfernen"
+    },
+    "invites": {
+      "aria": "Ausstehende Einladungen",
+      "heading": "Ausstehende Einladungen",
+      "sentOn": "Gesendet am {date}",
+      "resend": "Erneut senden",
+      "revoke": "Widerrufen"
+    },
+    "matrix": {
+      "aria": "Rollen und Berechtigungen",
+      "heading": "Rollen & was sie sehen können",
+      "dbNote": "Diese Regeln werden in der Datenbank durchgesetzt, nicht nur in der App ausgeblendet.",
+      "captionPerms": "Berechtigungen nach Rolle",
+      "capability": "Funktion",
+      "sensitive": "sensibel",
+      "legendFull": "Voller Zugriff",
+      "legendView": "Nur Lesen",
+      "legendNone": "Kein Zugriff"
+    },
+    "inviteModal": {
+      "title": "Personen einladen",
+      "description": "Senden Sie Einladungen und legen Sie fest, was jede Person sehen kann."
+    },
+    "inviteForm": {
+      "invalidEmail": "Geben Sie eine gültige E-Mail-Adresse ein",
+      "doneTitleOne": "Einladung gesendet",
+      "doneTitleMany": "{count, plural, one {# Einladung gesendet} other {# Einladungen gesendet}}",
+      "doneBody": "Sie erhalten eine E-Mail mit einem Link zum Beitreten.",
+      "done": "Fertig",
+      "emailFor": "E-Mail für Einladung {n}",
+      "emailPlaceholder": "name@beispiel.com",
+      "roleFor": "Rolle für Einladung {n}",
+      "removeInvite": "Einladung {n} entfernen",
+      "addAnother": "Weitere hinzufügen",
+      "noteLabel": "Persönliche Nachricht",
+      "notePlaceholder": "Fügen Sie der Einladung eine kurze Nachricht hinzu (optional)…",
+      "summaryCan": "Ein·e {role} kann sehen",
+      "cancel": "Abbrechen",
+      "sending": "Wird gesendet…",
+      "sendN": "{count} Einladungen senden",
+      "sendOne": "Einladung senden"
+    },
+    "changeRole": {
+      "title": "Rolle ändern",
+      "description": "Legen Sie fest, was {name} sehen und tun kann.",
+      "newRole": "Neue Rolle",
+      "whatChanges": "Was sich ändert",
+      "pickDifferent": "Wählen Sie eine andere Rolle, um die Änderungen anzuzeigen.",
+      "noChanges": "Keine Zugriffsänderungen zwischen diesen Rollen.",
+      "gainFull": "<b>{name}</b> erhält vollen Zugriff auf {cap}",
+      "gainView": "<b>{name}</b> erhält Lesezugriff auf {cap}",
+      "lossNone": "Verliert den Zugriff auf {cap}",
+      "lossView": "Auf Lesezugriff für {cap} reduziert",
+      "cancel": "Abbrechen",
+      "confirm": "Änderung bestätigen"
+    },
+    "phone": {
+      "editTitle": "Kontakttelefon bearbeiten",
+      "addTitle": "Kontakttelefon hinzufügen",
+      "description": "Eine Telefonnummer für {name}, anrufbar über die Notfallkarte.",
+      "phoneLabel": "Telefonnummer",
+      "phonePlaceholder": "+1 (555) 010-2030",
+      "blankToRemove": "Leer lassen, um die Nummer zu entfernen.",
+      "cancel": "Abbrechen",
+      "save": "Speichern"
+    }
+  },
+  "experiences": {
+    "caregiver": {
+      "fallbackRecipient": "Ihr Angehöriger",
+      "shiftLabel": "Meine Schicht heute",
+      "heading": "Betreuung von {name}",
+      "dosesProgress": "{given} von {total} Dosen bisher gegeben.",
+      "noMedsToday": "Heute sind keine Medikamente geplant.",
+      "onShift": "Im Dienst",
+      "medsTitle": "Heutige Medikamente",
+      "nothingScheduled": "Heute nichts geplant.",
+      "given": "Gegeben",
+      "markGiven": "Als gegeben markieren",
+      "tasksTitle": "Meine Aufgaben",
+      "noTasks": "Keine Aufgaben für Ihre Schicht.",
+      "vitalsTitle": "Zu erfassende Vitalwerte",
+      "vitalsHint": "Tippen, um schnell eine Messung zu erfassen.",
+      "recordVital": "{vital} erfassen",
+      "addUpdateTitle": "Update hinzufügen",
+      "updatePlaceholder": "Teilen Sie eine kurze Notiz zum Tag von {name}…",
+      "postUpdate": "Veröffentlichen",
+      "toastGiven": "{name} {strength} als gegeben markiert",
+      "toastPosted": "Update im Verlauf veröffentlicht"
+    },
+    "vitals": {
+      "bp": "Blutdruck",
+      "sugar": "Blutzucker",
+      "weight": "Gewicht",
+      "temperature": "Temperatur"
+    },
+    "recipient": {
+      "fallbackName": "Sie",
+      "greeting": {
+        "morning": "Guten Morgen",
+        "afternoon": "Guten Tag",
+        "evening": "Guten Abend"
+      },
+      "greetingLine": "{greeting}, {name}",
+      "noMeds": "Heute sind keine Medikamente geplant.",
+      "dueCount": "{count, plural, one {Sie müssen # Medikament einnehmen.} other {Sie müssen # Medikamente einnehmen.}}",
+      "allDone": "Sie haben heute alle Ihre Medikamente eingenommen 💚",
+      "stop": "Stopp",
+      "readAloud": "Vorlesen",
+      "readAloudUnavailable": "Vorlesen ist auf diesem Gerät nicht verfügbar",
+      "speakDue": "{greeting}, {name}. {count, plural, one {Sie müssen # Medikament einnehmen.} other {Sie müssen # Medikamente einnehmen.}}",
+      "speakDose": "{name}, {strength}, um {time}.",
+      "speakAllDone": "{greeting}, {name}. Sie haben heute alle Ihre Medikamente eingenommen. Gut gemacht.",
+      "medsAria": "Heutige Medikamente",
+      "medsTitle": "Heutige Medikamente",
+      "noMedsToday": "Heute sind keine Medikamente einzunehmen.",
+      "taken": "Eingenommen",
+      "tookAria": "Ich habe {name} {strength} eingenommen",
+      "tookIt": "Ich habe es eingenommen",
+      "apptsAria": "Heutige Termine",
+      "apptsTitle": "Termine",
+      "noAppts": "Keine anstehenden Termine.",
+      "helpAria": "Hilfe holen",
+      "callAria": "{name} anrufen",
+      "callFamily": "Familie anrufen",
+      "noFamilyPhone": "Es ist noch keine Telefonnummer der Familie gespeichert",
+      "needHelp": "Ich brauche Hilfe",
+      "toastHelp": "Wir erreichen jetzt Ihre Familie — halten Sie durch 💚",
+      "toastTaken": "Gut gemacht — das ist erfasst 💚",
+      "footer": "Sie entscheiden, was Sie teilen. Das ist Ihr Raum."
+    },
+    "readonly": {
+      "fallbackRecipient": "Ihr Angehöriger",
+      "heading": "Wie es {name} geht",
+      "subtitle": "Ein sanfter Blick auf den Tag. Sie können reagieren, aber hier ist nichts zu tun.",
+      "calmDay": "Ruhiger Tag",
+      "goodDay": "{name} hat einen guten Tag 💚",
+      "digestLabel": "Heutige Zusammenfassung",
+      "noDigest": "Heute noch keine Zusammenfassung. Sobald der Kreis Updates über {name} teilt, erscheint hier eine sanfte Zusammenfassung.",
+      "readFullDigest": "Vollständige Zusammenfassung lesen",
+      "recentAria": "Aktuelle Updates",
+      "recentTitle": "Aktuelle Updates",
+      "viewOnly": "Nur Ansicht",
+      "noUpdates": "Noch keine Updates.",
+      "removeHeart": "Ihr Herz entfernen",
+      "reactHeart": "Mit einem Herz reagieren",
+      "medsDone": "{given}/{total} erledigt",
+      "stat": {
+        "meds": "Medik.",
+        "mood": "Stimmung",
+        "bp": "BD"
+      }
+    },
+    "clinician": {
+      "fallbackName": "Pflegebedürftige Person",
+      "ageYears": "{age} Jahre",
+      "dob": "Geb. {dob}",
+      "accessTitle": "Klinischer Zugriff nur lesend",
+      "accessNote": "Sie können die klinische Akte von {name} einsehen, aber keine Änderungen vornehmen.",
+      "theRecipient": "die betreute Person",
+      "viewOnly": "Nur Ansicht",
+      "conditions": "Erkrankungen",
+      "allergies": "Allergien",
+      "bloodType": "Blutgruppe",
+      "noneRecorded": "Keine erfasst",
+      "currentMeds": "Aktuelle Medikamente",
+      "noActiveMeds": "Keine aktiven Medikamente.",
+      "medsCaption": "Aktuelle Medikamente und Therapietreue",
+      "colMedication": "Medikament",
+      "colSchedule": "Einnahmeplan",
+      "colAdherence": "Therapietreue",
+      "vitalsTitle": "Vitalwerte — letzte 7 Tage",
+      "bpLabel": "Blutdruck (mmHg)",
+      "glucoseLabel": "Glukose (mg/dl)",
+      "noReadings": "Keine Messungen erfasst.",
+      "systolic": "Systolisch",
+      "diastolic": "Diastolisch",
+      "glucose": "Glukose",
+      "recentIncidents": "Letzte Vorfälle",
+      "noIncidents": "Keine Vorfälle gemeldet.",
+      "medicalDocs": "Medizinische Dokumente",
+      "noDocs": "Keine medizinischen Dokumente."
+    }
+  },
+  "notifications": {
+    "title": "Benachrichtigungen",
+    "subtitle": "Bleiben Sie auf dem Laufenden.",
+    "unreadCount": "{count, plural, one {# ungelesen} other {# ungelesen}}",
+    "markAllRead": "Alle als gelesen markieren",
+    "seeAll": "Alle ansehen",
+    "justNow": "gerade eben",
+    "unread": "Ungelesen",
+    "bellAria": "{count, plural, =0 {Benachrichtigungen, keine ungelesen} one {Benachrichtigungen, # ungelesen} other {Benachrichtigungen, # ungelesen}}",
+    "filters": {
+      "all": "Alle",
+      "mentions": "Erwähnungen",
+      "urgent": "Dringend",
+      "tasks": "Aufgaben"
+    },
+    "types": {
+      "med": "Medikament",
+      "vital": "Vitalwert",
+      "task": "Aufgabe",
+      "incident": "Vorfall",
+      "mention": "Erwähnung",
+      "appointment": "Termin",
+      "digest": "Zusammenfassung"
+    },
+    "groups": {
+      "pinned": "Erfordert Aufmerksamkeit",
+      "today": "Heute",
+      "earlier": "Früher"
+    },
+    "empty": {
+      "title": "Alles erledigt 💚",
+      "body": "Im Moment keine neuen Benachrichtigungen."
+    },
+    "actions": {
+      "dismiss": "Ausblenden",
+      "options": "Benachrichtigungsoptionen",
+      "markRead": "Als gelesen markieren"
+    }
+  },
+  "onboarding": {
+    "welcome": {
+      "title": "Willkommen bei Kintwadi",
+      "subtitle": "Sie bringen gleich Ihre Familie und Ihr Pflegeteam an einem Ort zusammen.",
+      "cta": "Richten wir die Pflege für Ihren Angehörigen ein."
+    },
+    "recipient": {
+      "title": "Wen pflegen Sie?",
+      "subtitle": "Erzählen Sie uns von der Person im Mittelpunkt dieses Pflegekreises.",
+      "photoAlt": "Pflegebedürftige Person",
+      "uploadPhoto": "Foto hochladen",
+      "removePhoto": "Foto entfernen",
+      "addPhotoOptional": "Foto hinzufügen (optional)",
+      "nameLabel": "Name der Person *",
+      "namePlaceholder": "z. B. Antonio",
+      "dobLabel": "Geburtsdatum",
+      "relationshipLabel": "Ihr Verhältnis zu dieser Person",
+      "relationshipPlaceholder": "Verhältnis auswählen",
+      "photoError": "Bild konnte nicht gelesen werden",
+      "photoErrorHint": "Bitte versuchen Sie ein anderes Foto."
+    },
+    "health": {
+      "title": "Gesundheitsangaben",
+      "subtitle": "Das hilft Ihrem Pflegeteam, besser zu unterstützen. Alle Felder sind optional.",
+      "conditionsLabel": "Wichtige Erkrankungen",
+      "conditionsPlaceholder": "Erkrankungen eingeben oder auswählen…",
+      "allergiesLabel": "Allergien",
+      "allergiesPlaceholder": "Allergien eingeben oder auswählen…",
+      "languageLabel": "Hauptsprache",
+      "languagePlaceholder": "Sprache auswählen",
+      "timezoneLabel": "Zeitzone",
+      "timezonePlaceholder": "Zeitzone auswählen"
+    },
+    "invite": {
+      "title": "Laden Sie Ihren Kreis ein",
+      "subtitle": "Fügen Sie Familienmitglieder, Pflegende oder alle hinzu, die bei der Pflege helfen.",
+      "empty": "Noch keine Einladungen. Fügen Sie Personen zu Ihrem Pflegekreis hinzu.",
+      "emailPlaceholder": "E-Mail-Adresse",
+      "emailAria": "E-Mail für Einladung {index}",
+      "roleAria": "Rolle für Einladung {index}",
+      "removeInvite": "Einladung entfernen",
+      "addPerson": "Weitere Person hinzufügen",
+      "laterHint": "Sie können später jederzeit weitere Personen über das Dashboard einladen."
+    },
+    "done": {
+      "fallbackName": "Ihr Angehöriger",
+      "title": "Der Pflegekreis von {name} ist bereit!",
+      "subtitle": "Sie haben den ersten Schritt zu besser koordinierter Pflege getan. Ihr Kreis ist eingerichtet und startklar.",
+      "relationship": "Ihr/e {relationship}",
+      "moreTags": "+{count} weitere",
+      "invitesPending": "{count, plural, one {# ausstehende Einladung} other {# ausstehende Einladungen}}",
+      "whatsNext": "Was kommt als Nächstes? Beginnen Sie, Medikamente, Termine und tägliche Updates hinzuzufügen."
+    },
+    "nav": {
+      "stepProgress": "Schritt {step} von {total}",
+      "startOver": "Neu beginnen",
+      "back": "Zurück",
+      "skip": "Vorerst überspringen",
+      "settingUp": "Wird eingerichtet…",
+      "createCircle": "Kreis erstellen",
+      "goToDashboard": "Zum Dashboard",
+      "continue": "Weiter"
+    },
+    "toast": {
+      "createError": "Ihr Pflegekreis konnte nicht erstellt werden",
+      "successDialog": "Neuer Pflegekreis erstellt",
+      "successOnboarding": "Willkommen bei Kintwadi!",
+      "successWithInvites": "{count, plural, one {Ihr Pflegekreis ist bereit · # Einladung gesendet.} other {Ihr Pflegekreis ist bereit · # Einladungen gesendet.}}",
+      "successNoInvites": "Ihr Pflegekreis wurde erstellt.",
+      "genericError": "Etwas ist schiefgelaufen",
+      "genericErrorHint": "Bitte versuchen Sie es gleich noch einmal."
+    },
+    "dialog": {
+      "title": "Neuen Pflegekreis erstellen",
+      "description": "Richten Sie Schritt für Schritt einen weiteren Pflegekreis für jemanden ein, den Sie unterstützen."
+    },
+    "chip": {
+      "remove": "{value} entfernen",
+      "addCustom": "<b>„{value}“</b> hinzufügen"
+    },
+    "relationships": {
+      "parent": "Elternteil",
+      "spousePartner": "Ehepartner/Partner",
+      "grandparent": "Großelternteil",
+      "sibling": "Geschwister",
+      "child": "Kind",
+      "inLaw": "Angeheiratet",
+      "friend": "Freund/in",
+      "neighbor": "Nachbar/in",
+      "client": "Klient/in",
+      "other": "Sonstiges"
+    },
+    "languages": {
+      "english": "Englisch",
+      "spanish": "Spanisch",
+      "french": "Französisch",
+      "portuguese": "Portugiesisch",
+      "german": "Deutsch",
+      "italian": "Italienisch",
+      "mandarin": "Chinesisch (Mandarin)",
+      "cantonese": "Chinesisch (Kantonesisch)",
+      "japanese": "Japanisch",
+      "korean": "Koreanisch",
+      "vietnamese": "Vietnamesisch",
+      "tagalog": "Tagalog",
+      "arabic": "Arabisch",
+      "hindi": "Hindi",
+      "russian": "Russisch",
+      "polish": "Polnisch",
+      "other": "Sonstige"
+    },
+    "timezones": {
+      "easternTime": "Eastern Time (ET)",
+      "centralTime": "Central Time (CT)",
+      "mountainTime": "Mountain Time (MT)",
+      "pacificTime": "Pacific Time (PT)",
+      "alaskaTime": "Alaska Time (AKT)",
+      "hawaiiTime": "Hawaii Time (HT)",
+      "london": "London (GMT/BST)",
+      "centralEuropean": "Mitteleuropa (CET)",
+      "berlin": "Berlin (CET)",
+      "japan": "Japan (JST)",
+      "china": "China (CST)",
+      "india": "Indien (IST)",
+      "sydney": "Sydney (AEST)"
+    },
+    "roles": {
+      "family": {
+        "label": "Familienmitglied",
+        "description": "Updates ansehen und bei der Pflegekoordination helfen"
+      },
+      "family_admin": {
+        "label": "Familien-Admin",
+        "description": "Personen, Rollen und Kreiseinstellungen verwalten"
+      },
+      "caregiver": {
+        "label": "Pflegeperson",
+        "description": "Medikamente, Vitalwerte, Aufgaben und tägliche Pflege erfassen"
+      },
+      "clinician": {
+        "label": "Fachkraft",
+        "description": "Arzt, Pflegekraft oder Therapeut — klinischer Zugang"
+      },
+      "care_recipient": {
+        "label": "Pflegebedürftige Person",
+        "description": "Die Person, die Pflege erhält"
+      },
+      "read_only": {
+        "label": "Nur Lesen",
+        "description": "Kann ansehen, aber nichts ändern"
+      }
+    },
+    "conditions": {
+      "diabetes": "Diabetes",
+      "hypertension": "Bluthochdruck",
+      "heartDisease": "Herzkrankheit",
+      "arthritis": "Arthritis",
+      "dementia": "Demenz",
+      "alzheimers": "Alzheimer",
+      "parkinsons": "Parkinson",
+      "copd": "COPD",
+      "asthma": "Asthma",
+      "cancer": "Krebs",
+      "stroke": "Schlaganfall",
+      "depression": "Depression"
+    },
+    "allergies": {
+      "penicillin": "Penicillin",
+      "sulfaDrugs": "Sulfonamide",
+      "aspirin": "Aspirin",
+      "nsaids": "NSAR",
+      "latex": "Latex",
+      "peanuts": "Erdnüsse",
+      "shellfish": "Meeresfrüchte",
+      "eggs": "Eier",
+      "dairy": "Milchprodukte",
+      "gluten": "Gluten",
+      "beeStings": "Bienenstiche",
+      "contrastDye": "Kontrastmittel"
+    }
+  },
+  "account": {
+    "title": "Ihr Profil",
+    "subtitle": "Aktualisieren Sie Ihre persönlichen Daten, Ihr Foto und die Anmeldesicherheit.",
+    "changePhoto": "Foto ändern",
+    "photoHint": "JPG oder PNG, bis 5 MB.",
+    "errImageType": "Bitte wählen Sie eine Bilddatei.",
+    "errImageSize": "Bitte wählen Sie ein Bild unter 5 MB.",
+    "errName": "Bitte geben Sie Ihren Namen ein.",
+    "fullName": "Vollständiger Name",
+    "email": "E-Mail",
+    "emailHint": "Ihre E-Mail wird zur Anmeldung verwendet und kann hier nicht geändert werden.",
+    "language": "Sprache",
+    "timezone": "Zeitzone",
+    "save": "Änderungen speichern",
+    "saving": "Wird gespeichert…",
+    "profileUpdated": "Profil aktualisiert",
+    "changePassword": "Passwort ändern",
+    "current": "Aktuell",
+    "new": "Neu",
+    "confirm": "Bestätigen",
+    "passwordHint": "Mindestens 8 Zeichen, mit einem Großbuchstaben, einem Kleinbuchstaben und einer Zahl.",
+    "updatePassword": "Passwort aktualisieren",
+    "updating": "Wird aktualisiert…",
+    "passwordUpdated": "Passwort aktualisiert",
+    "socialNoPassword": "Sie melden sich über einen Drittanbieter an, daher gibt es hier kein Passwort zu ändern.",
+    "deleteTitle": "Konto löschen",
+    "deleteDesc": "Entfernen Sie Ihr Konto und Ihre persönlichen Daten dauerhaft. Das kann nicht rückgängig gemacht werden.",
+    "deleteConfirmTitle": "Ihr Konto löschen?",
+    "deleteConfirmBody": "Dies löscht Ihr Konto dauerhaft und entfernt Sie aus allen Pflegekreisen. Das kann nicht rückgängig gemacht werden.",
+    "cancel": "Abbrechen"
+  },
+  "blog": {
+    "badge": "Kintwadi Blog",
+    "heroTitle": "Gedanken über das gemeinsame Umsorgen",
+    "heroSubtitle": "Geschichten, Produktneuheiten und Ideen, um die Pflege über Familien, Distanzen und Zeitzonen hinweg zu koordinieren.",
+    "featured": "Empfohlen",
+    "readStory": "Geschichte lesen",
+    "morePosts": "Weitere Geschichten folgen in Kürze.",
+    "allPosts": "Alle Beiträge"
+  },
+  "legal": {
+    "eyebrow": {
+      "legal": "Rechtliches",
+      "trust": "Vertrauen",
+      "compliance": "Compliance"
+    },
+    "lastUpdated": "Zuletzt aktualisiert {date}",
+    "disclaimer": "Diese Seite ist illustrativer Inhalt für eine Hackathon-Demo — keine Rechtsberatung.",
+    "privacy": {
+      "title": "Datenschutzerklärung",
+      "subtitle": "Wie Kintwadi die Informationen, die Sie uns anvertrauen, erhebt, nutzt und schützt.",
+      "updated": "6. Juni 2026",
+      "short": {
+        "title": "Die Kurzfassung",
+        "body": "Kintwadi verwahrt sensible Informationen über Familien und die Menschen, die sie betreuen. Wir erheben nur, was wir zur Pflegekoordination brauchen, wir verkaufen Ihre Daten niemals, und wir beschränken den Zugriff jeder Person auf ihre Rolle."
+      },
+      "collect": {
+        "title": "Was wir erheben",
+        "items": [
+          "Kontodaten — Ihr Name, Ihre E-Mail und Ihr Avatar.",
+          "Pflegekreis-Inhalte, die Sie hinzufügen — das Profil der betreuten Person, Medikamente, Verlaufs-Updates, Aufgaben, Termine, Vitalwerte und Dokumente.",
+          "Nutzungs- und Geräteinformationen, die nötig sind, um den Dienst sicher und zuverlässig zu halten."
+        ]
+      },
+      "use": {
+        "title": "Wie wir sie nutzen",
+        "body": "Um den Dienst bereitzustellen: jedem Mitglied den richtigen Ausschnitt einer gemeinsamen Akte zu zeigen, Benachrichtigungen und die Tageszusammenfassung zu senden und Sicherheitssignale wie ausgelassene Medikamente oder Wechselwirkungswarnungen sichtbar zu machen.",
+        "body2": "Wir verkaufen keine personenbezogenen Daten und nutzen Pflegeinhalte nicht für Werbung."
+      },
+      "who": {
+        "title": "Wer Ihre Daten sehen kann",
+        "body": "Der Zugriff richtet sich nach der Rolle im Pflegekreis und wird in der Datenbank per Row-Level-Security durchgesetzt — eine angestellte Pflegekraft kann etwa nie die finanziellen oder rechtlichen Dokumente einer Familie lesen. Jede sensible Aktion wird in einem nur anfügbaren Audit-Protokoll festgehalten."
+      },
+      "choices": {
+        "title": "Ihre Optionen",
+        "items": [
+          "Exportieren Sie jederzeit eine Kopie der Akte Ihres Kreises.",
+          "Steuern Sie, was Sie teilen — die betreute Person entscheidet, was andere über sie sehen.",
+          "Löschen Sie Ihr Konto; wir entfernen Ihre persönlichen Daten auf Anfrage."
+        ]
+      },
+      "contact": {
+        "title": "Kontakt",
+        "body": "Fragen zum Datenschutz? Schreiben Sie an <a>privacy@kintwadi.app</a>."
+      }
+    },
+    "terms": {
+      "title": "Nutzungsbedingungen",
+      "subtitle": "Die Vereinbarung zwischen Ihnen und Kintwadi, wenn Sie den Dienst nutzen.",
+      "updated": "6. Juni 2026",
+      "using": {
+        "title": "Kintwadi nutzen",
+        "body": "Kintwadi hilft Familien und Pflegeteams, die Pflege zu koordinieren. Mit der Erstellung eines Kontos stimmen Sie zu, es rechtmäßig zu nutzen, Ihre Anmeldedaten zu schützen und die Privatsphäre aller in Ihren Pflegekreisen zu respektieren."
+      },
+      "notMedical": {
+        "title": "Kein medizinischer Dienst",
+        "body": "Kintwadi ist ein Koordinationswerkzeug, kein Medizinprodukt und kein Anbieter medizinischer Beratung. Sicherheitsfunktionen wie Wechselwirkungswarnungen und Verschlechterungserkennung sind unterstützende Hilfen — sie ersetzen kein professionelles klinisches Urteil. Rufen Sie im Notfall Ihre örtliche Notrufnummer an."
+      },
+      "content": {
+        "title": "Ihre Inhalte",
+        "body": "Sie behalten das Eigentum an den Inhalten, die Sie hinzufügen. Sie erteilen uns die begrenzte Erlaubnis, die nötig ist, um sie zu speichern, den richtigen Mitgliedern anzuzeigen und Funktionen wie die Tageszusammenfassung zu betreiben. Sie sind dafür verantwortlich, das Recht zu haben, Informationen über die von Ihnen betreuten Personen zu teilen."
+      },
+      "billing": {
+        "title": "Tarife & Abrechnung",
+        "body": "Kostenlose und kostenpflichtige Tarife sind auf unserer <a>Preisseite</a> beschrieben. Kostenpflichtige Abos verlängern sich bis zur Kündigung; Sie können jederzeit ändern oder kündigen, wobei Änderungen zum nächsten Abrechnungszyklus wirksam werden."
+      },
+      "acceptable": {
+        "title": "Zulässige Nutzung",
+        "items": [
+          "Missbrauchen Sie den Dienst nicht, versuchen Sie nicht, seine Sicherheit zu umgehen, und greifen Sie nicht auf Daten zu, zu denen Sie nicht berechtigt sind.",
+          "Laden Sie keine rechtswidrigen Inhalte hoch und geben Sie sich nicht als andere aus.",
+          "Respektieren Sie die rollenbasierten Berechtigungen Ihres Pflegekreises."
+        ]
+      },
+      "changes": {
+        "title": "Änderungen",
+        "body": "Wir können diese Bedingungen aktualisieren, während sich das Produkt weiterentwickelt. Wir vermerken das Datum oben und informieren Sie bei wesentlichen Änderungen in der App oder per E-Mail."
+      }
+    },
+    "security": {
+      "title": "Sicherheit",
+      "subtitle": "Kintwadi verwahrt sensible Gesundheits- und Familiendaten. Ihr Schutz ist ein erstrangiges Designziel, kein nachträglicher Gedanke.",
+      "depth": {
+        "title": "Mehrschichtige Verteidigung",
+        "body": "Pflege ist von Natur aus eine zugriffskontrollierte Domäne, daher haben wir Sicherheit direkt in das Datenmodell eingebaut. Berechtigungen werden auf mehreren Ebenen durchgesetzt — am Rand, in der Anwendung und in der Datenbank — sodass ein einzelner Fehler keine Daten offenlegen kann, die eine Person nicht sehen sollte."
+      },
+      "measures": {
+        "encryption": {
+          "title": "Verschlüsselung überall",
+          "body": "Daten werden bei der Übertragung (TLS) und im Ruhezustand verschlüsselt."
+        },
+        "rls": {
+          "title": "Row-Level-Security",
+          "body": "Rollenbasierter Zugriff wird in der Datenbank durchgesetzt, nicht nur in der Oberfläche."
+        },
+        "audit": {
+          "title": "Nur anfügbares Audit-Protokoll",
+          "body": "Jeder sensible Zugriff oder jede Änderung wird aufgezeichnet und ist unveränderlich."
+        },
+        "leastPriv": {
+          "title": "Geringste Rechte",
+          "body": "Jede Rolle sieht nur den Ausschnitt der Akte, den sie benötigt."
+        },
+        "resilient": {
+          "title": "Widerstandsfähige Daten",
+          "body": "Verwaltetes Postgres mit automatischen, verschlüsselten Backups."
+        },
+        "secrets": {
+          "title": "Geheimnisse bleiben serverseitig",
+          "body": "Zugangsdaten liegen in der Umgebungskonfiguration — niemals im Client."
+        }
+      },
+      "db": {
+        "title": "In der Datenbank durchgesetzt",
+        "body": "Row-Level-Security bedeutet, dass eine angestellte Pflegekraft die Finanzdokumente einer Familie physisch nicht lesen kann und sicherheitskritische Aktionen wie „ein Medikament geben“ als eine einzige atomare Transaktion erfolgen — das Ereignis protokollieren, den Bestand verringern und den Verlaufseintrag schreiben, gemeinsam oder gar nicht."
+      },
+      "disclosure": {
+        "title": "Verantwortungsvolle Offenlegung",
+        "body": "Eine Schwachstelle gefunden? Wir schätzen Ihre Hilfe. Schreiben Sie an <a>security@kintwadi.app</a>, und wir antworten umgehend."
+      }
+    },
+    "hipaa": {
+      "title": "HIPAA",
+      "subtitle": "Kintwadi ist nach HIPAA-Prinzipien gebaut — darauf ausgelegt, Gesundheitsinformationen von Tag eins an zu schützen.",
+      "approach": {
+        "title": "Unser Ansatz",
+        "body": "Kintwadi verarbeitet geschützte Gesundheitsinformationen (PHI), daher folgen wir den Sicherheits- und Datenschutzprinzipien der HIPAA im gesamten Produkt: Zugriff auf das nötige Minimum, starke technische Schutzmaßnahmen und ein vollständiger Audit-Trail. Diese Seite beschreibt unsere Design-Haltung; sie ist keine Behauptung einer formellen Zertifizierung."
+      },
+      "safeguardsTitle": "Technische Schutzmaßnahmen",
+      "safeguards": [
+        "Verschlüsselung von PHI bei Übertragung und im Ruhezustand",
+        "Rollenbasierter Zugriff, in der Datenbank durchgesetzt (Row-Level-Security)",
+        "Ein nur anfügbares Audit-Protokoll, wer was angesehen oder geändert hat",
+        "Zugriff mit geringsten Rechten und serverseitige Geheimnisse",
+        "Klare Trennung von Demodaten und echten Daten"
+      ],
+      "baa": {
+        "title": "Vereinbarungen zur Auftragsverarbeitung (BAA)",
+        "body": "Für Organisationen, die eine unterzeichnete BAA benötigen — häusliche Pflegedienste, betreutes Wohnen und Ähnliches — ist eine BAA in unserem Care-Teams-Tarif verfügbar. Wenden Sie sich an <a>sales@kintwadi.app</a>, um das Gespräch zu beginnen."
+      },
+      "report": {
+        "title": "Ein Anliegen melden",
+        "body": "Wenn Sie glauben, dass Gesundheitsinformationen unsachgemäß behandelt wurden, kontaktieren Sie <a>privacy@kintwadi.app</a>, und wir gehen der Sache nach."
+      }
+    }
+  }
+}
