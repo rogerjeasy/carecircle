@@ -12,31 +12,33 @@ import {
 } from "lucide-react";
 import type { DocCategory, Sensitivity } from "./types";
 
-export const categoryMeta: Record<DocCategory, { label: string; icon: typeof FileText; tint: string }> = {
-  medical: { label: "Medical", icon: HeartPulse, tint: "bg-accent/10 text-accent" },
-  insurance: { label: "Insurance", icon: ShieldCheck, tint: "bg-info/10 text-info" },
-  legal: { label: "Legal", icon: Scale, tint: "bg-primary/10 text-primary" },
-  financial: { label: "Financial", icon: Wallet, tint: "bg-warning/10 text-warning" },
-  id: { label: "ID", icon: BadgeCheck, tint: "bg-success/10 text-success" },
-  "advance-directive": { label: "Advance directive", icon: Landmark, tint: "bg-muted text-muted-foreground" },
+// Icon + tint per category. Labels are resolved in components via `documents.categories.<value>`.
+export const categoryMeta: Record<DocCategory, { icon: typeof FileText; tint: string }> = {
+  medical: { icon: HeartPulse, tint: "bg-accent/10 text-accent" },
+  insurance: { icon: ShieldCheck, tint: "bg-info/10 text-info" },
+  legal: { icon: Scale, tint: "bg-primary/10 text-primary" },
+  financial: { icon: Wallet, tint: "bg-warning/10 text-warning" },
+  id: { icon: BadgeCheck, tint: "bg-success/10 text-success" },
+  "advance-directive": { icon: Landmark, tint: "bg-muted text-muted-foreground" },
 };
 
-/** Filter options, including the "All" pseudo-category. */
-export const CATEGORY_FILTERS: { value: DocCategory | "all"; label: string }[] = [
-  { value: "all", label: "All" },
-  { value: "medical", label: "Medical" },
-  { value: "insurance", label: "Insurance" },
-  { value: "legal", label: "Legal" },
-  { value: "financial", label: "Financial" },
-  { value: "id", label: "ID" },
-  { value: "advance-directive", label: "Advance directive" },
+/**
+ * Filter option values, including the "All" pseudo-category. Labels are resolved in components:
+ * "all" via `documents.categoryFilters.all`, the rest via `documents.categories.<value>`.
+ */
+export const CATEGORY_FILTERS: { value: DocCategory | "all" }[] = [
+  { value: "all" },
+  { value: "medical" },
+  { value: "insurance" },
+  { value: "legal" },
+  { value: "financial" },
+  { value: "id" },
+  { value: "advance-directive" },
 ];
 
-export const sensitivityMeta: Record<
-  Sensitivity,
-  { label: string; note: string; locked: boolean }
-> = {
-  standard: { label: "Standard", note: "Visible to everyone in the circle.", locked: false },
-  sensitive: { label: "Sensitive", note: "Visible to family and coordinators.", locked: false },
-  restricted: { label: "Restricted", note: "Visible to coordinators only.", locked: true },
+// `locked` drives RBAC; label/note are resolved via `documents.sensitivities.<value>.{label,note}`.
+export const sensitivityMeta: Record<Sensitivity, { locked: boolean }> = {
+  standard: { locked: false },
+  sensitive: { locked: false },
+  restricted: { locked: true },
 };

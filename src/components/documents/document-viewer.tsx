@@ -1,10 +1,10 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ResponsiveModal } from "./responsive-modal";
-import { categoryMeta } from "./data";
 import type { DocumentItem } from "./types";
 
 export interface DocumentViewerProps {
@@ -16,15 +16,16 @@ export interface DocumentViewerProps {
 
 /** An accessible preview viewer that fits any viewport and scrolls internally. */
 export function DocumentViewer({ doc, open, onOpenChange, onDownload }: DocumentViewerProps) {
+  const t = useTranslations("documents");
   if (!doc) return null;
-  const cat = categoryMeta[doc.category];
+  const catLabel = t(`categories.${doc.category}` as "categories.medical");
 
   return (
     <ResponsiveModal
       open={open}
       onOpenChange={onOpenChange}
       title={<span className="block truncate pr-2">{doc.title}</span>}
-      description={`${cat.label} · ${doc.size}`}
+      description={`${catLabel} · ${doc.size}`}
       dialogClassName="sm:max-w-3xl"
     >
       {/* Scrollable preview area */}
@@ -52,18 +53,18 @@ export function DocumentViewer({ doc, open, onOpenChange, onDownload }: Document
         <div className="flex items-center justify-between gap-2">
           {doc.onEmergencyCard ? (
             <Badge variant="outline" className="gap-1 border-transparent bg-destructive/10 text-destructive">
-              On emergency card
+              {t("viewer.onEmergencyCard")}
             </Badge>
           ) : (
             <span />
           )}
           <div className="flex items-center gap-2">
             <Button variant="outline" onClick={() => onOpenChange(false)}>
-              Close
+              {t("viewer.close")}
             </Button>
             <Button onClick={onDownload}>
               <Download className="h-4 w-4" />
-              <span className="ml-1">Download</span>
+              <span className="ml-1">{t("card.download")}</span>
             </Button>
           </div>
         </div>
@@ -77,12 +78,14 @@ export function DocumentViewer({ doc, open, onOpenChange, onDownload }: Document
  * viewer) or a row whose stored file is unavailable. PDFs and images render for real above.
  */
 function FauxPage({ doc }: { doc: DocumentItem }) {
+  const t = useTranslations("documents");
   const isOfficeDoc = doc.kind === "doc";
+  const catLabel = t(`categories.${doc.category}` as "categories.medical");
   return (
     <div className="mx-auto w-full max-w-2xl">
       <div className="rounded-lg border bg-card p-6 shadow-sm sm:p-8">
         <p className="text-base font-semibold">{doc.title}</p>
-        <p className="mt-1 text-xs text-muted-foreground">{categoryMeta[doc.category].label}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{catLabel}</p>
         <div className="mt-5 space-y-2.5" aria-hidden="true">
           {[
             "w-2/3",
@@ -99,9 +102,7 @@ function FauxPage({ doc }: { doc: DocumentItem }) {
         </div>
       </div>
       <p className="mt-3 text-center text-xs text-muted-foreground">
-        {isOfficeDoc && doc.downloadUrl
-          ? "Browsers can't preview this file type — use Download to open it."
-          : "This file isn't available right now — use Download to request it."}
+        {isOfficeDoc && doc.downloadUrl ? t("viewer.fauxOffice") : t("viewer.fauxUnavailable")}
       </p>
     </div>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ResponsiveModal } from "./responsive-modal";
@@ -15,11 +16,12 @@ export interface RenameDialogProps {
 
 /** A tiny rename flow — Dialog on tablet+, Sheet on phone. */
 export function RenameDialog({ open, initialTitle, onOpenChange, onSave }: RenameDialogProps) {
+  const t = useTranslations("documents");
   const [title, setTitle] = React.useState(initialTitle);
   const valid = title.trim().length > 0;
 
   return (
-    <ResponsiveModal open={open} onOpenChange={onOpenChange} title="Rename document">
+    <ResponsiveModal open={open} onOpenChange={onOpenChange} title={t("rename.title")}>
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -28,17 +30,17 @@ export function RenameDialog({ open, initialTitle, onOpenChange, onSave }: Renam
         className="flex min-h-0 flex-1 flex-col"
       >
         <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4 sm:px-6">
-          <FormField htmlFor="rename-title" label="Title" required error={valid ? undefined : "Enter a title"}>
+          <FormField htmlFor="rename-title" label={t("rename.label")} required error={valid ? undefined : t("rename.error")}>
             <Input id="rename-title" value={title} onChange={(e) => setTitle(e.target.value)} />
           </FormField>
         </div>
         <div className="shrink-0 border-t bg-background px-5 py-3 sm:px-6">
           <div className="flex items-center justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+              {t("rename.cancel")}
             </Button>
             <Button type="submit" disabled={!valid}>
-              Save
+              {t("rename.save")}
             </Button>
           </div>
         </div>

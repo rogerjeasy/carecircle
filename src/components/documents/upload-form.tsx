@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { Check, FileText, ImageIcon, Loader2, UploadCloud, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -15,7 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { FormField } from "./form-field";
-import { categoryMeta, sensitivityMeta } from "./data";
+import { categoryMeta } from "./data";
 import type { UploadMeta } from "./upload-modal";
 import type { DocCategory, DocumentItem, FileKind, Sensitivity } from "./types";
 
@@ -58,6 +59,7 @@ let counter = 1;
 
 /** The upload form: dropzone → metadata → real upload (one document per file) → success. */
 export function UploadForm({ onUpload, onUploaded, onCancel }: UploadFormProps) {
+  const t = useTranslations("documents");
   const [files, setFiles] = React.useState<PendingFile[]>([]);
   const [dragging, setDragging] = React.useState(false);
   const [title, setTitle] = React.useState("");
@@ -79,7 +81,7 @@ export function UploadForm({ onUpload, onUploaded, onCancel }: UploadFormProps) 
     const next: PendingFile[] = [];
     for (const f of Array.from(fileList)) {
       if (f.size > MAX_BYTES) {
-        toast.error(`${f.name} is too large (max 15 MB)`);
+        toast.error(t("uploadForm.tooLarge", { name: f.name }));
         continue;
       }
       const kind = kindOf(f);
@@ -134,7 +136,7 @@ export function UploadForm({ onUpload, onUploaded, onCancel }: UploadFormProps) 
       setTimeout(() => onUploaded(created), 600);
     } catch {
       setPhase("select");
-      toast.error("Upload failed — please try again");
+      toast.error(t("uploadForm.uploadFailed"));
     }
   };
 
@@ -147,9 +149,9 @@ export function UploadForm({ onUpload, onUploaded, onCancel }: UploadFormProps) 
         </div>
         <div>
           <p className="text-base font-semibold">
-            {files.length === 1 ? "Document uploaded" : `${files.length} documents uploaded`}
+            {t("uploadForm.done", { count: files.length })}
           </p>
-          <p className="mt-1 text-sm text-muted-foreground">Saved to the vault.</p>
+          <p className="mt-1 text-sm text-muted-foreground">{t("uploadForm.savedToVault")}</p>
         </div>
       </div>
     );
@@ -190,7 +192,7 @@ export function UploadForm({ onUpload, onUploaded, onCancel }: UploadFormProps) 
             <div className="flex h-11 w-11 items-center justify-center rounded-full bg-secondary text-primary">
               <UploadCloud className="h-5 w-5" aria-hidden="true" />
             </div>
-            <p className="text-sm font-medium">Drag &amp; drop files here</p>
+            <p className="text-sm font-medium">{t("uploadForm.dropTitle")}</p>
             <Button
               type="button"
               variant="outline"
@@ -198,15 +200,15 @@ export function UploadForm({ onUpload, onUploaded, onCancel }: UploadFormProps) 
               onClick={() => inputRef.current?.click()}
               disabled={phase !== "select"}
             >
-              Browse files
+              {t("uploadForm.browse")}
             </Button>
-            <p className="text-xs text-muted-foreground">PDF, Word, or images · up to 15 MB each</p>
+            <p className="text-xs text-muted-foreground">{t("uploadForm.fileHint")}</p>
           </div>
         </div>
 
         {/* Selected files */}
         {files.length > 0 && (
-          <ul className="space-y-2" aria-label="Selected files">
+          <ul className="space-y-2" aria-label={t("uploadForm.selectedFilesAria")}>
             {files.map((f) => {
               const Icon = f.kind === "image" ? ImageIcon : FileText;
               return (
@@ -230,7 +232,7 @@ export function UploadForm({ onUpload, onUploaded, onCancel }: UploadFormProps) 
                       size="icon"
                       className="h-7 w-7 shrink-0"
                       onClick={() => removeFile(f.id)}
-                      aria-label={`Remove ${f.name}`}
+                      aria-label={t("uploadForm.removeFileAria", { name: f.name })}
                     >
                       <X className="h-4 w-4" />
                     </Button>
@@ -247,18 +249,18 @@ export function UploadForm({ onUpload, onUploaded, onCancel }: UploadFormProps) 
         {files.length > 0 && (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {single && (
-              <FormField htmlFor="doc-title" label="Title" required full>
+              <FormField htmlFor="doc-title" label={t("uploadForm.titleLabel")} required full>
                 <Input
                   id="doc-title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g. Health insurance card"
+                  placeholder={t("uploadForm.titlePlaceholder")}
                   disabled={phase !== "select"}
                 />
               </FormField>
             )}
 
-            <FormField htmlFor="doc-category" label="Category">
+            <FormField htmlFor="doc-category" label={t("uploadForm.categoryLabel")}>
               <Select value={category} onValueChange={(v) => setCategory(v as DocCategory)}>
                 <SelectTrigger id="doc-category" disabled={phase !== "select"}>
                   <SelectValue />
@@ -266,14 +268,18 @@ export function UploadForm({ onUpload, onUploaded, onCancel }: UploadFormProps) 
                 <SelectContent>
                   {CATEGORY_OPTIONS.map((c) => (
                     <SelectItem key={c} value={c}>
-                      {categoryMeta[c].label}
+                      {t(`categories.${c}` as "categories.medical")}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </FormField>
 
-            <FormField htmlFor="doc-sensitivity" label="Sensitivity" hint={sensitivityMeta[sensitivity].note}>
+            <FormField
+              htmlFor="doc-sensitivity"
+              label={t("uploadForm.sensitivityLabel")}
+              hint={t(`sensitivities.${sensitivity}.note` as "sensitivities.standard.note")}
+            >
               <Select value={sensitivity} onValueChange={(v) => setSensitivity(v as Sensitivity)}>
                 <SelectTrigger id="doc-sensitivity" disabled={phase !== "select"}>
                   <SelectValue />
@@ -281,14 +287,14 @@ export function UploadForm({ onUpload, onUploaded, onCancel }: UploadFormProps) 
                 <SelectContent>
                   {SENSITIVITY_OPTIONS.map((s) => (
                     <SelectItem key={s} value={s}>
-                      {sensitivityMeta[s].label}
+                      {t(`sensitivities.${s}.label` as "sensitivities.standard.label")}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </FormField>
 
-            <FormField htmlFor="doc-expiry" label="Expiry date" hint="Optional">
+            <FormField htmlFor="doc-expiry" label={t("uploadForm.expiryLabel")} hint={t("uploadForm.expiryHint")}>
               <Input
                 id="doc-expiry"
                 type="date"
@@ -300,14 +306,14 @@ export function UploadForm({ onUpload, onUploaded, onCancel }: UploadFormProps) 
 
             <div className="flex items-center justify-between gap-3 rounded-xl border p-3 sm:col-span-2">
               <div className="min-w-0">
-                <p className="text-sm font-medium">Include on emergency card</p>
-                <p className="text-xs text-muted-foreground">Surfaced first for paramedics and on-call carers.</p>
+                <p className="text-sm font-medium">{t("uploadForm.emergencyLabel")}</p>
+                <p className="text-xs text-muted-foreground">{t("uploadForm.emergencyHint")}</p>
               </div>
               <Switch
                 checked={onEmergencyCard}
                 onCheckedChange={setOnEmergencyCard}
                 disabled={phase !== "select"}
-                aria-label="Include on emergency card"
+                aria-label={t("uploadForm.emergencyLabel")}
               />
             </div>
           </div>
@@ -318,16 +324,16 @@ export function UploadForm({ onUpload, onUploaded, onCancel }: UploadFormProps) 
       <div className="shrink-0 border-t bg-background px-5 py-3 sm:px-6">
         <div className="flex items-center justify-end gap-2">
           <Button type="button" variant="outline" onClick={onCancel} disabled={phase === "uploading"}>
-            Cancel
+            {t("uploadForm.cancel")}
           </Button>
           <Button type="button" onClick={startUpload} disabled={!canSubmit} className="min-w-[8.5rem]">
             {phase === "uploading" ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" />
-                <span className="ml-1">Uploading…</span>
+                <span className="ml-1">{t("uploadForm.uploading")}</span>
               </>
             ) : (
-              <span>{files.length > 1 ? `Upload ${files.length} files` : "Upload"}</span>
+              <span>{files.length > 1 ? t("uploadForm.uploadMany", { count: files.length }) : t("upload")}</span>
             )}
           </Button>
         </div>

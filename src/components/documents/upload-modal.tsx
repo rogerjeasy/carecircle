@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { ResponsiveModal } from "./responsive-modal";
 import { UploadForm } from "./upload-form";
 import type { DocCategory, DocumentItem, Sensitivity } from "./types";
@@ -24,12 +25,13 @@ export interface UploadModalProps {
 
 /** Upload documents, in a centered Dialog on tablet+ and a full-height Sheet on phone. */
 export function UploadModal({ open, onOpenChange, onUpload, onUploaded }: UploadModalProps) {
+  const t = useTranslations("documents");
   return (
     <ResponsiveModal
       open={open}
       onOpenChange={onOpenChange}
-      title="Upload document"
-      description="Add a file and tell us who should be able to see it."
+      title={t("uploadModal.title")}
+      description={t("uploadModal.description")}
     >
       <UploadForm onUpload={onUpload} onUploaded={onUploaded} onCancel={() => onOpenChange(false)} />
     </ResponsiveModal>

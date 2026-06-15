@@ -1,6 +1,6 @@
 // Pure helpers shared across the Documents vault.
 
-import { differenceInCalendarDays, format } from "date-fns";
+import { differenceInCalendarDays } from "date-fns";
 import type { UserRole } from "@/components/app-shell/app-shell-context";
 import type { DocumentItem } from "./types";
 
@@ -23,26 +23,39 @@ export function firstName(name: string): string {
   return name.trim().split(/\s+/)[0] || name;
 }
 
-/** "Uploaded Jun 3" style label. */
-export function uploadedLabel(date: Date): string {
-  return format(date, "MMM d, yyyy");
+/** "Jun 3, 2026" style label, localized via native Intl (project convention). */
+export function uploadedLabel(date: Date, locale: string): string {
+  return date.toLocaleDateString(locale, { year: "numeric", month: "short", day: "numeric" });
 }
 
 export type ExpiryState = "none" | "ok" | "soon" | "expired";
 
-export interface ExpiryInfo {
-  state: ExpiryState;
-  /** e.g. "Expires Aug 2026" / "Expired Jan 2026" / "Expires in 12 days". */
-  label: string;
+/** Localized "Aug 2026" style month label for the expiry pill. */
+function monthLabel(date: Date, locale: string): string {
+  return date.toLocaleDateString(locale, { year: "numeric", month: "short" });
 }
 
-/** Expiry pill content + urgency (soon = within 60 days). */
-export function expiryInfo(doc: DocumentItem, now: Date): ExpiryInfo {
-  if (!doc.expiresAt) return { state: "none", label: "" };
+export interface ExpiryInfo {
+  state: ExpiryState;
+  /**
+   * For "expired"/"ok": the localized month string (e.g. "Aug 2026"); the component wraps it in
+   * the translated "Expired {month}" / "Expires {month}" sentence. For "soon": the day count.
+   */
+  value: string;
+  /** Number of whole days until expiry (used for the pluralized "Expires in N days" label). */
+  days: number;
+}
+
+/**
+ * Expiry pill state + the localized value the component needs to render the label (soon = within
+ * 60 days). The component resolves the surrounding sentence from messages.
+ */
+export function expiryInfo(doc: DocumentItem, now: Date, locale: string): ExpiryInfo {
+  if (!doc.expiresAt) return { state: "none", value: "", days: 0 };
   const days = differenceInCalendarDays(doc.expiresAt, now);
-  if (days < 0) return { state: "expired", label: `Expired ${format(doc.expiresAt, "MMM yyyy")}` };
-  if (days <= 60) return { state: "soon", label: `Expires in ${days} day${days === 1 ? "" : "s"}` };
-  return { state: "ok", label: `Expires ${format(doc.expiresAt, "MMM yyyy")}` };
+  if (days < 0) return { state: "expired", value: monthLabel(doc.expiresAt, locale), days };
+  if (days <= 60) return { state: "soon", value: String(days), days };
+  return { state: "ok", value: monthLabel(doc.expiresAt, locale), days };
 }
 
 // A small, stable avatar palette (matches the app's tokens). Uploader colors are derived
