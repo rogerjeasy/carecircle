@@ -5,27 +5,30 @@ import type { ButtonProps } from "@/components/ui/button";
 export type TierId = "free" | "plus" | "teams";
 
 export interface TierFeature {
-  text: string;
+  /** Key into the `pricing.featureLabels` message namespace. */
+  key: string;
   included: boolean;
 }
 
 export interface Tier {
   id: TierId;
-  name: string;
-  description: string;
   features: TierFeature[];
-  cta: string;
   ctaVariant: NonNullable<ButtonProps["variant"]>;
   ctaHref: string;
   popular: boolean;
 }
 
+/** A comparison-matrix value: a boolean (check/cross), or a string that is either a literal
+ *  (e.g. "5 GB") or a "tk:<token>" reference into `pricing.comparison.values`. */
+export type ComparisonValue = boolean | string;
+
 export interface ComparisonCategory {
-  name: string;
-  features: { name: string; free: boolean | string; plus: boolean | string; teams: boolean | string }[];
+  /** Key into `pricing.comparison.categories`. */
+  key: string;
+  features: { key: string; free: ComparisonValue; plus: ComparisonValue; teams: ComparisonValue }[];
 }
 
 export interface Faq {
-  question: string;
-  answer: string;
+  /** Key into the `pricing.faq.items` message namespace. */
+  key: string;
 }

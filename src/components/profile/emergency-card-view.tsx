@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { Droplet, FileCheck2, Phone, Stethoscope, TriangleAlert } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,9 @@ export interface EmergencyCardViewProps {
  * and the public /e/<token> share view, so EMS sees exactly the card the family curated.
  */
 export function EmergencyCardView({ data, t, advanceDirectiveNode, footer }: EmergencyCardViewProps) {
+  // `t` (prop) holds the card-language labels (EC_STRINGS), runtime-toggled by EMS. `tp` is the
+  // app-locale translator for the few chrome/fallback strings that aren't part of EC_STRINGS.
+  const tp = useTranslations("profile");
   const doctor = data.doctor;
 
   return (
@@ -90,7 +94,7 @@ export function EmergencyCardView({ data, t, advanceDirectiveNode, footer }: Eme
               ))}
             </ul>
           ) : (
-            <p className="text-base text-muted-foreground">None recorded</p>
+            <p className="text-base text-muted-foreground">{tp("card.noneRecorded")}</p>
           )}
         </Block>
 
@@ -105,12 +109,12 @@ export function EmergencyCardView({ data, t, advanceDirectiveNode, footer }: Eme
                 ))}
               </ul>
             ) : (
-              <p className="text-base text-muted-foreground">None recorded</p>
+              <p className="text-base text-muted-foreground">{tp("card.noneRecorded")}</p>
             )}
           </Block>
           <Block title={t.advanceDirective}>
             {advanceDirectiveNode ?? (
-              <p className="text-base font-semibold">{data.advanceDirective ?? "Not recorded"}</p>
+              <p className="text-base font-semibold">{data.advanceDirective ?? tp("card.notRecorded")}</p>
             )}
           </Block>
           <Block icon={Stethoscope} title={t.primaryDoctor}>
@@ -125,7 +129,7 @@ export function EmergencyCardView({ data, t, advanceDirectiveNode, footer }: Eme
                 )}
               </>
             ) : (
-              <p className="text-base text-muted-foreground">Not recorded</p>
+              <p className="text-base text-muted-foreground">{tp("card.notRecorded")}</p>
             )}
           </Block>
         </div>
@@ -156,7 +160,7 @@ export function EmergencyCardView({ data, t, advanceDirectiveNode, footer }: Eme
           </ul>
         ) : (
           <p className="rounded-xl border border-dashed p-3 text-sm text-muted-foreground">
-            No emergency contacts recorded yet.
+            {tp("card.noContacts")}
           </p>
         )}
       </section>

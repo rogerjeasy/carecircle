@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { Printer, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,9 @@ export interface PublicEmergencyCardProps {
  * language toggle, print, tap-to-call.
  */
 export function PublicEmergencyCard({ data, validUntil }: PublicEmergencyCardProps) {
+  // This PUBLIC route is still inside the root NextIntlClientProvider (src/app/layout.tsx),
+  // so app-locale translations work here. `t` (EC_STRINGS) drives the runtime card-language toggle.
+  const tp = useTranslations("profile");
   const [lang, setLang] = React.useState<ECLang>("en");
   const t = EC_STRINGS[lang];
 
@@ -29,17 +33,14 @@ export function PublicEmergencyCard({ data, validUntil }: PublicEmergencyCardPro
   const footer = (
     <footer className="flex items-start gap-2 border-t pt-4 text-xs text-muted-foreground">
       <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
-      <p>
-        Shared by the family via Kintwadi. This link is temporary (valid until {validUntil}),
-        can be revoked at any time, and every open is recorded for the family.
-      </p>
+      <p>{tp("public.validity", { validUntil })}</p>
     </footer>
   );
 
   return (
     <div className="mx-auto w-full max-w-3xl space-y-4 px-4 py-6">
       <div className="flex flex-wrap items-center justify-between gap-2 print:hidden">
-        <div className="inline-flex rounded-xl border p-0.5" role="group" aria-label="Card language">
+        <div className="inline-flex rounded-xl border p-0.5" role="group" aria-label={tp("cardLangAria")}>
           {EC_LANGS.map((l) => (
             <button
               key={l.value}
@@ -57,7 +58,7 @@ export function PublicEmergencyCard({ data, validUntil }: PublicEmergencyCardPro
         </div>
         <Button onClick={print}>
           <Printer className="h-4 w-4" />
-          <span className="ml-1">Print</span>
+          <span className="ml-1">{tp("print")}</span>
         </Button>
       </div>
 

@@ -1,8 +1,8 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
-import { format } from "date-fns";
 import { Link2, Link2Off, Pencil, Printer, Share2, ShieldAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
 import QRCode from "react-qr-code";
@@ -34,6 +34,8 @@ export interface EmergencyCardScreenProps {
 
 /** The Emergency Card — high-contrast, scannable, shareable, and printable to one clean page. */
 export function EmergencyCardScreen({ data, share: initialShare }: EmergencyCardScreenProps) {
+  const tp = useTranslations("profile");
+  const locale = useLocale();
   const { role } = useAppShell();
   const canManage = role === "coordinator"; // owner / family admin
   const [lang, setLang] = React.useState<ECLang>("en");
@@ -56,7 +58,7 @@ export function EmergencyCardScreen({ data, share: initialShare }: EmergencyCard
     if (res.ok) {
       setAdvanceDirective(res.value);
       setEditingAd(false);
-      toast.success("Advance directive updated");
+      toast.success(tp("ec.advanceDirectiveSaved"));
     } else {
       toast.error(res.error);
     }
@@ -68,7 +70,7 @@ export function EmergencyCardScreen({ data, share: initialShare }: EmergencyCard
     setShareBusy(false);
     if (res.ok) {
       setShare({ url: res.url, expiresAt: res.expiresAt, viewCount: 0 });
-      toast.success("Emergency link is live — the QR below opens it without an account");
+      toast.success(tp("ec.linkLive"));
     } else {
       toast.error(res.error);
     }
@@ -80,7 +82,7 @@ export function EmergencyCardScreen({ data, share: initialShare }: EmergencyCard
     setShareBusy(false);
     if (res.ok) {
       setShare(null);
-      toast.success("Emergency link revoked — the QR no longer works");
+      toast.success(tp("ec.linkRevoked"));
     } else {
       toast.error(res.error);
     }
@@ -91,13 +93,13 @@ export function EmergencyCardScreen({ data, share: initialShare }: EmergencyCard
     const url = share?.url ?? (typeof window !== "undefined" ? window.location.href : "");
     try {
       if (navigator.share) {
-        await navigator.share({ title: `${data?.fullName ?? "Care recipient"} — ${t.emergencyCard}`, url });
+        await navigator.share({ title: `${data?.fullName ?? tp("ec.fallbackName")} — ${t.emergencyCard}`, url });
         return;
       }
       await navigator.clipboard.writeText(url);
-      toast.success(share ? "Public emergency link copied" : "Link copied to clipboard");
+      toast.success(share ? tp("ec.publicLinkCopied") : tp("ec.linkCopied"));
     } catch {
-      toast("Sharing was cancelled");
+      toast(tp("ec.shareCancelled"));
     }
   };
 
@@ -112,38 +114,47 @@ export function EmergencyCardScreen({ data, share: initialShare }: EmergencyCard
           <ShieldAlert className="h-7 w-7" aria-hidden="true" />
         </div>
         <div>
-          <p className="text-base font-semibold">No emergency card yet</p>
+          <p className="text-base font-semibold">{tp("ec.emptyTitle")}</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Set up the care recipient&apos;s profile to generate their emergency card.
+            {tp("ec.emptyDescription")}
           </p>
         </div>
       </div>
     );
   }
 
-  const expiresLabel = share ? format(new Date(share.expiresAt), "EEE d MMM, h:mmaaa") : null;
+  // Localized via native Intl (project convention) — not date-fns for user-visible dates.
+  const expiresLabel = share
+    ? new Date(share.expiresAt).toLocaleString(locale, {
+        weekday: "short",
+        day: "numeric",
+        month: "short",
+        hour: "numeric",
+        minute: "2-digit",
+      })
+    : null;
 
   const advanceDirectiveNode = editingAd ? (
     <div className="space-y-2 print:hidden">
       <Input
         value={adDraft}
         onChange={(e) => setAdDraft(e.target.value)}
-        placeholder='e.g. "DNR on file"'
-        aria-label="Advance directive"
+        placeholder={tp("ec.advanceDirectivePlaceholder")}
+        aria-label={tp("ec.advanceDirectiveAria")}
         autoFocus
       />
       <div className="flex gap-2">
         <Button size="sm" onClick={saveAdvanceDirective} disabled={savingAd}>
-          {savingAd ? "Saving…" : "Save"}
+          {savingAd ? tp("ec.saving") : tp("ec.save")}
         </Button>
         <Button size="sm" variant="outline" onClick={() => setEditingAd(false)} disabled={savingAd}>
-          Cancel
+          {tp("ec.cancel")}
         </Button>
       </div>
     </div>
   ) : (
     <div className="flex items-start justify-between gap-2">
-      <p className="text-base font-semibold">{advanceDirective ?? "Not recorded"}</p>
+      <p className="text-base font-semibold">{advanceDirective ?? tp("card.notRecorded")}</p>
       {canManage && (
         <button
           type="button"
@@ -152,7 +163,7 @@ export function EmergencyCardScreen({ data, share: initialShare }: EmergencyCard
             setEditingAd(true);
           }}
           className="shrink-0 rounded-md p-1 text-muted-foreground transition-colors hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring print:hidden"
-          aria-label="Edit advance directive"
+          aria-label={tp("ec.editAdvanceDirective")}
         >
           <Pencil className="h-3.5 w-3.5" />
         </button>
@@ -166,24 +177,24 @@ export function EmergencyCardScreen({ data, share: initialShare }: EmergencyCard
     <footer className="space-y-3 border-t pt-4">
       {share ? (
         <div className="flex items-center gap-4">
-          <div className="w-24 shrink-0 rounded-md bg-white p-1.5" aria-label="Emergency card QR code">
+          <div className="w-24 shrink-0 rounded-md bg-white p-1.5" aria-label={tp("ec.qrAria")}>
             <QRCode value={share.url} size={84} className="h-auto w-full" />
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-sm font-medium">{t.scanToOpen}</p>
             <p className="text-xs text-muted-foreground">
-              Opens without an account — for EMS and ER staff. Expires {expiresLabel}
-              {share.viewCount > 0 ? ` · opened ${share.viewCount}× (audited)` : " · every open is audited"}.
+              {tp("ec.opensExpires", { expires: expiresLabel ?? "" })}
+              {share.viewCount > 0 ? tp("ec.openedAudited", { count: share.viewCount }) : tp("ec.everyOpenAudited")}.
             </p>
             {canManage && (
               <div className="mt-2 flex flex-wrap gap-2 print:hidden">
                 <Button size="sm" variant="outline" onClick={createShare} disabled={shareBusy}>
                   <Link2 className="h-3.5 w-3.5" />
-                  <span className="ml-1">{shareBusy ? "Working…" : "Rotate link"}</span>
+                  <span className="ml-1">{shareBusy ? tp("ec.working") : tp("ec.rotateLink")}</span>
                 </Button>
                 <Button size="sm" variant="outline" className="text-destructive" onClick={revokeShare} disabled={shareBusy}>
                   <Link2Off className="h-3.5 w-3.5" />
-                  <span className="ml-1">Revoke</span>
+                  <span className="ml-1">{tp("ec.revoke")}</span>
                 </Button>
               </div>
             )}
@@ -192,17 +203,15 @@ export function EmergencyCardScreen({ data, share: initialShare }: EmergencyCard
       ) : (
         <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
           <div className="min-w-0">
-            <p className="text-sm font-medium">No public emergency link</p>
+            <p className="text-sm font-medium">{tp("ec.noLinkTitle")}</p>
             <p className="text-xs text-muted-foreground">
-              {canManage
-                ? "Create one to print a scannable QR — EMS opens the card with no account. Expires in 72h, revocable, every open audited."
-                : "A coordinator can create a scannable public link for EMS."}
+              {canManage ? tp("ec.noLinkManager") : tp("ec.noLinkMember")}
             </p>
           </div>
           {canManage && (
             <Button size="sm" onClick={createShare} disabled={shareBusy}>
               <Link2 className="h-4 w-4" />
-              <span className="ml-1">{shareBusy ? "Creating…" : "Create emergency link"}</span>
+              <span className="ml-1">{shareBusy ? tp("ec.creating") : tp("ec.createLink")}</span>
             </Button>
           )}
         </div>
@@ -214,7 +223,7 @@ export function EmergencyCardScreen({ data, share: initialShare }: EmergencyCard
     <div className="mx-auto w-full max-w-3xl space-y-4">
       {/* Toolbar (not printed) */}
       <div className="flex flex-wrap items-center justify-between gap-2 print:hidden">
-        <div className="inline-flex rounded-xl border p-0.5" role="group" aria-label="Card language">
+        <div className="inline-flex rounded-xl border p-0.5" role="group" aria-label={tp("cardLangAria")}>
           {EC_LANGS.map((l) => (
             <button
               key={l.value}
@@ -233,11 +242,11 @@ export function EmergencyCardScreen({ data, share: initialShare }: EmergencyCard
         <div className="flex gap-2">
           <Button variant="outline" onClick={share2}>
             <Share2 className="h-4 w-4" />
-            <span className="ml-1">Share</span>
+            <span className="ml-1">{tp("share")}</span>
           </Button>
           <Button onClick={print}>
             <Printer className="h-4 w-4" />
-            <span className="ml-1">Print</span>
+            <span className="ml-1">{tp("print")}</span>
           </Button>
         </div>
       </div>

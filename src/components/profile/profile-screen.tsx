@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   Accessibility,
   Droplet,
@@ -27,6 +28,7 @@ import { EditProfileModal } from "./edit-profile-modal";
 import type { ProfileContact, RecipientProfileData } from "@/lib/profile/queries";
 
 export function ProfileScreen({ initial }: { initial: RecipientProfileData | null }) {
+  const t = useTranslations("profile");
   const router = useRouter();
   const [editing, setEditing] = React.useState(false);
 
@@ -37,15 +39,17 @@ export function ProfileScreen({ initial }: { initial: RecipientProfileData | nul
           <Users className="h-7 w-7" aria-hidden="true" />
         </div>
         <div>
-          <p className="text-base font-semibold">No care recipient profile yet</p>
-          <p className="mt-1 text-sm text-muted-foreground">Once the circle is set up, the recipient&apos;s profile appears here.</p>
+          <p className="text-base font-semibold">{t("empty.title")}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{t("empty.description")}</p>
         </div>
       </div>
     );
   }
 
   const p = initial;
-  const ageDob = [p.age != null ? `${p.age} years` : null, p.dob ? `DOB ${p.dob}` : null].filter(Boolean).join(" · ");
+  const ageDob = [p.age != null ? t("ageYears", { age: p.age }) : null, p.dob ? t("dob", { dob: p.dob }) : null]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
     <div className="space-y-5">
@@ -69,13 +73,13 @@ export function ProfileScreen({ initial }: { initial: RecipientProfileData | nul
             <Button asChild>
               <Link href="/emergency-card">
                 <ShieldCheck className="h-4 w-4" />
-                <span className="ml-1">Emergency Card</span>
+                <span className="ml-1">{t("emergencyCard")}</span>
               </Link>
             </Button>
             {p.canEdit && (
               <Button variant="outline" onClick={() => setEditing(true)}>
                 <Pencil className="h-4 w-4" />
-                <span className="ml-1">Edit</span>
+                <span className="ml-1">{t("edit")}</span>
               </Button>
             )}
           </div>
@@ -84,18 +88,18 @@ export function ProfileScreen({ initial }: { initial: RecipientProfileData | nul
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 lg:items-start">
         {/* Health summary */}
-        <Section icon={HeartPulse} title="Health summary">
+        <Section icon={HeartPulse} title={t("sections.health")}>
           <div className="space-y-3 text-sm">
-            <ChipRow label="Conditions" chips={p.conditions} empty="None recorded" />
-            <ChipRow label="Allergies" chips={p.allergies} danger empty="None recorded" />
+            <ChipRow label={t("labels.conditions")} chips={p.conditions} empty={t("noneRecorded")} />
+            <ChipRow label={t("labels.allergies")} chips={p.allergies} danger empty={t("noneRecorded")} />
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <InfoLine icon={Droplet} label="Blood type" value={p.bloodType ?? "—"} />
-              {p.mobility && <InfoLine icon={Accessibility} label="Mobility" value={p.mobility} />}
+              <InfoLine icon={Droplet} label={t("labels.bloodType")} value={p.bloodType ?? t("dash")} />
+              {p.mobility && <InfoLine icon={Accessibility} label={t("labels.mobility")} value={p.mobility} />}
             </div>
             {p.dietary.length > 0 && (
               <div className="flex flex-wrap items-start gap-2">
                 <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                  <Utensils className="h-3.5 w-3.5" aria-hidden="true" /> Dietary
+                  <Utensils className="h-3.5 w-3.5" aria-hidden="true" /> {t("labels.dietary")}
                 </span>
                 <ul className="flex flex-wrap gap-1.5">
                   {p.dietary.map((d) => (
@@ -108,9 +112,9 @@ export function ProfileScreen({ initial }: { initial: RecipientProfileData | nul
         </Section>
 
         {/* Current medications */}
-        <Section icon={Pill} title="Current medications" action={<SectionLink href="/medications" label="Manage" />}>
+        <Section icon={Pill} title={t("sections.medications")} action={<SectionLink href="/medications" label={t("manage")} />}>
           {p.meds.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No active medications.</p>
+            <p className="text-sm text-muted-foreground">{t("noMeds")}</p>
           ) : (
             <ul className="divide-y">
               {p.meds.map((m) => (
@@ -128,39 +132,39 @@ export function ProfileScreen({ initial }: { initial: RecipientProfileData | nul
         </Section>
 
         {/* Care preferences */}
-        <Section icon={Sparkles} title="Care preferences">
+        <Section icon={Sparkles} title={t("sections.preferences")}>
           {p.comfort ? (
             <div className="rounded-xl bg-muted/50 p-3 text-sm">
-              <p className="mb-1 text-xs font-medium text-muted-foreground">Comfort notes</p>
+              <p className="mb-1 text-xs font-medium text-muted-foreground">{t("labels.comfortNotes")}</p>
               <p className="whitespace-pre-wrap text-foreground/90">{p.comfort}</p>
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">
-              No care notes yet.{p.canEdit ? " Add the human details that help someone care well." : ""}
+              {p.canEdit ? t("noComfortAdd") : t("noComfort")}
             </p>
           )}
         </Section>
 
         {/* Key contacts */}
-        <Section icon={Users} title="Key contacts">
+        <Section icon={Users} title={t("sections.contacts")}>
           {p.doctors.length === 0 && p.nextOfKin.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No contacts on file.</p>
+            <p className="text-sm text-muted-foreground">{t("noContacts")}</p>
           ) : (
             <div className="space-y-4">
-              {p.doctors.length > 0 && <ContactGroup label="Doctors" icon={Stethoscope} contacts={p.doctors} />}
-              {p.nextOfKin.length > 0 && <ContactGroup label="Next of kin" icon={Users} contacts={p.nextOfKin} />}
+              {p.doctors.length > 0 && <ContactGroup label={t("labels.doctors")} icon={Stethoscope} contacts={p.doctors} />}
+              {p.nextOfKin.length > 0 && <ContactGroup label={t("labels.nextOfKin")} icon={Users} contacts={p.nextOfKin} />}
             </div>
           )}
         </Section>
 
         {/* Insurance */}
         {p.insurance && (
-          <Section icon={ShieldCheck} title="Insurance" className="lg:col-span-2">
+          <Section icon={ShieldCheck} title={t("sections.insurance")} className="lg:col-span-2">
             <div className="space-y-1.5 text-sm">
-              <InfoLine icon={ShieldCheck} label="Provider" value={p.insurance.provider || "—"} />
-              {p.insurance.plan && <p className="text-muted-foreground">Plan: <span className="text-foreground">{p.insurance.plan}</span></p>}
-              {p.insurance.memberId && <p className="text-muted-foreground">Member ID: <span className="font-medium tabular-nums text-foreground">{p.insurance.memberId}</span></p>}
-              {p.insurance.group && <p className="text-muted-foreground">Group: <span className="tabular-nums text-foreground">{p.insurance.group}</span></p>}
+              <InfoLine icon={ShieldCheck} label={t("labels.provider")} value={p.insurance.provider || t("dash")} />
+              {p.insurance.plan && <p className="text-muted-foreground">{t("labels.plan")}: <span className="text-foreground">{p.insurance.plan}</span></p>}
+              {p.insurance.memberId && <p className="text-muted-foreground">{t("labels.memberId")}: <span className="font-medium tabular-nums text-foreground">{p.insurance.memberId}</span></p>}
+              {p.insurance.group && <p className="text-muted-foreground">{t("labels.group")}: <span className="tabular-nums text-foreground">{p.insurance.group}</span></p>}
             </div>
           </Section>
         )}
@@ -253,6 +257,7 @@ function InfoLine({ icon: Icon, label, value }: { icon: typeof Droplet; label: s
 }
 
 function ContactGroup({ label, icon: Icon, contacts }: { label: string; icon: typeof Users; contacts: ProfileContact[] }) {
+  const t = useTranslations("profile");
   return (
     <div>
       <p className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
@@ -269,12 +274,12 @@ function ContactGroup({ label, icon: Icon, contacts }: { label: string; icon: ty
             {c.phone && (
               <>
                 <Button asChild variant="ghost" size="icon" className="h-9 w-9 shrink-0">
-                  <a href={`tel:${c.phone.replace(/[^+\d]/g, "")}`} aria-label={`Call ${c.name}`}>
+                  <a href={`tel:${c.phone.replace(/[^+\d]/g, "")}`} aria-label={t("call", { name: c.name })}>
                     <Phone className="h-4 w-4" />
                   </a>
                 </Button>
                 <Button asChild variant="ghost" size="icon" className="h-9 w-9 shrink-0">
-                  <a href={`sms:${c.phone.replace(/[^+\d]/g, "")}`} aria-label={`Message ${c.name}`}>
+                  <a href={`sms:${c.phone.replace(/[^+\d]/g, "")}`} aria-label={t("message", { name: c.name })}>
                     <MessageSquare className="h-4 w-4" />
                   </a>
                 </Button>

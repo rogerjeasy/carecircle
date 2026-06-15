@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { MarketingHeader } from "@/components/marketing/marketing-header";
 import { MarketingFooter } from "@/components/marketing/marketing-footer";
 import { PricingHero } from "./pricing-hero";
@@ -11,6 +12,7 @@ import { PricingCta } from "./pricing-cta";
 
 export function PricingScreen() {
   const [isAnnual, setIsAnnual] = React.useState(true);
+  const t = useTranslations("pricing");
 
   return (
     <div className="min-h-screen bg-background">
@@ -26,10 +28,8 @@ export function PricingScreen() {
         {/* Feature comparison */}
         <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-24">
           <div className="text-center mb-12">
-            <h2 className="font-serif text-3xl sm:text-4xl font-bold mb-4">Compare all features</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              A detailed breakdown of what is included in each plan.
-            </p>
+            <h2 className="font-serif text-3xl sm:text-4xl font-bold mb-4">{t("comparison.title")}</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">{t("comparison.subtitle")}</p>
           </div>
           <ComparisonTable />
         </section>
@@ -37,8 +37,8 @@ export function PricingScreen() {
         {/* FAQ */}
         <section className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 mt-24">
           <div className="text-center mb-12">
-            <h2 className="font-serif text-3xl sm:text-4xl font-bold mb-4">Frequently asked questions</h2>
-            <p className="text-muted-foreground">Everything you need to know about Kintwadi pricing.</p>
+            <h2 className="font-serif text-3xl sm:text-4xl font-bold mb-4">{t("faq.title")}</h2>
+            <p className="text-muted-foreground">{t("faq.subtitle")}</p>
           </div>
           <PricingFaq />
         </section>

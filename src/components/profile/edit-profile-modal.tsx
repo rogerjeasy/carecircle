@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,7 @@ export function EditProfileModal({
   profile: RecipientProfileData;
   onSaved?: () => void;
 }) {
+  const t = useTranslations("profile");
   const [values, setValues] = React.useState({
     fullName: profile.fullName,
     dob: profile.dobInput ?? "",
@@ -61,7 +63,7 @@ export function EditProfileModal({
       toast.error(res.error);
       return;
     }
-    toast.success("Profile updated");
+    toast.success(t("modal.saved"));
     onSaved?.();
     onOpenChange(false);
   };
@@ -70,19 +72,19 @@ export function EditProfileModal({
     <ResponsiveModal
       open={open}
       onOpenChange={onOpenChange}
-      title="Edit profile"
-      description={`Keep ${profile.fullName}'s details and care notes up to date.`}
+      title={t("modal.title")}
+      description={t("modal.description", { name: profile.fullName })}
     >
       <form onSubmit={save} className="flex min-h-0 flex-1 flex-col">
         <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-5 py-4 sm:px-6">
-          <Group title="Basics">
-            <FormField htmlFor="ep-name" label="Full name" full>
+          <Group title={t("modal.groups.basics")}>
+            <FormField htmlFor="ep-name" label={t("modal.fullName")} full>
               <Input id="ep-name" value={values.fullName} onChange={(e) => set({ fullName: e.target.value })} />
             </FormField>
-            <FormField htmlFor="ep-dob" label="Date of birth">
+            <FormField htmlFor="ep-dob" label={t("modal.dob")}>
               <Input id="ep-dob" type="date" value={values.dob} onChange={(e) => set({ dob: e.target.value })} />
             </FormField>
-            <FormField htmlFor="ep-lang" label="Primary language">
+            <FormField htmlFor="ep-lang" label={t("modal.language")}>
               <Select value={values.language} onValueChange={(v) => set({ language: v })}>
                 <SelectTrigger id="ep-lang"><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -92,26 +94,26 @@ export function EditProfileModal({
             </FormField>
           </Group>
 
-          <Group title="Health">
-            <FormField htmlFor="ep-blood" label="Blood type">
-              <Input id="ep-blood" value={values.bloodType} onChange={(e) => set({ bloodType: e.target.value })} placeholder="e.g. O+" />
+          <Group title={t("modal.groups.health")}>
+            <FormField htmlFor="ep-blood" label={t("modal.bloodType")}>
+              <Input id="ep-blood" value={values.bloodType} onChange={(e) => set({ bloodType: e.target.value })} placeholder={t("modal.bloodTypePlaceholder")} />
             </FormField>
-            <FormField htmlFor="ep-mobility" label="Mobility" full>
+            <FormField htmlFor="ep-mobility" label={t("modal.mobility")} full>
               <Input id="ep-mobility" value={values.mobility} onChange={(e) => set({ mobility: e.target.value })} />
             </FormField>
-            <FormField htmlFor="ep-dietary" label="Dietary needs" hint="Comma-separated" full>
+            <FormField htmlFor="ep-dietary" label={t("modal.dietary")} hint={t("modal.dietaryHint")} full>
               <Input id="ep-dietary" value={values.dietary} onChange={(e) => set({ dietary: e.target.value })} />
             </FormField>
           </Group>
 
-          <Group title="Care preferences">
-            <FormField htmlFor="ep-comfort" label="Comfort notes" full>
+          <Group title={t("modal.groups.preferences")}>
+            <FormField htmlFor="ep-comfort" label={t("modal.comfort")} full>
               <Textarea
                 id="ep-comfort"
                 value={values.comfort}
                 onChange={(e) => set({ comfort: e.target.value })}
                 rows={4}
-                placeholder="The human details that help someone care well…"
+                placeholder={t("modal.comfortPlaceholder")}
               />
             </FormField>
           </Group>
@@ -120,13 +122,13 @@ export function EditProfileModal({
         <div className="shrink-0 border-t bg-background px-5 py-3 sm:px-6">
           <div className="flex items-center justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
-              Cancel
+              {t("modal.cancel")}
             </Button>
             <Button type="submit" disabled={saving} className="min-w-[8.5rem]">
               {saving ? (
-                <><Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" /><span className="ml-1">Saving…</span></>
+                <><Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" /><span className="ml-1">{t("modal.saving")}</span></>
               ) : (
-                <span>Save changes</span>
+                <span>{t("modal.save")}</span>
               )}
             </Button>
           </div>
