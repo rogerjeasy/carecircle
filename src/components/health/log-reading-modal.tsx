@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { ResponsiveModal } from "./responsive-modal";
 import { LogReadingForm, type LogValues } from "./log-reading-form";
 import type { ThresholdMap } from "./types";
@@ -15,12 +16,13 @@ export interface LogReadingModalProps {
 
 /** Log a reading, in a centered Dialog on tablet+ and a full-height Sheet on phone. */
 export function LogReadingModal({ open, onOpenChange, initialValues, onSubmit, thresholds }: LogReadingModalProps) {
+  const t = useTranslations("health");
   return (
     <ResponsiveModal
       open={open}
       onOpenChange={onOpenChange}
-      title="Log a reading"
-      description="Pick a metric and enter the latest values."
+      title={t("log.modalTitle")}
+      description={t("log.modalDesc")}
     >
       <LogReadingForm
         initialValues={initialValues}

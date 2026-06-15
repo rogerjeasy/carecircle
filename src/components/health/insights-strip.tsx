@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Sparkles, TrendingDown, TriangleAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Insight, InsightTone } from "./utils";
@@ -12,9 +13,10 @@ const toneMeta: Record<InsightTone, { icon: typeof Sparkles; className: string }
 
 /** A subtle strip of decline-detection / reassurance insights. */
 export function InsightsStrip({ insights }: { insights: Insight[] }) {
+  const t = useTranslations("health");
   if (insights.length === 0) return null;
   return (
-    <section aria-label="Insights" className="flex flex-wrap gap-2">
+    <section aria-label={t("insightsAria")} className="flex flex-wrap gap-2">
       {insights.map((insight) => {
         const meta = toneMeta[insight.tone];
         const Icon = meta.icon;
@@ -27,7 +29,7 @@ export function InsightsStrip({ insights }: { insights: Insight[] }) {
             )}
           >
             <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-            {insight.text}
+            {t(`insights.${insight.key}` as "insights.bpElevated", insight.vars)}
           </span>
         );
       })}

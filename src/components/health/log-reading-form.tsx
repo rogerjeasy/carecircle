@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { format } from "date-fns";
+import { useTranslations } from "next-intl";
 import { Check, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -48,7 +49,9 @@ export function defaultLogValues(now: Date, metric: MetricKey = "bp", recordedBy
   };
 }
 
-type Errors = Partial<Record<keyof LogValues, string>>;
+// Validation produces stable error KEYS (+ optional vars) resolved to localized copy by the form.
+type FieldError = { key: string; vars?: Record<string, number> };
+type Errors = Partial<Record<keyof LogValues, FieldError>>;
 
 const num = (s: string) => (s.trim() === "" ? NaN : Number(s));
 
@@ -57,13 +60,13 @@ function validate(v: LogValues): Errors {
   if (v.metric === "bp") {
     const s = num(v.systolic);
     const d = num(v.diastolic);
-    if (!v.systolic) e.systolic = "Enter systolic";
-    else if (Number.isNaN(s) || s < 70 || s > 260) e.systolic = "70–260 expected";
-    if (!v.diastolic) e.diastolic = "Enter diastolic";
-    else if (Number.isNaN(d) || d < 40 || d > 160) e.diastolic = "40–160 expected";
-    if (!e.systolic && !e.diastolic && s <= d) e.diastolic = "Should be below systolic";
+    if (!v.systolic) e.systolic = { key: "systolicReq" };
+    else if (Number.isNaN(s) || s < 70 || s > 260) e.systolic = { key: "systolicRange" };
+    if (!v.diastolic) e.diastolic = { key: "diastolicReq" };
+    else if (Number.isNaN(d) || d < 40 || d > 160) e.diastolic = { key: "diastolicRange" };
+    if (!e.systolic && !e.diastolic && s <= d) e.diastolic = { key: "diastolicBelow" };
   } else if (v.metric === "mood") {
-    if (v.mood < 1 || v.mood > 5) e.mood = "Pick a mood";
+    if (v.mood < 1 || v.mood > 5) e.mood = { key: "mood" };
   } else {
     const n = num(v.value);
     const limits: Record<string, [number, number]> = {
@@ -73,12 +76,12 @@ function validate(v: LogValues): Errors {
       hr: [30, 220],
     };
     const [lo, hi] = limits[v.metric] ?? [0, 1e9];
-    if (!v.value) e.value = "Enter a value";
-    else if (Number.isNaN(n) || n < lo || n > hi) e.value = `${lo}–${hi} expected`;
+    if (!v.value) e.value = { key: "valueReq" };
+    else if (Number.isNaN(n) || n < lo || n > hi) e.value = { key: "valueRange", vars: { lo, hi } };
   }
-  if (!v.date) e.date = "Pick a date";
-  if (!v.time) e.time = "Pick a time";
-  if (!v.recordedBy) e.recordedBy = "Who recorded it?";
+  if (!v.date) e.date = { key: "date" };
+  if (!v.time) e.time = { key: "time" };
+  if (!v.recordedBy) e.recordedBy = { key: "recordedBy" };
   return e;
 }
 
@@ -125,6 +128,7 @@ export interface LogReadingFormProps {
 
 /** The Log-reading form: pick a metric, fill the right inputs, with live friendly validation. */
 export function LogReadingForm({ initialValues, onSubmit, onCancel, thresholds = DEFAULT_THRESHOLDS }: LogReadingFormProps) {
+  const t = useTranslations("health");
   const { members } = useHealthMembers();
   const [values, setValues] = React.useState<LogValues>(initialValues);
   const [touched, setTouched] = React.useState(false);
@@ -134,9 +138,15 @@ export function LogReadingForm({ initialValues, onSubmit, onCancel, thresholds =
   const errors = validate(values);
   const valid = Object.keys(errors).length === 0;
   const update = (patch: Partial<LogValues>) => setValues((v) => ({ ...v, ...patch }));
-  const showErr = (k: keyof LogValues) => (touched ? errors[k] : undefined);
+  // Resolve a field's error key to localized copy (only after the form's been touched).
+  const showErr = (k: keyof LogValues): string | undefined => {
+    if (!touched) return undefined;
+    const e = errors[k];
+    return e ? t(`log.errors.${e.key}` as "log.errors.date", e.vars) : undefined;
+  };
 
   const cfg = metricConfigs[values.metric];
+  const metricName = t(`metrics.${values.metric}` as "metrics.bp");
   const status = previewStatus(values, thresholds);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -158,7 +168,7 @@ export function LogReadingForm({ initialValues, onSubmit, onCancel, thresholds =
       <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-5 py-4 sm:px-6">
         {/* Metric segmented control */}
         <fieldset>
-          <legend className="mb-2 text-sm font-medium">Metric</legend>
+          <legend className="mb-2 text-sm font-medium">{t("log.metric")}</legend>
           <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
             {METRIC_ORDER.map((m) => {
               const Icon = metricIcons[m];
@@ -176,7 +186,7 @@ export function LogReadingForm({ initialValues, onSubmit, onCancel, thresholds =
                 >
                   <Icon className="h-4 w-4" aria-hidden="true" />
                   <span className="w-full truncate text-[11px] font-medium leading-tight">
-                    {metricConfigs[m].name}
+                    {t(`metrics.${m}` as "metrics.bp")}
                   </span>
                 </button>
               );
@@ -188,7 +198,7 @@ export function LogReadingForm({ initialValues, onSubmit, onCancel, thresholds =
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {values.metric === "bp" && (
             <>
-              <FormField htmlFor="systolic" label="Systolic" required error={showErr("systolic")}>
+              <FormField htmlFor="systolic" label={t("log.systolic")} required error={showErr("systolic")}>
                 <Input
                   {...fieldAria("systolic", showErr("systolic"))}
                   type="number"
@@ -200,7 +210,7 @@ export function LogReadingForm({ initialValues, onSubmit, onCancel, thresholds =
                   className={cn(showErr("systolic") && "border-destructive focus-visible:ring-destructive")}
                 />
               </FormField>
-              <FormField htmlFor="diastolic" label="Diastolic" required error={showErr("diastolic")}>
+              <FormField htmlFor="diastolic" label={t("log.diastolic")} required error={showErr("diastolic")}>
                 <Input
                   {...fieldAria("diastolic", showErr("diastolic"))}
                   type="number"
@@ -216,17 +226,18 @@ export function LogReadingForm({ initialValues, onSubmit, onCancel, thresholds =
           )}
 
           {values.metric === "mood" && (
-            <FormField htmlFor="mood" label="Mood" full error={showErr("mood")}>
+            <FormField htmlFor="mood" label={t("log.mood")} full error={showErr("mood")}>
               <div id="mood" className="flex flex-wrap gap-2">
                 {MOOD_FACES.map((f) => {
                   const active = values.mood === f.value;
+                  const moodLabel = t(`mood.${f.value}` as "mood.3");
                   return (
                     <button
                       key={f.value}
                       type="button"
                       onClick={() => update({ mood: f.value })}
                       aria-pressed={active}
-                      aria-label={f.label}
+                      aria-label={moodLabel}
                       className={cn(
                         "flex flex-1 flex-col items-center gap-1 rounded-xl border px-2 py-2.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         active ? "border-primary bg-primary/10" : "border-border hover:bg-muted"
@@ -234,7 +245,7 @@ export function LogReadingForm({ initialValues, onSubmit, onCancel, thresholds =
                     >
                       <span className="text-2xl" aria-hidden="true">{f.emoji}</span>
                       <span className={cn("text-[11px] font-medium", active ? "text-primary" : "text-muted-foreground")}>
-                        {f.label}
+                        {moodLabel}
                       </span>
                     </button>
                   );
@@ -245,7 +256,7 @@ export function LogReadingForm({ initialValues, onSubmit, onCancel, thresholds =
 
           {values.metric === "weight" && (
             <>
-              <FormField htmlFor="value" label="Weight" required error={showErr("value")}>
+              <FormField htmlFor="value" label={t("log.weight")} required error={showErr("value")}>
                 <Input
                   {...fieldAria("value", showErr("value"))}
                   type="number"
@@ -258,7 +269,7 @@ export function LogReadingForm({ initialValues, onSubmit, onCancel, thresholds =
                   className={cn(showErr("value") && "border-destructive focus-visible:ring-destructive")}
                 />
               </FormField>
-              <FormField htmlFor="weightUnit" label="Unit">
+              <FormField htmlFor="weightUnit" label={t("log.unit")}>
                 <Select value={values.weightUnit} onValueChange={(v) => update({ weightUnit: v as "kg" | "lb" })}>
                   <SelectTrigger id="weightUnit">
                     <SelectValue />
@@ -273,7 +284,7 @@ export function LogReadingForm({ initialValues, onSubmit, onCancel, thresholds =
           )}
 
           {(values.metric === "glucose" || values.metric === "sleep" || values.metric === "hr") && (
-            <FormField htmlFor="value" label={cfg.name} required hint={cfg.unit} error={showErr("value")}>
+            <FormField htmlFor="value" label={metricName} required hint={cfg.unit} error={showErr("value")}>
               <Input
                 {...fieldAria("value", showErr("value"), cfg.unit)}
                 type="number"
@@ -282,7 +293,7 @@ export function LogReadingForm({ initialValues, onSubmit, onCancel, thresholds =
                 value={values.value}
                 onChange={(e) => update({ value: e.target.value })}
                 onBlur={() => setTouched(true)}
-                placeholder={cfg.name}
+                placeholder={metricName}
                 className={cn(showErr("value") && "border-destructive focus-visible:ring-destructive")}
               />
             </FormField>
@@ -298,13 +309,15 @@ export function LogReadingForm({ initialValues, onSubmit, onCancel, thresholds =
               role="status"
             >
               {status === "normal"
-                ? "Looks within the normal range."
-                : `This would be flagged as ${status}.`}
+                ? t("log.previewNormal")
+                : status === "elevated"
+                  ? t("log.previewElevated")
+                  : t("log.previewLow")}
             </p>
           )}
 
           {/* Date / time */}
-          <FormField htmlFor="date" label="Date" required error={showErr("date")}>
+          <FormField htmlFor="date" label={t("log.date")} required error={showErr("date")}>
             <Input
               {...fieldAria("date", showErr("date"))}
               type="date"
@@ -313,7 +326,7 @@ export function LogReadingForm({ initialValues, onSubmit, onCancel, thresholds =
               className={cn(showErr("date") && "border-destructive focus-visible:ring-destructive")}
             />
           </FormField>
-          <FormField htmlFor="time" label="Time" required error={showErr("time")}>
+          <FormField htmlFor="time" label={t("log.time")} required error={showErr("time")}>
             <Input
               {...fieldAria("time", showErr("time"))}
               type="time"
@@ -324,7 +337,7 @@ export function LogReadingForm({ initialValues, onSubmit, onCancel, thresholds =
           </FormField>
 
           {/* Recorded by */}
-          <FormField htmlFor="recordedBy" label="Recorded by" error={showErr("recordedBy")}>
+          <FormField htmlFor="recordedBy" label={t("log.recordedBy")} error={showErr("recordedBy")}>
             <Select value={values.recordedBy} onValueChange={(v) => update({ recordedBy: v })}>
               <SelectTrigger id="recordedBy">
                 <SelectValue />
@@ -340,12 +353,12 @@ export function LogReadingForm({ initialValues, onSubmit, onCancel, thresholds =
           </FormField>
 
           {/* Note */}
-          <FormField htmlFor="note" label="Note" full hint="Optional">
+          <FormField htmlFor="note" label={t("log.note")} full hint={t("log.optional")}>
             <Textarea
               id="note"
               value={values.note}
               onChange={(e) => update({ note: e.target.value })}
-              placeholder="Anything worth remembering about this reading…"
+              placeholder={t("log.notePlaceholder")}
               rows={2}
             />
           </FormField>
@@ -356,21 +369,21 @@ export function LogReadingForm({ initialValues, onSubmit, onCancel, thresholds =
       <div className="shrink-0 border-t bg-background px-5 py-3 sm:px-6">
         <div className="flex items-center justify-end gap-2">
           <Button type="button" variant="outline" onClick={onCancel} disabled={submitting || success}>
-            Cancel
+            {t("log.cancel")}
           </Button>
           <Button type="submit" disabled={submitting || success || (touched && !valid)} className="min-w-[9.5rem]">
             {success ? (
               <>
                 <Check className="h-4 w-4" />
-                <span className="ml-1">Saved</span>
+                <span className="ml-1">{t("log.saved")}</span>
               </>
             ) : submitting ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" />
-                <span className="ml-1">Saving…</span>
+                <span className="ml-1">{t("log.saving")}</span>
               </>
             ) : (
-              <span>Save reading</span>
+              <span>{t("log.save")}</span>
             )}
           </Button>
         </div>

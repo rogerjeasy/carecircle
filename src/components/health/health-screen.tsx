@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Lock, Plus, SlidersHorizontal } from "lucide-react";
 import { useAppShell } from "@/components/app-shell/app-shell-context";
@@ -29,6 +30,7 @@ export interface HealthScreenProps {
 
 /** The Health screen: metric cards, a focus chart, insights, and a log-reading flow — server-backed. */
 export function HealthScreen({ initial }: HealthScreenProps) {
+  const t = useTranslations("health");
   const { role } = useAppShell();
   const canLog = canLogReadings(role);
 
@@ -71,15 +73,13 @@ export function HealthScreen({ initial }: HealthScreenProps) {
     if (res.ok) {
       setReadings((prev) => prev.map((r) => (r.id === tempId ? res.data : r)));
       if (res.status === "normal") {
-        toast.success("Reading saved", { description: "Added to the chart and shared on the timeline." });
+        toast.success(t("toasts.savedNormal"), { description: t("toasts.savedNormalDesc") });
       } else {
-        toast.warning("Reading saved — outside the safe range", {
-          description: "The circle has been alerted with an urgent timeline update.",
-        });
+        toast.warning(t("toasts.savedFlagged"), { description: t("toasts.savedFlaggedDesc") });
       }
     } else {
       setReadings((prev) => prev.filter((r) => r.id !== tempId));
-      toast.error(res.error ?? "Couldn't save the reading");
+      toast.error(res.error ?? t("toasts.saveFailed"));
     }
   };
 
@@ -91,20 +91,20 @@ export function HealthScreen({ initial }: HealthScreenProps) {
         {/* Header */}
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div className="min-w-0">
-            <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">Health</h1>
+            <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">{t("title")}</h1>
             <p className="mt-1 text-muted-foreground">
-              {recipientName ? `${recipientName}'s` : "The"} vitals at a glance.
+              {recipientName ? t("subtitleNamed", { name: recipientName }) : t("subtitleGeneric")}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {!canLog && (
               <Badge variant="secondary" className="gap-1.5">
                 <Lock className="h-3 w-3" aria-hidden="true" />
-                View only
+                {t("viewOnly")}
               </Badge>
             )}
             <Tabs value={range} onValueChange={(v) => setRange(v as RangeKey)}>
-              <TabsList aria-label="Time range">
+              <TabsList aria-label={t("timeRange")}>
                 {RANGES.map((r) => (
                   <TabsTrigger key={r} value={r} className="px-3">
                     {r}
@@ -115,13 +115,13 @@ export function HealthScreen({ initial }: HealthScreenProps) {
             <Button variant="outline" asChild>
               <Link href="/health/alerts">
                 <SlidersHorizontal className="h-4 w-4" />
-                <span className="ml-1 hidden sm:inline">Alerts</span>
+                <span className="ml-1 hidden sm:inline">{t("alerts")}</span>
               </Link>
             </Button>
             <GatedControl canManage={canLog}>
               <Button onClick={() => setLogOpen(true)}>
                 <Plus className="h-4 w-4" />
-                <span className="ml-1">Log reading</span>
+                <span className="ml-1">{t("logReading")}</span>
               </Button>
             </GatedControl>
           </div>
@@ -174,21 +174,22 @@ export function HealthScreen({ initial }: HealthScreenProps) {
 }
 
 function EmptyState({ canLog, onLog }: { canLog: boolean; onLog: () => void }) {
+  const t = useTranslations("health");
   return (
     <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed px-6 py-20 text-center">
       <div className="flex h-14 w-14 items-center justify-center rounded-full bg-secondary text-primary">
         <Plus className="h-7 w-7" aria-hidden="true" />
       </div>
       <div>
-        <p className="text-base font-semibold">No readings yet</p>
+        <p className="text-base font-semibold">{t("empty.title")}</p>
         <p className="mt-1 text-sm text-muted-foreground">
-          {canLog ? "Log the first vital to start tracking trends." : "Once a reading is logged, trends appear here."}
+          {canLog ? t("empty.bodyCanLog") : t("empty.bodyView")}
         </p>
       </div>
       {canLog && (
         <Button onClick={onLog}>
           <Plus className="h-4 w-4" />
-          <span className="ml-1">Log reading</span>
+          <span className="ml-1">{t("logReading")}</span>
         </Button>
       )}
     </div>

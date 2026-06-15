@@ -1,5 +1,6 @@
 "use client";
 
+import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Sparkline } from "./sparkline";
@@ -10,7 +11,7 @@ import {
   formatValue,
   moodFace,
   readingsFor,
-  seriesSummary,
+  seriesParts,
   statusOf,
   toChartPoints,
   trendOf,
@@ -29,13 +30,27 @@ export interface MetricCardProps {
 
 /** A metric summary card: name, latest value, status pill, trend arrow, and an embedded sparkline. */
 export function MetricCard({ metric, readings, range, thresholds, now, selected, onSelect }: MetricCardProps) {
+  const t = useTranslations("health");
+  const locale = useLocale();
   const cfg = metricConfigs[metric];
   const Icon = metricIcons[metric];
+  const metricName = t(`metrics.${metric}` as "metrics.bp");
   const series = readingsFor(readings, metric, range, now);
   const latest = series[series.length - 1];
   const status = latest ? statusOf(metric, latest.value, latest.secondary, thresholds) : "normal";
   const trend = trendOf(metric, series);
-  const points = toChartPoints(series);
+  const points = toChartPoints(series, locale);
+  const summary =
+    series.length === 0
+      ? t("series.none")
+      : (() => {
+          const p = seriesParts(series, locale);
+          const latestLabel =
+            metric === "mood"
+              ? t(`mood.${moodFace(latest.value).value}` as "mood.3")
+              : `${formatValue(metric, latest.value, latest.secondary)}${cfg.unit ? ` ${cfg.unit}` : ""}`;
+          return t("series.summary", { name: metricName, count: p.count, from: p.from, to: p.to, latest: latestLabel, lo: p.lo, hi: p.hi });
+        })();
 
   return (
     <Card
@@ -57,7 +72,7 @@ export function MetricCard({ metric, readings, range, thresholds, now, selected,
           }
         }}
         aria-pressed={selected}
-        aria-label={`Focus ${cfg.name} chart`}
+        aria-label={metricName}
         className="flex w-full cursor-pointer flex-col gap-3 rounded-2xl p-4 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:p-5"
       >
         <div className="flex items-start justify-between gap-2">
@@ -65,7 +80,7 @@ export function MetricCard({ metric, readings, range, thresholds, now, selected,
             <span className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-xl", cfg.tint)}>
               <Icon className="h-5 w-5" aria-hidden="true" />
             </span>
-            <span className="min-w-0 truncate text-sm font-medium text-muted-foreground">{cfg.name}</span>
+            <span className="min-w-0 truncate text-sm font-medium text-muted-foreground">{metricName}</span>
           </div>
           <StatusPill status={status} className="shrink-0" />
         </div>
@@ -76,7 +91,7 @@ export function MetricCard({ metric, readings, range, thresholds, now, selected,
               metric === "mood" ? (
                 <p className="flex items-center gap-2 text-2xl font-bold leading-none">
                   <span aria-hidden="true">{moodFace(latest.value).emoji}</span>
-                  <span className="text-xl">{moodFace(latest.value).label}</span>
+                  <span className="text-xl">{t(`mood.${moodFace(latest.value).value}` as "mood.3")}</span>
                 </p>
               ) : (
                 <p className="text-2xl font-bold leading-none tabular-nums sm:text-3xl">
@@ -85,14 +100,14 @@ export function MetricCard({ metric, readings, range, thresholds, now, selected,
                 </p>
               )
             ) : (
-              <p className="text-sm text-muted-foreground">No readings yet</p>
+              <p className="text-sm text-muted-foreground">{t("noReadingsYet")}</p>
             )}
           </div>
           <TrendIndicator trend={trend} className="shrink-0 pb-0.5" />
         </div>
 
         <Sparkline data={points} color={cfg.color} />
-        <span className="sr-only">{seriesSummary(metric, series)}</span>
+        <span className="sr-only">{summary}</span>
       </div>
     </Card>
   );

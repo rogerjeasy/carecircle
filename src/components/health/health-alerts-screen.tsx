@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { ArrowLeft, Bell, BellOff, Check, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -17,20 +18,21 @@ import { canManageAlerts, moodFace } from "./utils";
 import { saveAlertThresholds } from "@/lib/health/actions";
 import type { MetricKey, ThresholdMap, Thresholds } from "./types";
 
+// A loosely-typed translator (avoids next-intl's fragile useTranslations<…> ReturnType generic).
+type AlertsT = (key: string, vars?: Record<string, string | number>) => string;
+
 /** Human-readable preview of what an enabled alert will trigger on. */
-function previewText(metric: MetricKey, t: Thresholds): string {
-  if (!t.enabled) return "Alerts are off for this metric.";
+function previewText(metric: MetricKey, thr: Thresholds, t: AlertsT, metricName: string, moodLabel: string): string {
+  if (!thr.enabled) return t("previewOff");
   switch (metric) {
     case "bp":
-      return `Alert family if BP goes above ${t.max}/${t.diaMax} or below ${t.min}/${t.diaMin}.`;
+      return t("previewBp", { max: thr.max, diaMax: thr.diaMax ?? 0, min: thr.min, diaMin: thr.diaMin ?? 0 });
     case "sleep":
-      return `Alert family if sleep drops below ${t.min} h.`;
+      return t("previewSleep", { min: thr.min });
     case "mood":
-      return `Alert family if mood drops below “${moodFace(t.min).label}”.`;
-    default: {
-      const u = metricConfigs[metric].unit;
-      return `Alert family if ${metricConfigs[metric].name.toLowerCase()} goes above ${t.max} or below ${t.min} ${u}.`;
-    }
+      return t("previewMood", { label: moodLabel });
+    default:
+      return t("previewGeneric", { metric: metricName.toLowerCase(), max: thr.max, min: thr.min, unit: metricConfigs[metric].unit });
   }
 }
 
@@ -41,6 +43,7 @@ export interface HealthAlertsScreenProps {
 
 /** The Health alerts settings panel: per-metric safe ranges, persisted per circle. */
 export function HealthAlertsScreen({ initialThresholds }: HealthAlertsScreenProps) {
+  const t = useTranslations("health.alertsScreen");
   const { role } = useAppShell();
   const canManage = canManageAlerts(role);
 
@@ -59,7 +62,7 @@ export function HealthAlertsScreen({ initialThresholds }: HealthAlertsScreenProp
 
   const save = async () => {
     if (!rangesValid) {
-      toast.error("Please fix the highlighted ranges first.");
+      toast.error(t("fixRanges"));
       return;
     }
     setSaving(true);
@@ -69,11 +72,9 @@ export function HealthAlertsScreen({ initialThresholds }: HealthAlertsScreenProp
     setSaving(false);
     if (res.ok) {
       setSaved(true);
-      toast.success("Alert settings saved", {
-        description: "New readings are checked against these ranges for the whole circle.",
-      });
+      toast.success(t("savedToast"), { description: t("savedToastDesc") });
     } else {
-      toast.error(res.error ?? "Couldn't save the alert settings");
+      toast.error(res.error ?? t("saveFailed"));
     }
   };
 
@@ -87,18 +88,18 @@ export function HealthAlertsScreen({ initialThresholds }: HealthAlertsScreenProp
             className="mb-1 inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Health
+            {t("back")}
           </Link>
-          <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">Health alerts</h1>
+          <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">{t("title")}</h1>
           <p className="mt-1 text-muted-foreground">
-            Set the safe ranges that notify the family when a reading is out of range.
+            {t("subtitle")}
           </p>
         </div>
         <div className="flex items-center gap-2">
           {!canManage && (
             <Badge variant="secondary" className="gap-1.5">
               <Lock className="h-3 w-3" aria-hidden="true" />
-              View only
+              {t("viewOnly")}
             </Badge>
           )}
           {canManage && (
@@ -106,12 +107,12 @@ export function HealthAlertsScreen({ initialThresholds }: HealthAlertsScreenProp
               {saved ? (
                 <>
                   <Check className="h-4 w-4" />
-                  <span className="ml-1">Saved</span>
+                  <span className="ml-1">{t("saved")}</span>
                 </>
               ) : saving ? (
-                <span>Saving…</span>
+                <span>{t("saving")}</span>
               ) : (
-                <span>Save changes</span>
+                <span>{t("saveChanges")}</span>
               )}
             </Button>
           )}
@@ -145,10 +146,13 @@ function MetricAlertCard({
   canManage: boolean;
   onPatch: (p: Partial<Thresholds>) => void;
 }) {
+  const t = useTranslations("health.alertsScreen");
   const cfg = metricConfigs[metric];
   const Icon = metricIcons[metric];
   const enabled = thresholds.enabled;
   const rangeInvalid = thresholds.min >= thresholds.max;
+  const metricName = useTranslations("health")(`metrics.${metric}` as "metrics.bp");
+  const moodLabel = useTranslations("health")(`mood.${moodFace(thresholds.min).value}` as "mood.3");
 
   return (
     <Card className={cn("h-full p-0", !enabled && "opacity-90")}>
@@ -158,14 +162,14 @@ function MetricAlertCard({
             <Icon className="h-5 w-5" aria-hidden="true" />
           </span>
           <div className="min-w-0 flex-1">
-            <p className="truncate font-semibold leading-tight">{cfg.name}</p>
-            <p className="truncate text-xs text-muted-foreground">{cfg.unit || "1–5 scale"}</p>
+            <p className="truncate font-semibold leading-tight">{metricName}</p>
+            <p className="truncate text-xs text-muted-foreground">{cfg.unit || t("scale")}</p>
           </div>
           <Switch
             checked={enabled}
             onCheckedChange={(v) => onPatch({ enabled: v })}
             disabled={!canManage}
-            aria-label={`Enable ${cfg.name} alerts`}
+            aria-label={t("enableAlerts", { name: metricName })}
           />
         </div>
 
@@ -173,7 +177,7 @@ function MetricAlertCard({
           <div className="grid grid-cols-2 gap-3">
             <RangeInput
               id={`${metric}-min`}
-              label={metric === "mood" ? "Alert below" : "Low (min)"}
+              label={metric === "mood" ? t("alertBelow") : t("lowMin")}
               value={thresholds.min}
               onChange={(n) => onPatch({ min: n })}
               disabled={!canManage}
@@ -181,7 +185,7 @@ function MetricAlertCard({
             {metric !== "mood" && (
               <RangeInput
                 id={`${metric}-max`}
-                label="High (max)"
+                label={t("highMax")}
                 value={thresholds.max}
                 onChange={(n) => onPatch({ max: n })}
                 disabled={!canManage}
@@ -191,14 +195,14 @@ function MetricAlertCard({
               <>
                 <RangeInput
                   id="bp-diamin"
-                  label="Diastolic low"
+                  label={t("diaLow")}
                   value={thresholds.diaMin ?? 0}
                   onChange={(n) => onPatch({ diaMin: n })}
                   disabled={!canManage}
                 />
                 <RangeInput
                   id="bp-diamax"
-                  label="Diastolic high"
+                  label={t("diaHigh")}
                   value={thresholds.diaMax ?? 0}
                   onChange={(n) => onPatch({ diaMax: n })}
                   disabled={!canManage}
@@ -210,7 +214,7 @@ function MetricAlertCard({
 
         {enabled && rangeInvalid && (
           <p className="text-xs font-medium text-destructive" role="alert">
-            The minimum should be below the maximum.
+            {t("minBelowMax")}
           </p>
         )}
 
@@ -226,7 +230,7 @@ function MetricAlertCard({
           ) : (
             <BellOff className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
           )}
-          <span>{previewText(metric, thresholds)}</span>
+          <span>{previewText(metric, thresholds, t as AlertsT, metricName, moodLabel)}</span>
         </div>
       </CardContent>
     </Card>

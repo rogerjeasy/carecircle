@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 /** Manager-only control wrapper: disabled + "Ask the coordinator" tooltip for everyone else. */
@@ -11,6 +12,7 @@ export function GatedControl({
   canManage: boolean;
   children: React.ReactElement<{ disabled?: boolean }>;
 }) {
+  const t = useTranslations("health");
   if (canManage) return children;
   const control = React.cloneElement(children, { disabled: true });
   return (
@@ -23,7 +25,7 @@ export function GatedControl({
           {control}
         </span>
       </TooltipTrigger>
-      <TooltipContent side="top">Ask the coordinator</TooltipContent>
+      <TooltipContent side="top">{t("askCoordinator")}</TooltipContent>
     </Tooltip>
   );
 }
