@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { DIFFERENTIATORS, PERSONAS, PILLARS, PRINCIPLES, PROBLEMS } from "./data";
@@ -68,16 +69,13 @@ function SectionWrap({ children, className }: { children: React.ReactNode; class
 
 /* -------------------------------- Problem -------------------------------- */
 export function ProblemSection() {
+  const t = useTranslations("about.problem");
   return (
     <SectionWrap className="mt-24">
-      <SectionHeading
-        eyebrow="The problem"
-        title="Caregiving is universal — and badly tooled"
-        subtitle="When a parent starts needing help, coordination falls to chaotic group chats, sticky notes, and one exhausted “default” child."
-      />
+      <SectionHeading eyebrow={t("eyebrow")} title={t("title")} subtitle={t("subtitle")} />
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {PROBLEMS.map((p, i) => (
-          <InfoCard key={p.title} icon={p.icon} title={p.title} body={p.body} index={i} />
+          <InfoCard key={p.key} icon={p.icon} title={t(`items.${p.key}.title`)} body={t(`items.${p.key}.body`)} index={i} />
         ))}
       </div>
     </SectionWrap>
@@ -86,16 +84,13 @@ export function ProblemSection() {
 
 /* ------------------------------ Difference ------------------------------- */
 export function DifferenceSection() {
+  const t = useTranslations("about.difference");
   return (
     <SectionWrap className="mt-24">
-      <SectionHeading
-        eyebrow="What makes it different"
-        title="The underserved middle"
-        subtitle="Clinical software is built for institutions; family organizers have no concept of care. Kintwadi is the family-grade, role-aware care record — built on three ideas no one has combined well."
-      />
+      <SectionHeading eyebrow={t("eyebrow")} title={t("title")} subtitle={t("subtitle")} />
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {DIFFERENTIATORS.map((d, i) => (
-          <InfoCard key={d.title} icon={d.icon} title={d.title} body={d.body} index={i} accent />
+          <InfoCard key={d.key} icon={d.icon} title={t(`items.${d.key}.title`)} body={t(`items.${d.key}.body`)} index={i} accent />
         ))}
       </div>
     </SectionWrap>
@@ -104,19 +99,16 @@ export function DifferenceSection() {
 
 /* -------------------------------- Personas ------------------------------- */
 export function PersonasSection() {
+  const t = useTranslations("about.personas");
   return (
     <SectionWrap className="mt-24">
-      <SectionHeading
-        eyebrow="Who it's for"
-        title="One record, a view for everyone"
-        subtitle="The same source of truth — scoped to each person's role, enforced at the database, not just the UI."
-      />
+      <SectionHeading eyebrow={t("eyebrow")} title={t("title")} subtitle={t("subtitle")} />
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {PERSONAS.map((persona, i) => {
           const Icon = persona.icon;
           return (
             <Card
-              key={persona.name}
+              key={persona.key}
               className="h-full motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2"
               style={{ animationDelay: `${Math.min(i, 8) * 60}ms`, animationFillMode: "backwards" }}
             >
@@ -125,10 +117,10 @@ export function PersonasSection() {
                   <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-secondary text-primary">
                     <Icon className="h-5 w-5" aria-hidden="true" />
                   </span>
-                  <h3 className="min-w-0 truncate font-semibold">{persona.name}</h3>
+                  <h3 className="min-w-0 truncate font-semibold">{t(`items.${persona.key}.name`)}</h3>
                 </div>
-                <p className="mt-3 text-sm font-medium">{persona.who}</p>
-                <p className="mt-1 text-pretty text-sm text-muted-foreground">{persona.need}</p>
+                <p className="mt-3 text-sm font-medium">{t(`items.${persona.key}.who`)}</p>
+                <p className="mt-1 text-pretty text-sm text-muted-foreground">{t(`items.${persona.key}.need`)}</p>
               </CardContent>
             </Card>
           );
@@ -140,16 +132,13 @@ export function PersonasSection() {
 
 /* -------------------------------- Pillars -------------------------------- */
 export function PillarsSection() {
+  const t = useTranslations("about.pillars");
   return (
     <SectionWrap className="mt-24">
-      <SectionHeading
-        eyebrow="What it does"
-        title="Everything a family's care needs"
-        subtitle="A deep, calm product — not a generic dashboard with 40 widgets."
-      />
+      <SectionHeading eyebrow={t("eyebrow")} title={t("title")} subtitle={t("subtitle")} />
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {PILLARS.map((p, i) => (
-          <InfoCard key={p.title} icon={p.icon} title={p.title} body={p.body} index={i} />
+          <InfoCard key={p.key} icon={p.icon} title={t(`items.${p.key}.title`)} body={t(`items.${p.key}.body`)} index={i} />
         ))}
       </div>
     </SectionWrap>
@@ -158,16 +147,13 @@ export function PillarsSection() {
 
 /* ------------------------------- Principles ------------------------------ */
 export function PrinciplesSection() {
+  const t = useTranslations("about.principles");
   return (
     <SectionWrap className="mt-24">
-      <SectionHeading
-        eyebrow="Design philosophy"
-        title="Made for this audience"
-        subtitle="Warm, accessible, mobile-first — visibly built for stressed caregivers and older adults."
-      />
+      <SectionHeading eyebrow={t("eyebrow")} title={t("title")} subtitle={t("subtitle")} />
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {PRINCIPLES.map((p, i) => (
-          <InfoCard key={p.title} icon={p.icon} title={p.title} body={p.body} index={i} />
+          <InfoCard key={p.key} icon={p.icon} title={t(`items.${p.key}.title`)} body={t(`items.${p.key}.body`)} index={i} />
         ))}
       </div>
     </SectionWrap>
