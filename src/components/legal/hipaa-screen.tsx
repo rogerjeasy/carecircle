@@ -1,38 +1,29 @@
+import { getTranslations } from "next-intl/server";
 import { Check } from "lucide-react";
 import { RemoteImage } from "@/components/marketing/remote-image";
 import { LegalLayout, LegalSection, legalImg } from "./legal-layout";
 
-const SAFEGUARDS = [
-  "Encryption of PHI in transit and at rest",
-  "Role-based access enforced at the database (row-level security)",
-  "An append-only audit log of who viewed or changed what",
-  "Least-privilege access and server-side secrets",
-  "Clear separation of demo data from any real data",
-];
-
-export function HipaaScreen() {
+export async function HipaaScreen() {
+  const t = await getTranslations("legal");
+  const safeguards = t.raw("hipaa.safeguards") as string[];
   return (
     <LegalLayout
-      eyebrow="Compliance"
-      title="HIPAA"
-      subtitle="Kintwadi is built with HIPAA principles in mind — designed to protect health information from day one."
+      eyebrow={t("eyebrow.compliance")}
+      title={t("hipaa.title")}
+      subtitle={t("hipaa.subtitle")}
       heroImage={legalImg("1576091160550-2173dba999ef")}
     >
-      <LegalSection title="Our approach">
-        <p>
-          Kintwadi handles Protected Health Information (PHI), so we follow HIPAA&apos;s security and privacy
-          principles throughout the product: minimum-necessary access, strong technical safeguards, and a full audit
-          trail. This page describes our design posture; it is not a claim of formal certification.
-        </p>
+      <LegalSection title={t("hipaa.approach.title")}>
+        <p>{t("hipaa.approach.body")}</p>
       </LegalSection>
 
       {/* Image beside the safeguards list */}
       <div className="grid grid-cols-1 items-center gap-6 rounded-2xl border bg-card p-4 sm:p-6 md:grid-cols-2">
         <div>
-          <h2 className="font-serif text-xl font-bold tracking-tight sm:text-2xl">Technical safeguards</h2>
+          <h2 className="font-serif text-xl font-bold tracking-tight sm:text-2xl">{t("hipaa.safeguardsTitle")}</h2>
           <ul className="mt-4 space-y-2.5">
-            {SAFEGUARDS.map((s) => (
-              <li key={s} className="flex items-start gap-2.5 text-sm">
+            {safeguards.map((s, i) => (
+              <li key={i} className="flex items-start gap-2.5 text-sm">
                 <Check className="mt-0.5 h-4 w-4 shrink-0 text-success" aria-hidden="true" />
                 <span className="text-pretty text-muted-foreground">{s}</span>
               </li>
@@ -46,24 +37,27 @@ export function HipaaScreen() {
         />
       </div>
 
-      <LegalSection title="Business Associate Agreements (BAA)">
+      <LegalSection title={t("hipaa.baa.title")}>
         <p>
-          For organizations that require a signed BAA — home-care agencies, assisted-living facilities, and similar — a
-          BAA is available on our Care Teams plan. Reach out to{" "}
-          <a href="mailto:sales@kintwadi.app" className="font-medium text-primary hover:underline">
-            sales@kintwadi.app
-          </a>{" "}
-          to start the conversation.
+          {t.rich("hipaa.baa.body", {
+            a: (chunks) => (
+              <a href="mailto:sales@kintwadi.app" className="font-medium text-primary hover:underline">
+                {chunks}
+              </a>
+            ),
+          })}
         </p>
       </LegalSection>
 
-      <LegalSection title="Reporting a concern">
+      <LegalSection title={t("hipaa.report.title")}>
         <p>
-          If you believe health information may have been handled improperly, contact{" "}
-          <a href="mailto:privacy@kintwadi.app" className="font-medium text-primary hover:underline">
-            privacy@kintwadi.app
-          </a>{" "}
-          and we&apos;ll investigate.
+          {t.rich("hipaa.report.body", {
+            a: (chunks) => (
+              <a href="mailto:privacy@kintwadi.app" className="font-medium text-primary hover:underline">
+                {chunks}
+              </a>
+            ),
+          })}
         </p>
       </LegalSection>
     </LegalLayout>

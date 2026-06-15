@@ -1,4 +1,5 @@
 import * as React from "react";
+import { getTranslations } from "next-intl/server";
 import { Badge } from "@/components/ui/badge";
 import { MarketingHeader } from "@/components/marketing/marketing-header";
 import { MarketingFooter } from "@/components/marketing/marketing-footer";
@@ -8,7 +9,7 @@ export const legalImg = (id: string, w = 1600) =>
   `https://images.unsplash.com/photo-${id}?w=${w}&q=80&auto=format&fit=crop`;
 
 /** Shared chrome + hero for the legal / trust pages (Privacy, Terms, Security, HIPAA). */
-export function LegalLayout({
+export async function LegalLayout({
   eyebrow,
   title,
   subtitle,
@@ -23,6 +24,7 @@ export function LegalLayout({
   heroImage?: string;
   children: React.ReactNode;
 }) {
+  const t = await getTranslations("legal");
   return (
     <div className="min-h-screen bg-background">
       <MarketingHeader />
@@ -36,7 +38,7 @@ export function LegalLayout({
             </Badge>
             <h1 className="text-balance font-serif text-4xl font-bold tracking-tight sm:text-5xl">{title}</h1>
             {subtitle && <p className="mx-auto mt-4 max-w-2xl text-pretty text-lg text-muted-foreground">{subtitle}</p>}
-            {updated && <p className="mt-3 text-sm text-muted-foreground">Last updated {updated}</p>}
+            {updated && <p className="mt-3 text-sm text-muted-foreground">{t("lastUpdated", { date: updated })}</p>}
           </div>
 
           {heroImage && (
@@ -53,7 +55,7 @@ export function LegalLayout({
           <div className="space-y-10">{children}</div>
 
           <p className="mt-12 rounded-xl border border-dashed bg-muted/30 p-4 text-center text-xs text-muted-foreground">
-            This page is illustrative content for a hackathon demo — not legal advice.
+            {t("disclaimer")}
           </p>
         </section>
       </main>
