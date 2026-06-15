@@ -1,17 +1,19 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { sourceIcon } from "./data";
 import type { SourceMoment } from "./types";
 
 /** "Source moments" chips that link back to the timeline events the digest summarized. */
 export function SourceChips({ sources }: { sources: SourceMoment[] }) {
+  const t = useTranslations("digest");
   if (sources.length === 0) return null;
   return (
     <div>
       <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-        Source moments
+        {t("sourceMoments")}
       </p>
       <ul className="flex flex-wrap gap-2">
         {sources.map((s) => {
