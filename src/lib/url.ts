@@ -31,7 +31,13 @@ export async function getAppOrigin(): Promise<string> {
 
 /** Origin derived from env, for non-request contexts. Never throws. */
 function originFromEnv(): string {
-  if (process.env.AUTH_URL) return process.env.AUTH_URL.replace(/\/$/, '');
+  const authUrl = process.env.AUTH_URL?.trim();
+  if (authUrl) {
+    // Tolerate a scheme-less AUTH_URL (e.g. "kintwadi.vercel.app") so background-job links stay
+    // absolute instead of becoming a broken relative URL. Mirrors the guard in src/auth.ts.
+    const withScheme = /^https?:\/\//i.test(authUrl) ? authUrl : `https://${authUrl.replace(/^\/+/, '')}`;
+    return withScheme.replace(/\/$/, '');
+  }
   const vercelHost = process.env.VERCEL_PROJECT_PRODUCTION_URL ?? process.env.VERCEL_URL;
   if (vercelHost) return `https://${vercelHost}`;
   return 'http://localhost:3000';

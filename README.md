@@ -5,6 +5,10 @@
 >
 > ***Kintwadi*** *(kin-TWAH-dee) is Kikongo for **togetherness — doing it as one**. Siblings, relatives, the parent, the hired aide, the clinician: one circle, one record.*
 
+### 🔗 Live demo → **https://kintwadi.vercel.app**
+
+No sign-up needed: click **"Run demo"** on the homepage (or use a seeded persona on `/sign-in`) to land in a living, RLS-scoped care circle on real Amazon Aurora PostgreSQL + Amazon Bedrock.
+
 [![CI — lint, types, unit + RLS integration proof](https://github.com/rogerjeasy/kintwadi/actions/workflows/ci.yml/badge.svg)](https://github.com/rogerjeasy/kintwadi/actions/workflows/ci.yml)
 
 ![Next.js](https://img.shields.io/badge/Next.js_16-000000?logo=nextdotjs&logoColor=white)

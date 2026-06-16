@@ -19,10 +19,10 @@ fs.mkdirSync(outDir, { recursive: true });
 
 const samples: Record<string, { subject: string; html: string }> = {
   'password-reset': passwordResetEmail({
-    resetUrl: 'https://carecircle-one.vercel.app/reset-password?token=demo&uid=demo',
+    resetUrl: 'https://kintwadi.vercel.app/reset-password?token=demo&uid=demo',
   }),
   invitation: invitationEmail({
-    inviteUrl: 'https://carecircle-one.vercel.app/invite/demo-token',
+    inviteUrl: 'https://kintwadi.vercel.app/invite/demo-token',
     inviterName: 'Maria Santos',
     recipientName: 'Antonio',
     role: 'family',
@@ -30,13 +30,13 @@ const samples: Record<string, { subject: string; html: string }> = {
   }),
   welcome: welcomeEmail({
     recipientName: 'Antonio',
-    dashboardUrl: 'https://carecircle-one.vercel.app/dashboard',
+    dashboardUrl: 'https://kintwadi.vercel.app/dashboard',
   }),
   'joined-circle': joinedCircleEmail({
     recipientName: 'Antonio',
     circleName: "Antonio's Care",
     role: 'family',
-    dashboardUrl: 'https://carecircle-one.vercel.app/dashboard',
+    dashboardUrl: 'https://kintwadi.vercel.app/dashboard',
   }),
   'service-status-down': serviceStatusAlertEmail({
     kind: 'down',
@@ -45,14 +45,14 @@ const samples: Record<string, { subject: string; html: string }> = {
       { name: 'Amazon SES', metric: 'timeout after 5000ms' },
       { name: 'Amazon SNS', metric: 'timeout after 5000ms' },
     ],
-    statusUrl: 'https://carecircle-one.vercel.app/admin/system',
+    statusUrl: 'https://kintwadi.vercel.app/admin/system',
     checkedAtLabel: '14:05 UTC',
   }),
   'service-status-recovered': serviceStatusAlertEmail({
     kind: 'recovered',
     changed: [{ name: 'Amazon SES', metric: '738ms' }],
     stillDown: [],
-    statusUrl: 'https://carecircle-one.vercel.app/admin/system',
+    statusUrl: 'https://kintwadi.vercel.app/admin/system',
     checkedAtLabel: '14:25 UTC',
   }),
 };

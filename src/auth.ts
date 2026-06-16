@@ -18,6 +18,16 @@ import { verifyPassword } from '@/lib/password';
 import { recordLoginEvent, recordLogoutEvent } from '@/db/audit';
 import { serverLog, maskEmail } from '@/lib/log';
 
+// Defensive AUTH_URL normalization — runs at module load, before NextAuth reads the env.
+// Auth.js resolves callback/redirect URLs by passing AUTH_URL through `new URL()`. A value missing
+// its scheme (e.g. "kintwadi.vercel.app" instead of "https://kintwadi.vercel.app") makes that throw
+// `TypeError: Invalid URL` on EVERY `auth()` call — which takes down every authenticated route,
+// since the (app) layout's `requireSession()` calls `auth()`. Coerce a bare host to https so a
+// single config typo can never again 500 the entire app. (trustHost is on, so the host is trusted.)
+if (process.env.AUTH_URL && !/^https?:\/\//i.test(process.env.AUTH_URL)) {
+  process.env.AUTH_URL = `https://${process.env.AUTH_URL.replace(/^\/+/, '')}`;
+}
+
 /** Which OAuth providers are configured — also read by the UI to show/hide the buttons. */
 export const authProviders = {
   google: Boolean(process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET),
