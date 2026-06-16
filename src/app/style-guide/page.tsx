@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { useEffect } from "react"; // TEMP-TOAST-CHECK
+import { toast } from "sonner"; // TEMP-TOAST-CHECK
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -23,6 +25,14 @@ const staggerContainer = {
 };
 
 export default function StyleGuidePage() {
+  useEffect(() => { // TEMP-TOAST-CHECK
+    const o = { duration: 60000 } as const;
+    toast.success("Saved successfully", { description: "Your changes have been recorded.", ...o });
+    toast.error("Something went wrong", { description: "Please try again in a moment.", ...o });
+    toast.warning("Heads up", { description: "This action needs your attention.", ...o });
+    toast.info("For your information", { description: "Just so you know.", ...o });
+    toast("Neutral message", { description: "Default toast look (unchanged).", ...o });
+  }, []); // TEMP-TOAST-CHECK
   return (
     <main className="min-h-screen bg-background">
       {/* Header */}

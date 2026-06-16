@@ -76,8 +76,10 @@ export default async function RootLayout({
           <NextIntlClientProvider locale={locale} messages={messages}>
             {children}
           </NextIntlClientProvider>
+          {/* Neutral base look here; per-type colors (success=green, error=red, warning=amber,
+              info=blue) are applied by data-type rules in globals.css. */}
           <Toaster
-            position="top-center" 
+            position="top-center"
             toastOptions={{
               classNames: {
                 toast: "bg-card border-border text-foreground",
