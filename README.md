@@ -21,7 +21,7 @@ No sign-up needed: click **"Run demo"** on the homepage (or use a seeded persona
 ![Terraform](https://img.shields.io/badge/Terraform-844FBA?logo=terraform&logoColor=white)
 
 Built for the **H0: Hack the Zero Stack** hackathon (AWS Databases + Vercel/v0). <br>
-**Track:** Monetizable B2C (with a clear B2B expansion) · **Primary database:** **Amazon Aurora PostgreSQL (Serverless v2)** · **AI:** Amazon Bedrock (Claude + Titan) · **Frontend:** Next.js on **Vercel**.
+**Track:** Monetizable B2C · **Primary database:** **Amazon Aurora PostgreSQL (Serverless v2)** · **AI:** Amazon Bedrock (Claude + Titan) · **Frontend:** Next.js on **Vercel**.
 
 ---
 

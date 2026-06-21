@@ -27,6 +27,9 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MarketingHeader } from "@/components/marketing/marketing-header";
 import { MarketingFooter } from "@/components/marketing/marketing-footer";
+import { RemoteImage } from "@/components/marketing/remote-image";
+import { SectionBackdrop } from "@/components/marketing/section-backdrop";
+import { HOWITWORKS_IMG } from "@/components/marketing/images";
 
 // Scroll animation hook
 function useScrollAnimation() {
@@ -55,10 +58,10 @@ function useScrollAnimation() {
 
 // Timeline step structure — text resolved from messages via the `key`.
 const timelineSteps = [
-  { number: 1, key: "create", icon: Users, color: "primary" },
-  { number: 2, key: "invite", icon: UserPlus, color: "accent" },
-  { number: 3, key: "coordinate", icon: HeartHandshake, color: "success" },
-  { number: 4, key: "connect", icon: Globe, color: "info" },
+  { number: 1, key: "create", icon: Users, color: "primary", image: HOWITWORKS_IMG.timeline.create },
+  { number: 2, key: "invite", icon: UserPlus, color: "accent", image: HOWITWORKS_IMG.timeline.invite },
+  { number: 3, key: "coordinate", icon: HeartHandshake, color: "success", image: HOWITWORKS_IMG.timeline.coordinate },
+  { number: 4, key: "connect", icon: Globe, color: "info", image: HOWITWORKS_IMG.timeline.connect },
 ] as const;
 
 // Role structure — text resolved from messages via the `key`.
@@ -81,7 +84,7 @@ const securityFeatures = [
 
 export default function HowItWorksPage() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen overflow-x-hidden bg-background text-foreground">
       <MarketingHeader />
       <main>
         <EmotionalIntro />
@@ -105,8 +108,9 @@ function EmotionalIntro() {
   }, []);
 
   return (
-    <section className="relative pt-32 pb-20 sm:pt-40 sm:pb-28 overflow-hidden">
-      {/* Background shapes */}
+    <section className="relative isolate pt-32 pb-20 sm:pt-40 sm:pb-28 overflow-hidden">
+      {/* Background: a photo backdrop (legible in light & dark) under soft color shapes */}
+      <SectionBackdrop src={HOWITWORKS_IMG.hero} from="left" opacityClass="opacity-30 dark:opacity-20" />
       <div className="absolute inset-0 -z-10 overflow-hidden">
         <div className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full bg-primary/5 blur-3xl" />
         <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] rounded-full bg-accent/5 blur-3xl" />
@@ -193,14 +197,19 @@ function TimelineStep({ step, index }: { step: typeof timelineSteps[number]; ind
       className={cn(
         "relative pl-16 sm:pl-20",
         "motion-safe:transition-all motion-safe:duration-700",
-        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+        // Steps alternate their entrance: odd from the left, even from the right.
+        isVisible
+          ? "opacity-100 translate-x-0"
+          : index % 2 === 0
+            ? "opacity-0 -translate-x-16"
+            : "opacity-0 translate-x-16"
       )}
       style={{ transitionDelay: `${index * 100}ms` }}
     >
       {/* Step number circle */}
       <div
         className={cn(
-          "absolute left-0 h-12 w-12 sm:h-16 sm:w-16 rounded-full flex items-center justify-center ring-4",
+          "absolute left-0 top-0 z-10 h-12 w-12 sm:h-16 sm:w-16 rounded-full flex items-center justify-center ring-4",
           colorClasses[step.color as keyof typeof colorClasses],
           ringColors[step.color as keyof typeof ringColors]
         )}
@@ -209,7 +218,16 @@ function TimelineStep({ step, index }: { step: typeof timelineSteps[number]; ind
       </div>
 
       {/* Content */}
-      <Card className="p-6 sm:p-8">
+      <Card className="overflow-hidden">
+        <div className="relative overflow-hidden">
+          <RemoteImage
+            src={step.image}
+            alt=""
+            className="h-40 w-full object-cover sm:h-44"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent" />
+        </div>
+        <div className="p-6 sm:p-8">
         <div className="flex items-center gap-3 mb-3">
           <span className="text-sm font-medium text-muted-foreground">
             {t("stepLabel", { number: step.number })}
@@ -231,6 +249,7 @@ function TimelineStep({ step, index }: { step: typeof timelineSteps[number]; ind
             </li>
           ))}
         </ul>
+        </div>
       </Card>
     </div>
   );
@@ -242,7 +261,9 @@ function RolesSection() {
   const t = useTranslations("howItWorksPage.roles");
 
   return (
-    <section ref={ref} className="py-20 sm:py-28">
+    <section ref={ref} className="relative isolate overflow-hidden py-20 sm:py-28">
+      {/* Background photo that slides in from the left (legible in light & dark) */}
+      <SectionBackdrop src={HOWITWORKS_IMG.rolesBg} from="left" />
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div
@@ -301,7 +322,11 @@ function RoleCard({
       className={cn(
         "p-6 h-full flex flex-col",
         "motion-safe:transition-all motion-safe:duration-700",
-        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+        isVisible
+          ? "opacity-100 translate-x-0"
+          : index % 2 === 0
+            ? "opacity-0 -translate-x-12"
+            : "opacity-0 translate-x-12"
       )}
       style={{ transitionDelay: `${index * 75}ms` }}
     >
@@ -342,7 +367,9 @@ function SecuritySection() {
   const t = useTranslations("howItWorksPage.security");
 
   return (
-    <section ref={ref} className="py-20 sm:py-28 bg-muted/30">
+    <section ref={ref} className="relative isolate overflow-hidden py-20 sm:py-28 bg-muted/30">
+      {/* Background photo that slides in from the right (legible in light & dark) */}
+      <SectionBackdrop src={HOWITWORKS_IMG.securityBg} from="right" />
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div
@@ -372,7 +399,11 @@ function SecuritySection() {
               className={cn(
                 "p-6 text-center",
                 "motion-safe:transition-all motion-safe:duration-700",
-                isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+                isVisible
+                  ? "opacity-100 translate-x-0"
+                  : index % 2 === 0
+                    ? "opacity-0 translate-x-12"
+                    : "opacity-0 -translate-x-12"
               )}
               style={{ transitionDelay: `${index * 75}ms` }}
             >
@@ -421,26 +452,36 @@ function ClosingCta() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div
           className={cn(
-            "rounded-3xl bg-primary/5 border border-primary/10 p-8 sm:p-12 lg:p-16 text-center",
+            "relative isolate overflow-hidden rounded-3xl border border-primary/20 p-8 sm:p-12 lg:p-16 text-center",
             "motion-safe:transition-all motion-safe:duration-700",
             isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
           )}
         >
-          <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-balance">
+          <RemoteImage
+            src={HOWITWORKS_IMG.cta}
+            alt=""
+            className="pointer-events-none absolute inset-0 -z-10 h-full w-full object-cover"
+          />
+          <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-br from-primary/95 via-primary/90 to-primary/75" />
+          <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-balance text-primary-foreground">
             {t("title")}
           </h2>
-          <p className="mt-4 text-lg text-muted-foreground max-w-xl mx-auto text-pretty">
+          <p className="mt-4 text-lg text-primary-foreground/90 max-w-xl mx-auto text-pretty">
             {t("subtitle")}
           </p>
           <div className="mt-8 flex flex-wrap gap-4 justify-center">
             <Link href="/dashboard">
-              <Button size="lg" className="gap-2">
+              <Button size="lg" variant="accent" className="gap-2">
                 {t("getStarted")}
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
             <Link href="/pricing">
-              <Button size="lg" variant="outline">
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-primary-foreground/40 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"
+              >
                 {t("viewPricing")}
               </Button>
             </Link>
