@@ -3,6 +3,8 @@ import { useTranslations } from "next-intl";
 import { ArrowRight, Heart } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { SectionBackdrop } from "@/components/marketing/section-backdrop";
+import { ABOUT_IMG } from "@/components/marketing/images";
 import { STATS } from "./data";
 
 /** About hero: tagline, summary, CTAs, and the market-stat strip. */
@@ -10,7 +12,9 @@ export function AboutHero() {
   const t = useTranslations("about");
 
   return (
-    <section className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
+    <section className="relative isolate mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
+      {/* Background photo that drifts in from the left (legible in light & dark) */}
+      <SectionBackdrop src={ABOUT_IMG.hero} from="left" opacityClass="opacity-30 dark:opacity-20" />
       <div className="motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-3 motion-safe:duration-500">
         <Badge variant="secondary" className="mb-4 gap-1.5">
           <Heart className="h-3.5 w-3.5 text-primary" aria-hidden="true" />

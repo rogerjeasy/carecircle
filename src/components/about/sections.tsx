@@ -2,6 +2,9 @@ import * as React from "react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
+import { RemoteImage } from "@/components/marketing/remote-image";
+import { SectionBackdrop } from "@/components/marketing/section-backdrop";
+import { ABOUT_IMG } from "@/components/marketing/images";
 import { DIFFERENTIATORS, PERSONAS, PILLARS, PRINCIPLES, PROBLEMS } from "./data";
 
 /* --------------------------------- Shared -------------------------------- */
@@ -25,37 +28,55 @@ function SectionHeading({
   );
 }
 
-/** A reveal-on-enter card with an icon chip, title and body. */
+/** A reveal-on-enter card with an icon chip, title and body. Cards alternate their entrance
+ *  direction (even from the left, odd from the right). With an `image`, the icon moves onto a
+ *  photo banner. */
 function InfoCard({
   icon: Icon,
   title,
   body,
   index,
   accent,
+  image,
 }: {
   icon: React.ElementType;
   title: string;
   body: string;
   index: number;
   accent?: boolean;
+  image?: string;
 }) {
+  const dir =
+    index % 2 === 0 ? "motion-safe:slide-in-from-left-5" : "motion-safe:slide-in-from-right-5";
   return (
     <Card
       className={cn(
-        "h-full motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2",
+        "h-full overflow-hidden motion-safe:animate-in motion-safe:fade-in motion-safe:duration-700",
+        dir,
         accent && "border-primary/30 bg-primary/5"
       )}
-      style={{ animationDelay: `${Math.min(index, 8) * 60}ms`, animationFillMode: "backwards" }}
+      style={{ animationDelay: `${Math.min(index, 8) * 80}ms`, animationFillMode: "backwards" }}
     >
+      {image && (
+        <div className="relative overflow-hidden">
+          <RemoteImage src={image} alt="" className="h-36 w-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent" />
+          <span className="absolute bottom-2 left-2 flex h-10 w-10 items-center justify-center rounded-xl bg-background/90 text-primary shadow-sm ring-1 ring-border/60 backdrop-blur">
+            <Icon className="h-5 w-5" aria-hidden="true" />
+          </span>
+        </div>
+      )}
       <CardContent className="flex h-full flex-col p-5 sm:p-6">
-        <span
-          className={cn(
-            "mb-4 flex h-11 w-11 items-center justify-center rounded-xl",
-            accent ? "bg-primary/15 text-primary" : "bg-secondary text-primary"
-          )}
-        >
-          <Icon className="h-5 w-5" aria-hidden="true" />
-        </span>
+        {!image && (
+          <span
+            className={cn(
+              "mb-4 flex h-11 w-11 items-center justify-center rounded-xl",
+              accent ? "bg-primary/15 text-primary" : "bg-secondary text-primary"
+            )}
+          >
+            <Icon className="h-5 w-5" aria-hidden="true" />
+          </span>
+        )}
         <h3 className="font-semibold leading-snug">{title}</h3>
         <p className="mt-1.5 text-pretty text-sm text-muted-foreground">{body}</p>
       </CardContent>
@@ -63,15 +84,30 @@ function InfoCard({
   );
 }
 
-function SectionWrap({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <section className={cn("mx-auto max-w-7xl px-4 sm:px-6 lg:px-8", className)}>{children}</section>;
+function SectionWrap({
+  children,
+  className,
+  bgImage,
+  bgFrom = "left",
+}: {
+  children: React.ReactNode;
+  className?: string;
+  bgImage?: string;
+  bgFrom?: "left" | "right";
+}) {
+  return (
+    <section className={cn("relative isolate mx-auto max-w-7xl px-4 sm:px-6 lg:px-8", className)}>
+      {bgImage && <SectionBackdrop src={bgImage} from={bgFrom} />}
+      {children}
+    </section>
+  );
 }
 
 /* -------------------------------- Problem -------------------------------- */
 export function ProblemSection() {
   const t = useTranslations("about.problem");
   return (
-    <SectionWrap className="mt-24">
+    <SectionWrap className="mt-24" bgImage={ABOUT_IMG.problemBg} bgFrom="left">
       <SectionHeading eyebrow={t("eyebrow")} title={t("title")} subtitle={t("subtitle")} />
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {PROBLEMS.map((p, i) => (
@@ -90,7 +126,15 @@ export function DifferenceSection() {
       <SectionHeading eyebrow={t("eyebrow")} title={t("title")} subtitle={t("subtitle")} />
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {DIFFERENTIATORS.map((d, i) => (
-          <InfoCard key={d.key} icon={d.icon} title={t(`items.${d.key}.title`)} body={t(`items.${d.key}.body`)} index={i} accent />
+          <InfoCard
+            key={d.key}
+            icon={d.icon}
+            title={t(`items.${d.key}.title`)}
+            body={t(`items.${d.key}.body`)}
+            index={i}
+            accent
+            image={ABOUT_IMG.difference[d.key as keyof typeof ABOUT_IMG.difference]}
+          />
         ))}
       </div>
     </SectionWrap>
@@ -101,7 +145,7 @@ export function DifferenceSection() {
 export function PersonasSection() {
   const t = useTranslations("about.personas");
   return (
-    <SectionWrap className="mt-24">
+    <SectionWrap className="mt-24" bgImage={ABOUT_IMG.personasBg} bgFrom="right">
       <SectionHeading eyebrow={t("eyebrow")} title={t("title")} subtitle={t("subtitle")} />
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {PERSONAS.map((persona, i) => {
@@ -109,8 +153,11 @@ export function PersonasSection() {
           return (
             <Card
               key={persona.key}
-              className="h-full motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2"
-              style={{ animationDelay: `${Math.min(i, 8) * 60}ms`, animationFillMode: "backwards" }}
+              className={cn(
+                "h-full motion-safe:animate-in motion-safe:fade-in motion-safe:duration-700",
+                i % 2 === 0 ? "motion-safe:slide-in-from-left-5" : "motion-safe:slide-in-from-right-5"
+              )}
+              style={{ animationDelay: `${Math.min(i, 8) * 80}ms`, animationFillMode: "backwards" }}
             >
               <CardContent className="flex h-full flex-col p-5 sm:p-6">
                 <div className="flex items-center gap-3">
@@ -134,7 +181,7 @@ export function PersonasSection() {
 export function PillarsSection() {
   const t = useTranslations("about.pillars");
   return (
-    <SectionWrap className="mt-24">
+    <SectionWrap className="mt-24" bgImage={ABOUT_IMG.pillarsBg} bgFrom="left">
       <SectionHeading eyebrow={t("eyebrow")} title={t("title")} subtitle={t("subtitle")} />
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {PILLARS.map((p, i) => (
@@ -149,7 +196,7 @@ export function PillarsSection() {
 export function PrinciplesSection() {
   const t = useTranslations("about.principles");
   return (
-    <SectionWrap className="mt-24">
+    <SectionWrap className="mt-24" bgImage={ABOUT_IMG.principlesBg} bgFrom="right">
       <SectionHeading eyebrow={t("eyebrow")} title={t("title")} subtitle={t("subtitle")} />
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {PRINCIPLES.map((p, i) => (
