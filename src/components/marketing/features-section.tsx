@@ -14,11 +14,13 @@ import {
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useScrollAnimation } from "./hero-section";
+import { RemoteImage } from "./remote-image";
+import { MARKETING_IMG } from "./images";
 
 const problems = [
-  { key: "chat", icon: MessageSquare },
-  { key: "meds", icon: AlertTriangle },
-  { key: "guilt", icon: Heart },
+  { key: "chat", icon: MessageSquare, image: MARKETING_IMG.problems.chat },
+  { key: "meds", icon: AlertTriangle, image: MARKETING_IMG.problems.meds },
+  { key: "guilt", icon: Heart, image: MARKETING_IMG.problems.guilt },
 ] as const;
 
 export function ProblemSolutionSection() {
@@ -48,6 +50,7 @@ export function ProblemSolutionSection() {
             <ProblemCard
               key={problem.key}
               icon={problem.icon}
+              image={problem.image}
               title={t(`items.${problem.key}.title`)}
               description={t(`items.${problem.key}.description`)}
               solution={t(`items.${problem.key}.solution`)}
@@ -63,6 +66,7 @@ export function ProblemSolutionSection() {
 
 function ProblemCard({
   icon: Icon,
+  image,
   title,
   description,
   solution,
@@ -70,6 +74,7 @@ function ProblemCard({
   isVisible,
 }: {
   icon: React.ElementType;
+  image: string;
   title: string;
   description: string;
   solution: string;
@@ -79,22 +84,31 @@ function ProblemCard({
   return (
     <Card
       className={cn(
-        "group relative overflow-hidden",
+        "group relative flex flex-col overflow-hidden",
         "motion-safe:transition-all motion-safe:duration-700",
         isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
       )}
       style={{ transitionDelay: `${delay}ms` }}
     >
-      <CardHeader>
-        <div className="mb-4 h-12 w-12 rounded-xl bg-destructive/10 flex items-center justify-center group-hover:bg-primary/10 transition-colors">
-          <Icon className="h-6 w-6 text-destructive group-hover:text-primary transition-colors" />
+      {/* Photo banner with the topic icon seated on it */}
+      <div className="relative overflow-hidden">
+        <RemoteImage
+          src={image}
+          alt=""
+          className="h-44 w-full object-cover transition-transform duration-500 ease-out motion-safe:group-hover:scale-105"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-card via-card/15 to-transparent" />
+        <div className="absolute bottom-3 left-3 flex h-11 w-11 items-center justify-center rounded-xl bg-background/90 text-primary shadow-sm ring-1 ring-border/60 backdrop-blur">
+          <Icon className="h-5 w-5" aria-hidden="true" />
         </div>
+      </div>
+      <CardHeader>
         <CardTitle className="text-xl">{title}</CardTitle>
         <CardDescription className="text-base">{description}</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="mt-auto">
         <div className="flex items-start gap-2 text-primary">
-          <ArrowRight className="h-5 w-5 shrink-0 mt-0.5" />
+          <ArrowRight className="h-5 w-5 shrink-0 mt-0.5" aria-hidden="true" />
           <p className="text-sm font-medium">{solution}</p>
         </div>
       </CardContent>
@@ -104,9 +118,9 @@ function ProblemCard({
 
 // Feature highlights section with alternating layout
 const features = [
-  { key: "timeline", icon: Clock, image: "timeline" },
-  { key: "medications", icon: Shield, image: "medications" },
-  { key: "roles", icon: Users, image: "roles" },
+  { key: "timeline", icon: Clock, image: MARKETING_IMG.features.timeline },
+  { key: "medications", icon: Shield, image: MARKETING_IMG.features.medications },
+  { key: "roles", icon: Users, image: MARKETING_IMG.features.roles },
 ] as const;
 
 export function FeaturesSection() {
@@ -143,6 +157,7 @@ function FeatureRow({
   title,
   description,
   icon: Icon,
+  image,
 }: {
   title: string;
   description: string;
@@ -155,16 +170,26 @@ function FeatureRow({
     <Card
       ref={ref}
       className={cn(
-        "p-8 sm:p-10 flex flex-col",
+        "group flex flex-col overflow-hidden",
         "motion-safe:transition-all motion-safe:duration-700",
         isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
       )}
     >
-      <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
-        <Icon className="h-7 w-7 text-primary" />
+      <div className="relative overflow-hidden">
+        <RemoteImage
+          src={image}
+          alt=""
+          className="h-48 w-full object-cover transition-transform duration-500 ease-out motion-safe:group-hover:scale-105"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-card via-card/10 to-transparent" />
+        <div className="absolute bottom-3 left-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-background/90 text-primary shadow-sm ring-1 ring-border/60 backdrop-blur">
+          <Icon className="h-6 w-6" aria-hidden="true" />
+        </div>
       </div>
-      <h3 className="font-serif text-2xl sm:text-3xl font-bold">{title}</h3>
-      <p className="mt-4 text-lg text-muted-foreground text-pretty">{description}</p>
+      <div className="flex flex-1 flex-col p-6 sm:p-8">
+        <h3 className="font-serif text-2xl font-bold">{title}</h3>
+        <p className="mt-3 text-base text-muted-foreground text-pretty">{description}</p>
+      </div>
     </Card>
   );
 }
