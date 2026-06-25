@@ -5,8 +5,8 @@
 > **RAG note:** "Ask Kintwadi" is Retrieval-Augmented Generation, kept **entirely on AWS and inside Aurora**. Documents (uploaded to S3), timeline events, and audit entries are chunked, embedded with **Amazon Bedrock Titan**, and stored as vectors **in Aurora itself** — the `rag_chunk` table via the **`pgvector`** extension, one row per chunk, tenant-scoped + sensitivity-tagged. A question is embedded and a pgvector cosine search retrieves the relevant chunks; because those rows live under the same RLS as the rest of the record, **the database itself filters retrieval to what the asker is allowed to read** (no separate vector-store ACL to keep in sync). **Claude on Bedrock** then writes a grounded, cited answer. One database does relational *and* vector — the Aurora thesis, end to end.
 
 > Two diagram sources are in this folder:
-> - **`Kintwadi-Architecture.drawio`** — editable, with AWS icons + the dashed AWS grouping box. Open it to export the PNG/SVG you submit.
-> - The **Mermaid diagram below** — renders on GitHub/Devpost previews and is easy to keep in sync.
+> - **`Kintwadi-Architecture.drawio`** — editable, with AWS icons + the dashed AWS grouping box. Open it to export the PNG/SVG.
+> - The **Mermaid diagram below** — renders in GitHub and most Markdown previews and is easy to keep in sync.
 
 ---
 
@@ -79,7 +79,7 @@ flowchart LR
 |---|---|---|---|
 | **Caregivers & Family** | The end users (4 personas) | Log meds, post updates, read the digest, manage tasks | Each sees a role-scoped view of one shared record |
 | **Vercel Edge / CDN** | Vercel's global edge network | TLS termination, caching, fast global delivery | Required: frontend on Vercel; gives low latency worldwide |
-| **Next.js App** | Hand-built React/Next.js frontend (Radix + Tailwind) | Renders the role-specific UI | Deployed on Vercel — the hackathon's required frontend platform |
+| **Next.js App** | Hand-built React/Next.js frontend (Radix + Tailwind) | Renders the role-specific UI | Deployed on Vercel for fast global edge delivery |
 | **Server Actions / API Routes** | Next.js server-side backend | All business logic, validation, DB/AI/notify orchestration | Keeps secrets server-side; the single integration point |
 | **Auth.js** | Authentication & session layer | Login, sessions, issues role claims used for access control | Roles drive both UI and DB-level permissions |
 | **Scheduler (GitHub Actions cron)** | Scheduled trigger pinging the app's `CRON_SECRET`-gated cron routes | Fires Daily Digest, reminders, refill & decline scans | The routes are scheduler-agnostic; GitHub Actions drives them because Vercel Hobby caps crons at once/day — on Pro the same routes move into `vercel.json` unchanged |
@@ -97,7 +97,7 @@ flowchart LR
 
 ---
 
-## Request flows (the ones that matter for the demo)
+## Key request flows
 
 1. **Log a medication (ACID + RLS).** Aide → UI → Server Action → Aurora: a single transaction logs the administration event, decrements supply, and appends a timeline entry. RLS guarantees the aide can only touch the patient they're assigned to. A low-supply threshold queues a refill task.
 2. **The Daily Digest (AI + scheduled).** Scheduler (GitHub Actions cron, hourly) → `CRON_SECRET`-gated route → reads the day's events from Aurora → Bedrock (Claude) summarizes into a warm update → stored back in Aurora → SES/SNS notifies the remote sibling.
@@ -136,18 +136,18 @@ ASK     (user question)
 
 ---
 
-## 40-second architecture narration (for the 3-min video)
+## The system in one paragraph
 
-> "Kintwadi runs on the hackathon's Zero Stack. The frontend is a Next.js app deployed on Vercel's edge. Every request goes through our server actions, which talk to **Amazon Aurora PostgreSQL** — our primary database. Aurora isn't a default here, it's the whole thesis: caregiving is deeply relational and safety-critical, so we use **Row-Level Security** to enforce who-can-see-what *in the database itself*, **ACID transactions** so giving a medication updates the log, the supply, and the timeline atomically, and an **append-only audit log** for medical-grade trust. On top of that record we built **'Ask Kintwadi', a Retrieval-Augmented Generation assistant** — and we kept it entirely inside Aurora: documents, timeline notes, and audit entries are chunked, embedded with **Amazon Bedrock Titan**, and stored as vectors in the same database using **`pgvector`**. Because those vector rows live under the *same* Row-Level Security as everything else, the similarity search obeys the exact permission boundary automatically — a question is matched against only the chunks that asker is allowed to read, and **Claude Sonnet 4.5 on Amazon Bedrock** writes a grounded, cited answer — and even that read is audited. Files live in S3, alerts go out through SES and SNS, and production holds no AWS keys at all — each Vercel invocation exchanges its OIDC token for short-lived STS credentials. Nothing secret ever touches the repo. Aurora Serverless v2 scales with load, and our roadmap moves the record to **Aurora DSQL** for multi-region strong consistency, because the families we serve are spread across the world."
+> Kintwadi's frontend is a Next.js app deployed on Vercel's edge. Every request goes through our server actions, which talk to **Amazon Aurora PostgreSQL** — our primary database. Aurora isn't a default here, it's the whole thesis: caregiving is deeply relational and safety-critical, so we use **Row-Level Security** to enforce who-can-see-what *in the database itself*, **ACID transactions** so giving a medication updates the log, the supply, and the timeline atomically, and an **append-only audit log** for medical-grade trust. On top of that record we built **'Ask Kintwadi', a Retrieval-Augmented Generation assistant** — and we kept it entirely inside Aurora: documents, timeline notes, and audit entries are chunked, embedded with **Amazon Bedrock Titan**, and stored as vectors in the same database using **`pgvector`**. Because those vector rows live under the *same* Row-Level Security as everything else, the similarity search obeys the exact permission boundary automatically — a question is matched against only the chunks that asker is allowed to read, and **Claude Sonnet 4.5 on Amazon Bedrock** writes a grounded, cited answer — and even that read is audited. Files live in S3, alerts go out through SES and SNS, and production holds no AWS keys at all — each Vercel invocation exchanges its OIDC token for short-lived STS credentials. Nothing secret ever touches the repo. Aurora Serverless v2 scales with load, and our roadmap moves the record to **Aurora DSQL** for multi-region strong consistency, because the families we serve are spread across the world.
 
 ---
 
-## How to export the image you submit
+## Regenerating the diagram image
 
 1. Open **https://app.diagrams.net** (no install) → *Open Existing Diagram* → choose `Kintwadi-Architecture.drawio`.
    *(Or use the "Draw.io Integration" extension in VS Code and just open the file.)*
 2. Check the AWS icons rendered (they will, via the built-in AWS shape library). Tweak labels/positions as you like.
 3. **File → Export as → PNG** (set *Zoom 2x*, *Transparent background* off, *Border width ~10*) — or **SVG** for crispness.
-4. Drop the exported image into your Devpost submission and your README, and screen-record it for the video's architecture beat.
+4. Use the exported image in the README and anywhere else the diagram is referenced.
 
 **Optional polish:** to swap any labeled box for the exact official AWS icon, open the shape search (bottom-left), type the service name (e.g., "Aurora"), and drag it on. The AWS grouping box and arrows already follow the rules' tips (labeled boxes, single-direction arrows, dashed cloud boundary).
