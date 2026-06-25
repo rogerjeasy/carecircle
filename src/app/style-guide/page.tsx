@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { BrandLogo } from "@/components/brand-logo";
 import { useEffect } from "react"; // TEMP-TOAST-CHECK
 import { toast } from "sonner"; // TEMP-TOAST-CHECK
 
@@ -40,10 +41,7 @@ export default function StyleGuidePage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-                <Heart className="h-5 w-5" />
-              </div>
-              <span className="text-lg font-semibold tracking-tight">Kintwadi</span>
+              <BrandLogo />
             </div>
             <div className="flex items-center gap-2">
               <span className="hidden text-sm text-muted-foreground sm:inline">Design System</span>

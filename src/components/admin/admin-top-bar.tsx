@@ -3,7 +3,8 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Heart, Menu, LogOut, ShieldCheck, LayoutDashboard } from "lucide-react";
+import { Menu, LogOut, ShieldCheck, LayoutDashboard } from "lucide-react";
+import { BrandLogo } from "@/components/brand-logo";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -35,11 +36,8 @@ export function AdminTopBar({ adminEmail }: { adminEmail?: string | null }) {
     <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/70">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:px-6 lg:px-8">
         {/* Brand */}
-        <Link href="/admin" className="flex min-w-0 items-center gap-2">
-          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground">
-            <Heart className="h-4 w-4" />
-          </span>
-          <span className="truncate text-lg font-semibold">Kintwadi</span>
+        <Link href="/admin" className="group flex min-w-0 items-center gap-2">
+          <BrandLogo />
           <Badge variant="accent" className="hidden shrink-0 gap-1 sm:inline-flex">
             <ShieldCheck className="h-3 w-3" />
             Admin

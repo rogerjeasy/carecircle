@@ -1,6 +1,7 @@
 import * as React from "react";
 import Link from "next/link";
-import { Heart, Clock, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Clock, AlertCircle, CheckCircle2 } from "lucide-react";
+import { BrandLogo } from "@/components/brand-logo";
 import { auth } from "@/auth";
 import { getInvitationByToken } from "@/db/invitations";
 import { Button } from "@/components/ui/button";
@@ -117,11 +118,8 @@ function InviteLayout({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-background">
       <div className="flex min-h-screen flex-col">
         <header className="flex items-center justify-between p-4 sm:p-6">
-          <Link href="/" className="flex items-center gap-2">
-            <span className="grid h-9 w-9 place-items-center rounded-full bg-primary text-primary-foreground">
-              <Heart className="h-4 w-4" />
-            </span>
-            <span className="text-lg font-semibold">Kintwadi</span>
+          <Link href="/" className="group flex items-center gap-2">
+            <BrandLogo />
           </Link>
           <ThemeToggle />
         </header>
