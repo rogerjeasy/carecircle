@@ -109,7 +109,9 @@ export async function signUpWithCredentials(formData: FormData): Promise<ActionR
     return { ok: false, error: 'Account created. Please sign in to continue.' };
   }
   // Hand the landing page back so the client navigates in a single hop after the success toast.
-  return { ok: true, redirectTo: '/onboarding' };
+  // The `from=signup` marker lets the onboarding screen offer a "Skip onboarding" shortcut that is
+  // ONLY shown on this first-run, post-signup visit (not when onboarding is reached any other way).
+  return { ok: true, redirectTo: '/onboarding?from=signup' };
 }
 
 // ---------------------------------------------------------------------------
