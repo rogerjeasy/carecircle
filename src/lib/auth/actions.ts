@@ -18,8 +18,15 @@ import { signIn, signOut, authProviders, auth } from '@/auth';
 import { isPlatformAdminEmail } from '@/lib/admin/access';
 import { serverLog, maskEmail } from '@/lib/log';
 import { getAppOrigin } from '@/lib/url';
+import { safeInternalPath } from '@/lib/utils';
 
-export type ActionResult = { ok: true } | { ok: false; error: string };
+// On success, sign-in / sign-up include `redirectTo` so the client can navigate in a single hop.
+// Computing the destination here (server-side, from the verified credential) avoids a second
+// server-action round-trip after sign-in — that extra `resolveLandingPath()` call was what left
+// the spinner hung when it stalled on the deployment, never reaching the navigation.
+export type ActionResult =
+  | { ok: true; redirectTo?: string }
+  | { ok: false; error: string };
 
 /**
  * Where a freshly-signed-in user should land. Platform admins (email allowlist) go straight to
@@ -101,7 +108,8 @@ export async function signUpWithCredentials(formData: FormData): Promise<ActionR
     serverLog('auth', 'signUp.autoSignIn', 'failure', { email: maskEmail(email) });
     return { ok: false, error: 'Account created. Please sign in to continue.' };
   }
-  return { ok: true };
+  // Hand the landing page back so the client navigates in a single hop after the success toast.
+  return { ok: true, redirectTo: '/onboarding' };
 }
 
 // ---------------------------------------------------------------------------
@@ -130,7 +138,13 @@ export async function signInWithCredentials(formData: FormData): Promise<ActionR
     // Note: a successful login is also recorded to the per-circle audit_log via the Auth.js
     // `signIn` event (see src/auth.ts → recordLoginEvent). This is the operational log line.
     serverLog('auth', 'signIn', 'success', { email: maskEmail(email) });
-    return { ok: true };
+    // Resolve the landing page HERE (server-side, from the verified credential) and hand it back
+    // so the client navigates in a single hop. A sanitized same-origin ?callbackUrl wins;
+    // otherwise platform admins land on the cross-tenant console and everyone else on their
+    // dashboard. The destination can't be spoofed by the client.
+    const callbackUrl = safeInternalPath((formData.get('callbackUrl') ?? '').toString());
+    const redirectTo = callbackUrl ?? (isPlatformAdminEmail(email) ? '/admin' : '/dashboard');
+    return { ok: true, redirectTo };
   } catch (err) {
     if (err instanceof AuthError) {
       serverLog('auth', 'signIn', 'failure', { email: maskEmail(email), reason: 'bad_credentials' });
