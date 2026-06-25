@@ -66,6 +66,7 @@ export function CoordinatorDashboard({ data }: { data: DashboardData | null }) {
         recipient={data?.recipient ?? null}
         subtext={data?.bannerSubtext ?? ""}
         weekAtGlance={data?.weekAtGlance ?? []}
+        noCircle={data === null}
       />
 
       {/* Insight Banner - Dismissible, shown only when there's a real vitals insight */}
