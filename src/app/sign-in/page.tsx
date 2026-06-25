@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { z } from "zod";
 import { toast } from "sonner";
 import { Eye, EyeOff, Heart, Loader2, AlertCircle } from "lucide-react";
-import { cn, safeInternalPath } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,7 +14,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { SocialAuthButtons } from "@/components/auth/social-auth-buttons";
 import { DemoAccountsPanel } from "@/components/auth/demo-accounts";
-import { signInWithCredentials, resolveLandingPath } from "@/lib/auth/actions";
+import { signInWithCredentials } from "@/lib/auth/actions";
 
 type SignInForm = { email: string; password: string };
 
@@ -181,6 +181,12 @@ export default function SignInPage() {
     const fd = new FormData();
     fd.set("email", result.data.email);
     fd.set("password", result.data.password);
+    // Forward any ?callbackUrl the route proxy set so a successful sign-in returns the user to
+    // where they were headed. The server action sanitizes it to a same-origin path — a crafted
+    // ?callbackUrl=https://evil.example must never become an open redirect (phishing vector).
+    const callbackUrl = new URLSearchParams(window.location.search).get("callbackUrl");
+    if (callbackUrl) fd.set("callbackUrl", callbackUrl);
+
     const res = await signInWithCredentials(fd);
 
     if (!res.ok) {
@@ -192,20 +198,13 @@ export default function SignInPage() {
     toast.success(tToast("toastTitle"), {
       description: tToast("toastDesc"),
     });
-    // Honor a ?callbackUrl set by the route proxy; otherwise let the server decide the landing
-    // page from the verified session (platform admins → /admin, everyone else → /dashboard).
-    // 🔒 Sanitized to a same-origin path — a crafted ?callbackUrl=https://evil.example must
-    // never turn a successful sign-in into an open redirect (phishing vector).
-    const callbackUrl = safeInternalPath(
-      new URLSearchParams(window.location.search).get("callbackUrl"),
-    );
-    const destination = callbackUrl || (await resolveLandingPath());
-    // Hard navigation (not router.push) on purpose: a full request guarantees the freshly
-    // set session cookie is sent and the protected destination renders authenticated. A soft
-    // push followed by router.refresh() races — refresh re-renders the current route and
-    // cancels the in-flight navigation, leaving the user stuck on /sign-in. isSubmitting
-    // stays true so the spinner persists until the page unloads.
-    window.location.assign(destination);
+    // Single hard navigation to the destination the sign-in action already resolved (admin vs
+    // dashboard, or a sanitized callbackUrl). A full request guarantees the freshly set session
+    // cookie is sent and the protected page renders authenticated. Computing the destination
+    // inside the action removes the second server-action round-trip that previously sat here and
+    // left the spinner hung when it stalled. isSubmitting stays true so the spinner persists
+    // until the page unloads.
+    window.location.assign(res.redirectTo ?? "/dashboard");
   };
 
   // The form renders exactly ONCE; only the surrounding chrome (brand panel / banner / logo bar)
