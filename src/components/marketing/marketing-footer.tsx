@@ -3,9 +3,9 @@
 import * as React from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { Users } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
+import { BrandLogo } from "@/components/brand-logo";
 
 const productLinks = [
   { href: "/how-it-works", key: "features" },
@@ -37,11 +37,8 @@ export function MarketingFooter() {
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-5">
           {/* Brand */}
           <div className="lg:col-span-2">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                <Users className="h-5 w-5" />
-              </div>
-              <span className="font-serif text-xl font-semibold">Kintwadi</span>
+            <Link href="/" className="group flex items-center gap-2">
+              <BrandLogo />
             </Link>
             <p className="mt-4 text-sm text-muted-foreground max-w-xs">
               {t("tagline")}

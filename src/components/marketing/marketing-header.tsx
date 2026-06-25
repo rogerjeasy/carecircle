@@ -3,11 +3,12 @@
 import * as React from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { Menu, Users } from "lucide-react";
+import { Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageMenu } from "@/components/i18n/language-menu";
+import { BrandLogo } from "@/components/brand-logo";
 import {
   Sheet,
   SheetContent,
@@ -47,10 +48,7 @@ export function MarketingHeader() {
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 group">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform group-hover:scale-105">
-            <Users className="h-5 w-5" />
-          </div>
-          <span className="font-serif text-xl font-semibold">Kintwadi</span>
+          <BrandLogo />
         </Link>
 
         {/* Desktop Nav */}
@@ -93,11 +91,8 @@ export function MarketingHeader() {
             </SheetTrigger>
             <SheetContent side="right" className="w-[300px]">
               <SheetHeader>
-                <SheetTitle className="flex items-center gap-2">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                    <Users className="h-4 w-4" />
-                  </div>
-                  Kintwadi
+                <SheetTitle>
+                  <BrandLogo size="sm" />
                 </SheetTitle>
               </SheetHeader>
               <nav className="mt-8 flex flex-col gap-4">
