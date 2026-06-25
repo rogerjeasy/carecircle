@@ -4,7 +4,8 @@ import * as React from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { z } from "zod";
-import { Heart, Loader2, ArrowLeft, Mail, CheckCircle2 } from "lucide-react";
+import { Loader2, ArrowLeft, Mail, CheckCircle2 } from "lucide-react";
+import { BrandLogo } from "@/components/brand-logo";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,10 +27,7 @@ function BrandPanel() {
 
       {/* Logo */}
       <div className="relative z-10 flex items-center gap-2">
-        <span className="grid h-10 w-10 place-items-center rounded-full bg-primary text-primary-foreground">
-          <Heart className="h-5 w-5" />
-        </span>
-        <span className="text-xl font-semibold">Kintwadi</span>
+        <BrandLogo size="lg" />
       </div>
 
       {/* Main content */}
@@ -71,10 +69,7 @@ function BrandBanner() {
 
       {/* Logo */}
       <div className="relative z-10 flex items-center gap-2">
-        <span className="grid h-9 w-9 place-items-center rounded-full bg-primary text-primary-foreground">
-          <Heart className="h-4 w-4" />
-        </span>
-        <span className="text-lg font-semibold">Kintwadi</span>
+        <BrandLogo size="md" />
       </div>
 
       {/* Tagline */}
@@ -227,10 +222,7 @@ export default function ForgotPasswordPage() {
         {/* Top bar with logo and theme toggle */}
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-2">
-            <span className="grid h-8 w-8 place-items-center rounded-full bg-primary text-primary-foreground">
-              <Heart className="h-4 w-4" />
-            </span>
-            <span className="text-lg font-semibold">Kintwadi</span>
+            <BrandLogo size="sm" />
           </div>
           <ThemeToggle />
         </div>
