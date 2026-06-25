@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Loader2, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { signInWithCredentials, resolveLandingPath } from "@/lib/auth/actions";
+import { signInWithCredentials } from "@/lib/auth/actions";
 
 /**
  * One-click demo sign-in for judges/reviewers — rendered ONLY when the deployment opts in via
@@ -48,8 +48,9 @@ export function DemoAccountsPanel() {
       return;
     }
     toast.success(t("welcome", { name }), { description: t("entering") });
-    // Same full-navigation pattern as the form: guarantees the fresh session cookie is sent.
-    window.location.assign(await resolveLandingPath());
+    // Single hard navigation to the destination the action resolved — a full request guarantees
+    // the fresh session cookie is sent and the protected page renders authenticated.
+    window.location.assign(res.redirectTo ?? "/dashboard");
   };
 
   return (
