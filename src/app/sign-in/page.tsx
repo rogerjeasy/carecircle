@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { z } from "zod";
 import { toast } from "sonner";
@@ -99,6 +100,7 @@ function BrandBanner() {
 }
 
 export default function SignInPage() {
+  const router = useRouter();
   const tErr = useTranslations("auth.signIn.errors");
   const tToast = useTranslations("auth.signIn");
   // Validation schema — messages localized via the `auth.signIn.errors` namespace.
@@ -198,13 +200,15 @@ export default function SignInPage() {
     toast.success(tToast("toastTitle"), {
       description: tToast("toastDesc"),
     });
-    // Single hard navigation to the destination the sign-in action already resolved (admin vs
-    // dashboard, or a sanitized callbackUrl). A full request guarantees the freshly set session
-    // cookie is sent and the protected page renders authenticated. Computing the destination
-    // inside the action removes the second server-action round-trip that previously sat here and
-    // left the spinner hung when it stalled. isSubmitting stays true so the spinner persists
-    // until the page unloads.
-    window.location.assign(res.redirectTo ?? "/dashboard");
+    // Soft (client-side) navigation to the destination the sign-in action already resolved
+    // (admin vs dashboard, or a sanitized callbackUrl). A full-document navigation
+    // (window.location) blanks the page — on Vercel that showed a "couldn't load" flash and
+    // discarded this toast before it was visible. router.replace keeps the document mounted, so
+    // the persistent <Toaster> (root layout) keeps showing the toast, and the protected
+    // destination fetches fresh authenticated RSC with the session cookie that was just set.
+    // isSubmitting stays true so the spinner persists through the transition until this page
+    // unmounts. `replace` (not push) keeps /sign-in out of history.
+    router.replace(res.redirectTo ?? "/dashboard");
   };
 
   // The form renders exactly ONCE; only the surrounding chrome (brand panel / banner / logo bar)

@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { z } from "zod";
 import { toast } from "sonner";
@@ -121,6 +122,7 @@ function BrandBanner() {
 }
 
 export default function SignUpPage() {
+  const router = useRouter();
   const tErr = useTranslations("auth.signUp.errors");
   const tToast = useTranslations("auth.signUp");
   // Validation schema — messages localized via the `auth.signUp.errors` namespace.
@@ -230,10 +232,12 @@ export default function SignUpPage() {
     toast.success(tToast("toastSuccessTitle"), {
       description: tToast("toastSuccessDesc"),
     });
-    // Single hard navigation to the destination the action resolved. A full request guarantees
-    // the freshly set session cookie is sent so /onboarding renders authenticated. isSubmitting
-    // stays true so the spinner persists until the page unloads.
-    window.location.assign(res.redirectTo ?? "/onboarding");
+    // Soft (client-side) navigation so the document never blanks out — a full-document
+    // window.location navigation showed a "couldn't load" flash on Vercel and discarded this
+    // toast. router.replace keeps the persistent <Toaster> (root layout) mounted and /onboarding
+    // fetches fresh authenticated RSC with the session cookie that was just set. isSubmitting
+    // stays true so the spinner persists through the transition until this page unmounts.
+    router.replace(res.redirectTo ?? "/onboarding");
   };
 
   // The form renders exactly ONCE; only the surrounding chrome (brand panel / banner / logo bar)

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Loader2, Sparkles } from "lucide-react";
@@ -30,6 +31,7 @@ const PERSONAS = [
 ] as const;
 
 export function DemoAccountsPanel() {
+  const router = useRouter();
   const t = useTranslations("auth.demo");
   const [busy, setBusy] = React.useState<string | null>(null);
 
@@ -48,9 +50,11 @@ export function DemoAccountsPanel() {
       return;
     }
     toast.success(t("welcome", { name }), { description: t("entering") });
-    // Single hard navigation to the destination the action resolved — a full request guarantees
-    // the fresh session cookie is sent and the protected page renders authenticated.
-    window.location.assign(res.redirectTo ?? "/dashboard");
+    // Soft (client-side) navigation so the document never blanks out (a full-document
+    // window.location navigation flashed a "couldn't load" page on Vercel and discarded this
+    // toast). router.replace keeps the persistent <Toaster> mounted and the destination fetches
+    // fresh authenticated RSC with the session cookie that was just set.
+    router.replace(res.redirectTo ?? "/dashboard");
   };
 
   return (
