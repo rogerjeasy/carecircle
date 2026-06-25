@@ -3141,7 +3141,8 @@
       "gluten": "Gluten",
       "beeStings": "Bienenstiche",
       "contrastDye": "Kontrastmittel"
-    }
+    },
+    "skipOnboarding": "Einrichtung überspringen"
   },
   "account": {
     "title": "Ihr Profil",

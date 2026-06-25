@@ -3141,7 +3141,8 @@
       "gluten": "Glutine",
       "beeStings": "Punture d'ape",
       "contrastDye": "Mezzo di contrasto"
-    }
+    },
+    "skipOnboarding": "Salta la configurazione"
   },
   "account": {
     "title": "Il tuo profilo",

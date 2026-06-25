@@ -3141,7 +3141,8 @@
       "gluten": "Gluten",
       "beeStings": "Piqûres d'abeille",
       "contrastDye": "Produit de contraste"
-    }
+    },
+    "skipOnboarding": "Ignorer la configuration"
   },
   "account": {
     "title": "Votre profil",

@@ -3141,7 +3141,8 @@
       "gluten": "גלוטן",
       "beeStings": "עקיצות דבורים",
       "contrastDye": "חומר ניגוד"
-    }
+    },
+    "skipOnboarding": "דלג על ההגדרה"
   },
   "account": {
     "title": "הפרופיל שלך",

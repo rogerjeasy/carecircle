@@ -3141,7 +3141,8 @@
       "gluten": "Gluten",
       "beeStings": "Bee stings",
       "contrastDye": "Contrast dye"
-    }
+    },
+    "skipOnboarding": "Skip onboarding"
   },
   "account": {
     "title": "Your profile",

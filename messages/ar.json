@@ -3141,7 +3141,8 @@
       "gluten": "الغلوتين",
       "beeStings": "لسعات النحل",
       "contrastDye": "صبغة التباين"
-    }
+    },
+    "skipOnboarding": "تخطّي الإعداد"
   },
   "account": {
     "title": "ملفك الشخصي",
