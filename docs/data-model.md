@@ -1,10 +1,10 @@
 # Kintwadi — Data Model Deep-Dive
 
-*Conceptual model only — no implementation/DDL. This document defines the entities, relationships, integrity rules, and the Row-Level Security (RLS) design that make Amazon Aurora PostgreSQL a **deliberate** architectural choice rather than a default.*
+*Conceptual model only — no implementation/DDL. This document defines the entities, relationships, integrity rules, and the Row-Level Security (RLS) design behind the data layer, and explains why Amazon Aurora PostgreSQL is the right fit for this domain.*
 
 ---
 
-## 1. The thesis (why this model wins Technical Implementation)
+## 1. Why a relational model
 
 Caregiving data is **relational, transactional, and access-controlled** — three properties that point squarely at a relational engine:
 
@@ -12,13 +12,13 @@ Caregiving data is **relational, transactional, and access-controlled** — thre
 - **Transactional:** "give a medication" must update three things at once — the administration log, the remaining supply, and the timeline — atomically. Partial writes are clinically unacceptable.
 - **Access-controlled:** different people (a hired aide vs. a daughter vs. a doctor) must see different *rows and columns* of the same record. This is the heart of the product and the heart of the model.
 
-Aurora PostgreSQL serves all three natively: foreign-key integrity, ACID transactions, and **Row-Level Security enforced inside the database**. The model below is designed to *showcase* exactly that.
+Aurora PostgreSQL serves all three natively: foreign-key integrity, ACID transactions, and **Row-Level Security enforced inside the database**. The model below is built directly around those three properties.
 
 ---
 
 ## 2. Design principles (applied to every table)
 
-| Principle | Decision | Why it's deliberate |
+| Principle | Decision | Rationale |
 |---|---|---|
 | **Identifiers** | UUID (v7) primary keys | Time-sortable for index locality; non-enumerable (no `/patient/123` scraping); merge-safe; forward-compatible with Aurora DSQL (no reliance on central sequences) |
 | **Tenant key everywhere** | Every tenant-scoped table carries `circle_id`, even when reachable via a foreign key | Makes the RLS predicate a single indexed check on the row itself — fast isolation, no recursive joins in policies |
@@ -173,7 +173,7 @@ Why it's the right call:
 
 ---
 
-## 6. Transactions & integrity (the ACID showcase)
+## 6. Transactions & integrity (ACID)
 
 **The "give a medication" transaction** — one atomic unit:
 1. Insert a `medication_administration` (status = given).
@@ -181,7 +181,7 @@ Why it's the right call:
 3. Insert a `timeline_event` (summary, visibility).
 4. If `supply_count` < `refill_threshold`, create a `task` (category = refill) — idempotently.
 
-Either all four commit or none do. In a key-value store this would be multiple non-atomic writes with no cross-entity guarantee; in Aurora it's a single transaction. **This is the line to say out loud in the demo.**
+Either all four commit or none do. In a key-value store this would be multiple non-atomic writes with no cross-entity guarantee; in Aurora it's a single transaction.
 
 **Referential integrity & constraints:**
 - Foreign keys on every relationship; **soft delete** (`deleted_at`) is the default, with hard cascade reserved for true children (e.g., `medication_schedule` when a medication is permanently removed).
@@ -193,7 +193,7 @@ Either all four commit or none do. In a key-value store this would be multiple n
 
 ## 7. Role-based access control — the capability matrix
 
-Seven roles, each a deliberate persona. `✓` = allowed, `◐` = scoped/limited, `✗` = denied.
+Seven roles, each a distinct persona. `✓` = allowed, `◐` = scoped/limited, `✗` = denied.
 
 | Capability | Owner / Coordinator | Family Admin | Family (limited) | Pro Caregiver | Read-only | Care Recipient | Clinician (read) |
 |---|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
@@ -211,7 +211,7 @@ Seven roles, each a deliberate persona. `✓` = allowed, `◐` = scoped/limited,
 | View audit log | ✓ | ✓ | ✗ | ✗ | ✗ | ◐ own data | ✗ |
 | Configure circle / billing | ✓ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ |
 
-The single most demo-able cell: **a Pro Caregiver cannot open financial/legal documents** — and that denial is enforced in the database, not just hidden in the UI.
+The clearest example: **a Pro Caregiver cannot open financial/legal documents** — and that denial is enforced in the database, not just hidden in the UI.
 
 ---
 
@@ -257,7 +257,7 @@ Expressed conceptually, per table:
 
 Reads of clinical tables follow the capability matrix; **Read-only** gets `SELECT` and no write policy at all.
 
-### 9.5 Sensitivity-scoped documents (the headline rule)
+### 9.5 Sensitivity-scoped documents (the central access rule)
 
 > **`document` SELECT predicate:** tenant isolation holds **AND** one of:
 > - `sensitivity = general`, OR
@@ -265,13 +265,13 @@ Reads of clinical tables follow the capability matrix; **Read-only** gets `SELEC
 > - `sensitivity ∈ {financial, legal}` and role ∈ {Owner, Family Admin} (or an explicit per-document grant), OR
 > - `is_emergency_visible = true` (the emergency card).
 
-Net effect: the hired aide and read-only relatives **physically cannot** read financial or legal documents — the demo's "wow, it's enforced in the DB" moment.
+Net effect: the hired aide and read-only relatives **physically cannot** read financial or legal documents — the rule is enforced in the database, not the UI.
 
 ### 9.6 Append-only audit log
 
 - **Insert:** permitted for any in-circle action by the app context.
 - **Select:** permitted only when role ∈ {Owner, Family Admin} (the recipient may see entries about their own data).
-- **Update / Delete:** **no policy exists, and the privilege is revoked** → the table is effectively immutable to the application role. Accountability you can trust, and a clean line in the pitch.
+- **Update / Delete:** **no policy exists, and the privilege is revoked** → the table is effectively immutable to the application role — accountability you can trust.
 
 ### 9.7 pgvector under RLS
 
@@ -280,7 +280,7 @@ Net effect: the hired aide and read-only relatives **physically cannot** read fi
 
 ### 9.8 (Advanced) Care-recipient consent overrides
 
-For dignity, the recipient can hide a category (e.g., mental-health notes) from specific members. Modeled as consent rules the document/note policies consult — so even an otherwise-permitted role is filtered out. Flagged as post-MVP, but it signals depth.
+For dignity, the recipient can hide a category (e.g., mental-health notes) from specific members. Modeled as consent rules the document/note policies consult — so even an otherwise-permitted role is filtered out. Flagged as post-MVP; the policy model already accommodates it.
 
 ---
 
@@ -304,13 +304,13 @@ For dignity, the recipient can hide a category (e.g., mental-health notes) from 
 | Referential integrity across 20+ entities | Foreign keys & constraints | App-enforced only |
 | Semantic search beside the operational data | `pgvector` in the same database | Separate vector store + sync |
 
-The access patterns here are **relationship-rich and security-critical**, not single-key and high-throughput — so Aurora isn't just acceptable, it's the *correct* call. That argument is exactly what the "deliberate architectural choice" criterion rewards.
+The access patterns here are **relationship-rich and security-critical**, not single-key and high-throughput — so Aurora isn't just acceptable here, it's the *correct* call.
 
 ---
 
 ## 12. Scope & forward-compatibility
 
-**MVP slice to actually build** (enough to demo all four judging criteria):
+**The MVP slice** (what to build first):
 `care_circle`, `membership` (roles), `care_recipient_profile`, `medication` (+ `medication_schedule`, `medication_administration`), `observation`, `timeline_event` (+ `comment`), `task`, `document` (with sensitivity), `audit_log`, `care_record_chunk` + `daily_digest`, `invitation`.
 
 **Defer (show as roadmap):** `care_shift`, `observation_threshold` depth, consent overrides, clinician role.
@@ -319,4 +319,4 @@ The access patterns here are **relationship-rich and security-critical**, not si
 
 ---
 
-*Pairs with `Kintwadi-Project-Description.md` (product + strategy) and `Kintwadi-Architecture.md` (system architecture). Together they cover the full Technical Implementation story with zero hand-waving.*
+*Pairs with [`architecture.md`](./architecture.md) (system architecture) — together they document the data layer and how it runs.*
