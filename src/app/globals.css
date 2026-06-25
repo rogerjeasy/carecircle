@@ -372,6 +372,23 @@ body {
   animation: accordion-up 200ms ease-out;
 }
 
+/* Onboarding backdrop: a slow Ken Burns drift on the photos behind the setup card. Always scaled
+ * above 1 so the translate never reveals an edge. Disabled automatically by the global
+ * prefers-reduced-motion rule above. */
+@keyframes onboarding-kenburns {
+  0% {
+    transform: scale(1.06) translate3d(0, 0, 0);
+  }
+  100% {
+    transform: scale(1.18) translate3d(-2%, -2%, 0);
+  }
+}
+
+.animate-onboarding-kenburns {
+  animation: onboarding-kenburns 26s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
 /* Shimmer animation for loading states */
 @keyframes shimmer {
   0% {
