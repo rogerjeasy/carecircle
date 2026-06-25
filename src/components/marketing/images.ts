@@ -58,6 +58,22 @@ export const HOWITWORKS_IMG = {
   cta: img("1543269865-cbf427effbad", 1600),
 } as const;
 
+// ---- /onboarding (first-run circle setup) ----
+// Warm, human moments that fit the first-run context: bringing family and helpers together to set
+// up care for a loved one — including the across-cities/across-borders reality Kintwadi is built
+// for. Full-bleed (1600w) since they sit behind the whole onboarding card; <OnboardingBackdrop>
+// slowly crossfades + drifts between them. All ids have a committed local copy so the fallback
+// chain in <RemoteImage> keeps them working offline.
+// Captions below describe what each photo ACTUALLY shows (verified visually), so future edits keep
+// the set on-context: an aging parent, the family and the care team who look after them.
+export const ONBOARDING_IMG = [
+  img("1543269865-cbf427effbad", 1600), // a family gathered around a tablet — coordinating together
+  img("1581579438747-1dc8d17bbce4", 1600), // an older woman at home — the loved one at the center
+  img("1531983412531-1f49a365ffed", 1600), // a tender parent-and-child moment — the warmth of caring
+  img("1529156069898-49953e39b3ac", 1600), // people arm-in-arm — a circle of support
+  img("1559839734-2b71ea197ec2", 1600), // a warm clinician — the care team standing with the family
+] as const;
+
 // ---- /about page ----
 export const ABOUT_IMG = {
   hero: img("1531983412531-1f49a365ffed", 1600), // faint warm moment behind the tagline
