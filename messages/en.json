@@ -33,7 +33,9 @@
       "yourShift": "Your shift",
       "viewTasks": "View tasks",
       "doingWell": "{name} is doing well",
-      "goodDay": "{name} is having a good day"
+      "goodDay": "{name} is having a good day",
+      "createCircle": "Create new circle",
+      "noCircleSubtext": "Set up your first care circle to start coordinating."
     },
     "quickActions": {
       "logMed": "Log medication",

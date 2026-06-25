@@ -33,7 +33,9 @@
       "yourShift": "המשמרת שלך",
       "viewTasks": "הצג משימות",
       "doingWell": "{name} מרגיש טוב",
-      "goodDay": "ל{name} יש יום טוב"
+      "goodDay": "ל{name} יש יום טוב",
+      "createCircle": "יצירת מעגל חדש",
+      "noCircleSubtext": "צרו את מעגל הטיפול הראשון שלכם כדי להתחיל לתאם."
     },
     "quickActions": {
       "logMed": "תיעוד תרופה",

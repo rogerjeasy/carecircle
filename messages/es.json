@@ -33,7 +33,9 @@
       "yourShift": "Tu turno",
       "viewTasks": "Ver tareas",
       "doingWell": "{name} está bien",
-      "goodDay": "{name} está teniendo un buen día"
+      "goodDay": "{name} está teniendo un buen día",
+      "createCircle": "Crear nuevo círculo",
+      "noCircleSubtext": "Crea tu primer círculo de cuidado para empezar a coordinaros."
     },
     "quickActions": {
       "logMed": "Registrar medicamento",

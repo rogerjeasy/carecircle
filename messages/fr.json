@@ -33,7 +33,9 @@
       "yourShift": "Votre tour de garde",
       "viewTasks": "Voir les tâches",
       "doingWell": "{name} va bien",
-      "goodDay": "{name} passe une bonne journée"
+      "goodDay": "{name} passe une bonne journée",
+      "createCircle": "Créer un cercle",
+      "noCircleSubtext": "Créez votre premier cercle de soins pour commencer à vous coordonner."
     },
     "quickActions": {
       "logMed": "Consigner un médicament",

@@ -33,7 +33,9 @@
       "yourShift": "نوبتك",
       "viewTasks": "عرض المهام",
       "doingWell": "{name} بخير",
-      "goodDay": "{name} يمضي يومًا جيدًا"
+      "goodDay": "{name} يمضي يومًا جيدًا",
+      "createCircle": "إنشاء دائرة جديدة",
+      "noCircleSubtext": "أنشئ أول دائرة رعاية لك لبدء التنسيق."
     },
     "quickActions": {
       "logMed": "تسجيل دواء",

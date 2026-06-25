@@ -33,7 +33,9 @@
       "yourShift": "Il tuo turno",
       "viewTasks": "Vedi attività",
       "doingWell": "{name} sta bene",
-      "goodDay": "{name} sta passando una buona giornata"
+      "goodDay": "{name} sta passando una buona giornata",
+      "createCircle": "Crea nuova cerchia",
+      "noCircleSubtext": "Crea la tua prima cerchia di assistenza per iniziare a coordinarti."
     },
     "quickActions": {
       "logMed": "Registra farmaco",

@@ -33,7 +33,9 @@
       "yourShift": "Ihre Schicht",
       "viewTasks": "Aufgaben ansehen",
       "doingWell": "{name} geht es gut",
-      "goodDay": "{name} hat einen guten Tag"
+      "goodDay": "{name} hat einen guten Tag",
+      "createCircle": "Neuen Kreis erstellen",
+      "noCircleSubtext": "Richten Sie Ihren ersten Pflegekreis ein, um mit der Koordination zu beginnen."
     },
     "quickActions": {
       "logMed": "Medikament erfassen",
