@@ -1,0 +1,207 @@
+<mxfile host="app.diagrams.net" agent="Kintwadi" version="24.0.0">
+  <diagram id="kintwadi-arch-flow" name="Kintwadi Architecture (flowchart)">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1300" pageHeight="700" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Title -->
+        <mxCell id="title" value="Kintwadi — Architecture (flowchart view)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=20;fontStyle=1;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="40" y="12" width="760" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" value="Next.js on Vercel → Amazon Aurora PostgreSQL (RLS · ACID · audit · pgvector) → Amazon Bedrock (Titan + Claude). Editable mirror of the Mermaid diagram in architecture.md." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=11;fontColor=#5A6C72;" vertex="1" parent="1">
+          <mxGeometry x="40" y="42" width="1100" height="20" as="geometry" />
+        </mxCell>
+
+        <!-- ===== Group boxes (behind nodes) ===== -->
+        <mxCell id="gVercel" value="Vercel — Frontend and App Runtime" style="rounded=1;arcSize=4;html=1;dashed=1;dashPattern=6 4;strokeColor=#000000;fillColor=none;verticalAlign=top;align=left;spacingLeft=14;spacingTop=8;fontStyle=1;fontColor=#000000;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="230" y="110" width="300" height="410" as="geometry" />
+        </mxCell>
+        <mxCell id="gAWS" value="AWS Cloud — us-east-1" style="rounded=1;arcSize=3;html=1;dashed=1;dashPattern=6 4;strokeColor=#ED7100;fillColor=none;verticalAlign=top;align=left;spacingLeft=14;spacingTop=8;fontStyle=1;fontColor=#ED7100;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="700" y="110" width="540" height="520" as="geometry" />
+        </mxCell>
+
+        <!-- ===== External (left) ===== -->
+        <mxCell id="u" value="&lt;b&gt;Caregivers and Family&lt;/b&gt;&lt;br&gt;Coordinator · Remote Sibling&lt;br&gt;Aide · Parent&lt;br&gt;&lt;i&gt;role-scoped views&lt;/i&gt;" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#5A6C72;fontColor=#232F3E;fontSize=10;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="50" y="288" width="150" height="92" as="geometry" />
+        </mxCell>
+        <mxCell id="meds" value="&lt;b&gt;External Meds /&lt;br&gt;Drug-Interaction API&lt;/b&gt;" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#5A6C72;fontColor=#232F3E;fontSize=10;align=center;verticalAlign=middle;dashed=1;dashPattern=2 2;" vertex="1" parent="1">
+          <mxGeometry x="50" y="470" width="150" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- ===== Vercel layer ===== -->
+        <mxCell id="edge" value="&lt;b&gt;Vercel Edge / CDN&lt;/b&gt;&lt;br&gt;TLS · caching · global delivery" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#232F3E;fontSize=10;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="260" y="150" width="240" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="ui" value="&lt;b&gt;Next.js App&lt;/b&gt;&lt;br&gt;Role-scoped UI · React / Tailwind" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#232F3E;fontSize=10;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="260" y="220" width="240" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="api" value="&lt;b&gt;Server Actions / API Routes&lt;/b&gt;&lt;br&gt;app backend and business logic" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#EAF2FF;strokeColor=#000000;fontColor=#232F3E;fontSize=10;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="260" y="296" width="240" height="84" as="geometry" />
+        </mxCell>
+        <mxCell id="auth" value="&lt;b&gt;Auth.js&lt;/b&gt;&lt;br&gt;login · sessions · roles" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#232F3E;fontSize=10;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="260" y="410" width="112" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="ingest" value="&lt;b&gt;Ingest worker&lt;/b&gt;&lt;br&gt;(after / backfill)&lt;br&gt;chunk → embed → upsert" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#232F3E;fontSize=10;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="388" y="410" width="112" height="96" as="geometry" />
+        </mxCell>
+
+        <!-- ===== External scheduler (below Vercel) ===== -->
+        <mxCell id="cron" value="&lt;b&gt;Scheduler — GitHub Actions cron&lt;/b&gt;&lt;br&gt;pings CRON_SECRET-gated routes · digest · refill · decline scan" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#5A6C72;fontColor=#232F3E;fontSize=10;align=center;verticalAlign=middle;dashed=1;dashPattern=2 2;" vertex="1" parent="1">
+          <mxGeometry x="230" y="552" width="300" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- ===== AWS layer ===== -->
+        <mxCell id="aur" value="&lt;b&gt;Amazon Aurora PostgreSQL&lt;/b&gt; — Serverless v2&lt;br&gt;Primary DB · RLS · ACID · audit · pgvector" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#ED7100;fontColor=#232F3E;fontSize=10;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="730" y="150" width="210" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="rep" value="&lt;b&gt;Aurora Read Replica&lt;/b&gt;&lt;br&gt;scales dashboard reads" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#ED7100;fontColor=#232F3E;fontSize=10;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="1000" y="150" width="210" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="s3" value="&lt;b&gt;Amazon S3&lt;/b&gt;&lt;br&gt;documents vault and timeline photos" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#ED7100;fontColor=#232F3E;fontSize=10;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="730" y="242" width="210" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="br" value="&lt;b&gt;Amazon Bedrock&lt;/b&gt;&lt;br&gt;Claude — answers · digest&lt;br&gt;Titan — embeddings" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#ED7100;fontColor=#232F3E;fontSize=10;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="730" y="322" width="210" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="ses" value="&lt;b&gt;Amazon SES&lt;/b&gt;&lt;br&gt;email notifications" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#ED7100;fontColor=#232F3E;fontSize=10;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="730" y="414" width="210" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="sns" value="&lt;b&gt;Amazon SNS&lt;/b&gt;&lt;br&gt;push and urgent escalation" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#ED7100;fontColor=#232F3E;fontSize=10;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="730" y="480" width="210" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="sec" value="&lt;b&gt;AWS IAM + STS&lt;/b&gt;&lt;br&gt;Vercel OIDC · no stored AWS keys" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#ED7100;fontColor=#232F3E;fontSize=10;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="730" y="548" width="210" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="dsql" value="&lt;b&gt;Amazon Aurora DSQL&lt;/b&gt; &lt;i&gt;(planned)&lt;/i&gt;&lt;br&gt;multi-region strong consistency" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#FFF7EC;strokeColor=#ED7100;dashed=1;dashPattern=4 4;fontColor=#232F3E;fontSize=10;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="1000" y="548" width="210" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- ===== Edges: front-end flow ===== -->
+        <mxCell id="e1" value="HTTPS" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#5A6C72;fontColor=#232F3E;fontSize=9;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="u" target="edge">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#5A6C72;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="edge" target="ui">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#5A6C72;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="ui" target="api">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#5A6C72;exitX=0.25;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="api" target="auth">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" value="on upload / post / backfill" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#5A6C72;fontColor=#232F3E;fontSize=9;labelBackgroundColor=#FFFFFF;exitX=0.75;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="api" target="ingest">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ===== Edges: API → AWS services (lanes) ===== -->
+        <mxCell id="e6" value="SQL · RLS · pgvector query" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#3334B9;fontColor=#3334B9;fontSize=9;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.2;entryX=0;entryY=0.4;" edge="1" parent="1" source="api" target="aur">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="560" y="313" />
+              <mxPoint x="560" y="176" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e7" value="store / serve files" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#277116;fontColor=#277116;fontSize=9;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.4;entryX=0;entryY=0.4;" edge="1" parent="1" source="api" target="s3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="580" y="330" />
+              <mxPoint x="580" y="264" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e8" value="embed · answer (Converse)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#116D5B;fontColor=#116D5B;fontSize=9;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.55;entryX=0;entryY=0.4;" edge="1" parent="1" source="api" target="br">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="600" y="342" />
+              <mxPoint x="600" y="348" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e9" value="email" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#BC1356;fontColor=#BC1356;fontSize=9;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.7;entryX=0;entryY=0.5;" edge="1" parent="1" source="api" target="ses">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="620" y="355" />
+              <mxPoint x="620" y="437" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e10" value="push / escalate" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#BC1356;fontColor=#BC1356;fontSize=9;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.85;entryX=0;entryY=0.5;" edge="1" parent="1" source="api" target="sns">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="640" y="367" />
+              <mxPoint x="640" y="503" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- ===== Edges: API → external ===== -->
+        <mxCell id="e11" value="interaction check" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#5A6C72;fontColor=#232F3E;fontSize=9;labelBackgroundColor=#FFFFFF;exitX=0;exitY=0.75;entryX=1;entryY=0.4;" edge="1" parent="1" source="api" target="meds">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="225" y="359" />
+              <mxPoint x="225" y="502" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e12" value="scheduled jobs" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#5A6C72;fontColor=#232F3E;fontSize=9;labelBackgroundColor=#FFFFFF;exitX=0;exitY=0.5;entryX=0;entryY=0.6;" edge="1" parent="1" source="cron" target="api">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="214" y="582" />
+              <mxPoint x="214" y="346" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e13" value="short-lived STS creds" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#BD0816;fontColor=#BD0816;fontSize=9;labelBackgroundColor=#FFFFFF;exitX=0;exitY=0.5;entryX=1;entryY=0.85;" edge="1" parent="1" source="sec" target="api">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="546" y="578" />
+              <mxPoint x="546" y="367" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- ===== Edges: Aurora derived ===== -->
+        <mxCell id="e14" value="replication" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#3334B9;fontColor=#3334B9;fontSize=9;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="aur" target="rep">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e15" value="scale path" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;dashed=1;dashPattern=4 4;strokeColor=#ED7100;fontColor=#ED7100;fontSize=9;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.8;entryX=0;entryY=0.5;" edge="1" parent="1" source="aur" target="dsql">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="970" y="201" />
+              <mxPoint x="970" y="578" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- ===== Edges: Ingest → AWS (lanes) ===== -->
+        <mxCell id="e16" value="read doc text" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#277116;fontColor=#277116;fontSize=9;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.3;entryX=0;entryY=0.75;" edge="1" parent="1" source="ingest" target="s3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="665" y="439" />
+              <mxPoint x="665" y="284" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e17" value="embed chunks (Titan)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#116D5B;fontColor=#116D5B;fontSize=9;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.6;entryX=0;entryY=0.7;" edge="1" parent="1" source="ingest" target="br">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="685" y="468" />
+              <mxPoint x="685" y="367" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e18" value="upsert vectors → pgvector" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#3334B9;fontColor=#3334B9;fontSize=9;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.15;entryX=0;entryY=0.7;" edge="1" parent="1" source="ingest" target="aur">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="705" y="424" />
+              <mxPoint x="705" y="195" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
