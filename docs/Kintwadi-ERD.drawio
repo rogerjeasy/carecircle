@@ -1,0 +1,194 @@
+<mxfile host="app.diagrams.net" agent="Kintwadi" version="24.0.0">
+  <diagram id="kintwadi-erd" name="Kintwadi ERD">
+    <mxGraphModel dx="1500" dy="950" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1480" pageHeight="960" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Title -->
+        <mxCell id="title" value="Kintwadi — Entity-Relationship Diagram" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=20;fontStyle=1;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="40" y="16" width="700" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" value="Conceptual model — entities and relationships. Tenant boundary = Care Circle; every tenant-scoped table also carries circle_id (the RLS tenant key) and audit columns." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=11;fontColor=#5A6C72;" vertex="1" parent="1">
+          <mxGeometry x="40" y="44" width="1000" height="20" as="geometry" />
+        </mxCell>
+
+        <!-- Legend -->
+        <mxCell id="legend" value="Crow's foot:   | exactly one      &amp;lt; zero-or-many.&#10;Colour groups (data-model.md §4):  blue = identity and tenancy · white = care operations · grey = collaboration and system · teal = AI layer (pgvector)." style="text;html=1;whiteSpace=wrap;strokeColor=#D5DBDB;fillColor=#FBFBFB;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=10;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="700" y="20" width="740" height="48" as="geometry" />
+        </mxCell>
+
+        <!-- ===== CORE (identity, blue) ===== -->
+        <mxCell id="care_circle" value="CARE_CIRCLE&#10;(tenant)" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#3334B9;strokeColor=#23248A;fontColor=#FFFFFF;fontSize=12;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="555" y="420" width="240" height="72" as="geometry" />
+        </mxCell>
+        <mxCell id="membership" value="MEMBERSHIP" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#EAF2FF;strokeColor=#3334B9;fontColor=#232F3E;fontSize=11;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="565" y="540" width="220" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="user" value="USER" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#EAF2FF;strokeColor=#3334B9;fontColor=#232F3E;fontSize=11;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="565" y="644" width="220" height="56" as="geometry" />
+        </mxCell>
+
+        <!-- ===== LEFT COLUMN ===== -->
+        <mxCell id="invitation" value="INVITATION" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#EAF2FF;strokeColor=#3334B9;fontColor=#232F3E;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="190" y="150" width="210" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="care_note" value="CARE_NOTE" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#879596;fontColor=#232F3E;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="190" y="256" width="210" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="document" value="DOCUMENT" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#879596;fontColor=#232F3E;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="190" y="362" width="210" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="notification" value="NOTIFICATION" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#FBFBFB;strokeColor=#5A6C72;fontColor=#232F3E;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="190" y="468" width="210" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="audit_log" value="AUDIT_LOG" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#FBFBFB;strokeColor=#5A6C72;fontColor=#232F3E;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="190" y="574" width="210" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="rag_chunk" value="CARE_RECORD_CHUNK" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#E6F4F1;strokeColor=#116D5B;fontColor=#232F3E;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="190" y="680" width="210" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="daily_digest" value="DAILY_DIGEST" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#E6F4F1;strokeColor=#116D5B;fontColor=#232F3E;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="190" y="786" width="210" height="56" as="geometry" />
+        </mxCell>
+
+        <!-- ===== RIGHT COLUMN ===== -->
+        <mxCell id="crprofile" value="CARE_RECIPIENT_PROFILE" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#EAF2FF;strokeColor=#3334B9;fontColor=#232F3E;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="950" y="120" width="220" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="medication" value="MEDICATION" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#879596;fontColor=#232F3E;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="950" y="226" width="220" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="timeline_event" value="TIMELINE_EVENT" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#FBFBFB;strokeColor=#5A6C72;fontColor=#232F3E;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="950" y="332" width="220" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="task" value="TASK" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#879596;fontColor=#232F3E;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="950" y="438" width="220" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="care_shift" value="CARE_SHIFT" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#879596;fontColor=#232F3E;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="950" y="544" width="220" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="appointment" value="APPOINTMENT" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#879596;fontColor=#232F3E;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="950" y="650" width="220" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="observation" value="OBSERVATION" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#879596;fontColor=#232F3E;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="950" y="756" width="220" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="incident" value="INCIDENT" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#879596;fontColor=#232F3E;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="950" y="862" width="220" height="56" as="geometry" />
+        </mxCell>
+
+        <!-- ===== FAR-RIGHT COLUMN (second-level) ===== -->
+        <mxCell id="med_schedule" value="MEDICATION_SCHEDULE" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#879596;fontColor=#232F3E;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="1240" y="200" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="med_admin" value="MEDICATION_ADMINISTRATION" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#879596;fontColor=#232F3E;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="1240" y="290" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="comment" value="COMMENT" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#FBFBFB;strokeColor=#5A6C72;fontColor=#232F3E;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="1240" y="396" width="200" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="obs_threshold" value="OBSERVATION_THRESHOLD" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#879596;fontColor=#232F3E;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="1240" y="86" width="200" height="56" as="geometry" />
+        </mxCell>
+
+        <!-- ===== Core relationships ===== -->
+        <mxCell id="r1" value="has" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=ERmandOne;startFill=0;endArrow=ERzeroToMany;endFill=0;strokeColor=#8795A1;fontColor=#3B4A4F;fontSize=9;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=0;entryX=0.5;entryY=1;" edge="1" parent="1" source="user" target="membership">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r2" value="includes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=ERmandOne;startFill=0;endArrow=ERzeroToMany;endFill=0;strokeColor=#8795A1;fontColor=#3B4A4F;fontSize=9;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="care_circle" target="membership">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ===== CARE_CIRCLE → LEFT column ===== -->
+        <mxCell id="r4" value="issues" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=ERmandOne;startFill=0;endArrow=ERzeroToMany;endFill=0;strokeColor=#8795A1;fontColor=#3B4A4F;fontSize=9;labelBackgroundColor=#FFFFFF;exitX=0;exitY=0.15;entryX=1;entryY=0.5;" edge="1" parent="1" source="care_circle" target="invitation">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r17" value="captures" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=ERmandOne;startFill=0;endArrow=ERzeroToMany;endFill=0;strokeColor=#8795A1;fontColor=#3B4A4F;fontSize=9;labelBackgroundColor=#FFFFFF;exitX=0;exitY=0.3;entryX=1;entryY=0.5;" edge="1" parent="1" source="care_circle" target="care_note">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r18" value="stores" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=ERmandOne;startFill=0;endArrow=ERzeroToMany;endFill=0;strokeColor=#8795A1;fontColor=#3B4A4F;fontSize=9;labelBackgroundColor=#FFFFFF;exitX=0;exitY=0.42;entryX=1;entryY=0.5;" edge="1" parent="1" source="care_circle" target="document">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r23" value="alerts" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=ERmandOne;startFill=0;endArrow=ERzeroToMany;endFill=0;strokeColor=#8795A1;fontColor=#3B4A4F;fontSize=9;labelBackgroundColor=#FFFFFF;exitX=0;exitY=0.58;entryX=1;entryY=0.5;" edge="1" parent="1" source="care_circle" target="notification">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r24" value="audits" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=ERmandOne;startFill=0;endArrow=ERzeroToMany;endFill=0;strokeColor=#8795A1;fontColor=#3B4A4F;fontSize=9;labelBackgroundColor=#FFFFFF;exitX=0;exitY=0.72;entryX=1;entryY=0.5;" edge="1" parent="1" source="care_circle" target="audit_log">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r25" value="embeds" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=ERmandOne;startFill=0;endArrow=ERzeroToMany;endFill=0;strokeColor=#116D5B;fontColor=#116D5B;fontSize=9;labelBackgroundColor=#FFFFFF;exitX=0;exitY=0.85;entryX=1;entryY=0.5;" edge="1" parent="1" source="care_circle" target="rag_chunk">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r26" value="summarizes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=ERmandOne;startFill=0;endArrow=ERzeroToMany;endFill=0;strokeColor=#116D5B;fontColor=#116D5B;fontSize=9;labelBackgroundColor=#FFFFFF;exitX=0;exitY=0.95;entryX=1;entryY=0.5;" edge="1" parent="1" source="care_circle" target="daily_digest">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ===== CARE_CIRCLE → RIGHT column ===== -->
+        <mxCell id="r3" value="centers on" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=ERmandOne;startFill=0;endArrow=ERmandOne;endFill=0;strokeColor=#3334B9;fontColor=#3334B9;fontSize=9;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.12;entryX=0;entryY=0.5;" edge="1" parent="1" source="care_circle" target="crprofile">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r5" value="tracks" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=ERmandOne;startFill=0;endArrow=ERzeroToMany;endFill=0;strokeColor=#8795A1;fontColor=#3B4A4F;fontSize=9;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.24;entryX=0;entryY=0.5;" edge="1" parent="1" source="care_circle" target="medication">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r19" value="streams" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=ERmandOne;startFill=0;endArrow=ERzeroToMany;endFill=0;strokeColor=#8795A1;fontColor=#3B4A4F;fontSize=9;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.36;entryX=0;entryY=0.35;" edge="1" parent="1" source="care_circle" target="timeline_event">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r10" value="coordinates" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=ERmandOne;startFill=0;endArrow=ERzeroToMany;endFill=0;strokeColor=#8795A1;fontColor=#3B4A4F;fontSize=9;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.5;entryX=0;entryY=0.35;" edge="1" parent="1" source="care_circle" target="task">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r12" value="rotates" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=ERmandOne;startFill=0;endArrow=ERzeroToMany;endFill=0;strokeColor=#8795A1;fontColor=#3B4A4F;fontSize=9;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.62;entryX=0;entryY=0.35;" edge="1" parent="1" source="care_circle" target="care_shift">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r9" value="schedules" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=ERmandOne;startFill=0;endArrow=ERzeroToMany;endFill=0;strokeColor=#8795A1;fontColor=#3B4A4F;fontSize=9;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.74;entryX=0;entryY=0.5;" edge="1" parent="1" source="care_circle" target="appointment">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r14" value="records" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=ERmandOne;startFill=0;endArrow=ERzeroToMany;endFill=0;strokeColor=#8795A1;fontColor=#3B4A4F;fontSize=9;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.86;entryX=0;entryY=0.5;" edge="1" parent="1" source="care_circle" target="observation">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r16" value="reports" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=ERmandOne;startFill=0;endArrow=ERzeroToMany;endFill=0;strokeColor=#8795A1;fontColor=#3B4A4F;fontSize=9;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.96;entryX=0;entryY=0.5;" edge="1" parent="1" source="care_circle" target="incident">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ===== MEMBERSHIP → right + far-right ===== -->
+        <mxCell id="r20" value="acts" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=ERmandOne;startFill=0;endArrow=ERzeroToMany;endFill=0;strokeColor=#8795A1;fontColor=#3B4A4F;fontSize=9;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.3;entryX=0;entryY=0.7;" edge="1" parent="1" source="membership" target="timeline_event">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r11" value="assigned" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=ERmandOne;startFill=0;endArrow=ERzeroToMany;endFill=0;strokeColor=#8795A1;fontColor=#3B4A4F;fontSize=9;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.5;entryX=0;entryY=0.7;" edge="1" parent="1" source="membership" target="task">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r13" value="covers" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=ERmandOne;startFill=0;endArrow=ERzeroToMany;endFill=0;strokeColor=#8795A1;fontColor=#3B4A4F;fontSize=9;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.7;entryX=0;entryY=0.7;" edge="1" parent="1" source="membership" target="care_shift">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r8" value="administers" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=ERmandOne;startFill=0;endArrow=ERzeroToMany;endFill=0;strokeColor=#8795A1;fontColor=#3B4A4F;fontSize=9;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.15;entryX=0;entryY=0.7;" edge="1" parent="1" source="membership" target="med_admin">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="870" y="300" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="r22" value="writes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=ERmandOne;startFill=0;endArrow=ERzeroToMany;endFill=0;strokeColor=#8795A1;fontColor=#3B4A4F;fontSize=9;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.85;entryX=0;entryY=0.7;" edge="1" parent="1" source="membership" target="comment">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="890" y="424" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- ===== Second-level (right → far-right) ===== -->
+        <mxCell id="r6" value="dosed by" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=ERmandOne;startFill=0;endArrow=ERzeroToMany;endFill=0;strokeColor=#8795A1;fontColor=#3B4A4F;fontSize=9;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.3;entryX=0;entryY=0.5;" edge="1" parent="1" source="medication" target="med_schedule">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r7" value="logged as" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=ERmandOne;startFill=0;endArrow=ERzeroToMany;endFill=0;strokeColor=#8795A1;fontColor=#3B4A4F;fontSize=9;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.7;entryX=0;entryY=0.5;" edge="1" parent="1" source="medication" target="med_admin">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r21" value="discussed in" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=ERmandOne;startFill=0;endArrow=ERzeroToMany;endFill=0;strokeColor=#8795A1;fontColor=#3B4A4F;fontSize=9;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="timeline_event" target="comment">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r15" value="bounds" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=ERmandOne;startFill=0;endArrow=ERzeroToMany;endFill=0;strokeColor=#8795A1;fontColor=#3B4A4F;fontSize=9;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="crprofile" target="obs_threshold">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
