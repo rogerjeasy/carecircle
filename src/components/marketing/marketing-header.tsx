@@ -7,6 +7,7 @@ import { Menu, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { LanguageMenu } from "@/components/i18n/language-menu";
 import {
   Sheet,
   SheetContent,
@@ -67,6 +68,7 @@ export function MarketingHeader() {
 
         {/* Desktop Actions */}
         <div className="hidden md:flex items-center gap-3">
+          <LanguageMenu />
           <ThemeToggle />
           <Link href="/sign-in">
             <Button variant="ghost" size="sm">
@@ -80,6 +82,7 @@ export function MarketingHeader() {
 
         {/* Mobile Menu */}
         <div className="flex md:hidden items-center gap-2">
+          <LanguageMenu />
           <ThemeToggle />
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger asChild>
