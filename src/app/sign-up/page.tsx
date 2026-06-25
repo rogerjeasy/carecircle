@@ -230,12 +230,10 @@ export default function SignUpPage() {
     toast.success(tToast("toastSuccessTitle"), {
       description: tToast("toastSuccessDesc"),
     });
-    // Hard navigation (not router.push) on purpose: a full request guarantees the freshly
-    // set session cookie is sent so /onboarding renders authenticated. A soft push followed
-    // by router.refresh() races — refresh re-renders the current route and cancels the
-    // in-flight navigation, leaving the user stuck on /sign-up. isSubmitting stays true so
-    // the spinner persists until the page unloads.
-    window.location.assign("/onboarding");
+    // Single hard navigation to the destination the action resolved. A full request guarantees
+    // the freshly set session cookie is sent so /onboarding renders authenticated. isSubmitting
+    // stays true so the spinner persists until the page unloads.
+    window.location.assign(res.redirectTo ?? "/onboarding");
   };
 
   // The form renders exactly ONCE; only the surrounding chrome (brand panel / banner / logo bar)
