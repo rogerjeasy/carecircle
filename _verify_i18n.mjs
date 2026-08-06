@@ -15,11 +15,11 @@ const errors = [];
 page.on("console", (m) => { if (m.type() === "error") errors.push(m.text()); });
 
 try {
-  // 1. Demo sign-in as coordinator (Maria)
+  // 1. Sign in as the seeded coordinator persona (Maria) through the normal credentials form
   await page.goto(`${BASE}/sign-in`, { waitUntil: "networkidle" });
-  const demoVisible = await page.getByText("Maria", { exact: false }).first().isVisible().catch(() => false);
-  log("STEP signin: demo panel Maria visible =", demoVisible);
-  await page.getByRole("button", { name: /Maria/ }).click();
+  await page.fill("#email", "maria@kintwadi.demo");
+  await page.fill("#password", "Kintwadi123");
+  await page.locator('form button[type="submit"]').first().click();
   await page.waitForURL((u) => !u.pathname.includes("/sign-in"), { timeout: 20000 });
   log("STEP signin: landed at", new URL(page.url()).pathname);
 

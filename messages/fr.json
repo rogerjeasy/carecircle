@@ -908,21 +908,6 @@
       "apple": "Continuer avec Apple",
       "divider": "Ou continuer avec un e-mail",
       "error": "Impossible de démarrer la connexion. Veuillez réessayer."
-    },
-    "demo": {
-      "title": "Vous évaluez Kintwadi ? Essayez un rôle.",
-      "subtitle": "Un dossier partagé, six perspectives — chacune appliquée par la base de données, pas par l'interface.",
-      "failed": "Échec de la connexion de démonstration",
-      "welcome": "Bienvenue, {name} !",
-      "entering": "Entrée dans le cercle de démonstration…",
-      "lenses": {
-        "coordinator": "Coordinateur (propriétaire)",
-        "remote": "Famille à distance",
-        "aide": "Aidant professionnel",
-        "recipient": "Personne aidée",
-        "readonly": "Lecture seule",
-        "clinician": "Clinicien"
-      }
     }
   },
   "app": {

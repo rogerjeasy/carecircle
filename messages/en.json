@@ -908,21 +908,6 @@
       "apple": "Continue with Apple",
       "divider": "Or continue with email",
       "error": "Could not start sign-in. Please try again."
-    },
-    "demo": {
-      "title": "Reviewing Kintwadi? Try a role.",
-      "subtitle": "One shared record, six lenses — each enforced by the database, not the UI.",
-      "failed": "Demo sign-in failed",
-      "welcome": "Welcome, {name}!",
-      "entering": "Entering the demo circle…",
-      "lenses": {
-        "coordinator": "Coordinator (owner)",
-        "remote": "Remote family",
-        "aide": "Professional aide",
-        "recipient": "Care recipient",
-        "readonly": "Read-only",
-        "clinician": "Clinician"
-      }
     }
   },
   "app": {

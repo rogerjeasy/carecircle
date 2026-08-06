@@ -15,7 +15,6 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { SocialAuthButtons } from "@/components/auth/social-auth-buttons";
-import { DemoAccountsPanel } from "@/components/auth/demo-accounts";
 import { signInWithCredentials } from "@/lib/auth/actions";
 
 type SignInForm = { email: string; password: string };
@@ -421,9 +420,6 @@ function SignInForm({
           {t("signUpLink")}
         </Link>
       </p>
-
-      {/* One-click demo personas (renders only when NEXT_PUBLIC_DEMO_MODE=1) */}
-      <DemoAccountsPanel />
     </div>
   );
 }

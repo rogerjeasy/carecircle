@@ -1,12 +1,12 @@
 <p align="center">
-  <a href="https://kintwadi.vercel.app">
+  <a href="https://devpost.com/software/kintwadi-one-shared-record-for-family-caregiving">
     <img src="docs/assets/kintwadi-award-banner.svg" width="100%"
          alt="Kintwadi — Winner, Best Design · H0: Hack the Zero Stack. One shared record for everyone caring for someone." />
   </a>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/%F0%9F%8F%86_Winner-Best_Design-E8B24C?labelColor=0C1613&style=for-the-badge" alt="Winner — Best Design" />
+  <a href="https://devpost.com/software/kintwadi-one-shared-record-for-family-caregiving"><img src="https://img.shields.io/badge/%F0%9F%8F%86_Winner-Best_Design-E8B24C?labelColor=0C1613&style=for-the-badge" alt="Winner — Best Design" /></a>
   <a href="https://h01.devpost.com"><img src="https://img.shields.io/badge/H0-Hack_the_Zero_Stack-0F766E?labelColor=0C1613&style=for-the-badge" alt="H0: Hack the Zero Stack" /></a>
   <a href="https://kintwadi.vercel.app"><img src="https://img.shields.io/badge/Live_demo-kintwadi.vercel.app-EC7C5A?labelColor=0C1613&style=for-the-badge" alt="Live demo" /></a>
 </p>
@@ -22,7 +22,7 @@
 
 ### 🔗 Live demo → **https://kintwadi.vercel.app**
 
-No sign-up needed: click **"Run demo"** on the homepage (or use a seeded persona on `/sign-in`) to land in a living, RLS-scoped care circle on real Amazon Aurora PostgreSQL + Amazon Bedrock.
+No sign-up needed: click **"Run demo"** on the homepage (or sign in as one of the [seeded demo personas](#running-locally)) to land in a living, RLS-scoped care circle on real Amazon Aurora PostgreSQL + Amazon Bedrock.
 
 [![CI — lint, types, unit + RLS integration proof](https://github.com/rogerjeasy/kintwadi/actions/workflows/ci.yml/badge.svg)](https://github.com/rogerjeasy/kintwadi/actions/workflows/ci.yml)
 
@@ -171,7 +171,7 @@ npm run dev                   # http://localhost:3000
 `paolo@kintwadi.demo` (remote family) · `grace@kintwadi.demo` (aide — reads the digest in Tagalog) ·
 `antonio@kintwadi.demo` (care recipient) · `rosa@kintwadi.demo` (read-only) · `chen@kintwadi.demo`
 (clinician — read-mostly clinical view) · `admin@kintwadi.demo` (platform admin → `/admin`).
-Set `NEXT_PUBLIC_DEMO_MODE=1` to show one-click persona sign-in buttons on `/sign-in` **and** the homepage
+Sign in with any of them from `/sign-in`. Set `NEXT_PUBLIC_DEMO_MODE=1` to also show the homepage
 **"Run demo"** button, which creates an anonymous guest account (RLS-scoped to only the demo circle, `family`
 role, wiped on re-seed) and lands a reviewer on the live dashboard with zero sign-up — see `src/lib/auth/demo.ts`
 for the fail-closed security model.

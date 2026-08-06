@@ -908,21 +908,6 @@
       "apple": "Mit Apple fortfahren",
       "divider": "Oder mit E-Mail fortfahren",
       "error": "Anmeldung konnte nicht gestartet werden. Bitte versuchen Sie es erneut."
-    },
-    "demo": {
-      "title": "Sie testen Kintwadi? Probieren Sie eine Rolle.",
-      "subtitle": "Eine gemeinsame Akte, sechs Perspektiven — jede von der Datenbank durchgesetzt, nicht von der Oberfläche.",
-      "failed": "Demo-Anmeldung fehlgeschlagen",
-      "welcome": "Willkommen, {name}!",
-      "entering": "Demo-Kreis wird betreten…",
-      "lenses": {
-        "coordinator": "Koordinator (Eigentümer)",
-        "remote": "Entfernte Familie",
-        "aide": "Professionelle Pflegekraft",
-        "recipient": "Pflegebedürftige Person",
-        "readonly": "Nur Lesen",
-        "clinician": "Arzt"
-      }
     }
   },
   "app": {

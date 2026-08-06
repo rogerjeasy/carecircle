@@ -908,21 +908,6 @@
       "apple": "Continuar con Apple",
       "divider": "O continúa con tu correo",
       "error": "No se pudo iniciar el inicio de sesión. Inténtalo de nuevo."
-    },
-    "demo": {
-      "title": "¿Estás evaluando Kintwadi? Prueba un rol.",
-      "subtitle": "Un registro compartido, seis perspectivas — cada una aplicada por la base de datos, no por la interfaz.",
-      "failed": "Error en el inicio de sesión de demostración",
-      "welcome": "¡Bienvenido, {name}!",
-      "entering": "Entrando en el círculo de demostración…",
-      "lenses": {
-        "coordinator": "Coordinador (propietario)",
-        "remote": "Familia a distancia",
-        "aide": "Cuidador profesional",
-        "recipient": "Persona cuidada",
-        "readonly": "Solo lectura",
-        "clinician": "Médico"
-      }
     }
   },
   "app": {

@@ -908,21 +908,6 @@
       "apple": "Continua con Apple",
       "divider": "Oppure continua con l'email",
       "error": "Impossibile avviare l'accesso. Riprova."
-    },
-    "demo": {
-      "title": "Stai valutando Kintwadi? Prova un ruolo.",
-      "subtitle": "Un registro condiviso, sei prospettive — ciascuna applicata dal database, non dall'interfaccia.",
-      "failed": "Accesso demo non riuscito",
-      "welcome": "Benvenuto, {name}!",
-      "entering": "Ingresso nella cerchia demo…",
-      "lenses": {
-        "coordinator": "Coordinatore (proprietario)",
-        "remote": "Famiglia a distanza",
-        "aide": "Assistente professionale",
-        "recipient": "Persona assistita",
-        "readonly": "Sola lettura",
-        "clinician": "Medico"
-      }
     }
   },
   "app": {
