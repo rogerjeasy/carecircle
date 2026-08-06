@@ -1,5 +1,20 @@
+<p align="center">
+  <a href="https://kintwadi.vercel.app">
+    <img src="docs/assets/kintwadi-award-banner.svg" width="100%"
+         alt="Kintwadi — Winner, Best Design · H0: Hack the Zero Stack. One shared record for everyone caring for someone." />
+  </a>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/%F0%9F%8F%86_Winner-Best_Design-E8B24C?labelColor=0C1613&style=for-the-badge" alt="Winner — Best Design" />
+  <a href="https://h01.devpost.com"><img src="https://img.shields.io/badge/H0-Hack_the_Zero_Stack-0F766E?labelColor=0C1613&style=for-the-badge" alt="H0: Hack the Zero Stack" /></a>
+  <a href="https://kintwadi.vercel.app"><img src="https://img.shields.io/badge/Live_demo-kintwadi.vercel.app-EC7C5A?labelColor=0C1613&style=for-the-badge" alt="Live demo" /></a>
+</p>
+
 # Kintwadi
 
+> 🏆 **Winner — Best Design** at **H0: Hack the Zero Stack** (Vercel v0 × AWS Databases).
+>
 > **One shared record for everyone caring for someone.**
 > The calm, role-aware home for a family's caregiving — across siblings, cities, and time zones.
 >
@@ -20,7 +35,7 @@ No sign-up needed: click **"Run demo"** on the homepage (or use a seeded persona
 ![Vercel](https://img.shields.io/badge/Vercel-000000?logo=vercel&logoColor=white)
 ![Terraform](https://img.shields.io/badge/Terraform-844FBA?logo=terraform&logoColor=white)
 
-Built for the **H0: Hack the Zero Stack** hackathon (AWS Databases + Vercel/v0). <br>
+Built for the **H0: Hack the Zero Stack** hackathon (AWS Databases + Vercel/v0), where it won **🏆 Best Design**. <br>
 **Track:** Monetizable B2C · **Primary database:** **Amazon Aurora PostgreSQL (Serverless v2)** · **AI:** Amazon Bedrock (Claude + Titan) · **Frontend:** Next.js on **Vercel**.
 
 ---
